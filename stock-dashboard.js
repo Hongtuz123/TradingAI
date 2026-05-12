@@ -5,6 +5,12 @@ let currentChartSymbol = null;
 let tvChartWidget = null;
 let tvDashWidget  = null;
 
+// ---- 取得 TradingView 專用代碼 (上市 TWSE, 上櫃 TPEX) ----
+function getTVSymbol(id, market) {
+  const prefix = (market === 'OTC' || market === '上櫃') ? 'TPEX' : 'TWSE';
+  return `${prefix}:${id}`;
+}
+
 // ---- 內嵌儀表板渲染（供主儀表板呼叫）----
 function renderStockDashInline(stock, targetEl) {
   const s = stock;
@@ -88,7 +94,7 @@ function renderStockDashInline(stock, targetEl) {
     if (chartEl && typeof TradingView !== 'undefined') {
       new TradingView.widget({
         autosize: true,
-        symbol: `TWSE:${s.id}`,
+        symbol: getTVSymbol(s.id, s.market),
         interval: 'D',
         timezone: 'Asia/Taipei',
         theme: 'dark',
@@ -105,7 +111,12 @@ function renderStockDashInline(stock, targetEl) {
 }
 
 
-function loadTVChart(symbol, name, price, change) {
+function loadTVChart(s) {
+  const symbol = s.id;
+  const name = s.name;
+  const price = s.price;
+  const change = s.change;
+  
   currentChartSymbol = symbol;
 
   // 更新頂列資訊
@@ -116,8 +127,7 @@ function loadTVChart(symbol, name, price, change) {
   document.getElementById('chartChange').innerText = `${change > 0 ? '+' : ''}${change}%`;
   document.getElementById('chartChange').className = `chart-change ${change >= 0 ? 'text-up' : 'text-down'}`;
 
-  // 台股 symbol 格式：上市用 TWSE:XXXX，上櫃用 TPEX:XXXX
-  const tvSymbol = `TWSE:${symbol}`;
+  const tvSymbol = getTVSymbol(symbol, s.market);
   const container = document.getElementById('tvChartContainer');
   container.innerHTML = ''; // 清空舊圖
 
@@ -168,7 +178,7 @@ function renderChartStockList() {
       // 高亮選取
       document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
       div.classList.add('active');
-      loadTVChart(s.id, s.name, s.price, s.change);
+      loadTVChart(s);
     };
     list.appendChild(div);
   });
@@ -210,7 +220,7 @@ function renderStockDash(s) {
   if (typeof TradingView !== 'undefined') {
     tvDashWidget = new TradingView.widget({
       autosize: true,
-      symbol: `TWSE:${s.id}`,
+      symbol: getTVSymbol(s.id, s.market),
       interval: 'D',
       timezone: 'Asia/Taipei',
       theme: 'dark',
