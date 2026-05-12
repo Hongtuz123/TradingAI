@@ -229,7 +229,7 @@ function openStockDash(symbolId) {
 // ---- 渲染個股戰情板 ----
 function renderStockDash(s) {
   const now = new Date();
-  const dateStr = `資料日期：${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  const dateStr = `資料日期：${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 
   document.getElementById('sd-symbol').innerText = `${s.id} (${s.name}) 股票 AI 戰情分析儀表板`;
   document.getElementById('sd-subtitle').innerText = '法人大買＋主力買超＋股價強勢，動能點火！';
