@@ -89,6 +89,13 @@ function runScreener() {
     turnover: parseFloat(document.getElementById('f_turnover').value) || 0,
     mktCap: parseFloat(document.getElementById('f_market_cap').value) || 0,
     dailyVol: parseFloat(document.getElementById('f_daily_vol').value) || 0,
+    typeA: document.getElementById('f_type_a').checked,
+    typeB: document.getElementById('f_type_b').checked,
+    typeC: document.getElementById('f_type_c').checked,
+    typeD: document.getElementById('f_type_d').checked,
+    maBull: document.getElementById('f_ma_bull').checked,
+    dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
+    closeHigh: document.getElementById('f_close_high').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 6
   };
 
@@ -106,12 +113,22 @@ function runScreener() {
       currentBlacklist.push(s);
     }
 
-    // 基本面與籌碼面初步過濾
+    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD) || 
+                      (p.typeA && s.type === 'A') || 
+                      (p.typeB && s.type === 'B') || 
+                      (p.typeC && s.type === 'C') || 
+                      (p.typeD && s.type === 'D');
+
+    const maMatch = !p.maBull || s.maBull;
+
+    // 綜合過濾：基本面、籌碼面、技術面 (L4, L5)
     if (s.epsYoY >= p.eps && s.revYoY >= p.rev && s.roe >= p.roe && 
         s.grossMargin >= p.margin && s.debtRatio <= p.debt &&
         s.trustDays >= p.trustDays && (!p.fb || s.foreignBuy) &&
         s.volRatio >= p.volRatio && s.turnover >= p.turnover &&
-        s.marketCap >= p.mktCap && s.dailyVol >= p.dailyVol) {
+        s.marketCap >= p.mktCap && s.dailyVol >= p.dailyVol &&
+        typeMatch && maMatch && s.dist52W <= p.dist52W &&
+        (!p.closeHigh || s.closeToHigh)) {
       
       currentResults.push(s);
       
