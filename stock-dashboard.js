@@ -7,13 +7,8 @@ let tvDashWidget  = null;
 
 // ---- 取得 TradingView 專用代碼 ----
 function getTVSymbol(id, market) {
-  // 若 market 本身就已經是 TWSE, TPEX, NASDAQ 等明確的前綴，直接拼起來
-  if (market && market !== 'TSE' && market !== 'OTC' && market !== '上櫃' && market !== '上市' && market !== 'GLOBAL') {
-    return `${market}:${id}`;
-  }
-  if (market === 'GLOBAL') return id;
-  const prefix = (market === 'OTC' || market === '上櫃') ? 'TPEX' : 'TWSE';
-  return `${prefix}:${id}`;
+  // 交由 TradingView 內建的智慧搜尋引擎自動解析，不再強制干預前綴
+  return id;
 }
 
 // ---- 內嵌儀表板渲染（供主儀表板呼叫）----
@@ -97,9 +92,9 @@ function renderStockDashInline(stock, targetEl) {
   setTimeout(() => {
     const chartEl = document.getElementById(`inlineTVChart_${s.id}`);
     if (chartEl && typeof TradingView !== 'undefined') {
-      new TradingView.widget({
+      tvDashWidget = new TradingView.widget({
         autosize: true,
-        symbol: getTVSymbol(s.id, s.market),
+        symbol: s.id,
         interval: 'D',
         timezone: 'Asia/Taipei',
         theme: 'dark',
@@ -107,9 +102,25 @@ function renderStockDashInline(stock, targetEl) {
         locale: 'zh_TW',
         toolbar_bg: '#1e293b',
         enable_publishing: false,
-        allow_symbol_change: false,
-        hide_top_toolbar: true,
+        allow_symbol_change: true,
+        hide_top_toolbar: false,
         container_id: `inlineTVChart_${s.id}`,
+      });
+
+      tvDashWidget.onChartReady(() => {
+        try {
+          tvDashWidget.activeChart().onSymbolChanged().subscribe(null, function() {
+            tvDashWidget.activeChart().symbolExt(function(ext) {
+              if (ext && ext.symbol && ext.symbol !== s.id) {
+                // 當使用者在小視窗內搜尋其他標的，同步刷新整個戰情版數據
+                window.currentChartMarket = ext.exchange || 'GLOBAL';
+                openStockDash(ext.symbol);
+              }
+            });
+          });
+        } catch (e) {
+          console.warn("無法綁定戰情版 TV 同步", e);
+        }
       });
     }
   }, 200);
