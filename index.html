@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>荳荳AI股票篩選器 | 五層智能選股系統</title>
+  <meta name="description" content="荳荳AI股票篩選器 - 整合市場健康度、基本面、籌碼、技術面五層智能選股系統，精準找出強勢標的" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 頂部導航 -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-brand">
+      <div class="brand-logo">🌱</div>
+      <div class="brand-text">
+        <span class="brand-name">荳荳AI</span>
+        <span class="brand-sub">股票篩選器</span>
+      </div>
+    </div>
+    <nav class="topbar-nav">
+      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+        <span class="nav-icon">⊞</span> 儀表板
+      </button>
+      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
+        <span class="nav-icon">⚡</span> 篩選器
+      </button>
+      <button class="nav-btn" data-view="whitelist" onclick="switchView('whitelist')">
+        <span class="nav-icon">★</span> 白名單
+      </button>
+      <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
+        <span class="nav-icon">📈</span> K線圖
+      </button>
+    </nav>
+    <div class="topbar-status">
+      <div class="market-status-badge" id="marketStatusBadge">
+        <span class="status-dot"></span>
+        <span id="marketStatusText">市場評估中...</span>
+      </div>
+      <div class="last-update">更新：<span id="lastUpdate">--</span></div>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="main-container">
+
+    <!-- ======================== 儀表板視圖 ======================== -->
+    <section class="view active" id="view-dashboard">
+      <!-- 市場健康度橫幅 -->
+      <div class="market-health-banner" id="marketHealthBanner">
+        <div class="health-header">
+          <h2>🔎 第一層｜市場健康度</h2>
+          <div class="health-overall" id="healthOverall">
+            <span class="health-label">綜合評級</span>
+            <span class="health-grade" id="healthGrade">--</span>
+          </div>
+        </div>
+        <div class="health-indicators" id="healthIndicators">
+          <!-- JS 動態填充 -->
+        </div>
+        <div class="health-warning" id="healthWarning" style="display:none;">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-content">
+            <strong>市場警示</strong>
+            <ul id="warningList"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 統計卡片列 -->
+      <div class="stats-row">
+        <div class="stat-card" id="statTotal">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTotalVal">0</div>
+            <div class="stat-label">篩選標的</div>
+          </div>
+        </div>
+        <div class="stat-card highlight" id="statWhitelist">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statWhitelistVal">0</div>
+            <div class="stat-label">白名單</div>
+          </div>
+        </div>
+        <div class="stat-card danger" id="statBlacklist">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statBlacklistVal">0</div>
+            <div class="stat-label">黑名單警示</div>
+          </div>
+        </div>
+        <div class="stat-card" id="statAvgScore">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statAvgScoreVal">0</div>
+            <div class="stat-label">平均評分</div>
+          </div>
+        </div>
+        <div class="stat-card" id="statTypeA">
+          <div class="stat-icon">💥</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTypeAVal">0</div>
+            <div class="stat-label">突破型</div>
+          </div>
+        </div>
+        <div class="stat-card" id="statTypeB">
+          <div class="stat-icon">📶</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTypeBVal">0</div>
+            <div class="stat-label">均線多頭</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 兩欄區塊：白名單預覽 + 技術類型分佈 -->
+      <div class="dual-panel">
+        <!-- 白名單頂部預覽 -->
+        <div class="panel panel-main">
+          <div class="panel-header">
+            <h3>🌟 白名單 TOP 10</h3>
+            <button class="btn-link" onclick="switchView('whitelist')">查看全部 →</button>
+          </div>
+          <div class="whitelist-preview" id="whitelistPreview">
+            <!-- JS 填充 -->
+          </div>
+        </div>
+
+        <!-- 右側：技術類型 + 黑名單 -->
+        <div class="panel-side">
+          <div class="panel">
+            <div class="panel-header"><h3>📐 技術類型分佈</h3></div>
+            <div class="tech-type-chart" id="techTypeChart">
+              <!-- JS 填充 -->
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h3>🚫 黑名單警示</h3>
+              <span class="badge danger" id="blacklistCount">0</span>
+            </div>
+            <div class="blacklist-preview" id="blacklistPreview">
+              <!-- JS 填充 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== 篩選器視圖 ======================== -->
+    <section class="view" id="view-screener">
+      <div class="screener-layout">
+        <!-- 左側：篩選條件面板 -->
+        <aside class="filter-panel">
+          <div class="filter-panel-header">
+            <h2>⚙️ 五層篩選條件</h2>
+            <button class="btn-run" onclick="runScreener()">🚀 執行篩選</button>
+          </div>
+
+          <!-- 第一層：市場健康度 -->
+          <div class="filter-group">
+            <div class="filter-group-title">
+              <span class="layer-badge layer-1">L1</span>
+              市場健康度
+            </div>
+            <div class="filter-item">
+              <label>加權指數 > 季線(60MA)</label>
+              <label class="toggle"><input type="checkbox" id="f_twii_60ma" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>OTC指數 > 60MA</label>
+              <label class="toggle"><input type="checkbox" id="f_otc_60ma" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>大盤成交量 > 20日均量</label>
+              <label class="toggle"><input type="checkbox" id="f_market_vol" checked /><span></span></label>
+            </div>
+          </div>
+
+          <!-- 第二層：基本面 -->
+          <div class="filter-group">
+            <div class="filter-group-title">
+              <span class="layer-badge layer-2">L2</span>
+              基本面篩選
+            </div>
+            <div class="filter-item">
+              <label>EPS成長 (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_eps_growth" value="15" min="0" max="500" />
+                <span class="unit">%以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>月營收 YoY (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_rev_growth" value="20" min="0" max="500" />
+                <span class="unit">%以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>ROE (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_roe" value="10" min="0" max="100" />
+                <span class="unit">%以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>毛利率 (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_gross_margin" value="20" min="0" max="100" />
+                <span class="unit">%以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>負債比 (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_debt_ratio" value="60" min="0" max="100" />
+                <span class="unit">%以下</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第三層：籌碼資金 -->
+          <div class="filter-group">
+            <div class="filter-group-title">
+              <span class="layer-badge layer-3">L3</span>
+              籌碼與資金面
+            </div>
+            <div class="filter-item">
+              <label>投信連買天數</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_trust_days" value="3" min="1" max="20" />
+                <span class="unit">天以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>外資近5日買超</label>
+              <label class="toggle"><input type="checkbox" id="f_foreign_buy" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>今日量 > 均量倍數</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_vol_ratio" value="1.5" min="1" max="10" step="0.1" />
+                <span class="unit">倍</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>週轉率 (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_turnover" value="3" min="0" max="50" step="0.5" />
+                <span class="unit">%以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>市值 (億)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_market_cap" value="50" min="0" max="10000" />
+                <span class="unit">億以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>日均量 (張)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_daily_vol" value="2000" min="0" max="100000" step="100" />
+                <span class="unit">張以上</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第四層：技術面 -->
+          <div class="filter-group">
+            <div class="filter-group-title">
+              <span class="layer-badge layer-4">L4</span>
+              技術面初篩
+            </div>
+            <div class="filter-item">
+              <label>類型A：突破型</label>
+              <label class="toggle"><input type="checkbox" id="f_type_a" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>類型B：均線多頭</label>
+              <label class="toggle"><input type="checkbox" id="f_type_b" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>類型C：剛轉強</label>
+              <label class="toggle"><input type="checkbox" id="f_type_c" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>類型D：強勢回檔</label>
+              <label class="toggle"><input type="checkbox" id="f_type_d" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>股價 > 20MA > 60MA</label>
+              <label class="toggle"><input type="checkbox" id="f_ma_bull" checked /><span></span></label>
+            </div>
+          </div>
+
+          <!-- 白名單計分條件 -->
+          <div class="filter-group">
+            <div class="filter-group-title">
+              <span class="layer-badge layer-5">L5</span>
+              白名單計分條件
+            </div>
+            <div class="filter-item">
+              <label>距52週高點 (%)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_52w_pct" value="15" min="0" max="80" />
+                <span class="unit">%以內</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>收盤接近日高</label>
+              <label class="toggle"><input type="checkbox" id="f_close_high" checked /><span></span></label>
+            </div>
+            <div class="filter-item">
+              <label>最低評分門檻</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_min_score" value="6" min="1" max="11" />
+                <span class="unit">分/11分</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 右側：結果列表 -->
+        <div class="screener-results">
+          <div class="results-header">
+            <h3>篩選結果</h3>
+            <div class="results-meta">
+              <span>共 <strong id="resultCount">0</strong> 檔</span>
+              <select id="resultSort" onchange="sortResults(this.value)">
+                <option value="score">按評分排序</option>
+                <option value="techType">按技術類型</option>
+                <option value="epsGrowth">按EPS成長</option>
+                <option value="revGrowth">按營收成長</option>
+                <option value="trustDays">按投信連買</option>
+              </select>
+            </div>
+          </div>
+          <div class="results-table-wrap">
+            <table class="results-table" id="resultsTable">
+              <thead>
+                <tr>
+                  <th>代號/名稱</th>
+                  <th>技術類型</th>
+                  <th>收盤價</th>
+                  <th>評分</th>
+                  <th>EPS↑</th>
+                  <th>營收↑</th>
+                  <th>ROE</th>
+                  <th>投信</th>
+                  <th>外資</th>
+                  <th>量比</th>
+                  <th>狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody">
+                <tr class="empty-row">
+                  <td colspan="12">請點擊「執行篩選」開始篩選</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== 白名單視圖 ======================== -->
+    <section class="view" id="view-whitelist">
+      <div class="whitelist-page">
+        <div class="whitelist-header">
+          <div>
+            <h2>⭐ 白名單儀表板</h2>
+            <p class="subtitle">計分制評分，每項1分，滿分11分｜最低門檻 <span id="scoreThresholdDisplay">6</span> 分</p>
+          </div>
+          <div class="whitelist-actions">
+            <button class="btn-secondary" onclick="exportWhitelist()">📥 匯出清單</button>
+            <button class="btn-primary" onclick="runScreener(); switchView('whitelist')">🔄 重新篩選</button>
+          </div>
+        </div>
+
+        <!-- 評分圖例 -->
+        <div class="score-legend">
+          <div class="score-criteria-grid" id="scoreCriteriaGrid">
+            <!-- JS 填充 -->
+          </div>
+        </div>
+
+        <!-- 白名單卡片格 -->
+        <div class="whitelist-grid" id="whitelistGrid">
+          <!-- JS 填充 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== K線圖視圖 ======================== -->
+    <section class="view" id="view-chart">
+      <div class="chart-layout">
+        <!-- 左側：股票選擇 -->
+        <aside class="chart-sidebar">
+          <h3>選擇標的</h3>
+          <div class="chart-search">
+            <input type="text" id="chartSearch" placeholder="搜尋代號/名稱..." oninput="filterChartList(this.value)" />
+          </div>
+          <div class="chart-stock-list" id="chartStockList">
+            <!-- JS 填充 -->
+          </div>
+        </aside>
+
+        <!-- 主圖表區 -->
+        <div class="chart-main">
+          <!-- 圖表頂部工具列 -->
+          <div class="chart-toolbar">
+            <div class="chart-stock-info" id="chartStockInfo">
+              <span class="chart-code" id="chartCode">--</span>
+              <span class="chart-name" id="chartName">請選擇股票</span>
+              <span class="chart-price" id="chartPrice">--</span>
+              <span class="chart-change" id="chartChange">--</span>
+            </div>
+            <div class="chart-controls">
+              <div class="period-selector">
+                <button class="period-btn active" data-period="1M" onclick="changePeriod('1M',this)">1月</button>
+                <button class="period-btn" data-period="3M" onclick="changePeriod('3M',this)">3月</button>
+                <button class="period-btn" data-period="6M" onclick="changePeriod('6M',this)">6月</button>
+                <button class="period-btn" data-period="1Y" onclick="changePeriod('1Y',this)">1年</button>
+              </div>
+              <div class="chart-type-selector">
+                <button class="type-btn active" data-type="candle" onclick="changeChartType('candle',this)">蠟燭</button>
+                <button class="type-btn" data-type="line" onclick="changeChartType('line',this)">折線</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- K線圖容器 -->
+          <div class="chart-container">
+            <canvas id="klineCanvas"></canvas>
+            <div class="chart-crosshair" id="chartCrosshair"></div>
+            <div class="chart-tooltip" id="chartTooltip"></div>
+          </div>
+
+          <!-- 指標面板 -->
+          <div class="indicators-panel">
+            <div class="indicator-row">
+              <span class="indicator-label">MA5</span>
+              <span class="indicator-val" id="indMA5">--</span>
+            </div>
+            <div class="indicator-row">
+              <span class="indicator-label">MA20</span>
+              <span class="indicator-val" id="indMA20">--</span>
+            </div>
+            <div class="indicator-row">
+              <span class="indicator-label">MA60</span>
+              <span class="indicator-val" id="indMA60">--</span>
+            </div>
+            <div class="indicator-row">
+              <span class="indicator-label">RSI</span>
+              <span class="indicator-val" id="indRSI">--</span>
+            </div>
+            <div class="indicator-row">
+              <span class="indicator-label">MACD</span>
+              <span class="indicator-val" id="indMACD">--</span>
+            </div>
+            <div class="indicator-row">
+              <span class="indicator-label">Vol</span>
+              <span class="indicator-val" id="indVol">--</span>
+            </div>
+          </div>
+
+          <!-- 成交量圖 -->
+          <div class="volume-container">
+            <canvas id="volumeCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 股票詳情 Modal -->
+  <div class="modal-overlay" id="stockModal" onclick="closeModal(event)">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- 腳本 -->
+  <script src="data.js"></script>
+  <script src="chart-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
