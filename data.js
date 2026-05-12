@@ -25,7 +25,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 1706,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 4.9,
     "blacklist": []
@@ -48,7 +48,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 3303,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.0,
     "blacklist": []
@@ -71,7 +71,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 1709,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 10.6,
     "blacklist": []
@@ -94,7 +94,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 46172,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 3.2,
     "blacklist": []
@@ -117,7 +117,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 63063,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.6,
     "blacklist": []
@@ -140,7 +140,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 114217,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 5.1,
     "blacklist": []
@@ -163,7 +163,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 6204,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 13.2,
     "blacklist": []
@@ -186,7 +186,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 14508,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.9,
     "blacklist": []
@@ -209,7 +209,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 417999,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -232,7 +232,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 317856,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 8.9,
     "blacklist": []
@@ -255,7 +255,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 283121,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 2.2,
     "blacklist": []
@@ -278,7 +278,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 178723,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 1.6,
     "blacklist": []
@@ -301,7 +301,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 162759,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -324,7 +324,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 149221,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 7.3,
     "blacklist": []
@@ -347,7 +347,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 108987,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -370,7 +370,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 98201,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 6.0,
     "blacklist": []
@@ -393,7 +393,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 96606,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.8,
     "blacklist": []
@@ -416,7 +416,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 90352,
     "type": "A",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -439,7 +439,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 89842,
     "type": "A",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.0,
     "blacklist": []
@@ -462,7 +462,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 88274,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.7,
     "blacklist": []
@@ -485,7 +485,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 84480,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 2.3,
     "blacklist": []
@@ -508,7 +508,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 81477,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 13.3,
     "blacklist": []
@@ -531,7 +531,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 81430,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 6.0,
     "blacklist": []
@@ -554,7 +554,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 78048,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 5.8,
     "blacklist": []
@@ -577,7 +577,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 74486,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 2.4,
     "blacklist": []
@@ -600,7 +600,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 70902,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -623,7 +623,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 64895,
     "type": "A",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -646,7 +646,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 63413,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 15.4,
     "blacklist": []
@@ -669,7 +669,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 53717,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 2.7,
     "blacklist": []
@@ -692,7 +692,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 51692,
     "type": "D",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.0,
     "blacklist": []
@@ -715,7 +715,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 51675,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 7.2,
     "blacklist": []
@@ -738,7 +738,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 50449,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 2.0,
     "blacklist": []
@@ -761,7 +761,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 50067,
     "type": "A",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -784,7 +784,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 49013,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 9.3,
     "blacklist": []
@@ -807,7 +807,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 46873,
     "type": "A",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.0,
     "blacklist": []
@@ -830,7 +830,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 44982,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 0.7,
     "blacklist": []
@@ -853,7 +853,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 44158,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": true,
     "dist52W": 0.0,
     "blacklist": []
@@ -876,7 +876,7 @@ const mockStocks = [
     "marketCap": 200,
     "dailyVol": 41901,
     "type": "none",
-    "maBull": false,
+    "maBull": true,
     "closeToHigh": false,
     "dist52W": 13.4,
     "blacklist": []
