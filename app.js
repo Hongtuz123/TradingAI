@@ -121,29 +121,39 @@ function runScreener() {
 
     const maMatch = !p.maBull || s.maBull;
 
-    // 綜合過濾：基本面、籌碼面、技術面 (L4, L5)
-    if (s.epsYoY >= p.eps && s.revYoY >= p.rev && s.roe >= p.roe && 
-        s.grossMargin >= p.margin && s.debtRatio <= p.debt &&
-        s.trustDays >= p.trustDays && (!p.fb || s.foreignBuy) &&
-        s.volRatio >= p.volRatio && s.turnover >= p.turnover &&
-        s.marketCap >= p.mktCap && s.dailyVol >= p.dailyVol &&
-        typeMatch && maMatch && s.dist52W <= p.dist52W &&
-        (!p.closeHigh || s.closeToHigh)) {
-      
+    // 計算 11 個條件的得分與未達成項目
+    let failedConditions = [];
+    if (s.epsYoY < p.eps) failedConditions.push(`EPS成長 (${s.epsYoY}% < ${p.eps}%)`);
+    if (s.revYoY < p.rev) failedConditions.push(`月營收 YoY (${s.revYoY}% < ${p.rev}%)`);
+    if (s.roe < p.roe) failedConditions.push(`ROE (${s.roe}% < ${p.roe}%)`);
+    if (s.grossMargin < p.margin) failedConditions.push(`毛利率 (${s.grossMargin}% < ${p.margin}%)`);
+    if (s.debtRatio > p.debt) failedConditions.push(`負債比 (${s.debtRatio}% > ${p.debt}%)`);
+    if (s.trustDays < p.trustDays) failedConditions.push(`投信連買 (${s.trustDays}天 < ${p.trustDays}天)`);
+    if (p.fb && !s.foreignBuy) failedConditions.push(`外資近5日買超 (未達標)`);
+    if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
+    if (s.turnover < p.turnover) failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
+    if (s.marketCap < p.mktCap) failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
+    if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+
+    s.dynamicScore = 11 - failedConditions.length;
+    s.failedConditions = failedConditions;
+
+    // L4 與 L5 的嚴格過濾與總得分過濾
+    if (s.dynamicScore >= p.minScore && typeMatch && maMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
   });
 
-  // 依據新規則：最多篩選出前 40 檔符合規則之標的 (依評分排序)
-  currentResults.sort((a, b) => b.score - a.score);
+  // 依據新規則：最多篩選出前 40 檔符合規則之標的 (依達標數降序排列)
+  currentResults.sort((a, b) => b.dynamicScore - a.dynamicScore);
   currentResults = currentResults.slice(0, 40);
 
   // 根據前 40 檔結果計算白名單與統計數據
   currentResults.forEach(s => {
-    if (s.score >= p.minScore && s.blacklist.length === 0) {
+    if (s.dynamicScore >= p.minScore && s.blacklist.length === 0) {
       currentWhitelist.push(s);
       stats[s.type] = (stats[s.type] || 0) + 1;
-      stats.totalScore += s.score;
+      stats.totalScore += s.dynamicScore;
     }
   });
 
@@ -182,11 +192,13 @@ function renderScreenerTable(data) {
 
   data.forEach(s => {
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.title = '點擊查看未達標項目';
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td><span class="badge" style="background:var(--primary)">Type ${s.type}</span></td>
       <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
-      <td><strong>${s.score}</strong>/11</td>
+      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /11</td>
       <td>${s.epsYoY}%</td>
       <td>${s.revYoY}%</td>
       <td>${s.roe}%</td>
@@ -194,8 +206,18 @@ function renderScreenerTable(data) {
       <td>${s.foreignBuy?'✔':'✘'}</td>
       <td>${s.volRatio}x</td>
       <td>${s.blacklist.length>0 ? '<span class="badge danger">黑名單</span>' : '<span class="badge" style="background:var(--success)">正常</span>'}</td>
-      <td><button class="btn-link" onclick="openChart('${s.id}')">看圖</button></td>
+      <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
     `;
+    
+    // 點擊顯示未達標項目
+    tr.onclick = () => {
+      if (s.failedConditions.length === 0) {
+        alert(`【${s.id} ${s.name}】\n\n🎉 11 項條件全數達標！`);
+      } else {
+        alert(`【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ` + s.failedConditions.join('\n- '));
+      }
+    };
+    
     tbody.appendChild(tr);
   });
 }
@@ -206,7 +228,7 @@ function renderWhitelistPreview() {
   if (!container) return;
   container.innerHTML = '';
 
-  const sorted = [...currentWhitelist].sort((a, b) => b.score - a.score);
+  const sorted = [...currentWhitelist].sort((a, b) => b.dynamicScore - a.dynamicScore);
   if (sorted.length === 0) {
     container.innerHTML = '<p style="color:var(--text-muted);padding:10px 0">無白名單標的，請先到篩選器執行篩選</p>';
     return;
@@ -222,7 +244,7 @@ function renderWhitelistPreview() {
         <span class="badge" style="background:var(--primary);margin-left:6px;font-size:10px">${s.type !== 'none' ? 'Type ' + s.type : '--'}</span>
       </div>
       <div class="dash-wl-price ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</div>
-      <div class="dash-wl-score">${s.score}<span style="font-size:10px;color:var(--text-muted)">/11</span></div>
+      <div class="dash-wl-score">${s.dynamicScore}<span style="font-size:10px;color:var(--text-muted)">/11</span></div>
     `;
     row.onclick = () => {
       document.querySelectorAll('.dash-wl-row').forEach(r => r.classList.remove('selected'));
@@ -264,15 +286,15 @@ function renderBlacklistPreview() {
 function renderWhitelistGrid() {
   const grid = document.getElementById('whitelistGrid');
   grid.innerHTML = '';
-  currentWhitelist.sort((a,b)=>b.score - a.score).forEach(s => {
+  currentWhitelist.sort((a,b)=>b.dynamicScore - a.dynamicScore).forEach(s => {
     grid.innerHTML += `
-      <div class="wl-card">
+      <div class="wl-card" style="cursor:pointer;" title="點擊查看未達標項目" onclick="if (event.target.tagName !== 'BUTTON') { if(s.failedConditions.length===0) alert('【${s.id} ${s.name}】\\n\\n🎉 11 項條件全數達標！'); else alert('【${s.id} ${s.name}】未達標項目 (' + s.failedConditions.length + '項)：\\n\\n- ' + s.failedConditions.join('\\n- ')); }">
         <div class="wl-card-header">
           <div>
             <h3>${s.id} ${s.name}</h3>
             <span class="badge" style="background:var(--primary)">類型 ${s.type}</span>
           </div>
-          <div class="wl-score">${s.score} <span style="font-size:12px;color:var(--text-muted)">/ 11</span></div>
+          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 11</span></div>
         </div>
         <div class="wl-card-body">
           <div>收盤：${s.price} (${s.change}%)</div>
@@ -340,7 +362,7 @@ function filterChartList(val) {
 
 function sortResults(by) {
   let sorted = [...currentResults];
-  if(by === 'score') sorted.sort((a,b) => b.score - a.score);
+  if(by === 'score') sorted.sort((a,b) => b.dynamicScore - a.dynamicScore);
   if(by === 'epsGrowth') sorted.sort((a,b) => b.epsYoY - a.epsYoY);
   if(by === 'revGrowth') sorted.sort((a,b) => b.revYoY - a.revYoY);
   if(by === 'trustDays') sorted.sort((a,b) => b.trustDays - a.trustDays);
@@ -371,6 +393,7 @@ function showEmptyResultModal(p, passedCount) {
   }).length;
 
   const fails = {
+    '綜合評分不足': mockStocks.filter(s => s.dynamicScore < p.minScore).length,
     '月營收 YoY': mockStocks.filter(s => s.revYoY < p.rev).length,
     'EPS YoY':    mockStocks.filter(s => s.epsYoY < p.eps).length,
     'ROE':        mockStocks.filter(s => s.roe < p.roe).length,

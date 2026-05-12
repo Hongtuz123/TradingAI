@@ -315,10 +315,10 @@
               <label class="toggle"><input type="checkbox" id="f_close_high" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>最低評分門檻</label>
+              <label>最低綜合評分</label>
               <div class="filter-input-wrap">
-                <input type="number" id="f_min_score" value="6" min="1" max="11" />
-                <span class="unit">分/11分</span>
+                <input type="range" id="f_min_score" min="0" max="11" value="7" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">7</span>
               </div>
             </div>
           </div>
@@ -331,7 +331,7 @@
             <div class="results-meta">
               <span>共 <strong id="resultCount">0</strong> 檔</span>
               <select id="resultSort" onchange="sortResults(this.value)">
-                <option value="score">按評分排序</option>
+                <option value="score">按達標數排序</option>
                 <option value="techType">按技術類型</option>
                 <option value="epsGrowth">按EPS成長</option>
                 <option value="revGrowth">按營收成長</option>
@@ -346,7 +346,7 @@
                   <th>代號/名稱</th>
                   <th>技術類型</th>
                   <th>收盤價</th>
-                  <th>評分</th>
+                  <th>達標數</th>
                   <th>EPS↑</th>
                   <th>營收↑</th>
                   <th>ROE</th>
