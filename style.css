@@ -645,3 +645,61 @@ canvas {
   background: none; border: none;
   color: white; font-size: 20px; cursor: pointer;
 }
+
+/* 彈窗診斷條 */
+.modal-diag { display: flex; flex-direction: column; gap: 10px; }
+.modal-diag-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 80px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.modal-diag-bar-wrap {
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+.modal-diag-bar {
+  display: block;
+  height: 100%;
+  background: var(--danger);
+  border-radius: 4px;
+}
+.modal-diag-pct { color: var(--danger); text-align: right; font-size: 12px; }
+.badge.success { background: var(--success); color: white; }
+.subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+.whitelist-actions { display: flex; gap: 10px; }
+.chart-controls { display: flex; gap: 10px; align-items: center; }
+.period-selector, .chart-type-selector { display: flex; }
+.period-btn, .type-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.period-btn:first-child, .type-btn:first-child { border-radius: 4px 0 0 4px; }
+.period-btn:last-child,  .type-btn:last-child  { border-radius: 0 4px 4px 0; }
+.period-btn.active, .type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.indicators-panel {
+  display: flex;
+  gap: 20px;
+  padding: 8px 15px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.2);
+  flex-wrap: wrap;
+}
+.indicator-row { display: flex; gap: 6px; font-size: 12px; align-items: center; }
+.indicator-label { color: var(--text-muted); }
+.chart-price { font-size: 18px; font-weight: 700; }
+.chart-code  { font-size: 18px; font-weight: 800; margin-right: 5px; }
+.chart-name  { color: var(--text-muted); }
+.chart-change { font-weight: 600; }
+.filter-panel { overflow-y: auto; }
+select { background: var(--bg-card); color: white; border: 1px solid var(--border-color); padding: 5px 8px; border-radius: 4px; }
+.results-meta { display: flex; align-items: center; gap: 12px; }
+.chart-sidebar h3 { padding: 15px; border-bottom: 1px solid var(--border-color); }
+

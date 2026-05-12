@@ -124,6 +124,11 @@ function runScreener() {
     }
   });
 
+  // ========== 無結果彈窗 ==========
+  if (mockStocks.length > 0 && currentWhitelist.length === 0) {
+    showEmptyResultModal(p, currentResults.length);
+  }
+
   // 更新 Dashboard 統計
   document.getElementById('statTotalVal').innerText = currentResults.length;
   document.getElementById('statWhitelistVal').innerText = currentWhitelist.length;
@@ -296,4 +301,86 @@ function sortResults(by) {
 
 function exportWhitelist() {
   alert('匯出 CSV 功能 (模擬)');
+}
+
+// ========== 無結果彈窗 ==========
+function showEmptyResultModal(p, passedCount) {
+  // 分析是哪些條件最嚴苛
+  const diagnosis = [];
+
+  // 計算每個條件卡住幾檔
+  const total = mockStocks.length;
+  const fails = {
+    '月營收 YoY': mockStocks.filter(s => s.revYoY < p.rev).length,
+    'EPS YoY':    mockStocks.filter(s => s.epsYoY < p.eps).length,
+    'ROE':        mockStocks.filter(s => s.roe < p.roe).length,
+    '毛利率':     mockStocks.filter(s => s.grossMargin < p.margin).length,
+    '負債比':     mockStocks.filter(s => s.debtRatio > p.debt).length,
+    '投信連買':   mockStocks.filter(s => s.trustDays < p.trustDays).length,
+    '外資買超':   mockStocks.filter(s => p.fb && !s.foreignBuy).length,
+    '量能比':     mockStocks.filter(s => s.volRatio < p.volRatio).length,
+    '週轉率':     mockStocks.filter(s => s.turnover < p.turnover).length,
+    '市值':       mockStocks.filter(s => s.marketCap < p.mktCap).length,
+    '日均量':     mockStocks.filter(s => s.dailyVol < p.dailyVol).length,
+  };
+
+  // 按失敗數排序，找最嚴苛的前5
+  const sorted = Object.entries(fails).sort((a, b) => b[1] - a[1]);
+  const topFails = sorted.filter(([, n]) => n > 0).slice(0, 5);
+
+  const diagHTML = topFails.map(([name, n]) =>
+    `<div class="modal-diag-row">
+      <span>${name}</span>
+      <span class="modal-diag-bar-wrap">
+        <span class="modal-diag-bar" style="width:${Math.round(n/total*100)}%"></span>
+      </span>
+      <span class="modal-diag-pct">${n}/${total} 不符</span>
+    </div>`
+  ).join('');
+
+  const suggestHTML = topFails.map(([name]) => {
+    const map = {
+      '月營收 YoY': `月營收 YoY 降至 <b>10%</b>`,
+      'EPS YoY':    `EPS YoY 降至 <b>5%</b>`,
+      'ROE':        `ROE 降至 <b>5%</b>`,
+      '毛利率':     `毛利率 降至 <b>10%</b>`,
+      '負債比':     `負債比 放寬至 <b>70%</b>`,
+      '投信連買':   `投信連買 降至 <b>1天</b>`,
+      '外資買超':   `取消外資買超勾選`,
+      '量能比':     `量能比 降至 <b>1.0</b>x`,
+      '週轉率':     `週轉率 降至 <b>1%</b>`,
+      '市值':       `市值 降至 <b>20億</b>`,
+      '日均量':     `日均量 降至 <b>500張</b>`,
+    };
+    return `<li>→ ${map[name] || name}</li>`;
+  }).join('');
+
+  const box = document.getElementById('modalContent');
+  box.innerHTML = `
+    <div style="text-align:center; margin-bottom:20px;">
+      <div style="font-size:48px; margin-bottom:8px;">🔍</div>
+      <h2 style="margin-bottom:4px;">白名單 0 檔</h2>
+      <p style="color:var(--text-muted);">
+        共 ${total} 檔標的中，有 ${passedCount} 檔通過基礎篩選，<br>但無任何標的達到最低評分 ${p.minScore} 分
+      </p>
+    </div>
+
+    <h4 style="margin-bottom:12px; color:var(--warning);">⚠️ 最嚴苛的篩選條件</h4>
+    <div class="modal-diag">${diagHTML || '<p>目前資料中所有條件都通過，可能是最低評分門檻太高。</p>'}</div>
+
+    <h4 style="margin-top:20px; margin-bottom:8px; color:var(--success);">💡 建議調整</h4>
+    <ul style="padding-left:20px; line-height:2;">${suggestHTML || '<li>嘗試降低最低評分門檻</li>'}</ul>
+
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+      <button class="btn-secondary" onclick="closeModal()">關閉</button>
+      <button class="btn-primary" onclick="closeModal(); switchView('screener')">前往調整條件</button>
+    </div>
+  `;
+
+  document.getElementById('stockModal').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('stockModal')) return;
+  document.getElementById('stockModal').classList.remove('active');
 }

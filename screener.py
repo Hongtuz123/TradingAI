@@ -29,28 +29,31 @@ def get_historical_candles(symbol):
 
 def calc_indicators(df):
     df = df.sort_values('date').reset_index(drop=True)
+    n = len(df)
     df['close'] = pd.to_numeric(df['close'])
+    df['high']  = pd.to_numeric(df['high'])
+    df['low']   = pd.to_numeric(df['low'])
     df['volume'] = pd.to_numeric(df['volume'])
     
-    # MAs
-    df['ma5'] = df['close'].rolling(5).mean()
-    df['ma20'] = df['close'].rolling(20).mean()
-    df['ma60'] = df['close'].rolling(60).mean()
-    df['vol_ma20'] = df['volume'].rolling(20).mean()
+    # MAs — min_periods=1 讓資料少也能算
+    df['ma5']     = df['close'].rolling(5, min_periods=1).mean()
+    df['ma20']    = df['close'].rolling(20, min_periods=1).mean()
+    df['ma60']    = df['close'].rolling(60, min_periods=1).mean()
+    df['vol_ma20']= df['volume'].rolling(20, min_periods=1).mean()
     
     # RSI 14
     delta = df['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
+    gain = (delta.where(delta > 0, 0)).rolling(window=14, min_periods=1).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14, min_periods=1).mean()
+    rs = gain / (loss + 1e-9)
     df['rsi14'] = 100 - (100 / (1 + rs))
     
     # MACD
     exp1 = df['close'].ewm(span=12, adjust=False).mean()
     exp2 = df['close'].ewm(span=26, adjust=False).mean()
-    df['macd'] = exp1 - exp2
+    df['macd']   = exp1 - exp2
     df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
-    df['hist'] = df['macd'] - df['signal']
+    df['hist']   = df['macd'] - df['signal']
     
     # 52W High
     df['high_52w'] = df['close'].rolling(250, min_periods=1).max()
@@ -70,7 +73,8 @@ def run_screener():
         print(f"[{idx+1}/{len(top_stocks)}] 處理 {symbol} {name}")
         
         candles = get_historical_candles(symbol)
-        if len(candles) < 60:
+        if len(candles) < 20:  # 免費版約30筆，門檻降至20
+            print(f"  ↳ 資料不足 ({len(candles)} 筆)，跳過")
             time.sleep(0.5)
             continue
             
@@ -107,8 +111,8 @@ def run_screener():
         results.append({
             "id": symbol,
             "name": name,
-            "price": close,
-            "change": round(float(s['Change'].replace('+','').replace('-','')) * (1 if '+' in s['Change'] else -1) if s['Change'] else 0, 1),
+            "price": float(close),
+            "change": round(float(s['Change'].replace('+','').replace('X','').strip() or '0') * (1 if not s['Change'].startswith('-') else -1), 2),
             "epsYoY": 20, # 由於Fugle基本面API需付費，先帶入預設值
             "revYoY": 25,
             "roe": 12,
@@ -157,8 +161,8 @@ function calculateScore(stock) {{
 
 mockStocks.forEach(s => s.score = calculateScore(s));
 """
-    # 修正 JS 中的 True 變成 true
-    js_content = js_content.replace(": True,", ": true,")
+    # 修正 Python → JS 的 boolean 序列化（json.dumps 已幫忙，但 f-string 部分需替換）
+    js_content = js_content.replace(": True,", ": true,").replace(": False,", ": false,")
     
     with open('data.js', 'w', encoding='utf-8') as f:
         f.write(js_content)
