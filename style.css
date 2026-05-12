@@ -701,5 +701,108 @@ canvas {
 .filter-panel { overflow-y: auto; }
 select { background: var(--bg-card); color: white; border: 1px solid var(--border-color); padding: 5px 8px; border-radius: 4px; }
 .results-meta { display: flex; align-items: center; gap: 12px; }
-.chart-sidebar h3 { padding: 15px; border-bottom: 1px solid var(--border-color); }
+.chart-stock-item.active { background: rgba(59,130,246,0.15); border-left: 3px solid var(--primary); }
+
+/* ================= 個股戰情板 ================= */
+.stockdash-page {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+  overflow-y: auto;
+}
+.sd-topbar {
+  background: linear-gradient(90deg, #1e293b, #0f172a);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.sd-symbol { font-size: 20px; font-weight: 800; color: var(--text-main); }
+.sd-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.sd-price { font-size: 28px; font-weight: 800; }
+.sd-change { font-size: 14px; font-weight: 600; margin-top: 3px; }
+.sd-date { font-size: 12px; color: var(--text-muted); text-align: right; }
+
+.sd-body {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr;
+  gap: 15px;
+  flex-shrink: 0;
+}
+.sd-left, .sd-mid, .sd-right { display: flex; flex-direction: column; gap: 15px; }
+
+.sd-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 15px;
+}
+.sd-panel-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+.sd-key-grid { display: flex; flex-direction: column; gap: 6px; }
+.sd-kv-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+/* 量規 */
+.gauge-svg { width: 100%; max-width: 200px; display: block; margin: 0 auto; }
+.sd-gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+.sd-gauge-labels { width: 100%; margin-top: 5px; }
+
+/* 籌碼橫條 */
+.chips-bar-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
+.chips-bar-label { width: 40px; color: var(--text-muted); flex-shrink: 0; }
+.chips-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+.chips-bar-fill { height: 100%; border-radius: 3px; }
+.chips-val { width: 60px; text-align: right; font-weight: 600; }
+
+/* 即時診斷 */
+.sd-diag-item { margin-bottom: 14px; }
+.sd-diag-icon { font-size: 13px; margin-bottom: 4px; }
+.sd-diag-content { font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-left: 4px; }
+
+/* 進出場訊號 */
+.sd-signal { }
+
+/* 底部技術指標列 */
+.sd-indicators {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sd-ind-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+}
+.ind-label { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+.ind-main { font-size: 22px; font-weight: 800; margin: 4px 0; }
+.rsi-val { font-size: 30px; }
+.ind-tip { font-size: 11px; margin-top: 4px; }
+
+.sd-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--danger);
+  padding: 8px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
 

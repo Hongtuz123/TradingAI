@@ -32,6 +32,9 @@
       <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
         <span class="nav-icon">📈</span> K線圖
       </button>
+      <button class="nav-btn" data-view="stockdash" onclick="switchView('stockdash')">
+        <span class="nav-icon">🎯</span> 個股儀表板
+      </button>
     </nav>
     <div class="topbar-status">
       <div class="market-status-badge" id="marketStatusBadge">
@@ -395,84 +398,110 @@
       </div>
     </section>
 
-    <!-- ======================== K線圖視圖 ======================== -->
+    <!-- ======================== K線圖視圖（TradingView） ======================== -->
     <section class="view" id="view-chart">
       <div class="chart-layout">
-        <!-- 左側：股票選擇 -->
         <aside class="chart-sidebar">
           <h3>選擇標的</h3>
           <div class="chart-search">
             <input type="text" id="chartSearch" placeholder="搜尋代號/名稱..." oninput="filterChartList(this.value)" />
           </div>
-          <div class="chart-stock-list" id="chartStockList">
-            <!-- JS 填充 -->
-          </div>
+          <div class="chart-stock-list" id="chartStockList"></div>
         </aside>
-
-        <!-- 主圖表區 -->
-        <div class="chart-main">
-          <!-- 圖表頂部工具列 -->
+        <div class="chart-main" style="padding:0;overflow:hidden;">
           <div class="chart-toolbar">
-            <div class="chart-stock-info" id="chartStockInfo">
+            <div class="chart-stock-info">
               <span class="chart-code" id="chartCode">--</span>
-              <span class="chart-name" id="chartName">請選擇股票</span>
-              <span class="chart-price" id="chartPrice">--</span>
-              <span class="chart-change" id="chartChange">--</span>
+              <span class="chart-name" id="chartName">請點選左側標的載入圖表</span>
+              <span class="chart-price text-up" id="chartPrice"></span>
+              <span class="chart-change" id="chartChange"></span>
             </div>
-            <div class="chart-controls">
-              <div class="period-selector">
-                <button class="period-btn active" data-period="1M" onclick="changePeriod('1M',this)">1月</button>
-                <button class="period-btn" data-period="3M" onclick="changePeriod('3M',this)">3月</button>
-                <button class="period-btn" data-period="6M" onclick="changePeriod('6M',this)">6月</button>
-                <button class="period-btn" data-period="1Y" onclick="changePeriod('1Y',this)">1年</button>
+            <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openStockDash(currentChartSymbol)">🎯 開啟戰情板</button>
+          </div>
+          <!-- TradingView 嵌入 -->
+          <div id="tvChartContainer" style="flex:1;height:calc(100% - 50px);"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== 個股戰情儀表板 ======================== -->
+    <section class="view" id="view-stockdash">
+      <div class="stockdash-page">
+        <!-- 頂部標題列 -->
+        <div class="sd-topbar">
+          <div class="sd-title-block">
+            <div class="sd-symbol" id="sd-symbol">選擇標的</div>
+            <div class="sd-subtitle" id="sd-subtitle">點選篩選器或K線側欄的標的以載入</div>
+          </div>
+          <div class="sd-price-block">
+            <div class="sd-price" id="sd-price">--</div>
+            <div class="sd-change" id="sd-change">--</div>
+          </div>
+          <div class="sd-date" id="sd-date"></div>
+        </div>
+
+        <div class="sd-body">
+          <!-- 左欄：K線圖 + 法人 -->
+          <div class="sd-left">
+            <!-- TradingView 小圖 -->
+            <div class="sd-panel" style="height:350px;padding:0;overflow:hidden;">
+              <div id="tvDashChart" style="width:100%;height:100%;"></div>
+            </div>
+
+            <!-- 三大法人 -->
+            <div class="sd-panel">
+              <div class="sd-panel-title">① 三大法人進出（近10日）</div>
+              <div class="sd-chips-grid" id="sd-chips-grid"></div>
+              <div class="sd-chips-table" id="sd-chips-table"></div>
+            </div>
+          </div>
+
+          <!-- 中欄：關鍵數據 + AI預測 + 主力 -->
+          <div class="sd-mid">
+            <div class="sd-panel">
+              <div class="sd-panel-title">🔑 關鍵數據</div>
+              <div class="sd-key-grid" id="sd-key-grid"></div>
+            </div>
+
+            <div class="sd-panel">
+              <div class="sd-panel-title">🤖 AI 漲跌機率預測</div>
+              <div class="sd-gauge-wrap">
+                <div class="sd-gauge" id="sd-gauge">
+                  <svg viewBox="0 0 200 110" class="gauge-svg">
+                    <path d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#334155" stroke-width="18" stroke-linecap="round"/>
+                    <path id="gaugeFill" d="M 10 100 A 90 90 0 0 1 190 100" fill="none" stroke="#10b981" stroke-width="18" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+                    <text id="gaugeText" x="100" y="90" text-anchor="middle" fill="white" font-size="28" font-weight="800">--</text>
+                    <text x="100" y="108" text-anchor="middle" fill="#94a3b8" font-size="11">上漲機率</text>
+                  </svg>
+                </div>
+                <div class="sd-gauge-labels" id="sd-gauge-labels"></div>
               </div>
-              <div class="chart-type-selector">
-                <button class="type-btn active" data-type="candle" onclick="changeChartType('candle',this)">蠟燭</button>
-                <button class="type-btn" data-type="line" onclick="changeChartType('line',this)">折線</button>
-              </div>
+            </div>
+
+            <div class="sd-panel">
+              <div class="sd-panel-title">⚡ 進出場訊號</div>
+              <div class="sd-signal" id="sd-signal"></div>
             </div>
           </div>
 
-          <!-- K線圖容器 -->
-          <div class="chart-container">
-            <canvas id="klineCanvas"></canvas>
-            <div class="chart-crosshair" id="chartCrosshair"></div>
-            <div class="chart-tooltip" id="chartTooltip"></div>
-          </div>
-
-          <!-- 指標面板 -->
-          <div class="indicators-panel">
-            <div class="indicator-row">
-              <span class="indicator-label">MA5</span>
-              <span class="indicator-val" id="indMA5">--</span>
+          <!-- 右欄：即時診斷 -->
+          <div class="sd-right">
+            <div class="sd-panel" style="flex:1;overflow-y:auto;">
+              <div class="sd-panel-title">🚀 即時診斷</div>
+              <div id="sd-diag"></div>
             </div>
-            <div class="indicator-row">
-              <span class="indicator-label">MA20</span>
-              <span class="indicator-val" id="indMA20">--</span>
-            </div>
-            <div class="indicator-row">
-              <span class="indicator-label">MA60</span>
-              <span class="indicator-val" id="indMA60">--</span>
-            </div>
-            <div class="indicator-row">
-              <span class="indicator-label">RSI</span>
-              <span class="indicator-val" id="indRSI">--</span>
-            </div>
-            <div class="indicator-row">
-              <span class="indicator-label">MACD</span>
-              <span class="indicator-val" id="indMACD">--</span>
-            </div>
-            <div class="indicator-row">
-              <span class="indicator-label">Vol</span>
-              <span class="indicator-val" id="indVol">--</span>
-            </div>
-          </div>
-
-          <!-- 成交量圖 -->
-          <div class="volume-container">
-            <canvas id="volumeCanvas"></canvas>
           </div>
         </div>
+
+        <!-- 底部：技術指標列 -->
+        <div class="sd-indicators">
+          <div class="sd-ind-card" id="sd-kd"></div>
+          <div class="sd-ind-card" id="sd-rsi"></div>
+          <div class="sd-ind-card" id="sd-macd"></div>
+          <div class="sd-ind-card" id="sd-bb"></div>
+          <div class="sd-ind-card" id="sd-score"></div>
+        </div>
+        <div class="sd-footer">⚠️ 投資有風險，請謹慎評估。本系統資料僅供參考，不構成投資建議。</div>
       </div>
     </section>
 
@@ -487,8 +516,10 @@
   </div>
 
   <!-- 腳本 -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
   <script src="data.js"></script>
   <script src="chart-engine.js"></script>
   <script src="app.js"></script>
+  <script src="stock-dashboard.js"></script>
 </body>
 </html>

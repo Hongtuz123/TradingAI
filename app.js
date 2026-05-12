@@ -6,9 +6,10 @@ let currentBlacklist = [];
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
-  KLineChart.init('klineCanvas', 'volumeCanvas');
-  
-  // 預設跑一次篩選以產生初始數據
+  // chart-engine.js 僅保留備用，K 線已改為 TradingView
+  if (typeof KLineChart !== 'undefined' && document.getElementById('klineCanvas')) {
+    KLineChart.init('klineCanvas', 'volumeCanvas');
+  }
   runScreener();
 });
 
@@ -18,12 +19,11 @@ function switchView(viewId) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   
   document.getElementById(`view-${viewId}`).classList.add('active');
-  document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
+  const btn = document.querySelector(`.nav-btn[data-view="${viewId}"]`);
+  if (btn) btn.classList.add('active');
 
-  if(viewId === 'chart') {
-    // 延遲重繪避免取得尺寸為0
-    setTimeout(() => KLineChart.resize(), 100);
-    renderChartStockList();
+  if (viewId === 'chart') {
+    renderChartStockList(); // 來自 stock-dashboard.js
   }
 }
 
