@@ -5,8 +5,12 @@ let currentChartSymbol = null;
 let tvChartWidget = null;
 let tvDashWidget  = null;
 
-// ---- 取得 TradingView 專用代碼 (上市 TWSE, 上櫃 TPEX) ----
+// ---- 取得 TradingView 專用代碼 ----
 function getTVSymbol(id, market) {
+  // 若 market 本身就已經是 TWSE, TPEX, NASDAQ 等明確的前綴，直接拼起來
+  if (market && market !== 'TSE' && market !== 'OTC' && market !== '上櫃' && market !== '上市' && market !== 'GLOBAL') {
+    return `${market}:${id}`;
+  }
   if (market === 'GLOBAL') return id;
   const prefix = (market === 'OTC' || market === '上櫃') ? 'TPEX' : 'TWSE';
   return `${prefix}:${id}`;
@@ -120,13 +124,8 @@ function loadTVChart(s) {
   
   currentChartSymbol = symbol;
 
-  // 更新頂列資訊
-  document.getElementById('chartCode').innerText = symbol;
-  document.getElementById('chartName').innerText = name;
-  document.getElementById('chartPrice').innerText = price;
-  document.getElementById('chartPrice').className = `chart-price ${change >= 0 ? 'text-up' : 'text-down'}`;
-  document.getElementById('chartChange').innerText = `${change > 0 ? '+' : ''}${change}%`;
-  document.getElementById('chartChange').className = `chart-change ${change >= 0 ? 'text-up' : 'text-down'}`;
+  currentChartSymbol = symbol;
+  window.currentChartMarket = s.market || 'TWSE';
 
   const tvSymbol = getTVSymbol(symbol, s.market);
   const container = document.getElementById('tvChartContainer');
@@ -166,79 +165,52 @@ function loadTVChart(s) {
   });
 }
 
-// ---- 載入所有標的至 K 線側欄 ----
-function renderChartStockList() {
-  const list = document.getElementById('chartStockList');
-  list.innerHTML = '';
-  mockStocks.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'chart-stock-item';
-    div.setAttribute('data-id', s.id);
-    div.setAttribute('data-name', s.name);
-    div.innerHTML = `
-      <strong>${s.id}</strong> ${s.name}
-      <span style="float:right;" class="${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</span>
-    `;
-    div.onclick = () => {
-      // 高亮選取
-      document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
-      div.classList.add('active');
-      loadTVChart(s);
-    };
-    list.appendChild(div);
-  });
-}
-
-// ---- 搜尋過濾 ----
-function filterChartList(val) {
-  document.querySelectorAll('.chart-stock-item:not(.dynamic-search-item)').forEach(item => {
-    const txt = item.innerText || '';
-    item.style.display = txt.includes(val) ? 'block' : 'none';
-  });
-
-  // 移除舊的動態搜尋項目
-  document.querySelectorAll('.dynamic-search-item').forEach(el => el.remove());
-
-  const query = val.trim().toUpperCase();
-  if (query !== '') {
-    const list = document.getElementById('chartStockList');
-
-    const options = [
-      { label: `🔍 上市 (TWSE) ${query}`, market: 'TSE' },
-      { label: `🔍 上櫃 (TPEX) ${query}`, market: 'OTC' },
-      { label: `🌍 全球 (美股/加密) ${query}`, market: 'GLOBAL' }
-    ];
-
-    options.forEach(opt => {
-      const dynamicItem = document.createElement('div');
-      dynamicItem.className = 'chart-stock-item dynamic-search-item';
-      dynamicItem.innerHTML = opt.label;
-      dynamicItem.style.color = 'var(--primary)';
-      dynamicItem.style.borderBottom = '1px dashed #334155';
-      
-      dynamicItem.onclick = () => {
-        document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
-        dynamicItem.classList.add('active');
-        
-        const dynamicStock = {
-          id: query,
-          name: '自訂搜尋',
-          market: opt.market,
-          price: '--',
-          change: '0'
-        };
-        loadTVChart(dynamicStock);
-      };
-      list.appendChild(dynamicItem);
+// ---- 從全螢幕 TradingView 開啟戰情板 ----
+function openCurrentDash() {
+  if (!tvChartWidget) return;
+  
+  let sym = currentChartSymbol || '2330';
+  let mkt = window.currentChartMarket || 'TWSE';
+  
+  // 嘗試從 TradingView API 動態取得目前使用者搜尋的標的與市場
+  try {
+    tvChartWidget.activeChart().symbolExt(function(ext) {
+      if (ext && ext.symbol) {
+        sym = ext.symbol;
+        mkt = ext.exchange || 'GLOBAL';
+      }
+      window.currentChartMarket = mkt;
+      openStockDash(sym);
     });
+    return;
+  } catch(e) {
+    console.warn("無法動態獲取 TV 標的，使用預設值", e);
   }
+  
+  openStockDash(sym);
 }
+
+function renderChartStockList() {}
+function filterChartList() {}
 
 // ---- 開啟個股戰情板 ----
 function openStockDash(symbolId) {
   if (!symbolId) { alert('請先選擇標的'); return; }
-  const stock = mockStocks.find(s => s.id === symbolId);
-  if (!stock) { alert('找不到標的資料'); return; }
+  let stock = mockStocks.find(s => s.id === symbolId);
+  if (!stock) { 
+    stock = {
+      id: symbolId,
+      name: '自訂標的',
+      price: '--',
+      change: 0,
+      market: window.currentChartMarket || 'GLOBAL',
+      score: 0,
+      type: 'none',
+      volRatio: 1.0,
+      dailyVol: 0,
+      dist52W: 0
+    };
+  }
   switchView('stockdash');
   setTimeout(() => renderStockDash(stock), 100);
 }

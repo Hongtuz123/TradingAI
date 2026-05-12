@@ -398,23 +398,13 @@
 
     <!-- ======================== K線圖視圖（TradingView） ======================== -->
     <section class="view" id="view-chart">
-      <div class="chart-layout">
-        <aside class="chart-sidebar">
-          <h3>選擇標的</h3>
-          <div class="chart-search">
-            <input type="text" id="chartSearch" placeholder="搜尋代號/名稱..." oninput="filterChartList(this.value)" />
-          </div>
-          <div class="chart-stock-list" id="chartStockList"></div>
-        </aside>
-        <div class="chart-main" style="padding:0;overflow:hidden;">
-          <div class="chart-toolbar">
+      <div class="chart-layout" style="display: block;">
+        <div class="chart-main" style="padding:0;overflow:hidden; height:100%;">
+          <div class="chart-toolbar" style="justify-content: space-between;">
             <div class="chart-stock-info">
-              <span class="chart-code" id="chartCode">--</span>
-              <span class="chart-name" id="chartName">請點選左側標的載入圖表</span>
-              <span class="chart-price text-up" id="chartPrice"></span>
-              <span class="chart-change" id="chartChange"></span>
+              <span class="chart-name" style="color:var(--text-muted)">💡 提示：請點擊圖表左上角的「搜尋符號」直接切換任意全球標的（支援 ETF 與美股）</span>
             </div>
-            <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openStockDash(currentChartSymbol)">🎯 開啟戰情板</button>
+            <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCurrentDash()">🎯 開啟此標的戰情板</button>
           </div>
           <!-- TradingView 嵌入 -->
           <div id="tvChartContainer" style="flex:1;height:calc(100% - 50px);"></div>
