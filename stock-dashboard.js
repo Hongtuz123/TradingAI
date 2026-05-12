@@ -7,6 +7,7 @@ let tvDashWidget  = null;
 
 // ---- 取得 TradingView 專用代碼 (上市 TWSE, 上櫃 TPEX) ----
 function getTVSymbol(id, market) {
+  if (market === 'GLOBAL') return id;
   const prefix = (market === 'OTC' || market === '上櫃') ? 'TPEX' : 'TWSE';
   return `${prefix}:${id}`;
 }
@@ -190,10 +191,37 @@ function renderChartStockList() {
 
 // ---- 搜尋過濾 ----
 function filterChartList(val) {
-  document.querySelectorAll('.chart-stock-item').forEach(item => {
+  document.querySelectorAll('.chart-stock-item:not(#dynamic-search-item)').forEach(item => {
     const txt = item.innerText || '';
     item.style.display = txt.includes(val) ? 'block' : 'none';
   });
+
+  const oldDynamic = document.getElementById('dynamic-search-item');
+  if (oldDynamic) oldDynamic.remove();
+
+  if (val.trim() !== '') {
+    const list = document.getElementById('chartStockList');
+    const dynamicItem = document.createElement('div');
+    dynamicItem.id = 'dynamic-search-item';
+    dynamicItem.className = 'chart-stock-item';
+    dynamicItem.innerHTML = `🔍 查看標的 <strong>${val}</strong>`;
+    dynamicItem.style.color = 'var(--primary)';
+    
+    dynamicItem.onclick = () => {
+      document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
+      dynamicItem.classList.add('active');
+      
+      const dynamicStock = {
+        id: val.toUpperCase(),
+        name: '自訂搜尋',
+        market: 'GLOBAL',
+        price: '--',
+        change: '0'
+      };
+      loadTVChart(dynamicStock);
+    };
+    list.appendChild(dynamicItem);
+  }
 }
 
 // ---- 開啟個股戰情板 ----
