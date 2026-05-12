@@ -191,36 +191,46 @@ function renderChartStockList() {
 
 // ---- 搜尋過濾 ----
 function filterChartList(val) {
-  document.querySelectorAll('.chart-stock-item:not(#dynamic-search-item)').forEach(item => {
+  document.querySelectorAll('.chart-stock-item:not(.dynamic-search-item)').forEach(item => {
     const txt = item.innerText || '';
     item.style.display = txt.includes(val) ? 'block' : 'none';
   });
 
-  const oldDynamic = document.getElementById('dynamic-search-item');
-  if (oldDynamic) oldDynamic.remove();
+  // 移除舊的動態搜尋項目
+  document.querySelectorAll('.dynamic-search-item').forEach(el => el.remove());
 
-  if (val.trim() !== '') {
+  const query = val.trim().toUpperCase();
+  if (query !== '') {
     const list = document.getElementById('chartStockList');
-    const dynamicItem = document.createElement('div');
-    dynamicItem.id = 'dynamic-search-item';
-    dynamicItem.className = 'chart-stock-item';
-    dynamicItem.innerHTML = `🔍 查看標的 <strong>${val}</strong>`;
-    dynamicItem.style.color = 'var(--primary)';
-    
-    dynamicItem.onclick = () => {
-      document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
-      dynamicItem.classList.add('active');
+
+    const options = [
+      { label: `🔍 上市 (TWSE) ${query}`, market: 'TSE' },
+      { label: `🔍 上櫃 (TPEX) ${query}`, market: 'OTC' },
+      { label: `🌍 全球 (美股/加密) ${query}`, market: 'GLOBAL' }
+    ];
+
+    options.forEach(opt => {
+      const dynamicItem = document.createElement('div');
+      dynamicItem.className = 'chart-stock-item dynamic-search-item';
+      dynamicItem.innerHTML = opt.label;
+      dynamicItem.style.color = 'var(--primary)';
+      dynamicItem.style.borderBottom = '1px dashed #334155';
       
-      const dynamicStock = {
-        id: val.toUpperCase(),
-        name: '自訂搜尋',
-        market: 'GLOBAL',
-        price: '--',
-        change: '0'
+      dynamicItem.onclick = () => {
+        document.querySelectorAll('.chart-stock-item').forEach(el => el.classList.remove('active'));
+        dynamicItem.classList.add('active');
+        
+        const dynamicStock = {
+          id: query,
+          name: '自訂搜尋',
+          market: opt.market,
+          price: '--',
+          change: '0'
+        };
+        loadTVChart(dynamicStock);
       };
-      loadTVChart(dynamicStock);
-    };
-    list.appendChild(dynamicItem);
+      list.appendChild(dynamicItem);
+    });
   }
 }
 
