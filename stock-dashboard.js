@@ -159,6 +159,10 @@ function loadTVChart(s) {
       'paneProperties.backgroundType': 'solid',
     }
   });
+
+  tvChartWidget.onChartReady(() => {
+    tvChartWidget.activeChart().setSymbol(tvSymbol);
+  });
 }
 
 // ---- 載入所有標的至 K 線側欄 ----
