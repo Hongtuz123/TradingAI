@@ -131,13 +131,19 @@ function runScreener() {
         (!p.closeHigh || s.closeToHigh)) {
       
       currentResults.push(s);
-      
-      // 白名單判斷 (依計分)
-      if (s.score >= p.minScore && s.blacklist.length === 0) {
-        currentWhitelist.push(s);
-        stats[s.type] = (stats[s.type] || 0) + 1;
-        stats.totalScore += s.score;
-      }
+    }
+  });
+
+  // 依據新規則：最多篩選出前 40 檔符合規則之標的 (依評分排序)
+  currentResults.sort((a, b) => b.score - a.score);
+  currentResults = currentResults.slice(0, 40);
+
+  // 根據前 40 檔結果計算白名單與統計數據
+  currentResults.forEach(s => {
+    if (s.score >= p.minScore && s.blacklist.length === 0) {
+      currentWhitelist.push(s);
+      stats[s.type] = (stats[s.type] || 0) + 1;
+      stats.totalScore += s.score;
     }
   });
 

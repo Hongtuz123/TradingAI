@@ -146,7 +146,7 @@ function loadTVChart(s) {
     locale: 'zh_TW',
     toolbar_bg: '#1e293b',
     enable_publishing: false,
-    allow_symbol_change: false,
+    allow_symbol_change: true,
     container_id: 'tvChartContainer',
     studies: [
       'RSI@tv-basicstudies',

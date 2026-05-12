@@ -39,7 +39,7 @@
         <span class="status-dot"></span>
         <span id="marketStatusText">市場評估中...</span>
       </div>
-      <div class="last-update">更新：<span id="lastUpdate">--</span></div>
+      <div class="last-update">資料更新：<span>每天下午 17:00</span></div>
     </div>
   </header>
 
@@ -155,7 +155,8 @@
         <aside class="filter-panel">
           <div class="filter-panel-header">
             <h2>⚙️ 五層篩選條件</h2>
-            <button class="btn-run" onclick="runScreener()">🚀 執行篩選</button>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 300 檔進行運算，<br>最多篩選出前 40 檔符合規則之標的。</p>
+            <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
           </div>
 
           <!-- 第一層：市場健康度 -->
