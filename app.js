@@ -354,6 +354,16 @@ function showEmptyResultModal(p, passedCount) {
 
   // 計算每個條件卡住幾檔
   const total = mockStocks.length;
+  
+  const typeFail = mockStocks.filter(s => {
+    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD) || 
+                      (p.typeA && s.type === 'A') || 
+                      (p.typeB && s.type === 'B') || 
+                      (p.typeC && s.type === 'C') || 
+                      (p.typeD && s.type === 'D');
+    return !typeMatch;
+  }).length;
+
   const fails = {
     '月營收 YoY': mockStocks.filter(s => s.revYoY < p.rev).length,
     'EPS YoY':    mockStocks.filter(s => s.epsYoY < p.eps).length,
@@ -366,6 +376,10 @@ function showEmptyResultModal(p, passedCount) {
     '週轉率':     mockStocks.filter(s => s.turnover < p.turnover).length,
     '市值':       mockStocks.filter(s => s.marketCap < p.mktCap).length,
     '日均量':     mockStocks.filter(s => s.dailyVol < p.dailyVol).length,
+    '技術類型':   typeFail,
+    '均線多頭':   mockStocks.filter(s => p.maBull && !s.maBull).length,
+    '距52週高點': mockStocks.filter(s => s.dist52W > p.dist52W).length,
+    '收盤接近日高': mockStocks.filter(s => p.closeHigh && !s.closeToHigh).length,
   };
 
   // 按失敗數排序，找最嚴苛的前5
@@ -383,20 +397,7 @@ function showEmptyResultModal(p, passedCount) {
   ).join('');
 
   const suggestHTML = topFails.map(([name]) => {
-    const map = {
-      '月營收 YoY': `月營收 YoY 降至 <b>10%</b>`,
-      'EPS YoY':    `EPS YoY 降至 <b>5%</b>`,
-      'ROE':        `ROE 降至 <b>5%</b>`,
-      '毛利率':     `毛利率 降至 <b>10%</b>`,
-      '負債比':     `負債比 放寬至 <b>70%</b>`,
-      '投信連買':   `投信連買 降至 <b>1天</b>`,
-      '外資買超':   `取消外資買超勾選`,
-      '量能比':     `量能比 降至 <b>1.0</b>x`,
-      '週轉率':     `週轉率 降至 <b>1%</b>`,
-      '市值':       `市值 降至 <b>20億</b>`,
-      '日均量':     `日均量 降至 <b>500張</b>`,
-    };
-    return `<li>→ ${map[name] || name}</li>`;
+    return `<li>→ 建議放寬 <b>${name}</b> 的限制條件</li>`;
   }).join('');
 
   const box = document.getElementById('modalContent');
