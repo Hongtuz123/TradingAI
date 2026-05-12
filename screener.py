@@ -5,19 +5,58 @@ import time
 
 FUGLE_API_KEY = "OGI4NjdlNGQtNzU4Yy00NGEwLTk0MjYtYjZiYjY2MzFlZjdiIDZlMDE2ZDA0LWIwNTctNDg2My04ODFlLTFjNmFlMmUxNDhmNQ=="
 
-def get_top_stocks(limit=30):
-    url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
-    res = requests.get(url)
-    if res.status_code == 200:
-        data = res.json()
-        df = pd.DataFrame(data)
-        # 過濾長度為4的股票代號 (排除權證、ETF)
-        df = df[df['Code'].str.len() == 4]
-        # 依成交量排序
-        df['TradeVolume'] = pd.to_numeric(df['TradeVolume'], errors='coerce')
-        df = df.sort_values(by='TradeVolume', ascending=False)
-        return df.head(limit).to_dict('records')
-    return []
+# 自選觀察名單（一定會被納入，不受成交量門檻限制）
+WATCHLIST = [
+    {'Code': '3030', 'Name': '德律',   'market': 'TSE'},
+    {'Code': '2360', 'Name': '致茂',   'market': 'TSE'},
+    {'Code': '6788', 'Name': '華景電', 'market': 'OTC'},
+    {'Code': '2330', 'Name': '台積電', 'market': 'TSE'},
+    {'Code': '2317', 'Name': '鴻海',   'market': 'TSE'},
+    {'Code': '3231', 'Name': '緯創',   'market': 'TSE'},
+    {'Code': '3017', 'Name': '奇鋐',   'market': 'TSE'},
+    {'Code': '2382', 'Name': '廣達',   'market': 'TSE'},
+]
+
+def get_top_stocks(limit=80):
+    result = {}
+    # TWSE 上市
+    try:
+        res = requests.get('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL', timeout=10)
+        if res.status_code == 200:
+            df = pd.DataFrame(res.json())
+            df = df[df['Code'].str.match(r'^\d{4}$')]  # 純4位數字
+            df['TradeVolume'] = pd.to_numeric(df['TradeVolume'], errors='coerce')
+            df = df.sort_values('TradeVolume', ascending=False)
+            for r in df.head(limit).to_dict('records'):
+                r['market'] = 'TSE'
+                result[r['Code']] = r
+    except Exception as e:
+        print(f'TWSE 抓取失敗: {e}')
+    # OTC 上櫃
+    try:
+        res = requests.get('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes', timeout=10)
+        if res.status_code == 200:
+            df = pd.DataFrame(res.json())
+            if 'SecuritiesCompanyCode' in df.columns:
+                df = df.rename(columns={'SecuritiesCompanyCode':'Code','CompanyName':'Name','Volume':'TradeVolume'})
+            elif 'Code' not in df.columns and len(df.columns) > 2:
+                df.columns = ['Code','Name','TradeVolume'] + list(df.columns[3:])
+            df = df[df['Code'].str.match(r'^\d{4}$')]
+            df['TradeVolume'] = pd.to_numeric(df['TradeVolume'], errors='coerce').fillna(0)
+            df = df.sort_values('TradeVolume', ascending=False)
+            for r in df.head(30).to_dict('records'):
+                r['market'] = 'OTC'
+                if r['Code'] not in result:
+                    result[r['Code']] = r
+    except Exception as e:
+        print(f'OTC 抓取失敗: {e}')
+    # 自選名單強制加入
+    for w in WATCHLIST:
+        if w['Code'] not in result:
+            result[w['Code']] = {'Code': w['Code'], 'Name': w['Name'], 'TradeVolume': 0,
+                                  'Change': '', 'market': w['market']}
+    print(f'合計股票池：{len(result)} 檔')
+    return list(result.values())
 
 def get_historical_candles(symbol):
     url = f"https://api.fugle.tw/marketdata/v1.0/stock/historical/candles/{symbol}?fields=open,high,low,close,volume"

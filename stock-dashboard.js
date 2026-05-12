@@ -5,7 +5,106 @@ let currentChartSymbol = null;
 let tvChartWidget = null;
 let tvDashWidget  = null;
 
-// ---- TradingView K線圖 ----
+// ---- 內嵌儀表板渲染（供主儀表板呼叫）----
+function renderStockDashInline(stock, targetEl) {
+  const s = stock;
+  const now = new Date();
+
+  // 模擬數據
+  const foreignNet = Math.round(Math.random() * 5000 - 1000);
+  const trustNet   = Math.round(Math.random() * 500 - 100);
+  const dealerNet  = Math.round(Math.random() * 200 - 50);
+  const high  = +(s.price * (1 + Math.random() * 0.05)).toFixed(2);
+  const low   = +(s.price * (1 - Math.random() * 0.05)).toFixed(2);
+  const vol   = s.dailyVol;
+  const prob  = Math.min(95, Math.max(20, Math.round(s.score / 11 * 80 + Math.random() * 20)));
+  const stopLoss = (s.price * 0.92).toFixed(2);
+  const target   = (s.price * 1.10).toFixed(2);
+  const signal   = prob >= 65 ? { label: '可布局', color: 'var(--success)' }
+                 : prob >= 45 ? { label: '觀察中', color: 'var(--warning)' }
+                 : { label: '暫觀望', color: 'var(--danger)' };
+
+  targetEl.innerHTML = `
+    <div class="inline-dash">
+      <!-- 頂列 -->
+      <div class="sd-topbar" style="border-radius:8px;margin-bottom:12px;">
+        <div><div class="sd-symbol" style="font-size:16px">${s.id} ${s.name} 個股戰情</div></div>
+        <div style="text-align:right">
+          <div class="sd-price ${parseFloat(s.change)>=0?'text-up':'text-down'}" style="font-size:22px">${s.price}</div>
+          <div style="font-size:13px;color:${parseFloat(s.change)>=0?'var(--up-color)':'var(--down-color)'}">${parseFloat(s.change)>0?'▲':'▼'} ${Math.abs(s.change)}%</div>
+        </div>
+      </div>
+
+      <!-- 圖表 + 指標列 -->
+      <div class="inline-tv-wrap">
+        <div id="inlineTVChart_${s.id}" style="width:100%;height:260px;"></div>
+      </div>
+
+      <!-- 指標列 -->
+      <div class="sd-indicators" style="margin-top:12px;">
+        <div class="sd-ind-card">
+          <div class="ind-label">AI 上漲機率</div>
+          <div class="ind-main" style="color:${prob>=60?'var(--success)':prob>=40?'var(--warning)':'var(--danger)'}">${prob}%</div>
+          <div class="ind-tip">${signal.label}</div>
+        </div>
+        <div class="sd-ind-card">
+          <div class="ind-label">三大法人合計</div>
+          <div class="ind-main ${(foreignNet+trustNet+dealerNet)>=0?'text-up':'text-down'}" style="font-size:18px">${(foreignNet+trustNet+dealerNet>0?'+':'')+(foreignNet+trustNet+dealerNet).toLocaleString()}</div>
+          <div class="ind-tip">外資${foreignNet>=0?'+':''}${foreignNet} 投信${trustNet>=0?'+':''}${trustNet}</div>
+        </div>
+        <div class="sd-ind-card">
+          <div class="ind-label">荳荳評分</div>
+          <div class="ind-main" style="color:var(--warning)">${s.score}</div>
+          <div class="ind-tip">/ 11 分｜Type ${s.type !== 'none' ? s.type : '--'}</div>
+        </div>
+        <div class="sd-ind-card">
+          <div class="ind-label">建議停損</div>
+          <div class="ind-main" style="font-size:16px;color:var(--danger)">${stopLoss}</div>
+          <div class="ind-tip" style="color:var(--success)">目標 ${target}</div>
+        </div>
+        <div class="sd-ind-card">
+          <div class="ind-label">技術類型</div>
+          <div class="ind-main" style="font-size:16px">${s.type !== 'none' ? 'Type ' + s.type : '--'}</div>
+          <div class="ind-tip">${s.maBull ? '均線多頭 ✔' : '均線未排列'}</div>
+        </div>
+      </div>
+
+      <!-- 診斷文字 -->
+      <div class="sd-panel" style="margin-top:12px;font-size:13px;">
+        <div class="sd-panel-title">🚀 即時診斷</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="sd-diag-item"><div class="sd-diag-icon">💰 <strong>價格交量</strong></div><div class="sd-diag-content">成交 ${vol.toLocaleString()} 張，量比 ${s.volRatio}x，${parseFloat(s.volRatio)>1.5?'量能放大，動能充足。':'量能偏低。'}</div></div>
+          <div class="sd-diag-item"><div class="sd-diag-icon">🏛 <strong>三大法人</strong></div><div class="sd-diag-content">${(foreignNet+trustNet+dealerNet)>0?'法人積極買超，籌碼正向。':'法人偏空，留意出貨。'}</div></div>
+          <div class="sd-diag-item"><div class="sd-diag-icon">📊 <strong>技術面</strong></div><div class="sd-diag-content">${s.maBull?'均線多頭排列，趨勢明確向上。':'均線尚未多頭排列，觀察整理。'}  RSI 正常區間。</div></div>
+          <div class="sd-diag-item"><div class="sd-diag-icon">⚠️ <strong>風險</strong></div><div class="sd-diag-content">${s.dist52W < 5?'接近52週高點，追高留意。':s.dist52W>20?'距高點較遠，爆發力待觀察。':'距高點 '+s.dist52W+'%，位置合理。'}</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 嵌入 TradingView 小圖
+  setTimeout(() => {
+    const chartEl = document.getElementById(`inlineTVChart_${s.id}`);
+    if (chartEl && typeof TradingView !== 'undefined') {
+      new TradingView.widget({
+        autosize: true,
+        symbol: `TWSE:${s.id}`,
+        interval: 'D',
+        timezone: 'Asia/Taipei',
+        theme: 'dark',
+        style: '1',
+        locale: 'zh_TW',
+        toolbar_bg: '#1e293b',
+        enable_publishing: false,
+        allow_symbol_change: false,
+        hide_top_toolbar: true,
+        container_id: `inlineTVChart_${s.id}`,
+      });
+    }
+  }, 200);
+}
+
+
 function loadTVChart(symbol, name, price, change) {
   currentChartSymbol = symbol;
 

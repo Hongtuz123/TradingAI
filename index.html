@@ -32,9 +32,7 @@
       <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
         <span class="nav-icon">📈</span> K線圖
       </button>
-      <button class="nav-btn" data-view="stockdash" onclick="switchView('stockdash')">
-        <span class="nav-icon">🎯</span> 個股儀表板
-      </button>
+
     </nav>
     <div class="topbar-status">
       <div class="market-status-badge" id="marketStatusBadge">
@@ -117,39 +115,38 @@
         </div>
       </div>
 
-      <!-- 兩欄區塊：白名單預覽 + 技術類型分佈 -->
-      <div class="dual-panel">
-        <!-- 白名單頂部預覽 -->
-        <div class="panel panel-main">
+      <!-- 主體：左側白名單 + 右側個股戰情板 -->
+      <div class="dash-main-layout">
+        <!-- 左側：白名單 + 黑名單列表 -->
+        <div class="dash-wl-panel">
           <div class="panel-header">
-            <h3>🌟 白名單 TOP 10</h3>
-            <button class="btn-link" onclick="switchView('whitelist')">查看全部 →</button>
+            <h3>🌟 白名單（點選查看戰情）</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn-link" onclick="switchView('whitelist')">全部 →</button>
+            </div>
           </div>
-          <div class="whitelist-preview" id="whitelistPreview">
-            <!-- JS 填充 -->
+          <div id="dashWlList"></div>
+
+          <div class="panel-header" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);">
+            <h3>🚫 黑名單警示</h3>
+            <span class="badge danger" id="blacklistCount">0</span>
           </div>
+          <div id="blacklistPreview"></div>
         </div>
 
-        <!-- 右側：技術類型 + 黑名單 -->
-        <div class="panel-side">
-          <div class="panel">
-            <div class="panel-header"><h3>📐 技術類型分佈</h3></div>
-            <div class="tech-type-chart" id="techTypeChart">
-              <!-- JS 填充 -->
-            </div>
+        <!-- 右側：個股戰情板 嵌入 -->
+        <div class="dash-stock-detail" id="dashStockDetail">
+          <div class="dash-detail-placeholder" id="dashDetailPlaceholder">
+            <div style="font-size:48px;margin-bottom:12px;">🎯</div>
+            <h3>點選左側白名單標的</h3>
+            <p style="color:var(--text-muted);margin-top:6px;font-size:14px;">即可在此查看個股 AI 戰情分析儀表板</p>
           </div>
-          <div class="panel">
-            <div class="panel-header">
-              <h3>🚫 黑名單警示</h3>
-              <span class="badge danger" id="blacklistCount">0</span>
-            </div>
-            <div class="blacklist-preview" id="blacklistPreview">
-              <!-- JS 填充 -->
-            </div>
-          </div>
+          <!-- 戰情板內容區（JS 動態填充） -->
+          <div id="inlineDashContent" style="display:none;height:100%;overflow-y:auto;"></div>
         </div>
       </div>
     </section>
+
 
     <!-- ======================== 篩選器視圖 ======================== -->
     <section class="view" id="view-screener">

@@ -178,22 +178,49 @@ function renderScreenerTable(data) {
 }
 
 function renderWhitelistPreview() {
-  const container = document.getElementById('whitelistPreview');
+  // 同時更新儀表板內嵌列表
+  const container = document.getElementById('dashWlList');
+  if (!container) return;
   container.innerHTML = '';
-  // 取前5名
-  const top = [...currentWhitelist].sort((a,b)=>b.score - a.score).slice(0,5);
-  if(top.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted)">無白名單標的</p>';
+
+  const sorted = [...currentWhitelist].sort((a, b) => b.score - a.score);
+  if (sorted.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);padding:10px 0">無白名單標的，請先到篩選器執行篩選</p>';
     return;
   }
-  top.forEach(s => {
-    container.innerHTML += `
-      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-color);">
-        <div><strong>${s.id} ${s.name}</strong> <span class="badge" style="background:var(--primary);margin-left:5px;">Type ${s.type}</span></div>
-        <div>評分: <strong style="color:var(--warning)">${s.score}</strong></div>
+
+  sorted.forEach((s, idx) => {
+    const row = document.createElement('div');
+    row.className = 'dash-wl-row';
+    row.innerHTML = `
+      <div class="dash-wl-rank">${idx + 1}</div>
+      <div class="dash-wl-info">
+        <strong>${s.id} ${s.name}</strong>
+        <span class="badge" style="background:var(--primary);margin-left:6px;font-size:10px">${s.type !== 'none' ? 'Type ' + s.type : '--'}</span>
       </div>
+      <div class="dash-wl-price ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</div>
+      <div class="dash-wl-score">${s.score}<span style="font-size:10px;color:var(--text-muted)">/11</span></div>
     `;
+    row.onclick = () => {
+      document.querySelectorAll('.dash-wl-row').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+      loadInlineDash(s);
+    };
+    container.appendChild(row);
   });
+}
+
+// 內嵌至儀表板的個股戰情板
+function loadInlineDash(stock) {
+  const placeholder = document.getElementById('dashDetailPlaceholder');
+  const content = document.getElementById('inlineDashContent');
+  if (!placeholder || !content) return;
+
+  placeholder.style.display = 'none';
+  content.style.display = 'block';
+
+  // 著用 stock-dashboard.js 的渲染函式
+  renderStockDashInline(stock, content);
 }
 
 function renderBlacklistPreview() {
