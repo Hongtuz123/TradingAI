@@ -34,7 +34,8 @@ function switchView(viewId) {
 function initDashboard() {
   const badge = document.getElementById('marketStatusBadge');
   const text = document.getElementById('marketStatusText');
-  startClock();
+  const updateTime = marketData.lastUpdate.replace(/-/g, '/');
+  document.getElementById('lastUpdateTime').innerText = updateTime;
 
   const isHealthy = marketData.twii_above_60ma && marketData.otc_above_60ma && marketData.vol_above_20ma;
   
@@ -460,24 +461,4 @@ function showEmptyResultModal(p, passedCount) {
 function closeModal(e) {
   if (e && e.target !== document.getElementById('stockModal')) return;
   document.getElementById('stockModal').classList.remove('active');
-}
-
-function startClock() {
-  const clockEl = document.getElementById('realtimeClock');
-  if (!clockEl) return;
-
-  function update() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const hh = String(now.getHours()).padStart(2, '0');
-    const min = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    
-    clockEl.innerText = `${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}`;
-  }
-
-  update();
-  setInterval(update, 1000);
 }
