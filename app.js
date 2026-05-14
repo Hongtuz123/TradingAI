@@ -34,10 +34,6 @@ function startClock() {
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
   startClock();
-  // chart-engine.js 僅保留備用，K 線已改為 TradingView
-  if (typeof KLineChart !== 'undefined' && document.getElementById('klineCanvas')) {
-    KLineChart.init('klineCanvas', 'volumeCanvas');
-  }
   runScreener();
 });
 

@@ -59,25 +59,36 @@ function renderLWChart(containerId, klineData, height = 260) {
   });
   chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
 
-  const formattedCandles = klineData.map(d => ({
-    time: d.date,
-    open: parseFloat(d.open),
-    high: parseFloat(d.high),
-    low: parseFloat(d.low),
-    close: parseFloat(d.close),
-  }));
+  const formattedCandles = klineData.map(d => {
+    const [y, m, day] = d.date.split('-');
+    return {
+      time: { year: parseInt(y), month: parseInt(m), day: parseInt(day) },
+      open: parseFloat(d.open),
+      high: parseFloat(d.high),
+      low: parseFloat(d.low),
+      close: parseFloat(d.close),
+    };
+  });
 
-  const formattedVolume = klineData.map(d => ({
-    time: d.date,
-    value: parseFloat(d.volume),
-    color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
-  }));
+  const formattedVolume = klineData.map(d => {
+    const [y, m, day] = d.date.split('-');
+    return {
+      time: { year: parseInt(y), month: parseInt(m), day: parseInt(day) },
+      value: parseFloat(d.volume),
+      color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
+    };
+  });
 
-  candleSeries.setData(formattedCandles);
-  volumeSeries.setData(formattedVolume);
-  chart.timeScale().fitContent();
+  try {
+    candleSeries.setData(formattedCandles);
+    volumeSeries.setData(formattedVolume);
+    chart.timeScale().fitContent();
+    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered`);
+  } catch (err) {
+    console.error('[LWC Error]', err);
+    container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
+  }
 
-  console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered`);
   return chart;
 }
 
