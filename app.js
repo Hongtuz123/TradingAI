@@ -51,10 +51,9 @@ function switchView(viewId) {
   if (btn) btn.classList.add('active');
 
   if (viewId === 'chart') {
-    // 若直接點擊 K線圖 且尚未初始化，預設載入 AAPL
-    if (typeof tvChartWidget !== 'undefined' && tvChartWidget === null) {
-      loadTVChart({ id: 'AAPL', name: 'Apple Inc.', market: 'GLOBAL', price: '--', change: 0 });
-    }
+    // 預設載入台積電
+    const tsmc = mockStocks.find(s => s.id === '2330') || mockStocks[0];
+    if (tsmc) loadTVChart(tsmc);
   }
 }
 

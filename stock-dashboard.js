@@ -2,19 +2,92 @@
 // TradingView Widget + 個股戰情板邏輯
 // =============================================
 let currentChartSymbol = null;
-let tvChartWidget = null;
-let tvDashWidget  = null;
+let currentLWChart = null;
+let currentLWDashChart = null;
 
-// ---- 取得 TradingView 專用代碼 ----
-function getTVSymbol(id, market) {
-  if (market === 'TSE') return `TWSE:${id}`;
-  if (market === 'OTC') return `TPEX:${id}`;
-  return id;
+// ---- Lightweight Charts 渲染函式 ----
+function renderLWChart(containerId, klineData, height = 260) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: height,
+    layout: {
+      background: { type: 'solid', color: '#0f172a' },
+      textColor: '#94a3b8',
+    },
+    grid: {
+      vertLines: { color: 'rgba(71, 85, 105, 0.05)' },
+      horzLines: { color: 'rgba(71, 85, 105, 0.05)' },
+    },
+    crosshair: {
+      mode: LightweightCharts.CrosshairMode.Normal,
+    },
+    rightPriceScale: {
+      borderColor: 'rgba(71, 85, 105, 0.3)',
+      autoScale: true,
+    },
+    timeScale: {
+      borderColor: 'rgba(71, 85, 105, 0.3)',
+      timeVisible: true,
+      secondsVisible: false,
+    },
+  });
+
+  console.log(`[DEBUG] Initializing chart series with ${klineData.length} points`);
+
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: '#ef4444',
+    downColor: '#22c55e',
+    borderDownColor: '#22c55e',
+    borderUpColor: '#ef4444',
+    wickDownColor: '#22c55e',
+    wickUpColor: '#ef4444',
+  });
+
+  const volumeSeries = chart.addHistogramSeries({
+    color: '#3b82f6',
+    lineWidth: 2,
+    priceFormat: {
+      type: 'volume',
+    },
+    overlay: true,
+    scaleMargins: {
+      top: 0.8,
+      bottom: 0,
+    },
+  });
+
+  const formattedCandles = klineData.map(d => ({
+    time: d.date,
+    open: parseFloat(d.open),
+    high: parseFloat(d.high),
+    low: parseFloat(d.low),
+    close: parseFloat(d.close),
+  }));
+
+  const formattedVolume = klineData.map(d => ({
+    time: d.date,
+    value: parseFloat(d.volume),
+    color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
+  }));
+
+  candleSeries.setData(formattedCandles);
+  volumeSeries.setData(formattedVolume);
+
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: container.clientWidth });
+  });
+
+  return chart;
 }
 
 // ---- 內嵌儀表板渲染（供主儀表板呼叫）----
 function renderStockDashInline(stock, targetEl) {
   const s = stock;
+  console.log(`[DEBUG] Rendering inline dash for ${s.id}, market: ${s.market}`);
   const now = new Date();
 
   // 模擬數據
@@ -89,117 +162,39 @@ function renderStockDashInline(stock, targetEl) {
     </div>
   `;
 
-  // 嵌入 TradingView 小圖
+  // 渲染 Lightweight Chart
   setTimeout(() => {
-    const chartEl = document.getElementById(`inlineTVChart_${s.id}`);
-    if (chartEl && typeof TradingView !== 'undefined') {
-      tvDashWidget = new TradingView.widget({
-        autosize: true,
-        symbol: getTVSymbol(s.id, s.market),
-        interval: 'D',
-        timezone: 'Asia/Taipei',
-        theme: 'dark',
-        style: '1',
-        locale: 'zh_TW',
-        toolbar_bg: '#1e293b',
-        enable_publishing: false,
-        allow_symbol_change: true,
-        hide_top_toolbar: false,
-        container_id: `inlineTVChart_${s.id}`,
-      });
-
-      tvDashWidget.onChartReady(() => {
-        try {
-          tvDashWidget.activeChart().onSymbolChanged().subscribe(null, function() {
-            tvDashWidget.activeChart().symbolExt(function(ext) {
-              if (ext && ext.symbol && ext.symbol !== s.id) {
-                // 當使用者在小視窗內搜尋其他標的，同步刷新整個戰情版數據
-                window.currentChartMarket = ext.exchange || 'GLOBAL';
-                openStockDash(ext.symbol);
-              }
-            });
-          });
-        } catch (e) {
-          console.warn("無法綁定戰情版 TV 同步", e);
-        }
-      });
+    if (s.kline && s.kline.length > 0) {
+      renderLWChart(`inlineTVChart_${s.id}`, s.kline, 260);
+    } else {
+      const chartEl = document.getElementById(`inlineTVChart_${s.id}`);
+      if (chartEl) chartEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
     }
-  }, 200);
+  }, 100);
 }
 
 
 function loadTVChart(s) {
   const symbol = s.id;
-  const name = s.name;
-  const price = s.price;
-  const change = s.change;
-  
-  currentChartSymbol = symbol;
-
   currentChartSymbol = symbol;
   window.currentChartMarket = s.market || 'TWSE';
 
-  const tvSymbol = getTVSymbol(symbol, s.market);
   const container = document.getElementById('tvChartContainer');
   container.innerHTML = ''; // 清空舊圖
 
-  if (typeof TradingView === 'undefined') {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">TradingView 載入中，請確認網路連線...</div>';
-    return;
+  if (s.kline && s.kline.length > 0) {
+    // 獲取容器高度，確保圖表填滿
+    const h = container.clientHeight || 600;
+    renderLWChart('tvChartContainer', s.kline, h);
+  } else {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }
-
-  tvChartWidget = new TradingView.widget({
-    autosize: true,
-    symbol: tvSymbol,
-    interval: 'D',
-    timezone: 'Asia/Taipei',
-    theme: 'dark',
-    style: '1',          // 1=蠟燭圖
-    locale: 'zh_TW',
-    toolbar_bg: '#1e293b',
-    enable_publishing: false,
-    allow_symbol_change: true,
-    container_id: 'tvChartContainer',
-    studies: [
-      'RSI@tv-basicstudies',
-      'MACD@tv-basicstudies',
-      'BB@tv-basicstudies',
-      'Volume@tv-basicstudies'
-    ],
-    overrides: {
-      'paneProperties.background': '#131722',
-      'paneProperties.backgroundType': 'solid',
-    }
-  });
-
-  tvChartWidget.onChartReady(() => {
-    tvChartWidget.activeChart().setSymbol(tvSymbol);
-  });
 }
 
-// ---- 從全螢幕 TradingView 開啟戰情板 ----
+// ---- 從當前 K 線開啟戰情板 ----
 function openCurrentDash() {
-  if (!tvChartWidget) return;
-  
-  let sym = currentChartSymbol || '2330';
-  let mkt = window.currentChartMarket || 'TWSE';
-  
-  // 嘗試從 TradingView API 動態取得目前使用者搜尋的標的與市場
-  try {
-    tvChartWidget.activeChart().symbolExt(function(ext) {
-      if (ext && ext.symbol) {
-        sym = ext.symbol;
-        mkt = ext.exchange || 'GLOBAL';
-      }
-      window.currentChartMarket = mkt;
-      openStockDash(sym);
-    });
-    return;
-  } catch(e) {
-    console.warn("無法動態獲取 TV 標的，使用預設值", e);
-  }
-  
-  openStockDash(sym);
+  if (!currentChartSymbol) return;
+  openStockDash(currentChartSymbol);
 }
 
 function renderChartStockList() {}
@@ -240,25 +235,12 @@ function renderStockDash(s) {
   document.getElementById('sd-change').className = `sd-change ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}`;
   document.getElementById('sd-date').innerText = dateStr;
 
-  // TradingView 小圖
+  // Lightweight Chart
   const dashContainer = document.getElementById('tvDashChart');
-  dashContainer.innerHTML = '';
-  if (typeof TradingView !== 'undefined') {
-    tvDashWidget = new TradingView.widget({
-      autosize: true,
-      symbol: getTVSymbol(s.id, s.market),
-      interval: 'D',
-      timezone: 'Asia/Taipei',
-      theme: 'dark',
-      style: '1',
-      locale: 'zh_TW',
-      toolbar_bg: '#1e293b',
-      enable_publishing: false,
-      allow_symbol_change: false,
-      hide_top_toolbar: false,
-      container_id: 'tvDashChart',
-      studies: ['BB@tv-basicstudies', 'MASimple@tv-basicstudies'],
-    });
+  if (s.kline && s.kline.length > 0) {
+    renderLWChart('tvDashChart', s.kline, 450);
+  } else {
+    dashContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }
 
   // 模擬籌碼數據

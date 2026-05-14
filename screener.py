@@ -144,7 +144,8 @@ def run_screener():
             "debtRatio": 45, "trustDays": 3, "foreignBuy": True, "volRatio": round(vol_ratio, 1),
             "turnover": 5.0, "marketCap": 200, "dailyVol": int(vol / 1000), "type": tech_type,
             "maBull": bool(ma_bull), "closeToHigh": bool(close_high), "dist52W": round(dist_52w, 1),
-            "blacklist": []
+            "blacklist": [],
+            "kline": sorted(candles, key=lambda x: x['date'])[-120:] # 確保按日期升序排序
         })
         time.sleep(0.3)
 
