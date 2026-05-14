@@ -15,8 +15,7 @@ function renderLWChart(containerId, klineData, height = 260) {
   container.style.position = 'relative';
 
   const chart = LightweightCharts.createChart(container, {
-    autoSize: true,   // 自動填滿容器，解決 clientWidth=0 的問題
-    height: height,
+    autoSize: true,   // 自動填滿容器 CSS 尺寸，不能與 height 共存
     layout: {
       background: { type: 'solid', color: '#0f172a' },
       textColor: '#94a3b8',
