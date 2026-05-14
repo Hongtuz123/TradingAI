@@ -51,9 +51,13 @@ function switchView(viewId) {
   if (btn) btn.classList.add('active');
 
   if (viewId === 'chart') {
-    // 預設載入台積電
-    const tsmc = mockStocks.find(s => s.id === '2330') || mockStocks[0];
-    if (tsmc) loadTVChart(tsmc);
+    // 只有在還沒載入過任何標的時，才載入預設（例如第一次直接點擊 K 線圖 Tab）
+    if (!currentChartSymbol) {
+      const defaultStock = mockStocks.find(s => s.id === '2330') || mockStocks[0];
+      if (defaultStock) {
+        setTimeout(() => loadTVChart(defaultStock), 100);
+      }
+    }
   }
 }
 

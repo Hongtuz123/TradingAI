@@ -14,8 +14,13 @@ function renderLWChart(containerId, klineData, height = 260) {
   container.style.height = height + 'px';
   container.style.position = 'relative';
 
+  const rect = container.getBoundingClientRect();
+  const width = rect.width > 0 ? rect.width : 800;
+  const chartHeight = rect.height > 0 ? rect.height : height;
+
   const chart = LightweightCharts.createChart(container, {
-    autoSize: true,   // 自動填滿容器 CSS 尺寸，不能與 height 共存
+    width: width,
+    height: chartHeight,
     layout: {
       background: { type: 'solid', color: '#0f172a' },
       textColor: '#94a3b8',
@@ -27,6 +32,14 @@ function renderLWChart(containerId, klineData, height = 260) {
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderColor: 'rgba(71, 85, 105, 0.3)', autoScale: true },
     timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
+  });
+
+  // 監聽視窗大小改變
+  window.addEventListener('resize', () => {
+    const newRect = container.getBoundingClientRect();
+    if (newRect.width > 0 && newRect.height > 0) {
+      chart.applyOptions({ width: newRect.width, height: newRect.height });
+    }
   });
 
   const candleSeries = chart.addCandlestickSeries({
@@ -162,12 +175,21 @@ function loadTVChart(s) {
   currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
 
+  // 更新頂部提示列的名稱
+  const nameEl = document.querySelector('.chart-name');
+  if (nameEl) {
+    nameEl.innerHTML = `<span style="color:white;font-size:16px;font-weight:bold;">${s.id} ${s.name}</span> <span style="color:var(--text-muted);font-size:12px;">(${window.currentChartMarket})</span>`;
+  }
+
   const container = document.getElementById('tvChartContainer');
   container.innerHTML = '';
 
   if (s.kline && s.kline.length > 0) {
-    const h = Math.max(container.getBoundingClientRect().height, 500);
-    currentLWChart = renderLWChart('tvChartContainer', s.kline, h);
+    const rect = container.getBoundingClientRect();
+    const width = rect.width > 0 ? rect.width : 800;
+    const chartHeight = rect.height > 0 ? rect.height : 500;
+
+    currentLWChart = renderLWChart('tvChartContainer', s.kline, chartHeight);
   } else {
     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }
