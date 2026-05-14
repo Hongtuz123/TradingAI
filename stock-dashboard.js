@@ -8,35 +8,27 @@ let currentLWDashChart = null;
 // ---- Lightweight Charts 渲染函式 ----
 function renderLWChart(containerId, klineData, height = 260) {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) return null;
   container.innerHTML = '';
+  // 確保容器有明確高度，autoSize 才能生效
+  container.style.height = height + 'px';
+  container.style.position = 'relative';
 
   const chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
+    autoSize: true,   // 自動填滿容器，解決 clientWidth=0 的問題
     height: height,
     layout: {
       background: { type: 'solid', color: '#0f172a' },
       textColor: '#94a3b8',
     },
     grid: {
-      vertLines: { color: 'rgba(71, 85, 105, 0.05)' },
-      horzLines: { color: 'rgba(71, 85, 105, 0.05)' },
+      vertLines: { color: 'rgba(71, 85, 105, 0.08)' },
+      horzLines: { color: 'rgba(71, 85, 105, 0.08)' },
     },
-    crosshair: {
-      mode: LightweightCharts.CrosshairMode.Normal,
-    },
-    rightPriceScale: {
-      borderColor: 'rgba(71, 85, 105, 0.3)',
-      autoScale: true,
-    },
-    timeScale: {
-      borderColor: 'rgba(71, 85, 105, 0.3)',
-      timeVisible: true,
-      secondsVisible: false,
-    },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: 'rgba(71, 85, 105, 0.3)', autoScale: true },
+    timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
   });
-
-  console.log(`[DEBUG] Initializing chart series with ${klineData.length} points`);
 
   const candleSeries = chart.addCandlestickSeries({
     upColor: '#ef4444',
@@ -47,18 +39,13 @@ function renderLWChart(containerId, klineData, height = 260) {
     wickUpColor: '#ef4444',
   });
 
+  // 成交量面板（獨立 price scale）
   const volumeSeries = chart.addHistogramSeries({
-    color: '#3b82f6',
-    lineWidth: 2,
-    priceFormat: {
-      type: 'volume',
-    },
-    overlay: true,
-    scaleMargins: {
-      top: 0.8,
-      bottom: 0,
-    },
+    priceFormat: { type: 'volume' },
+    priceScaleId: 'volume',
+    scaleMargins: { top: 0.85, bottom: 0 },
   });
+  chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
 
   const formattedCandles = klineData.map(d => ({
     time: d.date,
@@ -71,16 +58,14 @@ function renderLWChart(containerId, klineData, height = 260) {
   const formattedVolume = klineData.map(d => ({
     time: d.date,
     value: parseFloat(d.volume),
-    color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)',
+    color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
   }));
 
   candleSeries.setData(formattedCandles);
   volumeSeries.setData(formattedVolume);
+  chart.timeScale().fitContent();
 
-  window.addEventListener('resize', () => {
-    chart.applyOptions({ width: container.clientWidth });
-  });
-
+  console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered`);
   return chart;
 }
 
@@ -175,17 +160,15 @@ function renderStockDashInline(stock, targetEl) {
 
 
 function loadTVChart(s) {
-  const symbol = s.id;
-  currentChartSymbol = symbol;
+  currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
 
   const container = document.getElementById('tvChartContainer');
-  container.innerHTML = ''; // 清空舊圖
+  container.innerHTML = '';
 
   if (s.kline && s.kline.length > 0) {
-    // 獲取容器高度，確保圖表填滿
-    const h = container.clientHeight || 600;
-    renderLWChart('tvChartContainer', s.kline, h);
+    const h = Math.max(container.getBoundingClientRect().height, 500);
+    currentLWChart = renderLWChart('tvChartContainer', s.kline, h);
   } else {
     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }
@@ -235,10 +218,12 @@ function renderStockDash(s) {
   document.getElementById('sd-change').className = `sd-change ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}`;
   document.getElementById('sd-date').innerText = dateStr;
 
-  // Lightweight Chart
+  // Lightweight Chart（rAF 確保容器尺寸就緒）
   const dashContainer = document.getElementById('tvDashChart');
   if (s.kline && s.kline.length > 0) {
-    renderLWChart('tvDashChart', s.kline, 450);
+    requestAnimationFrame(() => {
+      currentLWDashChart = renderLWChart('tvDashChart', s.kline, 450);
+    });
   } else {
     dashContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }

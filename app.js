@@ -377,9 +377,10 @@ function loadChart(stock) {
 
 function openChart(id) {
   const stock = mockStocks.find(s => s.id === id);
-  if(stock) {
+  if (stock) {
     switchView('chart');
-    setTimeout(() => loadChart(stock), 200);
+    // 300ms 讓分頁切換的 CSS display 完全生效後再渲染
+    setTimeout(() => loadTVChart(stock), 300);
   }
 }
 
