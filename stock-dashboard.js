@@ -7,7 +7,8 @@ let tvDashWidget  = null;
 
 // ---- 取得 TradingView 專用代碼 ----
 function getTVSymbol(id, market) {
-  // 交由 TradingView 內建的智慧搜尋引擎自動解析，不再強制干預前綴
+  if (market === 'TSE') return `TWSE:${id}`;
+  if (market === 'OTC') return `TPEX:${id}`;
   return id;
 }
 
@@ -94,7 +95,7 @@ function renderStockDashInline(stock, targetEl) {
     if (chartEl && typeof TradingView !== 'undefined') {
       tvDashWidget = new TradingView.widget({
         autosize: true,
-        symbol: s.id,
+        symbol: getTVSymbol(s.id, s.market),
         interval: 'D',
         timezone: 'Asia/Taipei',
         theme: 'dark',
