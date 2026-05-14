@@ -125,8 +125,16 @@ body {
   background-color: var(--success);
 }
 
+.current-time {
+  color: var(--warning);
+  font-family: 'Inter', monospace;
+  font-weight: 600;
+}
+
 .last-update {
   color: var(--text-muted);
+  border-left: 1px solid var(--border-color);
+  padding-left: 15px;
 }
 
 /* ================= Main Container ================= */

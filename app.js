@@ -3,9 +3,37 @@ let currentResults = [];
 let currentWhitelist = [];
 let currentBlacklist = [];
 
+// 即時時鐘與開盤倒數
+function startClock() {
+  const clockEl = document.getElementById('currentTime');
+  const marketStatusText = document.getElementById('marketStatusText');
+  
+  setInterval(() => {
+    const now = new Date();
+    const Y = now.getFullYear();
+    const M = String(now.getMonth() + 1).padStart(2, '0');
+    const D = String(now.getDate()).padStart(2, '0');
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    
+    clockEl.innerText = `${Y}/${M}/${D} ${h}:${m}:${s}`;
+
+    // 台股開盤倒數 (09:00:00)
+    if (h === '08') {
+      const minutesLeft = 59 - now.getMinutes();
+      const secondsLeft = 59 - now.getSeconds();
+      marketStatusText.innerText = `距離開盤還有 ${minutesLeft} 分 ${secondsLeft} 秒`;
+    } else if (h === '09' && now.getMinutes() < 5) {
+      marketStatusText.innerText = `台股剛開盤！請留意劇烈波動`;
+    }
+  }, 1000);
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
+  startClock();
   // chart-engine.js 僅保留備用，K 線已改為 TradingView
   if (typeof KLineChart !== 'undefined' && document.getElementById('klineCanvas')) {
     KLineChart.init('klineCanvas', 'volumeCanvas');
