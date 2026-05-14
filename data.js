@@ -3,7 +3,7 @@ const marketData = {
   twii_above_60ma: true,
   otc_above_60ma: true,
   vol_above_20ma: true,
-  lastUpdate: '2026-05-14 09:29:22'
+  lastUpdate: '2026-05-14 14:10:23'
 };
 
 const mockStocks = [
