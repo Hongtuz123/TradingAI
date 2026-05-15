@@ -12,9 +12,14 @@ function renderLWChart(containerId, klineData, height = 260) {
   container.innerHTML = '';
   // 確保容器有明確高度與寬度，autoSize 才能生效
   container.style.width = '100%';
-  container.style.height = '100%';
+  if (containerId === 'tvChartContainer') {
+    container.style.height = '100%';
+    container.style.flex = '1';
+  } else {
+    // inline chart 保持原本的 height
+    container.style.height = height + 'px';
+  }
   container.style.position = 'relative';
-  container.style.flex = '1';
 
   const chart = LightweightCharts.createChart(container, {
     autoSize: true,
