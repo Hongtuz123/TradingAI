@@ -10,17 +10,14 @@ function renderLWChart(containerId, klineData, height = 260) {
   const container = document.getElementById(containerId);
   if (!container) return null;
   container.innerHTML = '';
-  // 確保容器有明確高度，autoSize 才能生效
-  container.style.height = height + 'px';
+  // 確保容器有明確高度與寬度，autoSize 才能生效
+  container.style.width = '100%';
+  container.style.height = '100%';
   container.style.position = 'relative';
-
-  const rect = container.getBoundingClientRect();
-  const width = rect.width > 0 ? rect.width : 800;
-  const chartHeight = rect.height > 0 ? rect.height : height;
+  container.style.flex = '1';
 
   const chart = LightweightCharts.createChart(container, {
-    width: width,
-    height: chartHeight,
+    autoSize: true,
     layout: {
       background: { type: 'solid', color: '#0f172a' },
       textColor: '#94a3b8',
@@ -34,15 +31,7 @@ function renderLWChart(containerId, klineData, height = 260) {
     timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
   });
 
-  // 監聽視窗大小改變
-  window.addEventListener('resize', () => {
-    const newRect = container.getBoundingClientRect();
-    if (newRect.width > 0 && newRect.height > 0) {
-      chart.applyOptions({ width: newRect.width, height: newRect.height });
-    }
-  });
-
-  const candleSeries = chart.addCandlestickSeries({
+  const candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
     upColor: '#ef4444',
     downColor: '#22c55e',
     borderDownColor: '#22c55e',
@@ -52,7 +41,7 @@ function renderLWChart(containerId, klineData, height = 260) {
   });
 
   // 成交量面板（獨立 price scale）
-  const volumeSeries = chart.addHistogramSeries({
+  const volumeSeries = chart.addSeries(LightweightCharts.HistogramSeries, {
     priceFormat: { type: 'volume' },
     priceScaleId: 'volume',
     scaleMargins: { top: 0.85, bottom: 0 },
