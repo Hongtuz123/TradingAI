@@ -200,6 +200,24 @@ function loadTVChart(s) {
   }
 }
 
+// ---- 搜尋標的並載入圖表 ----
+function searchAndLoadChart() {
+  const inputEl = document.getElementById('chartSearchInput');
+  if (!inputEl) return;
+  const val = inputEl.value.trim();
+  if (!val) return;
+  
+  // 目前因為還沒有後端，先從 mockStocks 中尋找
+  // 未來接上 Python 後端後，可以在此處發送 API 請求抓取全新股票資料
+  const found = mockStocks.find(s => s.id === val || s.name.includes(val));
+  if (found) {
+    loadTVChart(found);
+    inputEl.value = ''; // 清空輸入框
+  } else {
+    alert(`找不到標的：${val}。目前前端模擬資料僅包含部分股票，未來將串接後端即時抓取！`);
+  }
+}
+
 // ---- 從當前 K 線開啟戰情板 ----
 function openCurrentDash() {
   if (!currentChartSymbol) return;
