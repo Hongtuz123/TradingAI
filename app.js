@@ -153,15 +153,20 @@ function runScreener() {
 
     const maMatch = !p.maBull || s.maBull;
 
-    // 計算 12 個條件的得分與未達成項目（新增「20MA走升」）
+    // 計算 12 個條件的得分與未達成項目（null 值欄位跳過不計）
     let failedConditions = [];
-    if (s.epsYoY < p.eps) failedConditions.push(`EPS成長 (${s.epsYoY}% < ${p.eps}%)`);
-    if (s.revYoY < p.rev) failedConditions.push(`月營收 YoY (${s.revYoY}% < ${p.rev}%)`);
-    if (s.roe < p.roe) failedConditions.push(`ROE (${s.roe}% < ${p.roe}%)`);
-    if (s.grossMargin < p.margin) failedConditions.push(`毛利率 (${s.grossMargin}% < ${p.margin}%)`);
-    if (s.debtRatio > p.debt) failedConditions.push(`負債比 (${s.debtRatio}% > ${p.debt}%)`);
-    if (s.trustDays < p.trustDays) failedConditions.push(`投信連買 (${s.trustDays}天 < ${p.trustDays}天)`);
-    if (p.fb && !s.foreignBuy) failedConditions.push(`外資近5日買超 (未達標)`);
+    let checkedCount = 0;
+    function chk(val, cond, label) { if (val != null) { checkedCount++; if (!cond) failedConditions.push(label); } }
+    // 基本面（可能為 null）
+    chk(s.epsYoY,      s.epsYoY >= p.eps,       `EPS成長 (${s.epsYoY ?? '--'}% < ${p.eps}%)`);
+    chk(s.revYoY,      s.revYoY >= p.rev,       `月營收 YoY (${s.revYoY ?? '--'}% < ${p.rev}%)`);
+    chk(s.roe,         s.roe >= p.roe,           `ROE (${s.roe ?? '--'}% < ${p.roe}%)`);
+    chk(s.grossMargin, s.grossMargin >= p.margin,`毛利率 (${s.grossMargin ?? '--'}% < ${p.margin}%)`);
+    chk(s.debtRatio,   s.debtRatio <= p.debt,    `負債比 (${s.debtRatio ?? '--'}% > ${p.debt}%)`);
+    // 籌碼（可能為 null）
+    chk(s.trustDays,   s.trustDays >= p.trustDays, `投信連買 (${s.trustDays ?? '--'}天 < ${p.trustDays}天)`);
+    if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資近5日買超 (未達標)`); }
+    // 技術面（真實計算）
     if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
     if (s.turnover < p.turnover) failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
     if (s.marketCap < p.mktCap) failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
@@ -232,11 +237,11 @@ function renderScreenerTable(data) {
       <td><span class="badge" style="background:var(--primary)">Type ${s.type}</span></td>
       <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
-      <td>${s.epsYoY}%</td>
-      <td>${s.revYoY}%</td>
-      <td>${s.roe}%</td>
-      <td>${s.trustDays}天</td>
-      <td>${s.foreignBuy?'✔':'✘'}</td>
+      <td>${s.epsYoY != null ? s.epsYoY + '%' : '--'}</td>
+      <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
+      <td>${s.roe != null ? s.roe + '%' : '--'}</td>
+      <td>${s.trustDays != null ? s.trustDays + '天' : '--'}</td>
+      <td>${s.foreignBuy != null ? (s.foreignBuy ? '✔' : '✘') : '--'}</td>
       <td>${s.volRatio}x</td>
       <td>${s.blacklist.length>0 ? '<span class="badge danger">黑名單</span>' : '<span class="badge" style="background:var(--success)">正常</span>'}</td>
       <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
@@ -336,9 +341,9 @@ function renderWhitelistGrid() {
         </div>
         <div class="wl-card-body">
           <div>收盤：${s.price} (${s.change}%)</div>
-          <div>EPS YoY：${s.epsYoY}%</div>
-          <div>營收 YoY：${s.revYoY}%</div>
-          <div>投信連買：${s.trustDays}天</div>
+          <div>EPS YoY：${s.epsYoY != null ? s.epsYoY + '%' : '--'}</div>
+          <div>營收 YoY：${s.revYoY != null ? s.revYoY + '%' : '--'}</div>
+          <div>投信連買：${s.trustDays != null ? s.trustDays + '天' : '--'}</div>
           <div>均量比：${s.volRatio}x</div>
           <div>距52W高：${s.dist52W}%</div>
           <div>20MA走升：${s.ma20Rising ? '✔ 是' : '✘ 否'}</div>

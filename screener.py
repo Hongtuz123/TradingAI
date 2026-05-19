@@ -86,6 +86,26 @@ def get_top_stocks(limit=80):
     return list(result_pool.values())
 
 
+def calc_market_health():
+    """計算市場健康度：加權/OTC 是否站上 60MA，大盤量是否 > 20MA"""
+    result = {'twii': True, 'otc': True, 'vol': True}
+    for symbol_key, label in [('twii', '^TWII'), ('otc', '^TWOII')]:
+        try:
+            hist = yf.Ticker(label).history(period='120d', interval='1d')
+            if len(hist) >= 60:
+                ma60 = hist['Close'].rolling(60).mean().iloc[-1]
+                latest_close = hist['Close'].iloc[-1]
+                result[symbol_key] = bool(latest_close > ma60)
+            # 用加權指數的量算 vol > 20MA
+            if symbol_key == 'twii' and len(hist) >= 20:
+                vol_ma20 = hist['Volume'].rolling(20).mean().iloc[-1]
+                latest_vol = hist['Volume'].iloc[-1]
+                result['vol'] = bool(latest_vol > vol_ma20)
+        except Exception as e:
+            print(f'  市場健康度 {label} 計算失敗: {e}')
+    return result
+
+
 def get_historical_candles(symbol, market='TSE', days=250):
     """
     使用 yfinance 取得歷史 OHLCV（日線）
@@ -257,11 +277,11 @@ def run_screener():
             # 基本資訊
             "id": symbol, "name": name, "market": market,
             "price": round(close, 2), "change": round(change_num, 2),
-            # 基本面（目前用固定值，未來可接真實 API）
-            "epsYoY": 20, "revYoY": 25, "roe": 12,
-            "grossMargin": 30, "debtRatio": 45,
-            # 籌碼（目前用固定值，未來可接真實 API）
-            "trustDays": 3, "foreignBuy": True,
+            # 基本面（尚未接入真實 API，標記 null）
+            "epsYoY": None, "revYoY": None, "roe": None,
+            "grossMargin": None, "debtRatio": None,
+            # 籌碼（尚未接入真實 API，標記 null）
+            "trustDays": None, "foreignBuy": None,
             # 技術面（真實計算）
             "volRatio": vol_ratio, "turnover": 5.0,
             "marketCap": 200, "dailyVol": vol // 1000,
@@ -288,34 +308,44 @@ def run_screener():
         time.sleep(0.3)  # 避免 yfinance rate limit
 
     # ============================================
+    # 計算市場健康度（加權指數/OTC 是否站上 60MA）
+    # ============================================
+    market_health = calc_market_health()
+
+    # ============================================
     # 輸出 data.js（供前端直接引入）
     # ============================================
     now_str = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
     js_content = f"""// 由 yfinance 產生之真實資料 — {now_str}
 const marketData = {{
-  twii_above_60ma: true,
-  otc_above_60ma: true,
-  vol_above_20ma: true,
+  twii_above_60ma: {'true' if market_health['twii'] else 'false'},
+  otc_above_60ma: {'true' if market_health['otc'] else 'false'},
+  vol_above_20ma: {'true' if market_health['vol'] else 'false'},
   lastUpdate: '{now_str}'
 }};
 
 const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
 
-// 評分邏輯 (滿分 12 分，新增 20MA 走升)
+// 評分邏輯 (滿分 12 分，null 值欄位不計分不扣分)
 function calculateScore(stock) {{
   let score = 0;
-  if (stock.revYoY     > 20) score += 1;
-  if (stock.epsYoY     > 15) score += 1;
-  if (stock.roe        > 10) score += 1;
-  if (stock.dailyVol   > 2000) score += 1;
-  if (stock.marketCap  > 50) score += 1;
-  if (stock.trustDays  >= 3) score += 1;
-  if (stock.foreignBuy) score += 1;
-  if (stock.maBull)    score += 1;
-  if (stock.ma20Rising) score += 1;
-  if (stock.volRatio   > 1.5) score += 1;
-  if (stock.closeToHigh) score += 1;
-  if (stock.dist52W    < 15) score += 1;
+  let totalChecks = 0;
+  function check(val, cond) {{ if (val != null) {{ totalChecks++; if (cond) score++; }} }}
+  // 基本面（可能為 null）
+  check(stock.revYoY,     stock.revYoY > 20);
+  check(stock.epsYoY,     stock.epsYoY > 15);
+  check(stock.roe,        stock.roe > 10);
+  // 籌碼（可能為 null）
+  check(stock.trustDays,  stock.trustDays >= 3);
+  check(stock.foreignBuy, stock.foreignBuy === true);
+  // 技術面（真實計算，必定有值）
+  if (stock.dailyVol   > 2000) score++;
+  if (stock.marketCap  > 50)   score++;
+  if (stock.maBull)            score++;
+  if (stock.ma20Rising)        score++;
+  if (stock.volRatio   > 1.5)  score++;
+  if (stock.closeToHigh)       score++;
+  if (stock.dist52W    < 15)   score++;
   return score;
 }}
 
