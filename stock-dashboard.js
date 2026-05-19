@@ -206,7 +206,7 @@ function renderStockDashInline(stock, targetEl) {
         <div class="sd-ind-card">
           <div class="ind-label">荳荳評分</div>
           <div class="ind-main" style="color:var(--warning)">${s.score}</div>
-          <div class="ind-tip">/ 11 分｜Type ${s.type !== 'none' ? s.type : '--'}</div>
+          <div class="ind-tip">/ 12 分｜Type ${s.type !== 'none' ? s.type : '--'}</div>
         </div>
         <div class="sd-ind-card">
           <div class="ind-label">建議停損</div>
@@ -315,17 +315,18 @@ async function changeResolution(res) {
 
   if (!currentChartSymbol) return;
 
-  // 映射 UI 選項 → yfinance interval & days
-  const intervalMap = { '15m':'15m', '1h':'60m', '4h':'1h', '1D':'1d', '1W':'1wk', '1M':'1mo' };
-  const daysMap    = { '15m':59,   '1h':60,  '4h':90, '1D':120, '1W':365, '1M':730 };
+  // 映射 UI 選項 → yfinance interval & days（yfinance 不支援 4h，改用 60m 近似）
+  const intervalMap = { '15m':'15m', '1h':'60m', '4h':'60m', '1D':'1d', '1W':'1wk', '1M':'1mo' };
+  const daysMap    = { '15m':59,   '1h':60,  '4h':180, '1D':120, '1W':365, '1M':730 };
   const interval = intervalMap[res] || '1d';
   const days     = daysMap[res]    || 120;
+  const market   = window.currentChartMarket || 'TSE';
 
   const container = document.getElementById('tvChartContainer');
   container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">載入中...</div>';
 
   try {
-    const r = await fetch(`http://localhost:8000/api/history?symbol=${currentChartSymbol}&days=${days}&interval=${interval}`);
+    const r = await fetch(`http://localhost:8000/api/history?symbol=${currentChartSymbol}&days=${days}&interval=${interval}&market=${market}`);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     if (data.kline && data.kline.length > 0) {
@@ -352,7 +353,8 @@ async function searchAndLoadChart() {
   }
   
   try {
-    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}`);
+    const fetchMarket = stock.market === 'OTC' ? 'OTC' : 'TSE';
+    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}&market=${fetchMarket}`);
     if (res.ok) {
       const data = await res.json();
       stock.kline = data.kline;
@@ -393,7 +395,8 @@ async function openStockDash(symbolId) {
   }
   
   try {
-    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}`);
+    const fetchMarket = stock.market === 'OTC' ? 'OTC' : 'TSE';
+    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}&market=${fetchMarket}`);
     if (res.ok) {
       const data = await res.json();
       stock.kline = data.kline;
@@ -452,11 +455,11 @@ function renderStockDash(s) {
     <div class="sd-kv-row"><span>成交量</span><span>${vol.toLocaleString()} 張</span></div>
     <div class="sd-kv-row"><span>內盤/外盤</span><span>${inner.toLocaleString()} / ${outer.toLocaleString()}</span></div>
     <div class="sd-kv-row"><span>振幅</span><span>${amp}%</span></div>
-    <div class="sd-kv-row"><span>評分</span><span style="color:var(--warning);font-weight:700">${s.score}/11</span></div>
+    <div class="sd-kv-row"><span>評分</span><span style="color:var(--warning);font-weight:700">${s.score}/12</span></div>
   `;
 
   // AI 漲跌機率計算（以評分為基礎加隨機擾動）
-  const rawProb = Math.min(95, Math.max(20, s.score / 11 * 80 + Math.random() * 20));
+  const rawProb = Math.min(95, Math.max(20, s.score / 12 * 80 + Math.random() * 20));
   const prob = Math.round(rawProb);
   const probFall = Math.round((100 - prob) * 0.3);
   const probFlat = 100 - prob - probFall;
@@ -526,7 +529,7 @@ function renderStockDash(s) {
     { icon: '💰', title: '價格與成交量', content: `收盤 ${s.price}，漲幅 ${s.change}%，成交 ${vol.toLocaleString()} 張，${vol > 10000 ? '外資大力內盤，買方積極。' : '成交量普通。'}` },
     { icon: '🏛', title: '三大法人', content: `外資 ${foreignNet>0?'+':''}${foreignNet}，投信 ${trustNet>0?'+':''}${trustNet}，自營 ${dealerNet>0?'+':''}${dealerNet}，合計 ${foreignNet+trustNet+dealerNet>0?'法人積極買超，籌碼正向。':'法人偏空，留意風險。'}` },
     { icon: '📊', title: '主力動向', content: `主力增減：${mainForce>0?'+':''}${mainForce}，10日累計：${mainTotal}，${mainForce>0?'→ 主力資金回流，加碼明確！':'→ 主力流出，謹慎為宜。'}` },
-    { icon: '⚡', title: '技術趨勢強度', content: `綜合評分 <strong style="color:var(--warning)">${s.score*9}/100</strong>，${s.maBull?'多頭強勢，多頭排列明確。':'均線尚未多頭排列。'}` },
+    { icon: '⚡', title: '技術趨勢強度', content: `綜合評分 <strong style="color:var(--warning)">${Math.round(s.score/12*100)}/100</strong>，${s.maBull?'多頭強勢，多頭排列明確。':'均線尚未多頭排列。'}` },
     { icon: '⚠️', title: '風險提醒', content: [
       s.dist52W < 5 ? '接近52週高點，追高風險提升' : '',
       parseFloat(s.change) > 6 ? '當日漲幅超過6%，追高風險高' : '',

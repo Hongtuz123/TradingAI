@@ -1,10 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import httpx
 from datetime import datetime, timedelta
 from pydantic import BaseModel
-import os
 
 app = FastAPI(title="DouDou AI Stock Backend")
 
@@ -17,28 +15,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 填入你的 Fugle API 憑證
-FUGLE_API_KEY = "8eb1a84c-6d81-443f-80b7-bae3215a0639"
-FUGLE_BASE_URL = "https://api.fugle.tw/marketdata/v1.0"
+# Fugle API 已停用，改用 yfinance
+
 
 class KlineResponse(BaseModel):
     symbol: str
     kline: list
 
-# 原本的 "/" 路由已移除，改由 StaticFiles 託管前端網頁
-
+@app.get("/")
+def read_root():
+    return {"message": "DouDou AI Trading API is running."}
 
 import yfinance as yf
 
 @app.get("/api/history", response_model=KlineResponse)
-async def get_kline_history(symbol: str, days: int = 120, interval: str = "1d"):
+async def get_kline_history(symbol: str, days: int = 120, interval: str = "1d", market: str = "TSE"):
     """
     抓取指定標的 (透過 yfinance)
+    market: TSE=上市(.TW), OTC=上櫃(.TWO)
     """
-    # 判斷是否為台股，若全為數字則假設為台股並加上 .TW
+    # 判斷是否為台股：全數字 → 上市用 .TW，OTC 用 .TWO
     yf_symbol = symbol
     if symbol.isdigit():
-        yf_symbol = f"{symbol}.TW"
+        suffix = '.TWO' if market.upper() == 'OTC' else '.TW'
+        yf_symbol = f"{symbol}{suffix}"
     
     # 針對 intraday 資料，yfinance 有天數限制
     if interval in ["1m", "2m", "5m", "15m", "30m", "90m"]:
@@ -69,10 +69,6 @@ async def get_kline_history(symbol: str, days: int = 120, interval: str = "1d"):
         return {"symbol": symbol, "kline": formatted_kline}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# 取得專案根目錄，並掛載靜態檔案服務以託管前端頁面
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn

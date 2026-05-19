@@ -245,7 +245,7 @@ function renderScreenerTable(data) {
     // 點擊顯示未達標項目
     tr.onclick = () => {
       if (s.failedConditions.length === 0) {
-        alert(`【${s.id} ${s.name}】\n\n🎉 11 項條件全數達標！`);
+        alert(`【${s.id} ${s.name}】\n\n🎉 12 項條件全數達標！`);
       } else {
         alert(`【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ` + s.failedConditions.join('\n- '));
       }
@@ -367,22 +367,8 @@ function renderChartStockList() {
 }
 
 function loadChart(stock) {
-  document.getElementById('chartCode').innerText = stock.id;
-  document.getElementById('chartName').innerText = stock.name;
-  document.getElementById('chartPrice').innerText = stock.price;
-  document.getElementById('chartPrice').className = `chart-price ${stock.change>=0?'text-up':'text-down'}`;
-  document.getElementById('chartChange').innerText = `${stock.change>0?'+':''}${stock.change}%`;
-
-  // 產生假K線資料並渲染
-  const data = KLineChart.generateMockData(60, stock.price);
-  KLineChart.setData(data);
-
-  // 填寫假指標數值
-  document.getElementById('indMA5').innerText = (stock.price * 0.98).toFixed(1);
-  document.getElementById('indMA20').innerText = (stock.price * 0.95).toFixed(1);
-  document.getElementById('indMA60').innerText = (stock.price * 0.90).toFixed(1);
-  document.getElementById('indRSI').innerText = (Math.random() * 30 + 50).toFixed(1);
-  document.getElementById('indMACD').innerText = (Math.random() * 2).toFixed(2);
+  // 直接導向 Lightweight Charts 渲染（chart-engine.js 已廢棄）
+  loadTVChart(stock);
 }
 
 function openChart(id) {
