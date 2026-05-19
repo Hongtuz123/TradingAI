@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import httpx
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+import os
 
 app = FastAPI(title="DouDou AI Stock Backend")
 
@@ -15,68 +17,62 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TODO: 填入你的 Fugle API 憑證
-FUGLE_API_KEY = "YOUR_FUGLE_API_KEY_HERE"
+# 填入你的 Fugle API 憑證
+FUGLE_API_KEY = "8eb1a84c-6d81-443f-80b7-bae3215a0639"
 FUGLE_BASE_URL = "https://api.fugle.tw/marketdata/v1.0"
 
 class KlineResponse(BaseModel):
     symbol: str
     kline: list
 
-@app.get("/")
-def read_root():
-    return {"message": "DouDou AI Trading API is running."}
+# 原本的 "/" 路由已移除，改由 StaticFiles 託管前端網頁
+
+
+import yfinance as yf
 
 @app.get("/api/history", response_model=KlineResponse)
-async def get_kline_history(symbol: str, days: int = 120):
+async def get_kline_history(symbol: str, days: int = 120, interval: str = "1d"):
     """
-    抓取指定標的的 K 線歷史資料
+    抓取指定標的 (透過 yfinance)
     """
-    # 計算時間區間
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=days)
+    # 判斷是否為台股，若全為數字則假設為台股並加上 .TW
+    yf_symbol = symbol
+    if symbol.isdigit():
+        yf_symbol = f"{symbol}.TW"
     
-    # 格式化為 YYYY-MM-DD
-    _from = start_date.strftime("%Y-%m-%d")
-    _to = end_date.strftime("%Y-%m-%d")
-
-    # 組合 Fugle API URL (需根據 Fugle API v1.0 規範調整)
-    # 注意：這裡使用示意寫法，實際 Endpoint 為 /stock/historical/candles
-    url = f"{FUGLE_BASE_URL}/stock/historical/candles/{symbol}?from={_from}&to={_to}"
-    
-    headers = {
-        "X-API-KEY": FUGLE_API_KEY
-    }
-
+    # 針對 intraday 資料，yfinance 有天數限制
+    if interval in ["1m", "2m", "5m", "15m", "30m", "90m"]:
+        days = min(days, 59)
+    elif interval in ["60m", "1h"]:
+        days = min(days, 729)
+        
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+        stock = yf.Ticker(yf_symbol)
+        hist = stock.history(period=f"{days}d", interval=interval)
+        
+        formatted_kline = []
+        for date, row in hist.iterrows():
+            if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
+                time_val = date.strftime("%Y-%m-%d")
+            else:
+                time_val = int(date.timestamp())
+
+            formatted_kline.append({
+                "date": time_val,
+                "open": round(row["Open"], 2),
+                "high": round(row["High"], 2),
+                "low": round(row["Low"], 2),
+                "close": round(row["Close"], 2),
+                "volume": int(row["Volume"])
+            })
             
-            # TODO: 將 Fugle 的回應資料整理成前端 LWC 需要的格式
-            # 格式: { date: "YYYY-MM-DD", open: 100, high: 105, low: 95, close: 102, volume: 1000 }
-            formatted_kline = []
-            if "data" in data:
-                for candle in data["data"]:
-                    formatted_kline.append({
-                        "date": candle.get("date"),
-                        "open": candle.get("open"),
-                        "high": candle.get("high"),
-                        "low": candle.get("low"),
-                        "close": candle.get("close"),
-                        "volume": candle.get("volume")
-                    })
-            
-            # 反轉陣列確保為時間正序
-            formatted_kline.reverse()
-            
-            return {"symbol": symbol, "kline": formatted_kline}
-            
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=f"Fugle API error: {e.response.text}")
+        return {"symbol": symbol, "kline": formatted_kline}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# 取得專案根目錄，並掛載靜態檔案服務以託管前端頁面
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app.mount("/", StaticFiles(directory=BASE_DIR, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn

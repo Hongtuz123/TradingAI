@@ -297,6 +297,10 @@
               <label>股價 > 20MA > 60MA</label>
               <label class="toggle"><input type="checkbox" id="f_ma_bull" checked /><span></span></label>
             </div>
+            <div class="filter-item">
+              <label>20MA 走升（今 > 昨）</label>
+              <label class="toggle"><input type="checkbox" id="f_ma20_rising" /><span></span></label>
+            </div>
           </div>
 
           <!-- 白名單計分條件 -->
@@ -319,7 +323,7 @@
             <div class="filter-item">
               <label>最低綜合評分</label>
               <div class="filter-input-wrap">
-                <input type="range" id="f_min_score" min="0" max="11" value="7" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+                <input type="range" id="f_min_score" min="0" max="12" value="7" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
                 <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">7</span>
               </div>
             </div>
@@ -376,7 +380,7 @@
         <div class="whitelist-header">
           <div>
             <h2>⭐ 白名單儀表板</h2>
-            <p class="subtitle">計分制評分，每項1分，滿分11分｜最低門檻 <span id="scoreThresholdDisplay">6</span> 分</p>
+            <p class="subtitle">計分制評分，每項1分，滿分12分｜最低門檻 <span id="scoreThresholdDisplay2">6</span> 分</p>
           </div>
           <div class="whitelist-actions">
             <button class="btn-secondary" onclick="exportWhitelist()">📥 匯出清單</button>
@@ -414,7 +418,17 @@
               </div>
 
             </div>
-            <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCurrentDash()">🎯 開啟此標的戰情板</button>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1h')">1小時</button>
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('4h')">4小時</button>
+                <button class="btn-secondary active" style="padding: 2px 8px; font-size:12px; height: 24px; background:var(--primary-color);" onclick="changeResolution('1D')">日</button>
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1W')">週</button>
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1M')">月</button>
+              </div>
+              <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCurrentDash()">🎯 開啟戰情板</button>
+            </div>
           </div>
           <!-- Lightweight Charts 容器 -->
           <div id="tvChartContainer" style="flex:1;min-height:500px;"></div>

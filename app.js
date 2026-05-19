@@ -125,6 +125,7 @@ function runScreener() {
     typeC: document.getElementById('f_type_c').checked,
     typeD: document.getElementById('f_type_d').checked,
     maBull: document.getElementById('f_ma_bull').checked,
+    ma20Rising: document.getElementById('f_ma20_rising') ? document.getElementById('f_ma20_rising').checked : false,
     dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
     closeHigh: document.getElementById('f_close_high').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 6
@@ -152,7 +153,7 @@ function runScreener() {
 
     const maMatch = !p.maBull || s.maBull;
 
-    // 計算 11 個條件的得分與未達成項目
+    // 計算 12 個條件的得分與未達成項目（新增「20MA走升」）
     let failedConditions = [];
     if (s.epsYoY < p.eps) failedConditions.push(`EPS成長 (${s.epsYoY}% < ${p.eps}%)`);
     if (s.revYoY < p.rev) failedConditions.push(`月營收 YoY (${s.revYoY}% < ${p.rev}%)`);
@@ -165,8 +166,9 @@ function runScreener() {
     if (s.turnover < p.turnover) failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
     if (s.marketCap < p.mktCap) failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
     if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+    if (!s.ma20Rising) failedConditions.push('20MA未走升');
 
-    s.dynamicScore = 11 - failedConditions.length;
+    s.dynamicScore = 12 - failedConditions.length;
     s.failedConditions = failedConditions;
 
     // L4 與 L5 的嚴格過濾與總得分過濾
@@ -229,7 +231,7 @@ function renderScreenerTable(data) {
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td><span class="badge" style="background:var(--primary)">Type ${s.type}</span></td>
       <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
-      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /11</td>
+      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
       <td>${s.epsYoY}%</td>
       <td>${s.revYoY}%</td>
       <td>${s.roe}%</td>
@@ -275,7 +277,7 @@ function renderWhitelistPreview() {
         <span class="badge" style="background:var(--primary);margin-left:6px;font-size:10px">${s.type !== 'none' ? 'Type ' + s.type : '--'}</span>
       </div>
       <div class="dash-wl-price ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</div>
-      <div class="dash-wl-score">${s.dynamicScore}<span style="font-size:10px;color:var(--text-muted)">/11</span></div>
+      <div class="dash-wl-score">${s.dynamicScore}<span style="font-size:10px;color:var(--text-muted)">/12</span></div>
     `;
     row.onclick = () => {
       document.querySelectorAll('.dash-wl-row').forEach(r => r.classList.remove('selected'));
@@ -318,14 +320,19 @@ function renderWhitelistGrid() {
   const grid = document.getElementById('whitelistGrid');
   grid.innerHTML = '';
   currentWhitelist.sort((a,b)=>b.dynamicScore - a.dynamicScore).forEach(s => {
+    const isPerfect = s.failedConditions.length === 0;
+    const msg = isPerfect 
+      ? `【${s.id} ${s.name}】\n\n🎉 12 項條件全數達標！`
+      : `【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ${s.failedConditions.join('\n- ')}`;
+      
     grid.innerHTML += `
-      <div class="wl-card" style="cursor:pointer;" title="點擊查看未達標項目" onclick="if (event.target.tagName !== 'BUTTON') { if(s.failedConditions.length===0) alert('【${s.id} ${s.name}】\\n\\n🎉 11 項條件全數達標！'); else alert('【${s.id} ${s.name}】未達標項目 (' + s.failedConditions.length + '項)：\\n\\n- ' + s.failedConditions.join('\\n- ')); }">
+      <div class="wl-card" style="cursor:pointer;" title="點擊查看未達標項目" onclick="if (event.target.tagName !== 'BUTTON') { alert(decodeURIComponent('${encodeURIComponent(msg)}')); }">
         <div class="wl-card-header">
           <div>
             <h3>${s.id} ${s.name}</h3>
             <span class="badge" style="background:var(--primary)">類型 ${s.type}</span>
           </div>
-          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 11</span></div>
+          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 12</span></div>
         </div>
         <div class="wl-card-body">
           <div>收盤：${s.price} (${s.change}%)</div>
@@ -334,6 +341,9 @@ function renderWhitelistGrid() {
           <div>投信連買：${s.trustDays}天</div>
           <div>均量比：${s.volRatio}x</div>
           <div>距52W高：${s.dist52W}%</div>
+          <div>20MA走升：${s.ma20Rising ? '✔ 是' : '✘ 否'}</div>
+          <div>RSI(14)：${s.rsi14 ?? '--'}</div>
+          <div>ATR(14)：${s.atr14 ?? '--'}</div>
         </div>
         <div style="margin-top:10px;text-align:right;">
           <button class="btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="openChart('${s.id}')">查看K線 →</button>
@@ -404,7 +414,23 @@ function sortResults(by) {
 }
 
 function exportWhitelist() {
-  alert('匯出 CSV 功能 (模擬)');
+  if (currentWhitelist.length === 0) { alert('白名單為空，請先執行篩選'); return; }
+  const headers = ['代號','名稱','市場','收盤','漲跌%','技術類型','評分','EPS YoY%','營收 YoY%','ROE%','量比','距52W高%','20MA走升'];
+  const rows = currentWhitelist.map(s => [
+    s.id, s.name, s.market, s.price, s.change,
+    s.type, s.dynamicScore, s.epsYoY, s.revYoY, s.roe,
+    s.volRatio, s.dist52W, s.ma20Rising ? '是' : '否'
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const now = new Date();
+  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+  a.download = `荳荳白名單_${ts}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ========== 無結果彈窗 ==========

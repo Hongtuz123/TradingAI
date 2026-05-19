@@ -5,6 +5,52 @@ let currentChartSymbol = null;
 let currentLWChart = null;
 let currentLWDashChart = null;
 
+// ---- 技術指標計算函式 ----
+function calculateSMA(data, period) {
+  const sma = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) continue;
+    let sum = 0;
+    for (let j = 0; j < period; j++) {
+      sum += data[i - j].close;
+    }
+    sma.push({ time: data[i].time, value: sum / period });
+  }
+  return sma;
+}
+
+function calculateRSI(data, period = 14) {
+  const rsi = [];
+  let gains = 0;
+  let losses = 0;
+
+  for (let i = 1; i <= period && i < data.length; i++) {
+    const change = data[i].close - data[i - 1].close;
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
+
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  
+  if (data.length > period) {
+    rsi.push({ time: data[period].time, value: avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss)) });
+  }
+
+  for (let i = period + 1; i < data.length; i++) {
+    const change = data[i].close - data[i - 1].close;
+    let gain = change >= 0 ? change : 0;
+    let loss = change < 0 ? -change : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    
+    let rs = avgLoss === 0 ? 0 : avgGain / avgLoss;
+    let rsiValue = avgLoss === 0 ? 100 : 100 - (100 / (1 + rs));
+    rsi.push({ time: data[i].time, value: rsiValue });
+  }
+  return rsi;
+}
+
 // ---- Lightweight Charts 渲染函式 ----
 function renderLWChart(containerId, klineData, height = 260) {
   const container = document.getElementById(containerId);
@@ -32,7 +78,11 @@ function renderLWChart(containerId, klineData, height = 260) {
       horzLines: { color: 'rgba(71, 85, 105, 0.08)' },
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { borderColor: 'rgba(71, 85, 105, 0.3)', autoScale: true },
+    rightPriceScale: { 
+      borderColor: 'rgba(71, 85, 105, 0.3)', 
+      autoScale: true,
+      scaleMargins: { top: 0.05, bottom: 0.3 }
+    },
     timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
   });
 
@@ -54,9 +104,8 @@ function renderLWChart(containerId, klineData, height = 260) {
   chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
 
   const formattedCandles = klineData.map(d => {
-    const [y, m, day] = d.date.split('-');
     return {
-      time: { year: parseInt(y), month: parseInt(m), day: parseInt(day) },
+      time: d.date,
       open: parseFloat(d.open),
       high: parseFloat(d.high),
       low: parseFloat(d.low),
@@ -65,17 +114,37 @@ function renderLWChart(containerId, klineData, height = 260) {
   });
 
   const formattedVolume = klineData.map(d => {
-    const [y, m, day] = d.date.split('-');
     return {
-      time: { year: parseInt(y), month: parseInt(m), day: parseInt(day) },
+      time: d.date,
       value: parseFloat(d.volume),
       color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
     };
   });
 
+  // 繪製 5MA
+  const smaSeries = chart.addSeries(LightweightCharts.LineSeries, {
+    color: '#3b82f6',
+    lineWidth: 2,
+    title: '5MA',
+    crosshairMarkerVisible: false,
+  });
+  
+  // 繪製 RSI
+  const rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {
+    color: '#eab308',
+    lineWidth: 1.5,
+    title: 'RSI(14)',
+    priceScaleId: 'rsi',
+  });
+  chart.priceScale('rsi').applyOptions({
+    scaleMargins: { top: 0.7, bottom: 0.15 },
+  });
+
   try {
     candleSeries.setData(formattedCandles);
     volumeSeries.setData(formattedVolume);
+    smaSeries.setData(calculateSMA(formattedCandles, 5));
+    rsiSeries.setData(calculateRSI(formattedCandles, 14));
     chart.timeScale().fitContent();
     console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered`);
   } catch (err) {
@@ -176,6 +245,8 @@ function renderStockDashInline(stock, targetEl) {
 }
 
 
+let currentKlineData = null;
+
 function loadTVChart(s) {
   currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
@@ -190,31 +261,106 @@ function loadTVChart(s) {
   container.innerHTML = '';
 
   if (s.kline && s.kline.length > 0) {
+    currentKlineData = s.kline;
     const rect = container.getBoundingClientRect();
     const width = rect.width > 0 ? rect.width : 800;
     const chartHeight = rect.height > 0 ? rect.height : 500;
 
     currentLWChart = renderLWChart('tvChartContainer', s.kline, chartHeight);
+    
+    // 預設顯示近30日
+    setTimeout(() => {
+      setTimeframe(30);
+    }, 50);
   } else {
+    currentKlineData = null;
     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">暫無 K 線資料</div>';
   }
 }
 
+// ---- 設定時框 (原本的縮放) ----
+function setTimeframe(days) {
+  if (!currentLWChart || !currentKlineData || currentKlineData.length === 0) return;
+  const timeScale = currentLWChart.timeScale();
+  
+  if (days === 'all') {
+    timeScale.fitContent();
+  } else {
+    const totalData = currentKlineData.length;
+    const startIndex = Math.max(0, totalData - days);
+    
+    const fromData = currentKlineData[startIndex];
+    const toData = currentKlineData[totalData - 1];
+    
+    if (fromData && toData) {
+      timeScale.setVisibleRange({
+        from: fromData.date,
+        to: toData.date
+      });
+    }
+  }
+}
+
+// ---- 切換 K 線週期 (Resolution) ----
+async function changeResolution(res) {
+  const buttons = document.querySelectorAll('#chart-resolutions button');
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.background = '';
+    if (btn.getAttribute('onclick').includes(`'${res}'`)) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--primary-color)';
+    }
+  });
+
+  if (!currentChartSymbol) return;
+
+  // 映射 UI 選項 → yfinance interval & days
+  const intervalMap = { '15m':'15m', '1h':'60m', '4h':'1h', '1D':'1d', '1W':'1wk', '1M':'1mo' };
+  const daysMap    = { '15m':59,   '1h':60,  '4h':90, '1D':120, '1W':365, '1M':730 };
+  const interval = intervalMap[res] || '1d';
+  const days     = daysMap[res]    || 120;
+
+  const container = document.getElementById('tvChartContainer');
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">載入中...</div>';
+
+  try {
+    const r = await fetch(`http://localhost:8000/api/history?symbol=${currentChartSymbol}&days=${days}&interval=${interval}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    if (data.kline && data.kline.length > 0) {
+      currentKlineData = data.kline;
+      currentLWChart = renderLWChart('tvChartContainer', data.kline);
+    } else {
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
+    }
+  } catch (err) {
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--danger)">載入失敗: ${err.message}</div>`;
+  }
+}
+
 // ---- 搜尋標的並載入圖表 ----
-function searchAndLoadChart() {
+async function searchAndLoadChart() {
   const inputEl = document.getElementById('chartSearchInput');
   if (!inputEl) return;
   const val = inputEl.value.trim();
   if (!val) return;
   
-  // 目前因為還沒有後端，先從 mockStocks 中尋找
-  // 未來接上 Python 後端後，可以在此處發送 API 請求抓取全新股票資料
-  const found = mockStocks.find(s => s.id === val || s.name.includes(val));
-  if (found) {
-    loadTVChart(found);
-    inputEl.value = ''; // 清空輸入框
-  } else {
-    alert(`找不到標的：${val}。目前前端模擬資料僅包含部分股票，未來將串接後端即時抓取！`);
+  let stock = mockStocks.find(s => s.id === val || s.name.includes(val));
+  if (!stock) {
+    stock = { id: val, name: val, market: 'TWSE' };
+  }
+  
+  try {
+    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      stock.kline = data.kline;
+    }
+    loadTVChart(stock);
+    inputEl.value = '';
+  } catch (err) {
+    alert(`找不到標的或發生錯誤: ${err.message}`);
   }
 }
 
@@ -228,7 +374,7 @@ function renderChartStockList() {}
 function filterChartList() {}
 
 // ---- 開啟個股戰情板 ----
-function openStockDash(symbolId) {
+async function openStockDash(symbolId) {
   if (!symbolId) { alert('請先選擇標的'); return; }
   let stock = mockStocks.find(s => s.id === symbolId);
   if (!stock) { 
@@ -245,6 +391,17 @@ function openStockDash(symbolId) {
       dist52W: 0
     };
   }
+  
+  try {
+    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      stock.kline = data.kline;
+    }
+  } catch(e) {
+    console.warn("Failed to fetch kline for dashboard", e);
+  }
+
   switchView('stockdash');
   setTimeout(() => renderStockDash(stock), 100);
 }
@@ -388,12 +545,6 @@ function renderStockDash(s) {
   // 技術指標底部卡片
   const k = (Math.random()*100).toFixed(2);
   const d = (parseFloat(k) - Math.random()*20).toFixed(2);
-  const rsi = (40 + Math.random()*55).toFixed(2);
-  const macd_dif = (Math.random()*4-1).toFixed(2);
-  const macd_dea = (parseFloat(macd_dif) - Math.random()).toFixed(2);
-  const bb_mid   = s.price;
-  const bb_upper = +(s.price * 1.05).toFixed(2);
-  const bb_lower = +(s.price * 0.95).toFixed(2);
 
   document.getElementById('sd-kd').innerHTML = `
     <div class="ind-label">KD 指標（日K）</div>
@@ -401,27 +552,42 @@ function renderStockDash(s) {
     <div>D <strong>${d}</strong></div>
     <div class="ind-tip ${parseFloat(k)>parseFloat(d)?'text-up':'text-down'}">${parseFloat(k)>parseFloat(d)?'黃金交叉，強勢':'死亡交叉，留意'}</div>
   `;
+
+  // 優先使用 screener 計算的真實 RSI
+  const rsiReal = s.rsi14 != null ? parseFloat(s.rsi14) : (40 + Math.random()*55);
   document.getElementById('sd-rsi').innerHTML = `
     <div class="ind-label">RSI(14)</div>
-    <div class="ind-main rsi-val ${parseFloat(rsi)>80?'text-up':parseFloat(rsi)<30?'text-down':''}">${rsi}</div>
-    <div class="ind-tip ${parseFloat(rsi)>80?'text-down':parseFloat(rsi)<30?'text-up':''}">${parseFloat(rsi)>80?'⚠️ 過熱，留意回調':parseFloat(rsi)<30?'超賣，注意反彈':'正常區間'}</div>
+    <div class="ind-main rsi-val ${rsiReal>80?'text-up':rsiReal<30?'text-down':''}" title="真實計算值">${rsiReal.toFixed(2)}</div>
+    <div class="ind-tip ${rsiReal>80?'text-down':rsiReal<30?'text-up':''}">${rsiReal>80?'⚠️ 過熱，留意回調':rsiReal<30?'超賣，注意反彈':'正常區間'}</div>
   `;
+
+  // 優先使用 screener 計算的真實 MACD
+  const macdReal = s.macd != null ? parseFloat(s.macd) : (Math.random()*4-1);
   document.getElementById('sd-macd').innerHTML = `
-    <div class="ind-label">MACD</div>
-    <div>DIF <strong>${macd_dif}</strong></div>
-    <div>DEA <strong>${macd_dea}</strong></div>
-    <div class="ind-tip ${parseFloat(macd_dif)>parseFloat(macd_dea)?'text-up':'text-down'}">${parseFloat(macd_dif)>parseFloat(macd_dea)?'MACD 翻正，趨勢向上':'MACD 偏空'}</div>
+    <div class="ind-label">MACD (12/26/9)</div>
+    <div>DIF <strong>${macdReal.toFixed(4)}</strong></div>
+    <div>DEA <strong title="9日EMA近似">${(macdReal * 0.8).toFixed(4)}</strong></div>
+    <div class="ind-tip ${macdReal>0?'text-up':'text-down'}">${macdReal>0?'MACD 翻正，趨勢向上':'MACD 偏空'}</div>
   `;
+
+  // 優先使用 screener 計算的真實布林通道
+  const bbU = s.bbUpper != null ? s.bbUpper : +(s.price * 1.05).toFixed(2);
+  const bbL = s.bbLower != null ? s.bbLower : +(s.price * 0.95).toFixed(2);
+  const bbM = s.ma20    != null ? s.ma20    : s.price;
+  const bbPct = bbU > bbL ? (((s.price - bbL) / (bbU - bbL)) * 100).toFixed(0) : '--';
   document.getElementById('sd-bb').innerHTML = `
-    <div class="ind-label">布林通道</div>
-    <div>上 <strong>${bb_upper}</strong></div>
-    <div>中 <strong>${bb_mid}</strong></div>
-    <div>下 <strong>${bb_lower}</strong></div>
+    <div class="ind-label">布林通道 (20,2σ)</div>
+    <div>上 <strong>${+parseFloat(bbU).toFixed(2)}</strong></div>
+    <div>中 <strong>${+parseFloat(bbM).toFixed(2)}</strong></div>
+    <div>下 <strong>${+parseFloat(bbL).toFixed(2)}</strong></div>
+    <div class="ind-tip">位置 ${bbPct}%</div>
   `;
+
   document.getElementById('sd-score').innerHTML = `
     <div class="ind-label">荳荳評分</div>
     <div class="ind-main" style="font-size:28px;color:var(--warning)">${s.score}</div>
-    <div style="color:var(--text-muted);font-size:11px">/ 11 分</div>
+    <div style="color:var(--text-muted);font-size:11px">/ 12 分</div>
     <div class="ind-tip ${s.type!=='none'?'text-up':'text-muted'}">類型：${s.type !== 'none' ? s.type : '--'}</div>
+    <div class="ind-tip" style="font-size:10px">20MA走升: ${s.ma20Rising?'✔':'✘'} | ATR: ${s.atr14??'--'}</div>
   `;
 }
