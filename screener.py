@@ -282,9 +282,9 @@ def run_screener():
             "grossMargin": None, "debtRatio": None,
             # 籌碼（尚未接入真實 API，標記 null）
             "trustDays": None, "foreignBuy": None,
-            # 技術面（真實計算）
-            "volRatio": vol_ratio, "turnover": 5.0,
-            "marketCap": 200, "dailyVol": vol // 1000,
+            # 技術面（真實計算，部份欄位如週轉率、市值暫缺）
+            "volRatio": vol_ratio, "turnover": None,
+            "marketCap": None, "dailyVol": vol // 1000,
             "type": tech_type,
             "maBull": ma_bull,
             "ma20Rising": ma20_rising,
@@ -316,6 +316,18 @@ def run_screener():
     # 輸出 data.js（供前端直接引入）
     # ============================================
     now_str = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # 讀取 rules.json
+    rules = {}
+    try:
+        with open('rules.json', 'r', encoding='utf-8') as rf:
+            rules = json.load(rf)
+    except Exception as e:
+        print(f"無法讀取 rules.json: {e}")
+        rules = {"scoring": {"rev_growth":20, "eps_growth":15, "roe":10, "trust_days":3, "daily_vol":2000, "market_cap":50, "vol_ratio":1.5, "dist_52w":15}}
+
+    rules_json_str = json.dumps(rules, ensure_ascii=False, indent=2)
+
     js_content = f"""// 由 yfinance 產生之真實資料 — {now_str}
 const marketData = {{
   twii_above_60ma: {'true' if market_health['twii'] else 'false'},
@@ -324,6 +336,8 @@ const marketData = {{
   lastUpdate: '{now_str}'
 }};
 
+const rulesConfig = {rules_json_str};
+
 const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
 
 // 評分邏輯 (滿分 12 分，null 值欄位不計分不扣分)
@@ -331,21 +345,23 @@ function calculateScore(stock) {{
   let score = 0;
   let totalChecks = 0;
   function check(val, cond) {{ if (val != null) {{ totalChecks++; if (cond) score++; }} }}
+  
+  const sc = rulesConfig.scoring;
   // 基本面（可能為 null）
-  check(stock.revYoY,     stock.revYoY > 20);
-  check(stock.epsYoY,     stock.epsYoY > 15);
-  check(stock.roe,        stock.roe > 10);
+  check(stock.revYoY,     stock.revYoY > sc.rev_growth);
+  check(stock.epsYoY,     stock.epsYoY > sc.eps_growth);
+  check(stock.roe,        stock.roe > sc.roe);
   // 籌碼（可能為 null）
-  check(stock.trustDays,  stock.trustDays >= 3);
+  check(stock.trustDays,  stock.trustDays >= sc.trust_days);
   check(stock.foreignBuy, stock.foreignBuy === true);
-  // 技術面（真實計算，必定有值）
-  if (stock.dailyVol   > 2000) score++;
-  if (stock.marketCap  > 50)   score++;
+  // 技術面（真實計算，部份欄位如週轉率、市值為 null）
+  if (stock.dailyVol   > sc.daily_vol) score++;
+  check(stock.marketCap, stock.marketCap > sc.market_cap);
   if (stock.maBull)            score++;
   if (stock.ma20Rising)        score++;
-  if (stock.volRatio   > 1.5)  score++;
+  if (stock.volRatio   > sc.vol_ratio)  score++;
   if (stock.closeToHigh)       score++;
-  if (stock.dist52W    < 15)   score++;
+  if (stock.dist52W    < sc.dist_52w)   score++;
   return score;
 }}
 

@@ -1,0 +1,16 @@
+{
+  "scoring": {
+    "eps_growth": 15,
+    "rev_growth": 20,
+    "roe": 10,
+    "trust_days": 3,
+    "daily_vol": 2000,
+    "market_cap": 50,
+    "vol_ratio": 1.5,
+    "dist_52w": 15,
+    "max_score": 12
+  },
+  "filtering": {
+    "min_score": 6
+  }
+}

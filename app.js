@@ -32,6 +32,25 @@ function startClock() {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+  // 從 data.js 中的 rulesConfig 載入預設篩選規則
+  if (typeof rulesConfig !== 'undefined') {
+    const sc = rulesConfig.scoring;
+    if (sc) {
+      document.getElementById('f_eps_growth').value = sc.eps_growth;
+      document.getElementById('f_rev_growth').value = sc.rev_growth;
+      document.getElementById('f_roe').value = sc.roe;
+      document.getElementById('f_trust_days').value = sc.trust_days;
+      document.getElementById('f_vol_ratio').value = sc.vol_ratio;
+      document.getElementById('f_market_cap').value = sc.market_cap;
+      document.getElementById('f_daily_vol').value = sc.daily_vol;
+      document.getElementById('f_52w_pct').value = sc.dist_52w;
+    }
+    const fl = rulesConfig.filtering;
+    if (fl && fl.min_score) {
+      document.getElementById('f_min_score').value = fl.min_score;
+    }
+  }
+
   initDashboard();
   startClock();
   runScreener();
@@ -168,8 +187,8 @@ function runScreener() {
     if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資近5日買超 (未達標)`); }
     // 技術面（真實計算）
     if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
-    if (s.turnover < p.turnover) failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
-    if (s.marketCap < p.mktCap) failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
+    chk(s.turnover,    s.turnover >= p.turnover, `週轉率 (${s.turnover ?? '--'}% < ${p.turnover}%)`);
+    chk(s.marketCap,   s.marketCap >= p.mktCap,  `市值 (${s.marketCap ?? '--'}億 < ${p.mktCap}億)`);
     if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
     if (!s.ma20Rising) failedConditions.push('20MA未走升');
 
