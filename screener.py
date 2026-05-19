@@ -166,24 +166,27 @@ def calc_indicators(df):
 
 def classify_tech_type(latest, prev, close, vol):
     """
-    技術型態分類
+    技術型態分類（優先級：A > C > B > D）
     A = 突破型：收盤站上近20日新高 + 量能放大
     B = 均線多頭：5MA > 20MA > 60MA 且股價 > 5MA
     C = 剛轉強：MACD 柱由負轉正 且 RSI 從 ≤50 突破 50
     D = 強勢回檔：股價 > 20MA 但量能偏低（回檔整理）
     """
-    tech_type = 'none'
-    if latest['ma5'] > latest['ma20'] > latest['ma60'] and close > latest['ma5']:
-        tech_type = 'B'
-    if prev['hist'] <= 0 and latest['hist'] > 0 and prev['rsi14'] <= 50 and latest['rsi14'] > 50:
-        tech_type = 'C'
-    if close > latest['ma20'] and vol < latest['vol_ma20']:
-        tech_type = 'D'
-    # A 型優先級最高，覆蓋上面的結果
-    recent_high = latest.get('recent_high', close)
+    recent_high = latest.get('recent_high', close) if hasattr(latest, 'get') else latest['recent_high'] if 'recent_high' in latest else close
+
+    # A 型優先級最高
     if close >= recent_high and vol > latest['vol_ma20'] * 1.5:
-        tech_type = 'A'
-    return tech_type
+        return 'A'
+    # C 型次之
+    elif prev['hist'] <= 0 and latest['hist'] > 0 and prev['rsi14'] <= 50 and latest['rsi14'] > 50:
+        return 'C'
+    # B 型
+    elif latest['ma5'] > latest['ma20'] > latest['ma60'] and close > latest['ma5']:
+        return 'B'
+    # D 型（最低優先級）
+    elif close > latest['ma20'] and vol < latest['vol_ma20']:
+        return 'D'
+    return 'none'
 
 
 def run_screener():
@@ -220,12 +223,11 @@ def run_screener():
         vol_ratio   = round(vol / vol_ma20, 2) if vol_ma20 > 0 else 0.0
         recent_high = float(df['close'].tail(20).max())
 
-        # 設 recent_high 供分類函式使用
+        # 將 recent_high 加入 latest 供分類函式使用
         latest_dict = latest.to_dict()
         latest_dict['recent_high'] = recent_high
-        latest_series_like = type('Row', (), latest_dict)()  # 輕量 struct
 
-        tech_type = classify_tech_type(latest, prev, close, vol)
+        tech_type = classify_tech_type(latest_dict, prev, close, vol)
 
         ma_bull   = bool(close > latest['ma20'] > latest['ma60'])
         dist_52w  = round(((float(latest['high_52w']) - close) / float(latest['high_52w'])) * 100, 1) if float(latest['high_52w']) > 0 else 0.0
