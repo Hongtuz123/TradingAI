@@ -3,6 +3,8 @@ import pandas as pd
 import json
 import time
 import yfinance as yf
+import os
+import csv
 
 # =====================================================
 # 自選觀察名單（一定會被納入，不受成交量門檻限制）
@@ -18,10 +20,54 @@ WATCHLIST = [
     {'Code': '2382', 'Name': '廣達',   'market': 'TSE'},
 ]
 
-def get_top_stocks(limit=80):
-    """從 TWSE/OTC OpenAPI 抓取今日市場資料，回傳股票池"""
-    all_listed = {}
+def format_stock_code(code_str):
+    """
+    智慧股票代碼補零邏輯 (解決 Excel/CSV 開頭零丟失問題)：
+    - 小於 100 補為 4 碼 (例如 50 -> 0050)
+    - 100~999 補為 5 碼 (例如 919 -> 00919)
+    - 其餘保留原樣
+    """
+    code_str = str(code_str).strip()
+    if code_str.isdigit():
+        val = int(code_str)
+        if val < 100:
+            return f"{val:04d}"
+        elif val < 1000:
+            return f"00{val}"
+    return code_str
 
+def read_stock_list_from_csv(csv_path):
+    """從 CSV 讀取 400 隻股票清單，回傳格式化的代碼與名稱列表"""
+    stocks = []
+    if not os.path.exists(csv_path):
+        print(f"❌ 找不到 CSV 檔案：{csv_path}")
+        return stocks
+        
+    try:
+        # 使用 utf-8-sig 以處理 Excel 可能產生的 BOM 頭
+        with open(csv_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.reader(f)
+            header = next(reader, None) # 跳過標題列
+            for row in reader:
+                if len(row) >= 3:
+                    # 股票代碼在第 2 欄 (index 1)，股票名稱在第 3 欄 (index 2)
+                    raw_code = row[1].strip()
+                    raw_name = row[2].strip()
+                    if raw_code:
+                        formatted_code = format_stock_code(raw_code)
+                        stocks.append({
+                            'Code': formatted_code,
+                            'Name': raw_name
+                        })
+    except Exception as e:
+        print(f"讀取 CSV 失敗: {e}")
+        
+    return stocks
+
+def load_all_market_info():
+    """從 TWSE/TPEX OpenAPI 抓取今日所有上市櫃股票的基本資訊"""
+    all_listed = {}
+    
     # TWSE 上市
     try:
         res = requests.get(
@@ -30,13 +76,13 @@ def get_top_stocks(limit=80):
         )
         if res.status_code == 200:
             for r in res.json():
-                if r['Code'].isdigit() and len(r['Code']) == 4:
+                if r['Code'].isdigit() and len(r['Code']) >= 4:
                     r['market'] = 'TSE'
-                    all_listed[r['Code']] = r
+                    all_listed[r['Code'].strip()] = r
     except Exception as e:
         print(f'TWSE 抓取失敗: {e}')
 
-    # OTC 上櫃
+    # TPEX 上櫃
     try:
         res = requests.get(
             'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes',
@@ -44,8 +90,8 @@ def get_top_stocks(limit=80):
         )
         if res.status_code == 200:
             for r in res.json():
-                code = r.get('SecuritiesCompanyCode') or r.get('Code')
-                if code and code.isdigit() and len(code) == 4:
+                code = (r.get('SecuritiesCompanyCode') or r.get('Code', '')).strip()
+                if code and code.isdigit() and len(code) >= 4:
                     vol  = r.get('Volume') or r.get('TradeVolume') or 0
                     name = r.get('CompanyName') or r.get('Name')
                     close = r.get('Close') or r.get('ClosingPrice')
@@ -56,34 +102,9 @@ def get_top_stocks(limit=80):
                     }
     except Exception as e:
         print(f'OTC 抓取失敗: {e}')
+        
+    return all_listed
 
-    result_pool = {}
-
-    # 1. 自選股優先納入
-    for w in WATCHLIST:
-        code = w['Code']
-        if code in all_listed:
-            result_pool[code] = all_listed[code]
-        else:
-            result_pool[code] = {
-                'Code': code, 'Name': w['Name'],
-                'TradeVolume': 0, 'market': w['market']
-            }
-
-    # 2. 成交量前 N 名補足
-    sorted_stocks = sorted(
-        all_listed.values(),
-        key=lambda x: pd.to_numeric(x.get('TradeVolume', 0), errors='coerce') or 0,
-        reverse=True
-    )
-    for s in sorted_stocks:
-        if len(result_pool) >= limit + len(WATCHLIST):
-            break
-        if s['Code'] not in result_pool:
-            result_pool[s['Code']] = s
-
-    print(f'合計股票池：{len(result_pool)} 檔')
-    return list(result_pool.values())
 
 
 def calc_market_health():
@@ -210,102 +231,165 @@ def classify_tech_type(latest, prev, close, vol):
 
 
 def run_screener():
-    print("抓取熱門標的清單...")
-    top_stocks = get_top_stocks(limit=30)
+    print("讀取股票評估清單 CSV...")
+    csv_path = r"C:\GoogleAntigravity\2026Trading1\股票分析清單.csv"
+    csv_stocks = read_stock_list_from_csv(csv_path)
+    
+    if not csv_stocks:
+        print("⚠️ CSV 清單為空或讀取失敗，改用預設 WATCHLIST...")
+        csv_stocks = WATCHLIST
+        
+    print(f"載入 TWSE/TPEX OpenAPI 市場資訊...")
+    all_market_info = load_all_market_info()
+    
+    # 建立 yfinance 代碼與股票資料對照表
+    yf_to_stock = {}
+    tickers = []
+    for s in csv_stocks:
+        code = s['Code']
+        name = s.get('Name', code)
+        
+        # 智慧判定市場：OpenAPI 優先，再來以 B 結尾為上櫃，其餘預設上市
+        market = 'TSE'
+        if code in all_market_info:
+            market = all_market_info[code].get('market', 'TSE')
+            # 補齊 OpenAPI 欄位
+            s.update(all_market_info[code])
+        else:
+            if code.endswith('B'):
+                market = 'OTC'
+            else:
+                market = 'TSE'
+                
+        s['market'] = market
+        suffix = '.TWO' if market == 'OTC' else '.TW'
+        yf_ticker = f"{code}{suffix}"
+        yf_to_stock[yf_ticker] = s
+        tickers.append(yf_ticker)
+        
     results = []
-    print(f"開始處理 {len(top_stocks)} 檔標的歷史資料...")
+    price_failed_stocks = []
+    
+    print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天)...")
+    if tickers:
+        try:
+            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=True)
+        except Exception as e:
+            print(f"❌ 批次下載失敗: {e}")
+            df_all = pd.DataFrame()
+    else:
+        df_all = pd.DataFrame()
 
-    for idx, s in enumerate(top_stocks):
+    print(f"開始處理下載之歷史資料並計算指標...")
+    for idx, (yf_ticker, s) in enumerate(yf_to_stock.items()):
         symbol = s['Code']
-        name   = s.get('Name', symbol)
-        market = s.get('market', 'TSE')
-        print(f"[{idx+1}/{len(top_stocks)}] {symbol} {name} ({market})")
-
-        candles = get_historical_candles(symbol, market=market, days=250)
-        if len(candles) < 20:
-            print(f"  資料不足，跳過")
-            continue
-
-        df = pd.DataFrame(candles)
-        df = calc_indicators(df)
-        latest = df.iloc[-1]
-        prev   = df.iloc[-2]
-
-        # 優先用 OpenAPI 的即時收盤價
-        openapi_price = s.get('ClosingPrice') or s.get('Close')
+        name = s['Name']
+        market = s['market']
+        
+        # 檢查該 ticker 的資料是否存在與完整
+        df_stock = pd.DataFrame()
         try:
-            close = float(openapi_price) if openapi_price and str(openapi_price).replace('.', '').isdigit() else float(latest['close'])
-        except Exception:
-            close = float(latest['close'])
+            if not df_all.empty:
+                if isinstance(df_all.columns, pd.MultiIndex):
+                    if yf_ticker in df_all.columns.levels[0]:
+                        df_stock = df_all[yf_ticker].dropna(subset=['Close'])
+                else:
+                    df_stock = df_all.dropna(subset=['Close'])
+            
+            if df_stock.empty or len(df_stock) < 20:
+                raise ValueError("歷史資料筆數不足 20 筆或全為 NaN")
+                
+            candles = []
+            for dt, row in df_stock.iterrows():
+                candles.append({
+                    'date': dt.strftime('%Y-%m-%d'),
+                    'open':   round(float(row['Open']),  2),
+                    'high':   round(float(row['High']),  2),
+                    'low':    round(float(row['Low']),   2),
+                    'close':  round(float(row['Close']), 2),
+                    'volume': int(row['Volume']),
+                })
+                
+            df = pd.DataFrame(candles)
+            df = calc_indicators(df)
+            latest = df.iloc[-1]
+            prev   = df.iloc[-2]
 
-        vol         = int(latest['volume'])
-        vol_ma20    = float(latest['vol_ma20'])
-        vol_ratio   = round(vol / vol_ma20, 2) if vol_ma20 > 0 else 0.0
-        recent_high = float(df['close'].tail(20).max())
+            # 優先用 OpenAPI 的即時收盤價
+            openapi_price = s.get('ClosingPrice') or s.get('Close')
+            try:
+                close = float(openapi_price) if openapi_price and str(openapi_price).replace('.', '').replace('-', '').isdigit() else float(latest['close'])
+            except Exception:
+                close = float(latest['close'])
 
-        # 將 recent_high 加入 latest 供分類函式使用
-        latest_dict = latest.to_dict()
-        latest_dict['recent_high'] = recent_high
+            vol         = int(latest['volume'])
+            vol_ma20    = float(latest['vol_ma20'])
+            vol_ratio   = round(vol / vol_ma20, 2) if vol_ma20 > 0 else 0.0
+            recent_high = float(df['close'].tail(20).max())
 
-        tech_type = classify_tech_type(latest_dict, prev, close, vol)
+            # 將 recent_high 加入 latest 供分類函式使用
+            latest_dict = latest.to_dict()
+            latest_dict['recent_high'] = recent_high
 
-        ma_bull   = bool(close > latest['ma20'] > latest['ma60'])
-        dist_52w  = round(((float(latest['high_52w']) - close) / float(latest['high_52w'])) * 100, 1) if float(latest['high_52w']) > 0 else 0.0
-        close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
-        ma20_rising = bool(latest['ma20_rising'])
+            tech_type = classify_tech_type(latest_dict, prev, close, vol)
 
-        # 漲跌幅
-        raw_change = str(s.get('Change', '') or '')
-        try:
-            change_num = float(raw_change.replace('+', '').replace('X', '').replace('x', '').strip() or '0')
-            if raw_change.startswith('-'):
-                change_num = -abs(change_num)
-        except Exception:
-            change_num = 0.0
+            ma_bull   = bool(close > latest['ma20'] > latest['ma60'])
+            dist_52w  = round(((float(latest['high_52w']) - close) / float(latest['high_52w'])) * 100, 1) if float(latest['high_52w']) > 0 else 0.0
+            close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
+            ma20_rising = bool(latest['ma20_rising'])
 
-        # 真實技術指標值（供前端顯示）
-        rsi_val  = round(float(latest['rsi14']), 2)
-        macd_val = round(float(latest['macd']), 4)
-        atr_val  = round(float(latest['atr14']), 2)
-        bb_upper = round(float(latest['bb_upper']), 2)
-        bb_lower = round(float(latest['bb_lower']), 2)
-        ma5_val  = round(float(latest['ma5']), 2)
-        ma20_val = round(float(latest['ma20']), 2)
-        ma60_val = round(float(latest['ma60']), 2)
+            # 漲跌幅
+            raw_change = str(s.get('Change', '') or '')
+            try:
+                change_num = float(raw_change.replace('+', '').replace('X', '').replace('x', '').strip() or '0')
+                if raw_change.startswith('-'):
+                    change_num = -abs(change_num)
+            except Exception:
+                # 若 OpenAPI 無漲跌幅，以昨收與今收計算
+                change_num = round(((close - float(prev['close'])) / float(prev['close'])) * 100, 2) if float(prev['close']) > 0 else 0.0
 
-        results.append({
-            # 基本資訊
-            "id": symbol, "name": name, "market": market,
-            "price": round(close, 2), "change": round(change_num, 2),
-            # 基本面（尚未接入真實 API，標記 null）
-            "epsYoY": None, "revYoY": None, "roe": None,
-            "grossMargin": None, "debtRatio": None,
-            # 籌碼（尚未接入真實 API，標記 null）
-            "trustDays": None, "foreignBuy": None,
-            # 技術面（真實計算，部份欄位如週轉率、市值暫缺）
-            "volRatio": vol_ratio, "turnover": None,
-            "marketCap": None, "dailyVol": vol // 1000,
-            "type": tech_type,
-            "maBull": ma_bull,
-            "ma20Rising": ma20_rising,
-            "closeToHigh": close_high,
-            "dist52W": dist_52w,
-            # 指標值（供前端戰情板顯示）
-            "rsi14": rsi_val,
-            "macd":  macd_val,
-            "atr14": atr_val,
-            "bbUpper": bb_upper,
-            "bbLower": bb_lower,
-            "ma5":  ma5_val,
-            "ma20": ma20_val,
-            "ma60": ma60_val,
-            # 黑名單（預設空）
-            "blacklist": [],
-            # K線（最近120根，已確保升序）
-            "kline": sorted(candles, key=lambda x: x['date'])[-120:]
-        })
+            # 真實技術指標值
+            rsi_val  = round(float(latest['rsi14']), 2)
+            macd_val = round(float(latest['macd']), 4)
+            atr_val  = round(float(latest['atr14']), 2)
+            bb_upper = round(float(latest['bb_upper']), 2)
+            bb_lower = round(float(latest['bb_lower']), 2)
+            ma5_val  = round(float(latest['ma5']), 2)
+            ma20_val = round(float(latest['ma20']), 2)
+            ma60_val = round(float(latest['ma60']), 2)
 
-        time.sleep(0.3)  # 避免 yfinance rate limit
+            results.append({
+                "id": symbol, "name": name, "market": market,
+                "price": round(close, 2), "change": round(change_num, 2),
+                "epsYoY": None, "revYoY": None, "roe": None,
+                "grossMargin": None, "debtRatio": None,
+                "trustDays": None, "foreignBuy": None,
+                "volRatio": vol_ratio, "turnover": None,
+                "marketCap": None, "dailyVol": vol // 1000,
+                "type": tech_type,
+                "maBull": ma_bull,
+                "ma20Rising": ma20_rising,
+                "closeToHigh": close_high,
+                "dist52W": dist_52w,
+                "rsi14": rsi_val,
+                "macd":  macd_val,
+                "atr14": atr_val,
+                "bbUpper": bb_upper,
+                "bbLower": bb_lower,
+                "ma5":  ma5_val,
+                "ma20": ma20_val,
+                "ma60": ma60_val,
+                "blacklist": [],
+                "kline": sorted(candles, key=lambda x: x['date'])[-120:]
+            })
+            
+        except Exception as e:
+            # 醒目紅色警示
+            print(f"\033[91m⚠️ [讀取失敗] 標的 {symbol} {name} ({market}) 無法獲取價格或歷史資料: {e}\033[0m")
+            price_failed_stocks.append({
+                'Code': symbol,
+                'Name': name
+            })
 
     # ============================================
     # 計算市場健康度（加權指數/OTC 是否站上 60MA）
@@ -328,13 +412,17 @@ def run_screener():
 
     rules_json_str = json.dumps(rules, ensure_ascii=False, indent=2)
 
+    # 包含失敗股票清單在 marketData 中
+    market_data_dict = {
+        "twii_above_60ma": bool(market_health['twii']),
+        "otc_above_60ma": bool(market_health['otc']),
+        "vol_above_20ma": bool(market_health['vol']),
+        "lastUpdate": now_str,
+        "price_failed_stocks": price_failed_stocks
+    }
+
     js_content = f"""// 由 yfinance 產生之真實資料 — {now_str}
-const marketData = {{
-  twii_above_60ma: {'true' if market_health['twii'] else 'false'},
-  otc_above_60ma: {'true' if market_health['otc'] else 'false'},
-  vol_above_20ma: {'true' if market_health['vol'] else 'false'},
-  lastUpdate: '{now_str}'
-}};
+const marketData = {json.dumps(market_data_dict, ensure_ascii=False, indent=2)};
 
 const rulesConfig = {rules_json_str};
 
@@ -371,7 +459,13 @@ mockStocks.forEach(s => s.score = calculateScore(s));
     with open('data.js', 'w', encoding='utf-8') as f:
         f.write(js_content)
 
-    print(f"執行完畢！共產出 {len(results)} 檔，已覆寫 data.js")
+    print(f"\n==========================================")
+    print(f"🎉 執行完畢！")
+    print(f"👉 成功產出 {len(results)} 檔。")
+    if price_failed_stocks:
+        print(f"\033[93m⚠️  警告：共有 {len(price_failed_stocks)} 檔股票無法讀取價格！\033[0m")
+        print(f"已覆寫 data.js 並記錄失敗標的。")
+    print(f"==========================================\n")
 
 
 if __name__ == "__main__":

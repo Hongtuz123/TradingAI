@@ -84,9 +84,12 @@ function initDashboard() {
   document.getElementById('lastUpdateTime').innerText = updateTime;
 
   const isHealthy = marketData.twii_above_60ma && marketData.otc_above_60ma && marketData.vol_above_20ma;
+  const failedStocks = marketData.price_failed_stocks || [];
+  const hasFailedStocks = failedStocks.length > 0;
   
   if (isHealthy) {
     document.getElementById('healthGrade').innerText = '多頭安全';
+    document.getElementById('healthGrade').style.color = 'var(--success)';
     badge.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
     badge.style.color = 'var(--success)';
     badge.querySelector('.status-dot').style.backgroundColor = 'var(--success)';
@@ -98,13 +101,32 @@ function initDashboard() {
     badge.style.color = 'var(--danger)';
     badge.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
     text.innerText = '建議降低部位';
-    
+  }
+
+  if (!isHealthy || hasFailedStocks) {
     document.getElementById('healthWarning').style.display = 'flex';
-    document.getElementById('warningList').innerHTML = `
-      <li>降低持股水位</li>
-      <li>提高停損標準</li>
-      <li>減少交易次數</li>
-    `;
+    
+    let warningHTML = '';
+    if (hasFailedStocks) {
+      const listStr = failedStocks.map(s => `${s.Code} ${s.Name}`).join(', ');
+      warningHTML += `
+        <li style="color: var(--danger); font-weight: bold; background: rgba(239, 68, 68, 0.15); padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; list-style: none; border-left: 4px solid var(--danger);">
+          ⚠️ 讀取價格失敗標的 (${failedStocks.length} 檔)：${listStr}
+        </li>
+      `;
+    }
+    
+    if (!isHealthy) {
+      warningHTML += `
+        <li>降低持股水位</li>
+        <li>提高停損標準</li>
+        <li>減少交易次數</li>
+      `;
+    }
+    
+    document.getElementById('warningList').innerHTML = warningHTML;
+  } else {
+    document.getElementById('healthWarning').style.display = 'none';
   }
 
   const indicatorsHTML = `
