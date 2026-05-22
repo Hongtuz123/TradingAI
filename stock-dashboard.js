@@ -491,16 +491,16 @@ function renderLWChart(containerId, klineData, height = 260) {
     lowTrendTopSeries.setData(lowTrendTopLineData);
 
     // 計算買賣轉折訊號標籤
-    // 買 → 出現在 high-trend 底線之下（insetBar + belowBar）
-    // 賣 → 出現在 low-trend 頂線之上（insetBar + aboveBar）
-    const markers = [];
+    // 買 → 掛在 highTrendBottomSeries（綠色箱體底線），顯示在底線下方
+    // 賣 → 掛在 lowTrendTopSeries（紅色箱體頂線），顯示在頂線上方
+    const buyMarkers = [];
+    const sellMarkers = [];
     for (let i = 1; i < supertrendData.length; i++) {
       const prev = supertrendData[i - 1];
       const curr = supertrendData[i];
       if (prev.value !== null && curr.value !== null) {
         if (prev.trend === -1 && curr.trend === 1) {
-          // 買訊號：放在 high-trend 實線之下
-          markers.push({
+          buyMarkers.push({
             time: curr.time,
             position: 'belowBar',
             color: '#22c55e',
@@ -509,8 +509,7 @@ function renderLWChart(containerId, klineData, height = 260) {
             size: 2.4,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
-          // 賣訊號：放在 low-trend 實線之上
-          markers.push({
+          sellMarkers.push({
             time: curr.time,
             position: 'aboveBar',
             color: '#ef4444',
@@ -525,9 +524,12 @@ function renderLWChart(containerId, klineData, height = 260) {
     supertrendUpSeries.setData(upData);
     supertrendDnSeries.setData(dnData);
 
-    if (markers.length > 0) {
-      // LWC v5 已移除 series.setMarkers()，改用全域函式 createSeriesMarkers
-      LightweightCharts.createSeriesMarkers(candleSeries, markers);
+    // 買標籤掛在箱體綠色底線，賣標籤掛在箱體紅色頂線
+    if (buyMarkers.length > 0) {
+      LightweightCharts.createSeriesMarkers(highTrendBottomSeries, buyMarkers);
+    }
+    if (sellMarkers.length > 0) {
+      LightweightCharts.createSeriesMarkers(lowTrendTopSeries, sellMarkers);
     }
 
     mainChart.timeScale().fitContent();
