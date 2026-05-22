@@ -183,7 +183,7 @@ function renderLWChart(containerId, klineData, height = 260) {
     rightPriceScale: { 
       borderColor: 'rgba(71, 85, 105, 0.3)', 
       autoScale: true,
-      scaleMargins: { top: 0.05, bottom: 0.3 }
+      scaleMargins: { top: 0.05, bottom: 0.05 }
     },
     timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
   });
@@ -267,16 +267,14 @@ function renderLWChart(containerId, klineData, height = 260) {
     // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
-    // 準備上升與下降軌道數據（利用 undefined 達成斷開，防止跨趨勢拉直線）
-    const upData = supertrendData.map(curr => ({
-      time: curr.time,
-      value: (curr.value !== null && curr.trend === 1) ? curr.value : undefined
-    }));
+    // 準備上升與下降軌道數據（過濾掉非當前趨勢的點，LWC 不支援 undefined value）
+    const upData = supertrendData
+      .filter(curr => curr.value !== null && curr.trend === 1)
+      .map(curr => ({ time: curr.time, value: curr.value }));
 
-    const dnData = supertrendData.map(curr => ({
-      time: curr.time,
-      value: (curr.value !== null && curr.trend === -1) ? curr.value : undefined
-    }));
+    const dnData = supertrendData
+      .filter(curr => curr.value !== null && curr.trend === -1)
+      .map(curr => ({ time: curr.time, value: curr.value }));
 
     // 計算買賣轉折訊號標籤
     const markers = [];
