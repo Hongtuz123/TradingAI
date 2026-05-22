@@ -308,7 +308,8 @@ function renderLWChart(containerId, klineData, height = 260) {
     supertrendDnSeries.setData(dnData);
 
     if (markers.length > 0) {
-      candleSeries.setMarkers(markers);
+      // LWC v5 已移除 series.setMarkers()，改用全域函式 createSeriesMarkers
+      LightweightCharts.createSeriesMarkers(candleSeries, markers);
     }
 
     chart.timeScale().fitContent();
