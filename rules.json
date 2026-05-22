@@ -3,7 +3,7 @@
     "eps_growth": 15,
     "rev_growth": 20,
     "roe": 10,
-    "trust_days": 3,
+    "trust_days": 10,
     "daily_vol": 2000,
     "market_cap": 50,
     "vol_ratio": 1.5,

@@ -230,6 +230,118 @@ def classify_tech_type(latest, prev, close, vol):
     return 'none'
 
 
+def fetch_institutional_data():
+    """
+    從 TWSE 和 TPEx 抓取最新有資料交易日的三大法人數據
+    回傳一個 dict: { '股票代碼': { 'trust': 投信買賣超張數, 'foreign': 外資買賣超張數 } }
+    """
+    import datetime
+    import time
+    
+    # 產生最近 10 天的日期候選名單，用來自動回溯
+    now = datetime.datetime.now()
+    twse_dates = []
+    tpex_dates = []
+    for i in range(10):
+        d = now - datetime.timedelta(days=i)
+        # 上市：YYYYMMDD
+        twse_dates.append(d.strftime("%Y%m%d"))
+        # 上櫃：民國年/MM/DD
+        roc_year = d.year - 1911
+        tpex_dates.append(f"{roc_year}/{d.strftime('%m/%d')}")
+        
+    inst_data = {}
+    valid_idx = -1
+    
+    print("  正在探測最新的上市三大法人交易日資料...")
+    # 1. 探測 TWSE 資料
+    for idx, date_str in enumerate(twse_dates):
+        url = f"https://www.twse.com.tw/rwd/zh/fund/T86?date={date_str}&selectType=ALLBUT0999&response=json"
+        try:
+            res = requests.get(url, timeout=10)
+            if res.status_code == 200:
+                data = res.json()
+                if data.get("stat") == "OK" and "data" in data:
+                    print(f"  ✅ 成功取得 {date_str} 上市三大法人資料！共 {len(data['data'])} 筆。")
+                    valid_idx = idx
+                    
+                    # 解析 fields 尋找外資與投信索引
+                    fields = data.get("fields", [])
+                    foreign_idx = -1
+                    trust_idx = -1
+                    for f_idx, field in enumerate(fields):
+                        if "外陸資" in field and "買賣超" in field and "不含外資自營商" in field:
+                            foreign_idx = f_idx
+                        elif "投信" in field and "買賣超" in field:
+                            trust_idx = f_idx
+                            
+                    # fallback 至預設索引
+                    if foreign_idx == -1: foreign_idx = 4
+                    if trust_idx == -1: trust_idx = 10
+                    
+                    for row in data["data"]:
+                        code = row[0].strip()
+                        # 去除逗號並轉為股數，再除以 1000 得到張數
+                        try:
+                            foreign_val = int(row[foreign_idx].replace(",", "")) // 1000
+                        except Exception:
+                            foreign_val = 0
+                        try:
+                            trust_val = int(row[trust_idx].replace(",", "")) // 1000
+                        except Exception:
+                            trust_val = 0
+                        
+                        inst_data[code] = {
+                            "foreign": foreign_val,
+                            "trust": trust_val
+                        }
+                    break
+                else:
+                    # 資料尚未公布或假日無交易
+                    pass
+        except Exception as e:
+            print(f"  探測上市日期 {date_str} 出錯: {e}")
+        time.sleep(0.1) # 遵守 100ms 間隔限制
+        
+    if valid_idx == -1:
+        print("  ⚠️ 無法抓取到任何最近的上市三大法人資料！")
+        return {}
+        
+    # 2. 既然抓到了有效交易日，用對應的日期去抓 TPEx (上櫃)
+    tpex_date_str = tpex_dates[valid_idx]
+    print(f"  正在同步抓取上櫃三大法人資料，日期: {tpex_date_str}...")
+    tpex_url = f"https://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&o=json&t=D&d={tpex_date_str}&s=0,asc"
+    try:
+        res = requests.get(tpex_url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            if "tables" in data and len(data["tables"]) > 0:
+                table = data["tables"][0]
+                if "data" in table:
+                    print(f"  ✅ 成功取得 {tpex_date_str} 上櫃三大法人資料！共 {len(table['data'])} 筆。")
+                    for row in table["data"]:
+                        if len(row) >= 14:
+                            code = row[0].strip()
+                            try:
+                                foreign_val = int(row[4].replace(",", "")) // 1000
+                            except Exception:
+                                foreign_val = 0
+                            try:
+                                trust_val = int(row[13].replace(",", "")) // 1000
+                            except Exception:
+                                trust_val = 0
+                            
+                            # 合併或寫入
+                            inst_data[code] = {
+                                "foreign": foreign_val,
+                                "trust": trust_val
+                            }
+    except Exception as e:
+        print(f"  抓取上櫃三大法人出錯: {e}")
+        
+    return inst_data
+
+
 def run_screener():
     print("讀取股票評估清單 CSV...")
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -239,6 +351,9 @@ def run_screener():
     if not csv_stocks:
         print("⚠️ CSV 清單為空或讀取失敗，改用預設 WATCHLIST...")
         csv_stocks = WATCHLIST
+        
+    print("下載三大法人當日買賣超資料...")
+    inst_data = fetch_institutional_data()
         
     print(f"載入 TWSE/TPEX OpenAPI 市場資訊...")
     all_market_info = load_all_market_info()
@@ -359,12 +474,20 @@ def run_screener():
             ma20_val = round(float(latest['ma20']), 2)
             ma60_val = round(float(latest['ma60']), 2)
 
+            # 三大法人買賣超數據
+            inst_info = inst_data.get(symbol, {"trust": 0, "foreign": 0})
+            trust_net_buy = inst_info["trust"]
+            foreign_net_buy = inst_info["foreign"]
+            foreign_buy_bool = bool(foreign_net_buy > 0)
+
             results.append({
                 "id": symbol, "name": name, "market": market,
                 "price": round(close, 2), "change": round(change_num, 2),
                 "epsYoY": None, "revYoY": None, "roe": None,
                 "grossMargin": None, "debtRatio": None,
-                "trustDays": None, "foreignBuy": None,
+                "trustDays": trust_net_buy, 
+                "foreignBuy": foreign_buy_bool,
+                "foreignNetBuy": foreign_net_buy,
                 "volRatio": vol_ratio, "turnover": None,
                 "marketCap": None, "dailyVol": vol // 1000,
                 "type": tech_type,
@@ -409,7 +532,7 @@ def run_screener():
             rules = json.load(rf)
     except Exception as e:
         print(f"無法讀取 rules.json: {e}")
-        rules = {"scoring": {"rev_growth":20, "eps_growth":15, "roe":10, "trust_days":3, "daily_vol":2000, "market_cap":50, "vol_ratio":1.5, "dist_52w":15}}
+        rules = {"scoring": {"rev_growth":20, "eps_growth":15, "roe":10, "trust_days":10, "daily_vol":2000, "market_cap":50, "vol_ratio":1.5, "dist_52w":15}}
 
     rules_json_str = json.dumps(rules, ensure_ascii=False, indent=2)
 

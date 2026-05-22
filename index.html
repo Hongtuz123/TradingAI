@@ -224,14 +224,14 @@
               籌碼與資金面
             </div>
             <div class="filter-item">
-              <label>投信連買天數</label>
+              <label>投信當日買超 (張)</label>
               <div class="filter-input-wrap">
-                <input type="number" id="f_trust_days" value="3" min="1" max="20" />
-                <span class="unit">天以上</span>
+                <input type="number" id="f_trust_days" value="10" min="0" max="10000" />
+                <span class="unit">張以上</span>
               </div>
             </div>
             <div class="filter-item">
-              <label>外資近5日買超</label>
+              <label>外資當日買超</label>
               <label class="toggle"><input type="checkbox" id="f_foreign_buy" checked /><span></span></label>
             </div>
             <div class="filter-item">
@@ -334,7 +334,7 @@
                 <option value="techType">按技術類型</option>
                 <option value="epsGrowth">按EPS成長</option>
                 <option value="revGrowth">按營收成長</option>
-                <option value="trustDays">按投信連買</option>
+                <option value="trustDays">按投信當日買超</option>
               </select>
             </div>
           </div>

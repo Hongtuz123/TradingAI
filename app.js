@@ -199,8 +199,8 @@ function runScreener() {
     chk(s.grossMargin, s.grossMargin >= p.margin,`毛利率 (${s.grossMargin ?? '--'}% < ${p.margin}%)`);
     chk(s.debtRatio,   s.debtRatio <= p.debt,    `負債比 (${s.debtRatio ?? '--'}% > ${p.debt}%)`);
     // 籌碼（可能為 null）
-    chk(s.trustDays,   s.trustDays >= p.trustDays, `投信連買 (${s.trustDays ?? '--'}天 < ${p.trustDays}天)`);
-    if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資近5日買超 (未達標)`); }
+    chk(s.trustDays,   s.trustDays >= p.trustDays, `投信當日買超 (${s.trustDays ?? '--'}張 < ${p.trustDays}張)`);
+    if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資當日買超 (未達標)`); }
     // 技術面（真實計算）
     if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
     chk(s.turnover,    s.turnover >= p.turnover, `週轉率 (${s.turnover ?? '--'}% < ${p.turnover}%)`);
@@ -273,8 +273,8 @@ function renderScreenerTable(data) {
       <td>${s.epsYoY != null ? s.epsYoY + '%' : '--'}</td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
-      <td>${s.trustDays != null ? s.trustDays + '天' : '--'}</td>
-      <td>${s.foreignBuy != null ? (s.foreignBuy ? '✔' : '✘') : '--'}</td>
+      <td>${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</td>
+      <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
       <td>${s.volRatio}x</td>
       <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
     `;
@@ -362,7 +362,8 @@ function renderWhitelistGrid() {
           <div>收盤：${s.price} (${s.change}%)</div>
           <div>EPS YoY：${s.epsYoY != null ? s.epsYoY + '%' : '--'}</div>
           <div>營收 YoY：${s.revYoY != null ? s.revYoY + '%' : '--'}</div>
-          <div>投信連買：${s.trustDays != null ? s.trustDays + '天' : '--'}</div>
+          <div>投信當日：${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</div>
+          <div>外資當日：${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</div>
           <div>均量比：${s.volRatio}x</div>
           <div>距52W高：${s.dist52W}%</div>
           <div>20MA走升：${s.ma20Rising ? '✔ 是' : '✘ 否'}</div>
@@ -467,8 +468,8 @@ function showEmptyResultModal(p, passedCount) {
     'ROE':        mockStocks.filter(s => s.roe < p.roe).length,
     '毛利率':     mockStocks.filter(s => s.grossMargin < p.margin).length,
     '負債比':     mockStocks.filter(s => s.debtRatio > p.debt).length,
-    '投信連買':   mockStocks.filter(s => s.trustDays < p.trustDays).length,
-    '外資買超':   mockStocks.filter(s => p.fb && !s.foreignBuy).length,
+    '投信買超不足': mockStocks.filter(s => s.trustDays < p.trustDays).length,
+    '外資未買超':   mockStocks.filter(s => p.fb && !s.foreignBuy).length,
     '量能比':     mockStocks.filter(s => s.volRatio < p.volRatio).length,
     '週轉率':     mockStocks.filter(s => s.turnover < p.turnover).length,
     '市值':       mockStocks.filter(s => s.marketCap < p.mktCap).length,
