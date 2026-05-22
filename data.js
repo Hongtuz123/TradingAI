@@ -1,9 +1,9 @@
-// 由 yfinance 產生之真實資料 — 2026-05-22 14:16:38
+// 由 yfinance 產生之真實資料 — 2026-05-22 15:57:41
 const marketData = {
   "twii_above_60ma": true,
   "otc_above_60ma": true,
   "vol_above_20ma": false,
-  "lastUpdate": "2026-05-22 14:16:38",
+  "lastUpdate": "2026-05-22 15:57:41",
   "price_failed_stocks": [
     {
       "Code": "00403A",
@@ -152153,14 +152153,14 @@ const mockStocks = [
         "open": 14.49,
         "high": 14.49,
         "low": 14.47,
-        "close": 14.48,
+        "close": 14.49,
         "volume": 41511790
       },
       {
         "date": "2025-11-20",
         "open": 14.5,
         "high": 14.52,
-        "low": 14.49,
+        "low": 14.48,
         "close": 14.5,
         "volume": 31929060
       },

@@ -336,7 +336,15 @@ async function changeResolution(res) {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
     }
   } catch (err) {
-    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--danger)">載入失敗: ${err.message}</div>`;
+    console.warn("無法取得 API K 線，嘗試載入本地日 K：", err.message);
+    const stock = mockStocks.find(s => s.id === currentChartSymbol);
+    if (stock && stock.kline && stock.kline.length > 0 && (res === '1D' || interval === '1d')) {
+      currentKlineData = stock.kline;
+      currentLWChart = renderLWChart('tvChartContainer', stock.kline);
+    } else {
+      const offlineMsg = (res === '1D' || interval === '1d') ? "無可用資料" : "離線模式僅支援日 K 線圖";
+      container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">${offlineMsg} (${err.message})</div>`;
+    }
   }
 }
 
@@ -362,7 +370,13 @@ async function searchAndLoadChart() {
     loadTVChart(stock);
     inputEl.value = '';
   } catch (err) {
-    alert(`找不到標的或發生錯誤: ${err.message}`);
+    console.warn("API 取得失敗，嘗試載入本地資料:", err.message);
+    if (stock && stock.kline && stock.kline.length > 0) {
+      loadTVChart(stock);
+      inputEl.value = '';
+    } else {
+      alert(`找不到標的或無法連接伺服器: ${err.message}`);
+    }
   }
 }
 

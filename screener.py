@@ -232,7 +232,8 @@ def classify_tech_type(latest, prev, close, vol):
 
 def run_screener():
     print("讀取股票評估清單 CSV...")
-    csv_path = r"C:\GoogleAntigravity\2026Trading1\股票分析清單.csv"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(base_dir, "股票分析清單.csv")
     csv_stocks = read_stock_list_from_csv(csv_path)
     
     if not csv_stocks:
