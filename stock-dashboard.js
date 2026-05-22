@@ -295,19 +295,21 @@ function renderLWChart(containerId, klineData, height = 260) {
     crosshairMarkerVisible: false,
   });
 
-  // 繪製 Supertrend 上升軌道 (螢光綠)
+  // 繪製 Supertrend 上升軌道（綠色實線，箱體底邊）
   const supertrendUpSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#00ff88',
-    lineWidth: 2.5,
+    color: '#22c55e',
+    lineWidth: 2,
+    lineStyle: 0,
     title: '超級趨勢(多)',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
   });
 
-  // 繪製 Supertrend 下降軌道 (螢光紅)
+  // 繪製 Supertrend 下降軌道（紅色實線，箱體頂邊）
   const supertrendDnSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#ff3b5c',
-    lineWidth: 2.5,
+    color: '#ef4444',
+    lineWidth: 2,
+    lineStyle: 0,
     title: '超級趨勢(空)',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
@@ -398,37 +400,27 @@ function renderLWChart(containerId, klineData, height = 260) {
       segments.push({ trend: segTrend, startIdx: segStart, endIdx: supertrendData.length - 1 });
     }
 
-    // 為每個段計算邊界線數據
-    const highTrendBottomLineData = []; // 綠色實線：high-trend 段最低價
-    const lowTrendTopLineData = [];     // 紅色實線：low-trend 段最高價
-
     for (const seg of segments) {
-      // 收集該段對應的 K 線數據
-      let segMin = Infinity;
-      let segMax = -Infinity;
-      const segTimes = [];
-      const segCloseData = []; // 用於 highlighter 填充
+      // 收集段內 K 線與 Supertrend 值
+      const segCloseData = [];
+      let segStMin = Infinity;   // 該段 Supertrend 值的最小值
+      let segStMax = -Infinity;  // 該段 Supertrend 值的最大值
       for (let i = seg.startIdx; i <= seg.endIdx; i++) {
         if (supertrendData[i].value === null) continue;
         const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
         if (candle) {
-          segMin = Math.min(segMin, candle.low);
-          segMax = Math.max(segMax, candle.high);
-          segTimes.push(supertrendData[i].time);
           segCloseData.push({ time: candle.time, value: candle.close });
+          segStMin = Math.min(segStMin, supertrendData[i].value);
+          segStMax = Math.max(segStMax, supertrendData[i].value);
         }
       }
 
-      if (segTimes.length === 0) continue;
+      if (segCloseData.length === 0) continue;
 
       if (seg.trend === 1) {
-        // High-trend：底部綠色實線
-        for (const t of segTimes) {
-          highTrendBottomLineData.push({ time: t, value: segMin });
-        }
-        // Highlighter：從底線 (segMin) 到收盤價之間填綠色半透明
+        // High-trend highlighter：以 Supertrend 線最低值為基準，往上填綠色
         const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
-          baseValue: { type: 'price', price: segMin },
+          baseValue: { type: 'price', price: segStMin },
           topLineColor: 'transparent',
           topFillColor1: 'rgba(34, 197, 94, 0.18)',
           topFillColor2: 'rgba(34, 197, 94, 0.04)',
@@ -443,13 +435,9 @@ function renderLWChart(containerId, klineData, height = 260) {
         });
         hlSeries.setData(segCloseData);
       } else {
-        // Low-trend：頂部紅色實線
-        for (const t of segTimes) {
-          lowTrendTopLineData.push({ time: t, value: segMax });
-        }
-        // Highlighter：從頂線 (segMax) 到收盤價之間填紅色半透明
+        // Low-trend highlighter：以 Supertrend 線最高值為基準，往下填紅色
         const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
-          baseValue: { type: 'price', price: segMax },
+          baseValue: { type: 'price', price: segStMax },
           topLineColor: 'transparent',
           topFillColor1: 'transparent',
           topFillColor2: 'transparent',
@@ -466,33 +454,9 @@ function renderLWChart(containerId, klineData, height = 260) {
       }
     }
 
-    // 繪製 high-trend 底部綠色實線
-    const highTrendBottomSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-      color: '#22c55e',
-      lineWidth: 2,
-      lineStyle: 0, // 實線
-      title: '',
-      crosshairMarkerVisible: false,
-      priceLineVisible: false,
-      lastValueVisible: false,
-    });
-    highTrendBottomSeries.setData(highTrendBottomLineData);
-
-    // 繪製 low-trend 頂部紅色實線
-    const lowTrendTopSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-      color: '#ef4444',
-      lineWidth: 2,
-      lineStyle: 0, // 實線
-      title: '',
-      crosshairMarkerVisible: false,
-      priceLineVisible: false,
-      lastValueVisible: false,
-    });
-    lowTrendTopSeries.setData(lowTrendTopLineData);
-
     // 計算買賣轉折訊號標籤
-    // 買 → 掛在 highTrendBottomSeries（綠色箱體底線），顯示在底線下方
-    // 賣 → 掛在 lowTrendTopSeries（紅色箱體頂線），顯示在頂線上方
+    // 買 → 掛在 supertrendUpSeries（Supertrend 綠線），顯示在線下方
+    // 賣 → 掛在 supertrendDnSeries（Supertrend 紅線），顯示在線上方
     const buyMarkers = [];
     const sellMarkers = [];
     for (let i = 1; i < supertrendData.length; i++) {
@@ -524,12 +488,12 @@ function renderLWChart(containerId, klineData, height = 260) {
     supertrendUpSeries.setData(upData);
     supertrendDnSeries.setData(dnData);
 
-    // 買標籤掛在箱體綠色底線，賣標籤掛在箱體紅色頂線
+    // 買標籤掛在 Supertrend 綠線，賣標籤掛在 Supertrend 紅線
     if (buyMarkers.length > 0) {
-      LightweightCharts.createSeriesMarkers(highTrendBottomSeries, buyMarkers);
+      supertrendUpSeries.setMarkers(buyMarkers);
     }
     if (sellMarkers.length > 0) {
-      LightweightCharts.createSeriesMarkers(lowTrendTopSeries, sellMarkers);
+      supertrendDnSeries.setMarkers(sellMarkers);
     }
 
     mainChart.timeScale().fitContent();
