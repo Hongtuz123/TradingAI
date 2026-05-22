@@ -143,8 +143,11 @@
     <!-- ======================== 篩選器視圖 ======================== -->
     <section class="view" id="view-screener">
       <div class="screener-layout">
+        <!-- 手機版專屬：展開/收合篩選條件按鈕 -->
+        <button class="mobile-filter-toggle" onclick="toggleMobileFilter()">⚙️ 展開/收合篩選條件</button>
+        
         <!-- 左側：篩選條件面板 -->
-        <aside class="filter-panel">
+        <aside class="filter-panel" id="filterPanel">
           <div class="filter-panel-header">
             <h2>⚙️ 篩選條件</h2>
             <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 300 檔進行運算，<br>最多篩選出前 40 檔符合規則之標的。</p>

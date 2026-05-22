@@ -526,3 +526,11 @@ function closeModal(e) {
   if (e && e.target !== document.getElementById('stockModal')) return;
   document.getElementById('stockModal').classList.remove('active');
 }
+
+// 手機版：展開/收合篩選條件
+function toggleMobileFilter() {
+  const panel = document.getElementById('filterPanel');
+  if (panel) {
+    panel.classList.toggle('active');
+  }
+}

@@ -872,5 +872,253 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 .inline-dash { padding: 15px; }
 .inline-tv-wrap { border-radius: 8px; overflow: hidden; }
 
+/* ================= 手機版響應式美化 RWD (max-width: 768px) ================= */
+@media (max-width: 768px) {
+  /* 1. 頁面滾動與主容器調整 */
+  body {
+    height: auto;
+    overflow-y: auto;
+  }
+  
+  /* 2. Topbar 導航與狀態重構 */
+  .topbar {
+    height: auto;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .topbar-brand {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .topbar-nav {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 5px;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .nav-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .topbar-status {
+    width: 100%;
+    justify-content: space-between;
+    font-size: 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 8px;
+  }
+  
+  .current-time, .last-update {
+    display: none; /* 手機版隱藏非必要時間，保留市場狀態 */
+  }
+  
+  .market-status-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* 3. 儀表板視圖 */
+  .view {
+    padding: 10px;
+    height: auto;
+  }
+  
+  .market-health-banner {
+    padding: 15px;
+  }
+  
+  .health-indicators {
+    grid-template-columns: 1fr; /* 單欄 */
+    gap: 8px;
+  }
+  
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr); /* 卡片改為雙欄 */
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .stat-icon {
+    font-size: 20px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .dash-main-layout {
+    grid-template-columns: 1fr; /* 左右改為上下 */
+    height: auto;
+    min-height: auto;
+    gap: 15px;
+  }
+  
+  .dash-wl-panel {
+    max-height: 350px;
+  }
+  
+  .dash-stock-detail {
+    min-height: 450px;
+  }
+
+  /* 4. 篩選器視圖 */
+  .screener-layout {
+    flex-direction: column;
+  }
+  
+  .mobile-filter-toggle {
+    display: block !important;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .mobile-filter-toggle:hover {
+    background-color: var(--bg-card);
+  }
+  
+  /* 預設收合手機版篩選面板 */
+  .filter-panel {
+    width: 100% !important;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  
+  .filter-panel.active {
+    display: flex !important;
+  }
+  
+  .results-table-wrap {
+    overflow-x: auto; /* 啟用水平滾動 */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .results-table th, .results-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: nowrap; /* 避免欄位擠壓換行 */
+  }
+
+  /* 5. 白名單視圖 */
+  .whitelist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .whitelist-actions {
+    width: 100%;
+  }
+  .whitelist-actions button {
+    flex: 1;
+  }
+  
+  .score-criteria-grid {
+    padding: 10px;
+    gap: 6px;
+  }
+  
+  .whitelist-grid {
+    grid-template-columns: 1fr; /* 白名單卡片單欄 */
+    gap: 12px;
+  }
+
+  /* 6. K線圖視圖 */
+  .chart-layout {
+    height: auto !important;
+  }
+  
+  .chart-main {
+    min-height: 500px;
+  }
+  
+  .chart-toolbar {
+    height: auto;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .chart-stock-info {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  #chartSearchInput {
+    width: 100px !important;
+  }
+
+  /* 7. 個股戰情板 (Stock Dash) 手機版大改裝 */
+  .sd-topbar {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+    padding: 15px;
+  }
+  
+  .sd-price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .sd-price {
+    font-size: 32px;
+  }
+  
+  .sd-date {
+    text-align: center;
+  }
+  
+  .sd-body {
+    grid-template-columns: 1fr; /* 三欄改單欄 */
+    gap: 15px;
+  }
+  
+  .sd-indicators {
+    grid-template-columns: repeat(2, 1fr); /* 5欄改雙欄 */
+    gap: 8px;
+  }
+  
+  .sd-ind-card {
+    padding: 10px;
+  }
+  
+  .ind-main {
+    font-size: 18px;
+  }
+  
+  .rsi-val {
+    font-size: 22px;
+  }
+}
+
+/* 預設非手機版隱藏摺疊按鈕 */
+.mobile-filter-toggle {
+  display: none;
+}
+
 
 
