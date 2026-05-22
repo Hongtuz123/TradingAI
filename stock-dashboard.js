@@ -365,8 +365,7 @@ function renderLWChart(containerId, klineData, height = 260) {
     // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
-    // 準備上升與下降軌道數據
-    // 在趨勢轉折點加入銜接點（同時出現在兩條線），讓線段不斷裂
+    // 準備上升與下降軌道數據（嚴格互斥：每個 bar 只屬於一種趨勢）
     const upData = [];
     const dnData = [];
     for (let i = 0; i < supertrendData.length; i++) {
@@ -375,39 +374,112 @@ function renderLWChart(containerId, klineData, height = 260) {
 
       if (curr.trend === 1) {
         upData.push({ time: curr.time, value: curr.value });
-        // 如果前一點是下降趨勢，在 dnData 也放入該點（銜接）
-        if (i > 0 && supertrendData[i - 1].trend === -1 && supertrendData[i - 1].value !== null) {
-          dnData.push({ time: curr.time, value: curr.value });
-        }
       } else {
         dnData.push({ time: curr.time, value: curr.value });
-        // 如果前一點是上升趨勢，在 upData 也放入該點（銜接）
-        if (i > 0 && supertrendData[i - 1].trend === 1 && supertrendData[i - 1].value !== null) {
-          upData.push({ time: curr.time, value: curr.value });
+      }
+    }
+
+    // 識別連續趨勢段，為 high-trend 底部畫綠色實線、low-trend 頂部畫紅色實線
+    const segments = []; // { trend, startIdx, endIdx }
+    let segStart = -1;
+    let segTrend = null;
+    for (let i = 0; i < supertrendData.length; i++) {
+      const curr = supertrendData[i];
+      if (curr.value === null) continue;
+      if (curr.trend !== segTrend) {
+        if (segTrend !== null && segStart >= 0) {
+          segments.push({ trend: segTrend, startIdx: segStart, endIdx: i - 1 });
+        }
+        segTrend = curr.trend;
+        segStart = i;
+      }
+    }
+    if (segTrend !== null && segStart >= 0) {
+      segments.push({ trend: segTrend, startIdx: segStart, endIdx: supertrendData.length - 1 });
+    }
+
+    // 為每個段計算邊界線數據
+    const highTrendBottomLineData = []; // 綠色實線：high-trend 段最低價
+    const lowTrendTopLineData = [];     // 紅色實線：low-trend 段最高價
+
+    for (const seg of segments) {
+      // 收集該段對應的 K 線數據
+      let segMin = Infinity;
+      let segMax = -Infinity;
+      const segTimes = [];
+      for (let i = seg.startIdx; i <= seg.endIdx; i++) {
+        if (supertrendData[i].value === null) continue;
+        const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
+        if (candle) {
+          segMin = Math.min(segMin, candle.low);
+          segMax = Math.max(segMax, candle.high);
+          segTimes.push(supertrendData[i].time);
+        }
+      }
+
+      if (segTimes.length === 0) continue;
+
+      if (seg.trend === 1) {
+        // High-trend：底部綠色實線（該段所有 K 線的最低價）
+        for (const t of segTimes) {
+          highTrendBottomLineData.push({ time: t, value: segMin });
+        }
+      } else {
+        // Low-trend：頂部紅色實線（該段所有 K 線的最高價）
+        for (const t of segTimes) {
+          lowTrendTopLineData.push({ time: t, value: segMax });
         }
       }
     }
 
-    // 計算買賣轉折訊號標籤（白色、放大 20%）
+    // 繪製 high-trend 底部綠色實線
+    const highTrendBottomSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+      color: '#22c55e',
+      lineWidth: 2,
+      lineStyle: 0, // 實線
+      title: '',
+      crosshairMarkerVisible: false,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    highTrendBottomSeries.setData(highTrendBottomLineData);
+
+    // 繪製 low-trend 頂部紅色實線
+    const lowTrendTopSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+      color: '#ef4444',
+      lineWidth: 2,
+      lineStyle: 0, // 實線
+      title: '',
+      crosshairMarkerVisible: false,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    lowTrendTopSeries.setData(lowTrendTopLineData);
+
+    // 計算買賣轉折訊號標籤
+    // 買 → 出現在 high-trend 底線之下（insetBar + belowBar）
+    // 賣 → 出現在 low-trend 頂線之上（insetBar + aboveBar）
     const markers = [];
     for (let i = 1; i < supertrendData.length; i++) {
       const prev = supertrendData[i - 1];
       const curr = supertrendData[i];
       if (prev.value !== null && curr.value !== null) {
         if (prev.trend === -1 && curr.trend === 1) {
+          // 買訊號：放在 high-trend 實線之下
           markers.push({
             time: curr.time,
             position: 'belowBar',
-            color: '#ffffff',
+            color: '#22c55e',
             shape: 'arrowUp',
             text: '買',
             size: 2.4,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
+          // 賣訊號：放在 low-trend 實線之上
           markers.push({
             time: curr.time,
             position: 'aboveBar',
-            color: '#ffffff',
+            color: '#ef4444',
             shape: 'arrowDown',
             text: '賣',
             size: 2.4,
