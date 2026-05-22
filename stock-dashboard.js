@@ -6,6 +6,108 @@ let currentLWChart = null;
 let currentLWDashChart = null;
 
 // ---- 技術指標計算函式 ----
+function calculateSupertrend(data, period = 10, multiplier = 3) {
+  if (data.length < period) return [];
+
+  // 1. 計算 TR (True Range)
+  const tr = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i === 0) {
+      tr.push(data[i].high - data[i].low);
+    } else {
+      const highLow = data[i].high - data[i].low;
+      const highClose = Math.abs(data[i].high - data[i - 1].close);
+      const lowClose = Math.abs(data[i].low - data[i - 1].close);
+      tr.push(Math.max(highLow, highClose, lowClose));
+    }
+  }
+
+  // 2. 計算 ATR (Wilder's Smoothed Moving Average)
+  const atr = new Array(data.length).fill(0);
+  let sum = 0;
+  for (let i = 0; i < period; i++) {
+    sum += tr[i];
+  }
+  atr[period - 1] = sum / period;
+
+  for (let i = period; i < data.length; i++) {
+    atr[i] = (atr[i - 1] * (period - 1) + tr[i]) / period;
+  }
+
+  // 3. 計算 Supertrend 軌道
+  const supertrend = [];
+  const up = new Array(data.length).fill(0);
+  const dn = new Array(data.length).fill(0);
+  const trend = new Array(data.length).fill(1); // 1 = Up, -1 = Down
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      supertrend.push({ time: data[i].time, value: null, trend: 1, up: null, dn: null });
+      continue;
+    }
+
+    const src = (data[i].high + data[i].low) / 2;
+    const currentAtr = atr[i];
+
+    const basicUp = src - multiplier * currentAtr;
+    const basicDn = src + multiplier * currentAtr;
+
+    if (i === period - 1) {
+      up[i] = basicUp;
+      dn[i] = basicDn;
+      trend[i] = 1;
+      supertrend.push({
+        time: data[i].time,
+        value: basicUp,
+        trend: 1,
+        up: basicUp,
+        dn: basicDn
+      });
+      continue;
+    }
+
+    const prevUp = up[i - 1];
+    const prevDn = dn[i - 1];
+    const prevClose = data[i - 1].close;
+
+    // 計算上升軌道 (Up Trend Line)
+    if (prevClose > prevUp) {
+      up[i] = Math.max(basicUp, prevUp);
+    } else {
+      up[i] = basicUp;
+    }
+
+    // 計算下降軌道 (Down Trend Line)
+    if (prevClose < prevDn) {
+      dn[i] = Math.min(basicDn, prevDn);
+    } else {
+      dn[i] = basicDn;
+    }
+
+    // 判斷趨勢方向
+    const prevTrend = trend[i - 1];
+    let currentTrend = prevTrend;
+    if (prevTrend === -1 && data[i].close > prevDn) {
+      currentTrend = 1;
+    } else if (prevTrend === 1 && data[i].close < prevUp) {
+      currentTrend = -1;
+    }
+    trend[i] = currentTrend;
+
+    const value = currentTrend === 1 ? up[i] : dn[i];
+
+    supertrend.push({
+      time: data[i].time,
+      value: value,
+      trend: currentTrend,
+      up: up[i],
+      dn: dn[i]
+    });
+  }
+
+  return supertrend;
+}
+
 function calculateSMA(data, period) {
   const sma = [];
   for (let i = 0; i < data.length; i++) {
@@ -140,13 +242,79 @@ function renderLWChart(containerId, klineData, height = 260) {
     scaleMargins: { top: 0.7, bottom: 0.15 },
   });
 
+  // 繪製 Supertrend 上升軌道 (綠色)
+  const supertrendUpSeries = chart.addSeries(LightweightCharts.LineSeries, {
+    color: '#22c55e',
+    lineWidth: 2,
+    title: '超級趨勢(多)',
+    crosshairMarkerVisible: true,
+  });
+
+  // 繪製 Supertrend 下降軌道 (紅色)
+  const supertrendDnSeries = chart.addSeries(LightweightCharts.LineSeries, {
+    color: '#ef4444',
+    lineWidth: 2,
+    title: '超級趨勢(空)',
+    crosshairMarkerVisible: true,
+  });
+
   try {
     candleSeries.setData(formattedCandles);
     volumeSeries.setData(formattedVolume);
     smaSeries.setData(calculateSMA(formattedCandles, 5));
     rsiSeries.setData(calculateRSI(formattedCandles, 14));
+
+    // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
+    const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
+
+    // 準備上升與下降軌道數據（利用 undefined 達成斷開，防止跨趨勢拉直線）
+    const upData = supertrendData.map(curr => ({
+      time: curr.time,
+      value: (curr.value !== null && curr.trend === 1) ? curr.value : undefined
+    }));
+
+    const dnData = supertrendData.map(curr => ({
+      time: curr.time,
+      value: (curr.value !== null && curr.trend === -1) ? curr.value : undefined
+    }));
+
+    // 計算買賣轉折訊號標籤
+    const markers = [];
+    for (let i = 1; i < supertrendData.length; i++) {
+      const prev = supertrendData[i - 1];
+      const curr = supertrendData[i];
+      if (prev.value !== null && curr.value !== null) {
+        if (prev.trend === -1 && curr.trend === 1) {
+          markers.push({
+            time: curr.time,
+            position: 'belowBar',
+            color: '#22c55e',
+            shape: 'arrowUp',
+            text: '買',
+            size: 1.5,
+          });
+        } else if (prev.trend === 1 && curr.trend === -1) {
+          markers.push({
+            time: curr.time,
+            position: 'aboveBar',
+            color: '#ef4444',
+            shape: 'arrowDown',
+            text: '賣',
+            size: 1.5,
+          });
+        }
+      }
+    }
+
+    supertrendUpSeries.setData(upData);
+    supertrendDnSeries.setData(dnData);
+
+    if (markers.length > 0) {
+      candleSeries.setMarkers(markers);
+    }
+
     chart.timeScale().fitContent();
-    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered`);
+    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Supertrend`);
   } catch (err) {
     console.error('[LWC Error]', err);
     container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
