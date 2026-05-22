@@ -172,20 +172,20 @@ function renderLWChart(containerId, klineData, height = 260) {
   const chart = LightweightCharts.createChart(container, {
     autoSize: true,
     layout: {
-      background: { type: 'solid', color: '#0f172a' },
-      textColor: '#94a3b8',
+      background: { type: 'solid', color: '#030712' },
+      textColor: '#cbd5e1',
     },
     grid: {
-      vertLines: { color: 'rgba(71, 85, 105, 0.08)' },
-      horzLines: { color: 'rgba(71, 85, 105, 0.08)' },
+      vertLines: { color: 'rgba(51, 65, 85, 0.25)' },
+      horzLines: { color: 'rgba(51, 65, 85, 0.25)' },
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { 
-      borderColor: 'rgba(71, 85, 105, 0.3)', 
+      borderColor: 'rgba(71, 85, 105, 0.5)', 
       autoScale: true,
       scaleMargins: { top: 0.05, bottom: 0.05 }
     },
-    timeScale: { borderColor: 'rgba(71, 85, 105, 0.3)', timeVisible: true, secondsVisible: false },
+    timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
   });
 
   const candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
@@ -242,20 +242,22 @@ function renderLWChart(containerId, klineData, height = 260) {
     scaleMargins: { top: 0.7, bottom: 0.15 },
   });
 
-  // 繪製 Supertrend 上升軌道 (綠色)
+  // 繪製 Supertrend 上升軌道 (螢光綠)
   const supertrendUpSeries = chart.addSeries(LightweightCharts.LineSeries, {
-    color: '#22c55e',
-    lineWidth: 2,
+    color: '#00ff88',
+    lineWidth: 2.5,
     title: '超級趨勢(多)',
     crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
   });
 
-  // 繪製 Supertrend 下降軌道 (紅色)
+  // 繪製 Supertrend 下降軌道 (螢光紅)
   const supertrendDnSeries = chart.addSeries(LightweightCharts.LineSeries, {
-    color: '#ef4444',
-    lineWidth: 2,
+    color: '#ff3b5c',
+    lineWidth: 2.5,
     title: '超級趨勢(空)',
     crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
   });
 
   try {
@@ -286,19 +288,19 @@ function renderLWChart(containerId, klineData, height = 260) {
           markers.push({
             time: curr.time,
             position: 'belowBar',
-            color: '#22c55e',
+            color: '#00ff88',
             shape: 'arrowUp',
             text: '買',
-            size: 1.5,
+            size: 2,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
           markers.push({
             time: curr.time,
             position: 'aboveBar',
-            color: '#ef4444',
+            color: '#ff3b5c',
             shape: 'arrowDown',
             text: '賣',
-            size: 1.5,
+            size: 2,
           });
         }
       }

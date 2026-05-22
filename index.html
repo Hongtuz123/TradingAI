@@ -396,8 +396,8 @@
 
     <!-- ======================== K線圖視圖 ======================== -->
     <section class="view" id="view-chart">
-      <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;">
-        <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;">
+      <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;overflow:hidden;">
+        <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
           <div class="chart-toolbar" style="justify-content:space-between;flex-shrink:0;">
             <div class="chart-stock-info" style="display:flex; align-items:center; gap: 12px;">
               <span class="chart-name" style="color:var(--text-muted)">💡 提示：點選白名單或篩選結果中的「看圖」按鈕來載入 K 線</span>
@@ -422,8 +422,8 @@
               <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="openCurrentDash()">🎯 開啟戰情板</button>
             </div>
           </div>
-          <!-- Lightweight Charts 容器 -->
-          <div id="tvChartContainer" style="flex:1;min-height:500px;"></div>
+          <!-- Lightweight Charts 容器：flex:1 + min-height:0 讓圖表填滿剩餘空間 -->
+          <div id="tvChartContainer" style="flex:1;min-height:0;overflow:hidden;"></div>
         </div>
       </div>
     </section>
