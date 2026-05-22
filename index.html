@@ -87,13 +87,7 @@
             <div class="stat-label">白名單</div>
           </div>
         </div>
-        <div class="stat-card danger" id="statBlacklist">
-          <div class="stat-icon">🚫</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statBlacklistVal">0</div>
-            <div class="stat-label">黑名單警示</div>
-          </div>
-        </div>
+
         <div class="stat-card" id="statAvgScore">
           <div class="stat-icon">🏆</div>
           <div class="stat-info">
@@ -129,11 +123,7 @@
           </div>
           <div id="dashWlList"></div>
 
-          <div class="panel-header" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border-color);">
-            <h3>🚫 黑名單警示</h3>
-            <span class="badge danger" id="blacklistCount">0</span>
-          </div>
-          <div id="blacklistPreview"></div>
+
         </div>
 
         <!-- 右側：個股戰情板 嵌入 -->
@@ -156,7 +146,7 @@
         <!-- 左側：篩選條件面板 -->
         <aside class="filter-panel">
           <div class="filter-panel-header">
-            <h2>⚙️ 五層篩選條件</h2>
+            <h2>⚙️ 篩選條件</h2>
             <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 300 檔進行運算，<br>最多篩選出前 40 檔符合規則之標的。</p>
             <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
           </div>
@@ -359,13 +349,12 @@
                   <th>投信</th>
                   <th>外資</th>
                   <th>量比</th>
-                  <th>狀態</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody id="resultsBody">
                 <tr class="empty-row">
-                  <td colspan="12">請點擊「執行篩選」開始篩選</td>
+                  <td colspan="11">請點擊「執行篩選」開始篩選</td>
                 </tr>
               </tbody>
             </table>

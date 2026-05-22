@@ -1,7 +1,6 @@
 // 全域狀態
 let currentResults = [];
 let currentWhitelist = [];
-let currentBlacklist = [];
 
 // 即時時鐘與開盤倒數
 function startClock() {
@@ -176,15 +175,10 @@ function runScreener() {
 
   currentResults = [];
   currentWhitelist = [];
-  currentBlacklist = [];
   
   let stats = { A:0, B:0, C:0, D:0, totalScore: 0 };
 
   mockStocks.forEach(s => {
-    // 黑名單判斷
-    if(s.blacklist.length > 0) {
-      currentBlacklist.push(s);
-    }
 
     const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD) || 
                       (p.typeA && s.type === 'A') || 
@@ -229,7 +223,7 @@ function runScreener() {
 
   // 根據前 40 檔結果計算白名單與統計數據
   currentResults.forEach(s => {
-    if (s.dynamicScore >= p.minScore && s.blacklist.length === 0) {
+    if (s.dynamicScore >= p.minScore) {
       currentWhitelist.push(s);
       stats[s.type] = (stats[s.type] || 0) + 1;
       stats.totalScore += s.dynamicScore;
@@ -244,7 +238,6 @@ function runScreener() {
   // 更新 Dashboard 統計
   document.getElementById('statTotalVal').innerText = currentResults.length;
   document.getElementById('statWhitelistVal').innerText = currentWhitelist.length;
-  document.getElementById('statBlacklistVal').innerText = currentBlacklist.length;
   document.getElementById('statTypeAVal').innerText = stats.A;
   document.getElementById('statTypeBVal').innerText = stats.B;
   
@@ -255,7 +248,6 @@ function runScreener() {
   renderScreenerTable(currentResults);
   renderWhitelistPreview();
   renderWhitelistGrid();
-  renderBlacklistPreview();
 }
 
 // 渲染篩選器表格
@@ -265,7 +257,7 @@ function renderScreenerTable(data) {
   tbody.innerHTML = '';
 
   if(data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">無符合條件的標的</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">無符合條件的標的</td></tr>';
     return;
   }
 
@@ -284,7 +276,6 @@ function renderScreenerTable(data) {
       <td>${s.trustDays != null ? s.trustDays + '天' : '--'}</td>
       <td>${s.foreignBuy != null ? (s.foreignBuy ? '✔' : '✘') : '--'}</td>
       <td>${s.volRatio}x</td>
-      <td>${s.blacklist.length>0 ? '<span class="badge danger">黑名單</span>' : '<span class="badge" style="background:var(--success)">正常</span>'}</td>
       <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
     `;
     
@@ -347,20 +338,7 @@ function loadInlineDash(stock) {
   renderStockDashInline(stock, content);
 }
 
-function renderBlacklistPreview() {
-  const container = document.getElementById('blacklistPreview');
-  document.getElementById('blacklistCount').innerText = currentBlacklist.length;
-  container.innerHTML = '';
-  const list = currentBlacklist.slice(0,5);
-  list.forEach(s => {
-    container.innerHTML += `
-      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;">
-        <div>${s.id} ${s.name}</div>
-        <div style="color:var(--danger)">${s.blacklist[0]}</div>
-      </div>
-    `;
-  });
-}
+
 
 function renderWhitelistGrid() {
   const grid = document.getElementById('whitelistGrid');

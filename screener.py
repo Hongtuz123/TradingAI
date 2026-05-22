@@ -338,14 +338,14 @@ def run_screener():
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 漲跌幅
-            raw_change = str(s.get('Change', '') or '')
+            # 漲跌幅：以當日 9:00 開盤價為基準計算當前現價的漲跌幅
             try:
-                change_num = float(raw_change.replace('+', '').replace('X', '').replace('x', '').strip() or '0')
-                if raw_change.startswith('-'):
-                    change_num = -abs(change_num)
+                open_price = float(latest['open'])
+                if open_price > 0:
+                    change_num = round(((close - open_price) / open_price) * 100, 2)
+                else:
+                    change_num = round(((close - float(prev['close'])) / float(prev['close'])) * 100, 2) if float(prev['close']) > 0 else 0.0
             except Exception:
-                # 若 OpenAPI 無漲跌幅，以昨收與今收計算
                 change_num = round(((close - float(prev['close'])) / float(prev['close'])) * 100, 2) if float(prev['close']) > 0 else 0.0
 
             # 真實技術指標值
