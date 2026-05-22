@@ -407,6 +407,7 @@ function renderLWChart(containerId, klineData, height = 260) {
       let segMin = Infinity;
       let segMax = -Infinity;
       const segTimes = [];
+      const segCloseData = []; // 用於 highlighter 填充
       for (let i = seg.startIdx; i <= seg.endIdx; i++) {
         if (supertrendData[i].value === null) continue;
         const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
@@ -414,21 +415,54 @@ function renderLWChart(containerId, klineData, height = 260) {
           segMin = Math.min(segMin, candle.low);
           segMax = Math.max(segMax, candle.high);
           segTimes.push(supertrendData[i].time);
+          segCloseData.push({ time: candle.time, value: candle.close });
         }
       }
 
       if (segTimes.length === 0) continue;
 
       if (seg.trend === 1) {
-        // High-trend：底部綠色實線（該段所有 K 線的最低價）
+        // High-trend：底部綠色實線
         for (const t of segTimes) {
           highTrendBottomLineData.push({ time: t, value: segMin });
         }
+        // Highlighter：從底線 (segMin) 到收盤價之間填綠色半透明
+        const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+          baseValue: { type: 'price', price: segMin },
+          topLineColor: 'transparent',
+          topFillColor1: 'rgba(34, 197, 94, 0.18)',
+          topFillColor2: 'rgba(34, 197, 94, 0.04)',
+          bottomLineColor: 'transparent',
+          bottomFillColor1: 'transparent',
+          bottomFillColor2: 'transparent',
+          lineWidth: 0,
+          title: '',
+          crosshairMarkerVisible: false,
+          priceLineVisible: false,
+          lastValueVisible: false,
+        });
+        hlSeries.setData(segCloseData);
       } else {
-        // Low-trend：頂部紅色實線（該段所有 K 線的最高價）
+        // Low-trend：頂部紅色實線
         for (const t of segTimes) {
           lowTrendTopLineData.push({ time: t, value: segMax });
         }
+        // Highlighter：從頂線 (segMax) 到收盤價之間填紅色半透明
+        const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+          baseValue: { type: 'price', price: segMax },
+          topLineColor: 'transparent',
+          topFillColor1: 'transparent',
+          topFillColor2: 'transparent',
+          bottomLineColor: 'transparent',
+          bottomFillColor1: 'rgba(239, 68, 68, 0.04)',
+          bottomFillColor2: 'rgba(239, 68, 68, 0.18)',
+          lineWidth: 0,
+          title: '',
+          crosshairMarkerVisible: false,
+          priceLineVisible: false,
+          lastValueVisible: false,
+        });
+        hlSeries.setData(segCloseData);
       }
     }
 
