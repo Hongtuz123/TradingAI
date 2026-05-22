@@ -160,7 +160,8 @@ function renderLWChart(containerId, klineData, height = 260) {
   container.innerHTML = '';
   // 確保容器有明確高度與寬度，autoSize 才能生效
   container.style.width = '100%';
-  if (containerId === 'tvChartContainer') {
+  const isMainChart = (containerId === 'tvChartContainer');
+  if (isMainChart) {
     container.style.height = '100%';
     container.style.flex = '1';
   } else {
@@ -169,8 +170,23 @@ function renderLWChart(containerId, klineData, height = 260) {
   }
   container.style.position = 'relative';
 
-  const chart = LightweightCharts.createChart(container, {
-    autoSize: true,
+  // ---- 共用的格式化數據 ----
+  const formattedCandles = klineData.map(d => ({
+    time: d.date,
+    open: parseFloat(d.open),
+    high: parseFloat(d.high),
+    low: parseFloat(d.low),
+    close: parseFloat(d.close),
+  }));
+
+  const formattedVolume = klineData.map(d => ({
+    time: d.date,
+    value: parseFloat(d.volume),
+    color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
+  }));
+
+  // ---- 共用圖表選項 ----
+  const chartTheme = {
     layout: {
       background: { type: 'solid', color: '#030712' },
       textColor: '#cbd5e1',
@@ -180,15 +196,81 @@ function renderLWChart(containerId, klineData, height = 260) {
       horzLines: { color: 'rgba(51, 65, 85, 0.25)' },
     },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { 
-      borderColor: 'rgba(71, 85, 105, 0.5)', 
-      autoScale: true,
-      scaleMargins: { top: 0.05, bottom: 0.05 }
-    },
-    timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
-  });
+  };
 
-  const candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
+  let mainChart, rsiChart;
+
+  if (isMainChart) {
+    // ==== 主圖分區：主圖 75% + RSI 面板 25% ====
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+
+    const mainDiv = document.createElement('div');
+    mainDiv.style.cssText = 'flex:3;min-height:0;position:relative;';
+    container.appendChild(mainDiv);
+
+    // RSI 面板分隔線
+    const separator = document.createElement('div');
+    separator.style.cssText = 'height:1px;background:rgba(71,85,105,0.6);flex-shrink:0;';
+    container.appendChild(separator);
+
+    const rsiDiv = document.createElement('div');
+    rsiDiv.style.cssText = 'flex:1;min-height:0;position:relative;';
+    container.appendChild(rsiDiv);
+
+    // ---- 主圖表（K線 + 成交量 + 5MA + Supertrend）----
+    mainChart = LightweightCharts.createChart(mainDiv, {
+      ...chartTheme,
+      autoSize: true,
+      rightPriceScale: {
+        borderColor: 'rgba(71, 85, 105, 0.5)',
+        autoScale: true,
+        scaleMargins: { top: 0.03, bottom: 0.03 }
+      },
+      timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
+    });
+
+    // ---- RSI 子圖表 ----
+    rsiChart = LightweightCharts.createChart(rsiDiv, {
+      ...chartTheme,
+      autoSize: true,
+      rightPriceScale: {
+        borderColor: 'rgba(71, 85, 105, 0.5)',
+        autoScale: true,
+        scaleMargins: { top: 0.08, bottom: 0.08 }
+      },
+      timeScale: {
+        borderColor: 'rgba(71, 85, 105, 0.5)',
+        timeVisible: true,
+        secondsVisible: false,
+        visible: false, // 隱藏 RSI 面板的獨立時間軸，由主圖控制
+      },
+    });
+
+    // 同步主圖與 RSI 面板的時間軸
+    mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      if (range) rsiChart.timeScale().setVisibleLogicalRange(range);
+    });
+    rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      if (range) mainChart.timeScale().setVisibleLogicalRange(range);
+    });
+
+  } else {
+    // ==== 內嵌圖表：RSI 疊在主圖上（空間有限）====
+    mainChart = LightweightCharts.createChart(container, {
+      ...chartTheme,
+      autoSize: true,
+      rightPriceScale: {
+        borderColor: 'rgba(71, 85, 105, 0.5)',
+        autoScale: true,
+        scaleMargins: { top: 0.05, bottom: 0.05 }
+      },
+      timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
+    });
+  }
+
+  // ---- 主圖 Series ----
+  const candleSeries = mainChart.addSeries(LightweightCharts.CandlestickSeries, {
     upColor: '#ef4444',
     downColor: '#22c55e',
     borderDownColor: '#22c55e',
@@ -198,52 +280,23 @@ function renderLWChart(containerId, klineData, height = 260) {
   });
 
   // 成交量面板（獨立 price scale）
-  const volumeSeries = chart.addSeries(LightweightCharts.HistogramSeries, {
+  const volumeSeries = mainChart.addSeries(LightweightCharts.HistogramSeries, {
     priceFormat: { type: 'volume' },
     priceScaleId: 'volume',
     scaleMargins: { top: 0.85, bottom: 0 },
   });
-  chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
-
-  const formattedCandles = klineData.map(d => {
-    return {
-      time: d.date,
-      open: parseFloat(d.open),
-      high: parseFloat(d.high),
-      low: parseFloat(d.low),
-      close: parseFloat(d.close),
-    };
-  });
-
-  const formattedVolume = klineData.map(d => {
-    return {
-      time: d.date,
-      value: parseFloat(d.volume),
-      color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
-    };
-  });
+  mainChart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
 
   // 繪製 5MA
-  const smaSeries = chart.addSeries(LightweightCharts.LineSeries, {
+  const smaSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
     color: '#3b82f6',
     lineWidth: 2,
     title: '5MA',
     crosshairMarkerVisible: false,
   });
-  
-  // 繪製 RSI
-  const rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {
-    color: '#eab308',
-    lineWidth: 1.5,
-    title: 'RSI(14)',
-    priceScaleId: 'rsi',
-  });
-  chart.priceScale('rsi').applyOptions({
-    scaleMargins: { top: 0.7, bottom: 0.15 },
-  });
 
   // 繪製 Supertrend 上升軌道 (螢光綠)
-  const supertrendUpSeries = chart.addSeries(LightweightCharts.LineSeries, {
+  const supertrendUpSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
     color: '#00ff88',
     lineWidth: 2.5,
     title: '超級趨勢(多)',
@@ -252,13 +305,56 @@ function renderLWChart(containerId, klineData, height = 260) {
   });
 
   // 繪製 Supertrend 下降軌道 (螢光紅)
-  const supertrendDnSeries = chart.addSeries(LightweightCharts.LineSeries, {
+  const supertrendDnSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
     color: '#ff3b5c',
     lineWidth: 2.5,
     title: '超級趨勢(空)',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
   });
+
+  // ---- RSI Series（根據是否為主圖，決定掛在哪個 chart 上）----
+  const rsiTargetChart = isMainChart ? rsiChart : mainChart;
+  const rsiSeriesOptions = {
+    color: '#eab308',
+    lineWidth: 1.5,
+    title: 'RSI(14)',
+  };
+  if (!isMainChart) {
+    rsiSeriesOptions.priceScaleId = 'rsi';
+  }
+  const rsiSeries = rsiTargetChart.addSeries(LightweightCharts.LineSeries, rsiSeriesOptions);
+  if (!isMainChart) {
+    rsiTargetChart.priceScale('rsi').applyOptions({
+      scaleMargins: { top: 0.7, bottom: 0.15 },
+    });
+  }
+
+  // RSI 面板加上 30/70 超買超賣參考線（僅主圖）
+  if (isMainChart && rsiChart) {
+    const rsi70Series = rsiTargetChart.addSeries(LightweightCharts.LineSeries, {
+      color: 'rgba(239,68,68,0.35)',
+      lineWidth: 1,
+      lineStyle: 2, // Dashed
+      title: '',
+      crosshairMarkerVisible: false,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    const rsi30Series = rsiTargetChart.addSeries(LightweightCharts.LineSeries, {
+      color: 'rgba(34,197,94,0.35)',
+      lineWidth: 1,
+      lineStyle: 2,
+      title: '',
+      crosshairMarkerVisible: false,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    // 填充 70/30 水平線
+    const refLineData = formattedCandles.map(d => ({ time: d.time }));
+    rsi70Series.setData(refLineData.map(d => ({ time: d.time, value: 70 })));
+    rsi30Series.setData(refLineData.map(d => ({ time: d.time, value: 30 })));
+  }
 
   try {
     candleSeries.setData(formattedCandles);
@@ -269,16 +365,30 @@ function renderLWChart(containerId, klineData, height = 260) {
     // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
-    // 準備上升與下降軌道數據（過濾掉非當前趨勢的點，LWC 不支援 undefined value）
-    const upData = supertrendData
-      .filter(curr => curr.value !== null && curr.trend === 1)
-      .map(curr => ({ time: curr.time, value: curr.value }));
+    // 準備上升與下降軌道數據
+    // 在趨勢轉折點加入銜接點（同時出現在兩條線），讓線段不斷裂
+    const upData = [];
+    const dnData = [];
+    for (let i = 0; i < supertrendData.length; i++) {
+      const curr = supertrendData[i];
+      if (curr.value === null) continue;
 
-    const dnData = supertrendData
-      .filter(curr => curr.value !== null && curr.trend === -1)
-      .map(curr => ({ time: curr.time, value: curr.value }));
+      if (curr.trend === 1) {
+        upData.push({ time: curr.time, value: curr.value });
+        // 如果前一點是下降趨勢，在 dnData 也放入該點（銜接）
+        if (i > 0 && supertrendData[i - 1].trend === -1 && supertrendData[i - 1].value !== null) {
+          dnData.push({ time: curr.time, value: curr.value });
+        }
+      } else {
+        dnData.push({ time: curr.time, value: curr.value });
+        // 如果前一點是上升趨勢，在 upData 也放入該點（銜接）
+        if (i > 0 && supertrendData[i - 1].trend === 1 && supertrendData[i - 1].value !== null) {
+          upData.push({ time: curr.time, value: curr.value });
+        }
+      }
+    }
 
-    // 計算買賣轉折訊號標籤
+    // 計算買賣轉折訊號標籤（白色、放大 20%）
     const markers = [];
     for (let i = 1; i < supertrendData.length; i++) {
       const prev = supertrendData[i - 1];
@@ -288,19 +398,19 @@ function renderLWChart(containerId, klineData, height = 260) {
           markers.push({
             time: curr.time,
             position: 'belowBar',
-            color: '#00ff88',
+            color: '#ffffff',
             shape: 'arrowUp',
             text: '買',
-            size: 2,
+            size: 2.4,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
           markers.push({
             time: curr.time,
             position: 'aboveBar',
-            color: '#ff3b5c',
+            color: '#ffffff',
             shape: 'arrowDown',
             text: '賣',
-            size: 2,
+            size: 2.4,
           });
         }
       }
@@ -314,14 +424,15 @@ function renderLWChart(containerId, klineData, height = 260) {
       LightweightCharts.createSeriesMarkers(candleSeries, markers);
     }
 
-    chart.timeScale().fitContent();
+    mainChart.timeScale().fitContent();
+    if (rsiChart) rsiChart.timeScale().fitContent();
     console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Supertrend`);
   } catch (err) {
     console.error('[LWC Error]', err);
     container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
   }
 
-  return chart;
+  return mainChart;
 }
 
 // ---- 內嵌儀表板渲染（供主儀表板呼叫）----
