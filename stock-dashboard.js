@@ -490,10 +490,10 @@ function renderLWChart(containerId, klineData, height = 260) {
 
     // 買標籤掛在 Supertrend 綠線，賣標籤掛在 Supertrend 紅線
     if (buyMarkers.length > 0) {
-      supertrendUpSeries.setMarkers(buyMarkers);
+      LightweightCharts.createSeriesMarkers(supertrendUpSeries, buyMarkers);
     }
     if (sellMarkers.length > 0) {
-      supertrendDnSeries.setMarkers(sellMarkers);
+      LightweightCharts.createSeriesMarkers(supertrendDnSeries, sellMarkers);
     }
 
     mainChart.timeScale().fitContent();
