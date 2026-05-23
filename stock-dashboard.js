@@ -476,8 +476,8 @@ function renderLWChart(containerId, klineData, height = 260) {
             time: curr.time,
             position: 'belowBar',
             color: '#22c55e',
-            shape: 'arrowUp',
-            text: '買',
+            shape: 'square',
+            text: 'BUY',
             size: 2.4,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
@@ -485,8 +485,8 @@ function renderLWChart(containerId, klineData, height = 260) {
             time: curr.time,
             position: 'aboveBar',
             color: '#ef4444',
-            shape: 'arrowDown',
-            text: '賣',
+            shape: 'square',
+            text: 'SELL',
             size: 2.4,
           });
         }
