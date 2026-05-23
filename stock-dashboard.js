@@ -161,6 +161,94 @@ function calculateRSI(data, period = 14) {
   return rsi;
 }
 
+// ---- 多時框數據模擬生成器 (支援 Vercel 靜態部署的多時框顯示) ----
+function generateMockTimeframeData(dailyKline, resolution) {
+  if (!dailyKline || dailyKline.length === 0) return [];
+  if (resolution === '1D' || resolution === '1W' || resolution === '1M') {
+    // 日/週/月時框直接返回或進行基礎聚合，這裡直接回傳日K
+    return dailyKline;
+  }
+
+  const result = [];
+  // 決定每天要生成的子 K 線數量
+  let barsPerDay = 5; // 預設 1h
+  let timeStepMinutes = 60;
+  let daysToUse = 20; // 僅用最近幾天的數據來生成以維持合理數量
+
+  if (resolution === '15m') {
+    barsPerDay = 18; // 9:00 - 13:30 每 15 分鐘一根
+    timeStepMinutes = 15;
+    daysToUse = 6;  // 約 108 根 K 線，LWC 渲染最合適
+  } else if (resolution === '1h') {
+    barsPerDay = 5;
+    timeStepMinutes = 60;
+    daysToUse = 20; // 約 100 根 K 線
+  } else if (resolution === '4h') {
+    barsPerDay = 2;
+    timeStepMinutes = 240;
+    daysToUse = 50; // 約 100 根 K 線
+  }
+
+  // 取得最近部分的日K
+  const startIdx = Math.max(0, dailyKline.length - daysToUse);
+  const baseData = dailyKline.slice(startIdx);
+
+  for (const day of baseData) {
+    const dayOpen = parseFloat(day.open);
+    const dayClose = parseFloat(day.close);
+    const dayHigh = parseFloat(day.high);
+    const dayLow = parseFloat(day.low);
+    const dayVol = parseFloat(day.volume);
+
+    // 模擬當天內部的價格隨機路徑，起點為 open，終點為 close，範圍在 low 到 high 之間
+    const prices = [dayOpen];
+    for (let j = 1; j < barsPerDay - 1; j++) {
+      const progress = j / (barsPerDay - 1);
+      // 漸進式朝 close 靠攏，但加上隨機震盪
+      const targetVal = dayOpen + (dayClose - dayOpen) * progress;
+      const noise = (Math.random() - 0.5) * (dayHigh - dayLow) * 0.4;
+      let nextPrice = targetVal + noise;
+      // 限制範圍
+      nextPrice = Math.max(dayLow, Math.min(dayHigh, nextPrice));
+      prices.push(+(nextPrice).toFixed(2));
+    }
+    prices.push(dayClose);
+
+    // 生成當天每根分K
+    for (let j = 0; j < barsPerDay; j++) {
+      // 模擬時間：假設開盤為 09:00
+      const hour = 9 + Math.floor((j * timeStepMinutes) / 60);
+      const min = (j * timeStepMinutes) % 60;
+      const hourStr = String(hour).padStart(2, '0');
+      const minStr = String(min).padStart(2, '0');
+      
+      // 合併成時間字串 YYYY-MM-DD HH:mm:ss 或時間戳記
+      const dateStr = `${day.date} ${hourStr}:${minStr}:00`;
+
+      // 設定開高低收
+      const openVal = prices[j];
+      const closeVal = (j === barsPerDay - 1) ? dayClose : prices[j + 1];
+      const maxBound = Math.max(openVal, closeVal);
+      const minBound = Math.min(openVal, closeVal);
+
+      // 上下影線隨機微幅震盪，不超出當天極限
+      const highVal = Math.min(dayHigh, +(maxBound + Math.random() * (dayHigh - maxBound) * 0.5).toFixed(2));
+      const lowVal = Math.max(dayLow, +(minBound - Math.random() * (minBound - dayLow) * 0.5).toFixed(2));
+      
+      result.push({
+        date: dateStr,
+        open: openVal,
+        high: highVal,
+        low: lowVal,
+        close: closeVal,
+        volume: Math.round(dayVol / barsPerDay * (0.7 + Math.random() * 0.6)),
+      });
+    }
+  }
+
+  return result;
+}
+
 // ---- Lightweight Charts 渲染函式 ----
 function renderLWChart(containerId, klineData, height = 260) {
   const container = document.getElementById(containerId);
@@ -178,9 +266,18 @@ function renderLWChart(containerId, klineData, height = 260) {
   }
   container.style.position = 'relative';
 
+  // 統一時間戳格式化：若是分K (包含空格或冒號) 則轉為 Unix 秒數，否則保持 YYYY-MM-DD
+  const parseKlineTime = (dateStr) => {
+    if (typeof dateStr === 'string' && (dateStr.includes(' ') || dateStr.includes(':'))) {
+      const parsed = Math.floor(Date.parse(dateStr) / 1000);
+      return isNaN(parsed) ? dateStr : parsed;
+    }
+    return dateStr;
+  };
+
   // ---- 共用的格式化數據 ----
   const formattedCandles = klineData.map(d => ({
-    time: d.date,
+    time: parseKlineTime(d.date),
     open: parseFloat(d.open),
     high: parseFloat(d.high),
     low: parseFloat(d.low),
@@ -188,7 +285,7 @@ function renderLWChart(containerId, klineData, height = 260) {
   }));
 
   const formattedVolume = klineData.map(d => ({
-    time: d.date,
+    time: parseKlineTime(d.date),
     value: parseFloat(d.volume),
     color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(239,68,68,0.45)' : 'rgba(34,197,94,0.45)',
   }));
@@ -696,14 +793,15 @@ async function changeResolution(res) {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
     }
   } catch (err) {
-    console.warn("無法取得 API K 線，嘗試載入本地日 K：", err.message);
+    console.warn("無法取得 API K 線，嘗試進入離線多時框模擬模式：", err.message);
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
-    if (stock && stock.kline && stock.kline.length > 0 && (res === '1D' || interval === '1d')) {
-      currentKlineData = stock.kline;
-      currentLWChart = renderLWChart('tvChartContainer', stock.kline);
+    if (stock && stock.kline && stock.kline.length > 0) {
+      // 離線/靜態部署模式：依時框動態生成高擬真 K 線數據
+      const simulatedKline = generateMockTimeframeData(stock.kline, res);
+      currentKlineData = simulatedKline;
+      currentLWChart = renderLWChart('tvChartContainer', simulatedKline);
     } else {
-      const offlineMsg = (res === '1D' || interval === '1d') ? "無可用資料" : "離線模式僅支援日 K 線圖";
-      container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">${offlineMsg} (${err.message})</div>`;
+      container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料 (${err.message})</div>`;
     }
   }
 }
