@@ -84,12 +84,20 @@ function calculateSupertrend(data, period = 10, multiplier = 3) {
       dn[i] = basicDn;
     }
 
-    // 判斷趨勢方向
+    // 判斷趨勢方向（最新後出現的趨勢為主，轉折時優先取最新趨勢）
     const prevTrend = trend[i - 1];
     let currentTrend = prevTrend;
-    if (prevTrend === -1 && data[i].close > prevDn) {
+    const triggerUp = (data[i].close > prevDn);
+    const triggerDown = (data[i].close < prevUp);
+
+    if (triggerUp && triggerDown) {
+      // 數學上若同時滿足，依時間以最新後出現的趨勢為主
+      // high-trend 轉 low-trend 優先取 low-trend (-1)
+      // low-trend 轉 high-trend 優先取 high-trend (1)
+      currentTrend = (prevTrend === 1) ? -1 : 1;
+    } else if (triggerUp) {
       currentTrend = 1;
-    } else if (prevTrend === 1 && data[i].close < prevUp) {
+    } else if (triggerDown) {
       currentTrend = -1;
     }
     trend[i] = currentTrend;
