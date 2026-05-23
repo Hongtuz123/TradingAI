@@ -476,8 +476,8 @@ function renderLWChart(containerId, klineData, height = 260) {
             time: curr.time,
             position: 'belowBar',
             color: '#22c55e',
-            shape: 'square',
-            text: 'BUY',
+            shape: 'arrowUp',
+            text: ' [ BUY ] ',
             size: 2.4,
           });
         } else if (prev.trend === 1 && curr.trend === -1) {
@@ -485,8 +485,8 @@ function renderLWChart(containerId, klineData, height = 260) {
             time: curr.time,
             position: 'aboveBar',
             color: '#ef4444',
-            shape: 'square',
-            text: 'SELL',
+            shape: 'arrowDown',
+            text: ' [ SELL ] ',
             size: 2.4,
           });
         }
