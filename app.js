@@ -319,23 +319,10 @@ function renderWhitelistPreview() {
     row.onclick = () => {
       document.querySelectorAll('.dash-wl-row').forEach(r => r.classList.remove('selected'));
       row.classList.add('selected');
-      loadInlineDash(s);
+      openChart(s.id);
     };
     container.appendChild(row);
   });
-}
-
-// 內嵌至儀表板的個股戰情板
-function loadInlineDash(stock) {
-  const placeholder = document.getElementById('dashDetailPlaceholder');
-  const content = document.getElementById('inlineDashContent');
-  if (!placeholder || !content) return;
-
-  placeholder.style.display = 'none';
-  content.style.display = 'block';
-
-  // 著用 stock-dashboard.js 的渲染函式
-  renderStockDashInline(stock, content);
 }
 
 

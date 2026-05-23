@@ -817,7 +817,7 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 /* ================= 儀表板整合版佈局 ================= */
 .dash-main-layout {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   height: calc(100vh - 240px);
   min-height: 500px;
