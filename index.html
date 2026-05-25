@@ -60,9 +60,20 @@
             <span class="health-grade" id="healthGrade">--</span>
           </div>
         </div>
-        <div class="health-indicators" id="healthIndicators">
-          <!-- JS 動態填充 -->
+
+        <!-- 台股版塊 -->
+        <div class="market-group">
+          <div class="market-group-title">🇹🇼 台股</div>
+          <div class="health-indicators" id="twIndicators"><!-- JS 填充 --></div>
+          <div class="vol-indicator" id="volIndicator"><!-- JS 填充 --></div>
         </div>
+
+        <!-- 美股版塊 -->
+        <div class="market-group">
+          <div class="market-group-title">🇺🇸 美股</div>
+          <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
+        </div>
+
         <div class="health-warning" id="healthWarning" style="display:none;">
           <div class="warning-icon">⚠️</div>
           <div class="warning-content">
@@ -71,6 +82,7 @@
           </div>
         </div>
       </div>
+
 
       <!-- 統計卡片列 -->
       <div class="stats-row">
@@ -421,8 +433,8 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=18"></script>
-  <script src="app.js?v=18"></script>
-  <script src="stock-dashboard.js?v=18"></script>
+  <script src="data.js?v=19"></script>
+  <script src="app.js?v=19"></script>
+  <script src="stock-dashboard.js?v=19"></script>
 </body>
 </html>

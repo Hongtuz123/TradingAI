@@ -96,10 +96,71 @@ function initDashboard() {
   const updateTime = marketData.lastUpdate.replace(/-/g, '/');
   document.getElementById('lastUpdateTime').innerText = updateTime;
 
-  const isHealthy = marketData.twii_above_60ma && marketData.otc_above_60ma && marketData.vol_above_20ma;
+  // ── 輔助函數 ──────────────────────────────────────────
+  function pctColor(v) {
+    if (v === null || v === undefined) return 'var(--text-muted)';
+    return v >= 0 ? 'var(--success)' : 'var(--danger)';
+  }
+  function pctStr(v) {
+    if (v === null || v === undefined) return 'N/A';
+    const sign = v >= 0 ? '+' : '';
+    return `${sign}${v.toFixed(2)}%`;
+  }
+  function maBadge(val, label) {
+    if (val === null || val === undefined) return '';
+    const cls = val ? 'success' : 'danger';
+    const txt = val ? `✓ ${label}` : `✗ ${label}`;
+    return `<span class="badge ${cls}" style="font-size:10px;padding:2px 6px;">${txt}</span>`;
+  }
+
+  // ── 台股版塊 ──────────────────────────────────────────
+  const twData = marketData.tw_indices || [];
+  const twHTML = twData.map(idx => `
+    <div class="health-indicator-card tw-card">
+      <div class="idx-name">${idx.label}</div>
+      <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
+      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700;">
+        ${pctStr(idx.pct_chg)}
+      </div>
+      <div class="idx-ma-badges">
+        ${maBadge(idx.above_20ma, '>20MA')}
+        ${maBadge(idx.above_60ma, '>60MA')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('twIndicators').innerHTML = twHTML;
+
+  // 大盤量
+  const volVal = marketData.vol_above_20ma;
+  document.getElementById('volIndicator').innerHTML = volVal !== null && volVal !== undefined
+    ? `<div class="health-indicator-card vol-card">
+         <span style="font-size:12px;">大盤量</span>
+         <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
+       </div>`
+    : '';
+
+  // ── 美股版塊 ──────────────────────────────────────────
+  const usData = marketData.us_indices || [];
+  const usHTML = usData.map(idx => `
+    <div class="health-indicator-card us-card">
+      <div class="idx-name">${idx.label}</div>
+      <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
+      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700;">
+        ${pctStr(idx.pct_chg)}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('usIndicators').innerHTML = usHTML;
+
+  // ── 綜合評級（台股 60MA 為基準）────────────────────────
+  const twiiAbove60 = twData[0]?.above_60ma;
+  const otcAbove60  = twData[1]?.above_60ma;
+  const volOk = marketData.vol_above_20ma;
+  const isHealthy = (twiiAbove60 !== false) && (otcAbove60 !== false) && (volOk !== false);
+
   const failedStocks = marketData.price_failed_stocks || [];
   const hasFailedStocks = failedStocks.length > 0;
-  
+
   if (isHealthy) {
     document.getElementById('healthGrade').innerText = '多頭安全';
     document.getElementById('healthGrade').style.color = 'var(--success)';
@@ -118,7 +179,6 @@ function initDashboard() {
 
   if (!isHealthy || hasFailedStocks) {
     document.getElementById('healthWarning').style.display = 'flex';
-    
     let warningHTML = '';
     if (hasFailedStocks) {
       const listStr = failedStocks.map(s => `${s.Code} ${s.Name}`).join(', ');
@@ -128,7 +188,6 @@ function initDashboard() {
         </li>
       `;
     }
-    
     if (!isHealthy) {
       warningHTML += `
         <li>降低持股水位</li>
@@ -136,28 +195,12 @@ function initDashboard() {
         <li>減少交易次數</li>
       `;
     }
-    
     document.getElementById('warningList').innerHTML = warningHTML;
   } else {
     document.getElementById('healthWarning').style.display = 'none';
   }
-
-  const indicatorsHTML = `
-    <div class="health-indicator-card">
-      <span>加權指數 > 60MA</span>
-      <span class="badge ${marketData.twii_above_60ma ? 'success' : 'danger'}">${marketData.twii_above_60ma ? '符合' : '不符'}</span>
-    </div>
-    <div class="health-indicator-card">
-      <span>OTC指數 > 60MA</span>
-      <span class="badge ${marketData.otc_above_60ma ? 'success' : 'danger'}">${marketData.otc_above_60ma ? '符合' : '不符'}</span>
-    </div>
-    <div class="health-indicator-card">
-      <span>大盤量 > 20MA</span>
-      <span class="badge ${marketData.vol_above_20ma ? 'success' : 'danger'}">${marketData.vol_above_20ma ? '符合' : '不符'}</span>
-    </div>
-  `;
-  document.getElementById('healthIndicators').innerHTML = indicatorsHTML;
 }
+
 
 // 執行篩選
 function runScreener() {

@@ -265,23 +265,91 @@ def fetch_openapi_fundamentals():
 
 
 def calc_market_health():
-    """計算市場健康度：加權/OTC 是否站上 60MA，大盤量是否 > 20MA"""
-    result = {'twii': True, 'otc': True, 'vol': True}
-    for symbol_key, label in [('twii', '^TWII'), ('otc', '^TWOII')]:
+    """
+    計算市場健康度：
+    - 台股（TWII、TWOII）：漲跌幅、是否>20MA、是否>60MA
+    - 美股五大指數（SOX、NDX、RUT、DJI、SPX）：漲跌幅
+    """
+    def _safe_pct(hist):
+        """計算前一日漲跌幅（%），最少需要 2 筆資料"""
+        if len(hist) >= 2:
+            prev = float(hist['Close'].iloc[-2])
+            curr = float(hist['Close'].iloc[-1])
+            if prev and prev != 0:
+                return round((curr - prev) / prev * 100, 2)
+        return None
+
+    def _tw_index(symbol, label):
+        """回傳台股指數所需欄位"""
+        item = {
+            'label': label,
+            'pct_chg': None,
+            'close': None,
+            'above_20ma': None,
+            'above_60ma': None,
+        }
         try:
-            hist = yf.Ticker(label).history(period='120d', interval='1d')
+            hist = yf.Ticker(symbol).history(period='130d', interval='1d')
+            if hist.empty:
+                return item
+            item['close'] = round(float(hist['Close'].iloc[-1]), 2)
+            item['pct_chg'] = _safe_pct(hist)
+            if len(hist) >= 20:
+                ma20 = float(hist['Close'].rolling(20).mean().iloc[-1])
+                item['above_20ma'] = item['close'] > ma20
             if len(hist) >= 60:
-                ma60 = hist['Close'].rolling(60).mean().iloc[-1]
-                latest_close = hist['Close'].iloc[-1]
-                result[symbol_key] = bool(latest_close > ma60)
-            # 用加權指數的量算 vol > 20MA
-            if symbol_key == 'twii' and len(hist) >= 20:
-                vol_ma20 = hist['Volume'].rolling(20).mean().iloc[-1]
-                latest_vol = hist['Volume'].iloc[-1]
-                result['vol'] = bool(latest_vol > vol_ma20)
+                ma60 = float(hist['Close'].rolling(60).mean().iloc[-1])
+                item['above_60ma'] = item['close'] > ma60
         except Exception as e:
-            print(f'  市場健康度 {label} 計算失敗: {e}')
-    return result
+            print(f'  台股指數 {symbol} 計算失敗: {e}')
+        return item
+
+    def _us_index(symbol, label):
+        """回傳美股指數所需欄位（只要漲跌幅）"""
+        item = {'label': label, 'pct_chg': None, 'close': None}
+        try:
+            hist = yf.Ticker(symbol).history(period='5d', interval='1d')
+            if hist.empty:
+                return item
+            item['close'] = round(float(hist['Close'].iloc[-1]), 2)
+            item['pct_chg'] = _safe_pct(hist)
+        except Exception as e:
+            print(f'  美股指數 {symbol} 計算失敗: {e}')
+        return item
+
+    # --- 台股 ---
+    twii_data  = _tw_index('^TWII',  '加權指數')
+    twoii_data = _tw_index('^TWOII', '櫃買指數')
+
+    # 大盤量 > 20MA（用加權指數量）
+    vol_above_20ma = None
+    try:
+        hist_vol = yf.Ticker('^TWII').history(period='60d', interval='1d')
+        if len(hist_vol) >= 20:
+            vol_ma20 = float(hist_vol['Volume'].rolling(20).mean().iloc[-1])
+            latest_vol = float(hist_vol['Volume'].iloc[-1])
+            vol_above_20ma = latest_vol > vol_ma20
+    except Exception as e:
+        print(f'  大盤量計算失敗: {e}')
+
+    # --- 美股 ---
+    us_indices = [
+        _us_index('^SOX',  '費半 SOX'),
+        _us_index('^NDX',  '那斯達克 100'),
+        _us_index('^RUT',  '羅素 2000'),
+        _us_index('^DJI',  '道瓊 DJI'),
+        _us_index('^GSPC', 'S&P 500'),
+    ]
+
+    return {
+        'tw': [twii_data, twoii_data],
+        'vol_above_20ma': vol_above_20ma,
+        'us': us_indices,
+        # 向下相容舊欄位
+        'twii': twii_data.get('above_60ma', True),
+        'otc':  twoii_data.get('above_60ma', True),
+        'vol':  bool(vol_above_20ma) if vol_above_20ma is not None else True,
+    }
 
 
 def get_historical_candles(symbol, market='TSE', days=250):
@@ -789,9 +857,16 @@ def run_screener():
 
     # 包含失敗股票清單在 marketData 中
     market_data_dict = {
+        # 新結構：台股指數（含漲跌幅、20MA、60MA）
+        "tw_indices": market_health['tw'],
+        # 新結構：美股指數（含漲跌幅）
+        "us_indices": market_health['us'],
+        # 大盤量指標
+        "vol_above_20ma": market_health['vol_above_20ma'],
+        # 向下相容舊欄位（避免 JS 舊引用爆炸）
         "twii_above_60ma": bool(market_health['twii']),
-        "otc_above_60ma": bool(market_health['otc']),
-        "vol_above_20ma": bool(market_health['vol']),
+        "otc_above_60ma":  bool(market_health['otc']),
+        "vol_above_20ma_bool": bool(market_health['vol']),
         "lastUpdate": now_str,
         "price_failed_stocks": price_failed_stocks
     }

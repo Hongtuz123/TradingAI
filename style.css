@@ -187,17 +187,68 @@ body {
 
 .health-indicators {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
 }
 
+.health-indicators.us-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+/* 台股/美股分組 */
+.market-group {
+  margin-bottom: 16px;
+}
+
+.market-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+/* 指數卡片 */
 .health-indicator-card {
   background-color: var(--bg-card);
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 8px;
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 舊版 flex-row 保留（大盤量） */
+.health-indicator-card.vol-card {
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  margin-top: 8px;
+}
+
+.idx-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.idx-close {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.idx-pct {
+  font-size: 14px;
+}
+
+.idx-ma-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 2px;
 }
 
 .health-warning {
@@ -209,6 +260,7 @@ body {
   display: flex;
   gap: 10px;
 }
+
 
 .stats-row {
   display: grid;
