@@ -225,21 +225,32 @@ function initDashboard() {
     overallColor = 'var(--danger)';
     overallBg = 'rgba(239, 68, 68, 0.2)';
     badgeText = '建議降低部位';
-  } else if (!isTwBull || usTotalScore < 3) {
-    overallText = '震盪防守';
+  } else if (!isTwBull) {
+    overallText = '防守 (台股偏弱)';
     overallColor = 'var(--warning)';
     overallBg = 'rgba(245, 158, 11, 0.2)';
-    badgeText = '加強防守警覺';
+    badgeText = '台股震盪，加強防守';
+  } else if (usTotalScore < 3) {
+    overallText = '防守 (美股偏弱)';
+    overallColor = 'var(--warning)';
+    overallBg = 'rgba(245, 158, 11, 0.2)';
+    badgeText = '美股偏弱，警惕拉回';
+  } else if (usTotalScore === 3) {
+    overallText = '多頭防守';
+    overallColor = 'var(--warning)';
+    overallBg = 'rgba(245, 158, 11, 0.2)';
+    badgeText = '美股震盪整理中';
   }
 
-  document.getElementById('healthGrade').innerText = overallText;
+  // 加上分數統計顯示
+  document.getElementById('healthGrade').innerText = `${overallText} [台:${twTotalScore}分/美:${usTotalScore}分]`;
   document.getElementById('healthGrade').style.color = overallColor;
   document.getElementById('healthGrade').style.background = overallBg;
   
   badge.style.backgroundColor = overallBg;
   badge.style.color = overallColor;
   badge.querySelector('.status-dot').style.backgroundColor = overallColor;
-  text.innerText = badgeText;
+  text.innerText = `${badgeText} (台:${twTotalScore}分/美:${usTotalScore}分)`;
 
   if (!isHealthy || hasFailedStocks) {
     document.getElementById('healthWarning').style.display = 'flex';
