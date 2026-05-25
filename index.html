@@ -55,9 +55,19 @@
       <div class="market-health-banner" id="marketHealthBanner">
         <div class="health-header">
           <h2>🔎 第一層｜市場健康度</h2>
-          <div class="health-overall" id="healthOverall">
-            <span class="health-label">綜合評級</span>
-            <span class="health-grade" id="healthGrade">--</span>
+          <div class="health-overall" id="healthOverall" style="gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="health-label" style="font-size:12px; color:var(--text-muted);">台股評級</span>
+              <span class="health-grade" id="twHealthGrade" style="font-size:16px; padding: 2px 8px;">--</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="health-label" style="font-size:12px; color:var(--text-muted);">美股評級</span>
+              <span class="health-grade" id="usHealthGrade" style="font-size:16px; padding: 2px 8px;">--</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="health-label" style="font-size:12px; color:var(--text-muted);">綜合評級</span>
+              <span class="health-grade" id="healthGrade">--</span>
+            </div>
           </div>
         </div>
 
@@ -433,8 +443,8 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=19"></script>
-  <script src="app.js?v=19"></script>
-  <script src="stock-dashboard.js?v=19"></script>
+  <script src="data.js?v=20"></script>
+  <script src="app.js?v=20"></script>
+  <script src="stock-dashboard.js?v=20"></script>
 </body>
 </html>

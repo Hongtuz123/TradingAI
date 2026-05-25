@@ -152,30 +152,94 @@ function initDashboard() {
   `).join('');
   document.getElementById('usIndicators').innerHTML = usHTML;
 
-  // ── 綜合評級（台股 60MA 為基準）────────────────────────
-  const twiiAbove60 = twData[0]?.above_60ma;
-  const otcAbove60  = twData[1]?.above_60ma;
-  const volOk = marketData.vol_above_20ma;
-  const isHealthy = (twiiAbove60 !== false) && (otcAbove60 !== false) && (volOk !== false);
+  // ── 評分與評級系統 ────────────────────────────────────
+  
+  // 1. 台股評分系統 (總分 3 分)
+  // 指標一：台灣指數 (加權) 漲跌幅 > 0%
+  const twiiPct = twData[0]?.pct_chg || 0;
+  const twiiScore = twiiPct > 0 ? 1 : 0;
+  
+  // 指標二：櫃買指數 漲跌幅 > 0%
+  const otcPct = twData[1]?.pct_chg || 0;
+  const otcScore = otcPct > 0 ? 1 : 0;
+  
+  // 指標三：成交量大於 20MA
+  const volScore = marketData.vol_above_20ma ? 1 : 0;
+  
+  const twTotalScore = twiiScore + otcScore + volScore;
+  const isTwBull = twTotalScore >= 2; // 達 2 分多，未達 2 分空
+  
+  // 更新台股評級 UI
+  const twGradeEl = document.getElementById('twHealthGrade');
+  if (twGradeEl) {
+    twGradeEl.innerText = `${isTwBull ? '多' : '空'} (${twTotalScore}分)`;
+    twGradeEl.style.color = isTwBull ? 'var(--success)' : 'var(--danger)';
+    twGradeEl.style.background = isTwBull ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+  }
 
+  // 2. 美股評分系統 (總分 5 分)
+  // 5 個指標：費半、那斯達克100、羅素2000、道瓊、S&P 500
+  const usData = marketData.us_indices || [];
+  let usTotalScore = 0;
+  usData.forEach(idx => {
+    if (idx.pct_chg && idx.pct_chg > 0) {
+      usTotalScore += 1;
+    }
+  });
+  
+  // 3分以下看空 (0, 1, 2)；3分普通；3分以上多 (4, 5)
+  let usRating = '普通';
+  let usColor = 'var(--warning)';
+  let usBg = 'rgba(245, 158, 11, 0.2)';
+  if (usTotalScore < 3) {
+    usRating = '空';
+    usColor = 'var(--danger)';
+    usBg = 'rgba(239, 68, 68, 0.2)';
+  } else if (usTotalScore > 3) {
+    usRating = '多';
+    usColor = 'var(--success)';
+    usBg = 'rgba(16, 185, 129, 0.2)';
+  }
+  
+  // 更新美股評級 UI
+  const usGradeEl = document.getElementById('usHealthGrade');
+  if (usGradeEl) {
+    usGradeEl.innerText = `${usRating} (${usTotalScore}分)`;
+    usGradeEl.style.color = usColor;
+    usGradeEl.style.background = usBg;
+  }
+
+  // 3. 綜合評級 (雙強則多，雙空則空，其餘安全偏向防守)
+  const isHealthy = isTwBull && (usTotalScore > 3);
+  
   const failedStocks = marketData.price_failed_stocks || [];
   const hasFailedStocks = failedStocks.length > 0;
 
-  if (isHealthy) {
-    document.getElementById('healthGrade').innerText = '多頭安全';
-    document.getElementById('healthGrade').style.color = 'var(--success)';
-    badge.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-    badge.style.color = 'var(--success)';
-    badge.querySelector('.status-dot').style.backgroundColor = 'var(--success)';
-    text.innerText = '市場偏多';
-  } else {
-    document.getElementById('healthGrade').innerText = '震盪偏空';
-    document.getElementById('healthGrade').style.color = 'var(--danger)';
-    badge.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
-    badge.style.color = 'var(--danger)';
-    badge.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
-    text.innerText = '建議降低部位';
+  let overallText = '多頭安全';
+  let overallColor = 'var(--success)';
+  let overallBg = 'rgba(16, 185, 129, 0.2)';
+  let badgeText = '市場偏多';
+
+  if (!isTwBull && usTotalScore < 3) {
+    overallText = '全面看空';
+    overallColor = 'var(--danger)';
+    overallBg = 'rgba(239, 68, 68, 0.2)';
+    badgeText = '建議降低部位';
+  } else if (!isTwBull || usTotalScore < 3) {
+    overallText = '震盪防守';
+    overallColor = 'var(--warning)';
+    overallBg = 'rgba(245, 158, 11, 0.2)';
+    badgeText = '加強防守警覺';
   }
+
+  document.getElementById('healthGrade').innerText = overallText;
+  document.getElementById('healthGrade').style.color = overallColor;
+  document.getElementById('healthGrade').style.background = overallBg;
+  
+  badge.style.backgroundColor = overallBg;
+  badge.style.color = overallColor;
+  badge.querySelector('.status-dot').style.backgroundColor = overallColor;
+  text.innerText = badgeText;
 
   if (!isHealthy || hasFailedStocks) {
     document.getElementById('healthWarning').style.display = 'flex';
@@ -188,13 +252,32 @@ function initDashboard() {
         </li>
       `;
     }
-    if (!isHealthy) {
+    
+    // 警示條件以台股為主
+    if (!isTwBull) {
       warningHTML += `
-        <li>降低持股水位</li>
+        <li style="color: var(--danger); font-weight: bold;">⚠️ 台股市況偏空 (${twTotalScore}分)</li>
+        <li>降低台股持股水位</li>
         <li>提高停損標準</li>
-        <li>減少交易次數</li>
+      `;
+    } else {
+      warningHTML += `
+        <li style="color: var(--success); font-weight: bold;">✓ 台股市況偏多 (${twTotalScore}分)</li>
       `;
     }
+    
+    if (usTotalScore < 3) {
+      warningHTML += `
+        <li style="color: var(--danger); font-weight: bold;">⚠️ 美股趨勢偏空 (${usTotalScore}分)</li>
+        <li>警惕外部連動下跌風險</li>
+      `;
+    } else if (usTotalScore === 3) {
+      warningHTML += `
+        <li style="color: var(--warning); font-weight: bold;">⚡ 美股市況普通 (3分)</li>
+        <li>密切觀察國際盤勢方向</li>
+      `;
+    }
+    
     document.getElementById('warningList').innerHTML = warningHTML;
   } else {
     document.getElementById('healthWarning').style.display = 'none';
