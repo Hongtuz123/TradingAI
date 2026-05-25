@@ -370,7 +370,7 @@ body {
   gap: 5px;
 }
 
-.filter-input-wrap input {
+.filter-input-wrap input:not([type="range"]) {
   width: 60px;
   background: var(--bg-dark);
   border: 1px solid var(--border-color);
@@ -378,6 +378,14 @@ body {
   padding: 4px 8px;
   border-radius: 4px;
   text-align: right;
+}
+
+.filter-input-wrap input[type="range"] {
+  width: 100px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .filter-input-wrap .unit {
