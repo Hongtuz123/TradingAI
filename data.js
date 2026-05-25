@@ -1,9 +1,53 @@
-// 由 yfinance 產生之真實資料 — 2026-05-25 15:15:48
+// 由 yfinance 產生之真實資料 — 2026-05-25 15:29:44
 const marketData = {
+  "tw_indices": [
+    {
+      "label": "加權指數",
+      "pct_chg": 3.26,
+      "close": 43644.4,
+      "above_20ma": true,
+      "above_60ma": true
+    },
+    {
+      "label": "櫃買指數",
+      "pct_chg": 3.28,
+      "close": 423.25,
+      "above_20ma": true,
+      "above_60ma": true
+    }
+  ],
+  "us_indices": [
+    {
+      "label": "費半 SOX",
+      "pct_chg": 1.99,
+      "close": 12202.54
+    },
+    {
+      "label": "那斯達克 100",
+      "pct_chg": 0.42,
+      "close": 29481.64
+    },
+    {
+      "label": "羅素 2000",
+      "pct_chg": 0.91,
+      "close": 2869.23
+    },
+    {
+      "label": "道瓊 DJI",
+      "pct_chg": 0.58,
+      "close": 50579.7
+    },
+    {
+      "label": "S&P 500",
+      "pct_chg": 0.37,
+      "close": 7473.47
+    }
+  ],
+  "vol_above_20ma": false,
   "twii_above_60ma": true,
   "otc_above_60ma": true,
-  "vol_above_20ma": false,
-  "lastUpdate": "2026-05-25 15:15:48",
+  "vol_above_20ma_bool": false,
+  "lastUpdate": "2026-05-25 15:29:44",
   "price_failed_stocks": [
     {
       "Code": "00403A",
