@@ -105,6 +105,105 @@ def load_all_market_info():
         
     return all_listed
 
+def safe_float(val):
+    if val is None or val == "":
+        return None
+    try:
+        return float(str(val).replace(",", "").strip())
+    except ValueError:
+        return None
+
+def get_stock_code(row):
+    code = row.get("公司代號") or row.get("SecuritiesCompanyCode") or row.get("Code")
+    if code:
+        return str(code).strip()
+    return None
+
+def fetch_openapi_fundamentals():
+    print("⏳ 開始下載台灣官方 OpenAPI 批量基本面數據...")
+    fundamentals = {}
+
+    # 1. 抓取上市櫃月營收 YoY
+    try:
+        res = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap05_L", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    val = safe_float(r.get("營業收入-去年同月增減(%)"))
+                    if val is not None:
+                        fundamentals.setdefault(code, {})["revYoY"] = round(val, 2)
+    except Exception as e:
+        print(f"  ⚠️ 上市月營收抓取失敗: {e}")
+
+    try:
+        res = requests.get("https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap05_O", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    val = safe_float(r.get("營業收入-去年同月增減(%)"))
+                    if val is not None:
+                        fundamentals.setdefault(code, {})["revYoY"] = round(val, 2)
+    except Exception as e:
+        print(f"  ⚠️ 上櫃月營收抓取失敗: {e}")
+
+    # 2. 抓取上市櫃毛利率
+    try:
+        res = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap17_L", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    val = safe_float(r.get("毛利率(%)(營業毛利)/(營業收入)"))
+                    if val is not None:
+                        fundamentals.setdefault(code, {})["grossMargin"] = round(val, 2)
+    except Exception as e:
+        print(f"  ⚠️ 上市毛利率抓取失敗: {e}")
+
+    try:
+        res = requests.get("https://www.tpex.org.tw/openapi/v1/mopsfin_187ap17_O", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    val = safe_float(r.get("毛利率"))
+                    if val is not None:
+                        fundamentals.setdefault(code, {})["grossMargin"] = round(val, 2)
+    except Exception as e:
+        print(f"  ⚠️ 上櫃毛利率抓取失敗: {e}")
+
+    # 3. 抓取上市櫃資產負債表並計算負債比
+    try:
+        res = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap07_L_ci", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    debt = safe_float(r.get("負債總額"))
+                    assets = safe_float(r.get("資產總額"))
+                    if debt is not None and assets is not None and assets > 0:
+                        debt_ratio = round((debt / assets) * 100, 2)
+                        fundamentals.setdefault(code, {})["debtRatio"] = debt_ratio
+    except Exception as e:
+        print(f"  ⚠️ 上市資產負債表抓取失敗: {e}")
+
+    try:
+        res = requests.get("https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap07_O_ci", timeout=10)
+        if res.status_code == 200:
+            for r in res.json():
+                code = get_stock_code(r)
+                if code:
+                    debt = safe_float(r.get("負債總額"))
+                    assets = safe_float(r.get("資產總額"))
+                    if debt is not None and assets is not None and assets > 0:
+                        debt_ratio = round((debt / assets) * 100, 2)
+                        fundamentals.setdefault(code, {})["debtRatio"] = debt_ratio
+    except Exception as e:
+        print(f"  ⚠️ 上櫃資產負債表抓取失敗: {e}")
+
+    print(f"🎉 OpenAPI 基本面數據下載完成！共彙整 {len(fundamentals)} 檔股票。")
+    return fundamentals
 
 
 def calc_market_health():
@@ -354,6 +453,9 @@ def run_screener():
         
     print("下載三大法人當日買賣超資料...")
     inst_data = fetch_institutional_data()
+    
+    # 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比)
+    openapi_fund = fetch_openapi_fundamentals()
         
     print(f"載入 TWSE/TPEX OpenAPI 市場資訊...")
     all_market_info = load_all_market_info()
@@ -480,11 +582,20 @@ def run_screener():
             foreign_net_buy = inst_info["foreign"]
             foreign_buy_bool = bool(foreign_net_buy > 0)
 
+            # 官方 OpenAPI 基本面數據
+            fund_info = openapi_fund.get(symbol, {})
+            rev_yoy = fund_info.get("revYoY")
+            gross_margin = fund_info.get("grossMargin")
+            debt_ratio = fund_info.get("debtRatio")
+
             results.append({
                 "id": symbol, "name": name, "market": market,
                 "price": round(close, 2), "change": round(change_num, 2),
-                "epsYoY": None, "revYoY": None, "roe": None,
-                "grossMargin": None, "debtRatio": None,
+                "epsYoY": None,  # 將在最後精選 Top 40 中局部下載
+                "revYoY": rev_yoy,
+                "roe": None,      # 將在最後精選 Top 40 中局部下載
+                "grossMargin": gross_margin,
+                "debtRatio": debt_ratio,
                 "trustDays": trust_net_buy, 
                 "foreignBuy": foreign_buy_bool,
                 "foreignNetBuy": foreign_net_buy,
@@ -514,6 +625,39 @@ def run_screener():
                 'Code': symbol,
                 'Name': name
             })
+
+    # ============================================
+    # 計算初步得分，對 results 排序，並局部透過 yfinance 補齊 Top 40 基本面
+    # ============================================
+    def calc_preliminary_score(stock):
+        score = 0
+        if stock.get("maBull"): score += 2
+        if stock.get("ma20Rising"): score += 1
+        if (stock.get("trustDays") or 0) > 0: score += 2
+        if stock.get("foreignNetBuy") and stock.get("foreignNetBuy") > 0: score += 1
+        if stock.get("revYoY") and stock.get("revYoY") > 15: score += 2
+        if stock.get("grossMargin") and stock.get("grossMargin") > 15: score += 2
+        if (stock.get("volRatio") or 0) > 1.2: score += 1
+        return score
+
+    results.sort(key=calc_preliminary_score, reverse=True)
+    top_40 = results[:40]
+    
+    print(f"\n⚡️ 針對初步排序前 {len(top_40)} 檔精選標的，局部下載 yfinance 高精度基本面資料...")
+    for idx, s in enumerate(top_40):
+        symbol = s["id"]
+        market = s["market"]
+        suffix = '.TWO' if market == 'OTC' else '.TW'
+        yf_ticker = f"{symbol}{suffix}"
+        try:
+            ticker_obj = yf.Ticker(yf_ticker)
+            info = ticker_obj.info
+            s['epsYoY'] = round(info.get('earningsQuarterlyGrowth', 0) * 100, 2) if info.get('earningsQuarterlyGrowth') else None
+            s['roe'] = round(info.get('returnOnEquity', 0) * 100, 2) if info.get('returnOnEquity') else None
+            s['marketCap'] = round(info.get('marketCap', 0) / 100000000, 2) if info.get('marketCap') else None  # 轉為億元
+            print(f"  [{idx+1}/40] ✅ 成功補齊 {symbol} {s['name']}: EPS YoY {s['epsYoY']}%, ROE {s['roe']}%, 市值 {s['marketCap']} 億")
+        except Exception as fe:
+            print(f"  [{idx+1}/40] ⚠️ 無法補齊 {symbol} 的 yfinance 資料: {fe}")
 
     # ============================================
     # 計算市場健康度（加權指數/OTC 是否站上 60MA）
