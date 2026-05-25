@@ -275,7 +275,7 @@ function renderScreenerTable(data) {
   tbody.innerHTML = '';
 
   if(data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">無符合條件的標的</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">無符合條件的標的</td></tr>';
     return;
   }
 
@@ -293,6 +293,7 @@ function renderScreenerTable(data) {
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
       <td>${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</td>
       <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
+      <td>${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</td>
       <td>${s.volRatio}x</td>
       <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
     `;
@@ -369,6 +370,7 @@ function renderWhitelistGrid() {
           <div>營收 YoY：${s.revYoY != null ? s.revYoY + '%' : '--'}</div>
           <div>投信當日：${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</div>
           <div>外資當日：${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</div>
+          <div>自營商當日：${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</div>
           <div>均量比：${s.volRatio}x</div>
           <div>距52W高：${s.dist52W}%</div>
           <div>20MA走升：${s.ma20Rising ? '✔ 是' : '✘ 否'}</div>

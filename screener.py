@@ -429,19 +429,23 @@ def fetch_institutional_data():
                     print(f"  ✅ 成功取得 {date_str} 上市三大法人資料！共 {len(data['data'])} 筆。")
                     valid_idx = idx
                     
-                    # 解析 fields 尋找外資與投信索引
+                    # 解析 fields 尋找外資、投信與自營商索引
                     fields = data.get("fields", [])
                     foreign_idx = -1
                     trust_idx = -1
+                    dealer_idx = -1
                     for f_idx, field in enumerate(fields):
                         if "外陸資" in field and "買賣超" in field and "不含外資自營商" in field:
                             foreign_idx = f_idx
                         elif "投信" in field and "買賣超" in field:
                             trust_idx = f_idx
+                        elif "自營商" in field and "買賣超" in field and "自行買賣" not in field and "避險" not in field:
+                            dealer_idx = f_idx
                             
                     # fallback 至預設索引
                     if foreign_idx == -1: foreign_idx = 4
                     if trust_idx == -1: trust_idx = 10
+                    if dealer_idx == -1: dealer_idx = 11
                     
                     for row in data["data"]:
                         code = row[0].strip()
@@ -454,10 +458,15 @@ def fetch_institutional_data():
                             trust_val = int(row[trust_idx].replace(",", "")) // 1000
                         except Exception:
                             trust_val = 0
+                        try:
+                            dealer_val = int(row[dealer_idx].replace(",", "")) // 1000
+                        except Exception:
+                            dealer_val = 0
                         
                         inst_data[code] = {
                             "foreign": foreign_val,
-                            "trust": trust_val
+                            "trust": trust_val,
+                            "dealer": dealer_val
                         }
                     break
                 else:
@@ -468,7 +477,7 @@ def fetch_institutional_data():
         time.sleep(0.1) # 遵守 100ms 間隔限制
         
     if valid_idx == -1:
-        print("  ⚠️ 無法抓取到任何最近的上市三大法人資料！")
+        print("  ⚠️ 無法抓取到 any 最近的上市三大法人資料！")
         return {}
         
     # 2. 既然抓到了有效交易日，用對應的日期去抓 TPEx (上櫃)
@@ -484,7 +493,7 @@ def fetch_institutional_data():
                 if "data" in table:
                     print(f"  ✅ 成功取得 {tpex_date_str} 上櫃三大法人資料！共 {len(table['data'])} 筆。")
                     for row in table["data"]:
-                        if len(row) >= 14:
+                        if len(row) >= 23:
                             code = row[0].strip()
                             try:
                                 foreign_val = int(row[4].replace(",", "")) // 1000
@@ -494,11 +503,16 @@ def fetch_institutional_data():
                                 trust_val = int(row[13].replace(",", "")) // 1000
                             except Exception:
                                 trust_val = 0
+                            try:
+                                dealer_val = int(row[22].replace(",", "")) // 1000
+                            except Exception:
+                                dealer_val = 0
                             
                             # 合併或寫入
                             inst_data[code] = {
                                 "foreign": foreign_val,
-                                "trust": trust_val
+                                "trust": trust_val,
+                                "dealer": dealer_val
                             }
     except Exception as e:
         print(f"  抓取上櫃三大法人出錯: {e}")
@@ -642,9 +656,10 @@ def run_screener():
             ma60_val = round(float(latest['ma60']), 2)
 
             # 三大法人買賣超數據
-            inst_info = inst_data.get(symbol, {"trust": 0, "foreign": 0})
-            trust_net_buy = inst_info["trust"]
-            foreign_net_buy = inst_info["foreign"]
+            inst_info = inst_data.get(symbol, {"trust": 0, "foreign": 0, "dealer": 0})
+            trust_net_buy = inst_info.get("trust", 0)
+            foreign_net_buy = inst_info.get("foreign", 0)
+            dealer_net_buy = inst_info.get("dealer", 0)
             foreign_buy_bool = bool(foreign_net_buy > 0)
 
             # 官方 OpenAPI 基本面數據
@@ -677,6 +692,7 @@ def run_screener():
                 "trustDays": trust_net_buy, 
                 "foreignBuy": foreign_buy_bool,
                 "foreignNetBuy": foreign_net_buy,
+                "dealerDays": dealer_net_buy,
                 "volRatio": vol_ratio, "turnover": turnover_val,
                 "marketCap": market_cap_val, "dailyVol": vol // 1000,
                 "type": tech_type,
