@@ -179,7 +179,6 @@ function initDashboard() {
 
   // 2. 美股評分系統 (總分 5 分)
   // 5 個指標：費半、那斯達克100、羅素2000、道瓊、S&P 500
-  const usData = marketData.us_indices || [];
   let usTotalScore = 0;
   usData.forEach(idx => {
     if (idx.pct_chg && idx.pct_chg > 0) {
