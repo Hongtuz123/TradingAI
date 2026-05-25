@@ -164,8 +164,7 @@ function runScreener() {
     typeB: document.getElementById('f_type_b').checked,
     typeC: document.getElementById('f_type_c').checked,
     typeD: document.getElementById('f_type_d').checked,
-    maBull: document.getElementById('f_ma_bull').checked,
-    ma20Rising: document.getElementById('f_ma20_rising') ? document.getElementById('f_ma20_rising').checked : false,
+    trendFilter: document.getElementById('f_trend_filter').checked,
     dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
     closeHigh: document.getElementById('f_close_high').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 6
@@ -186,7 +185,8 @@ function runScreener() {
                       (p.typeC && s.type === 'C') || 
                       (p.typeD && s.type === 'D');
 
-    const maMatch = !p.maBull || s.maBull;
+    // 多頭趨勢濾網：若勾選，股價必須高於 20MA 且 20MA 走升
+    const trendMatch = !p.trendFilter || (s.price >= s.ma20 && s.ma20Rising);
 
     // 計算 12 個條件的得分與未達成項目（null 值欄位跳過不計）
     let failedConditions = [];
@@ -212,7 +212,7 @@ function runScreener() {
     s.failedConditions = failedConditions;
 
     // L4 與 L5 的嚴格過濾與總得分過濾
-    if (s.dynamicScore >= p.minScore && typeMatch && maMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
+    if (s.dynamicScore >= p.minScore && typeMatch && trendMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
   });
@@ -462,7 +462,7 @@ function showEmptyResultModal(p, passedCount) {
     '市值':       mockStocks.filter(s => s.marketCap < p.mktCap).length,
     '日均量':     mockStocks.filter(s => s.dailyVol < p.dailyVol).length,
     '技術類型':   typeFail,
-    '均線多頭':   mockStocks.filter(s => p.maBull && !s.maBull).length,
+    '多頭趨勢濾網': mockStocks.filter(s => p.trendFilter && !(s.price >= s.ma20 && s.ma20Rising)).length,
     '距52週高點': mockStocks.filter(s => s.dist52W > p.dist52W).length,
     '收盤接近日高': mockStocks.filter(s => p.closeHigh && !s.closeToHigh).length,
   };
