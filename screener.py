@@ -173,8 +173,9 @@ def fetch_openapi_fundamentals():
     except Exception as e:
         print(f"  ⚠️ 上櫃毛利率抓取失敗: {e}")
 
-    # 3. 抓取上市櫃資產負債表並計算負債比與留存權益總額
+    # 3. 抓取上市櫃資產負債表並計算負債比與留存權益總額與股本
     equity_data = {}
+    capital_data = {}
     try:
         res = requests.get("https://openapi.twse.com.tw/v1/opendata/t187ap07_L_ci", timeout=10)
         if res.status_code == 200:
@@ -184,10 +185,13 @@ def fetch_openapi_fundamentals():
                     debt = safe_float(r.get("負債總額"))
                     assets = safe_float(r.get("資產總額"))
                     equity = safe_float(r.get("權益總額"))
+                    capital = safe_float(r.get("股本"))
                     if debt is not None and assets is not None and assets > 0:
                         fundamentals.setdefault(code, {})["debtRatio"] = round((debt / assets) * 100, 2)
                     if equity is not None:
                         equity_data[code] = equity
+                    if capital is not None:
+                        capital_data[code] = capital
     except Exception as e:
         print(f"  ⚠️ 上市資產負債表抓取失敗: {e}")
 
@@ -200,10 +204,13 @@ def fetch_openapi_fundamentals():
                     debt = safe_float(r.get("負債總額"))
                     assets = safe_float(r.get("資產總額"))
                     equity = safe_float(r.get("權益總額"))
+                    capital = safe_float(r.get("股本"))
                     if debt is not None and assets is not None and assets > 0:
                         fundamentals.setdefault(code, {})["debtRatio"] = round((debt / assets) * 100, 2)
                     if equity is not None:
                         equity_data[code] = equity
+                    if capital is not None:
+                        capital_data[code] = capital
     except Exception as e:
         print(f"  ⚠️ 上櫃資產負債表抓取失敗: {e}")
 
@@ -242,6 +249,9 @@ def fetch_openapi_fundamentals():
         
         eps_info = eps_data.get(code, {})
         fundamentals[code]["eps"] = eps_info.get("eps")
+        
+        # 股本放入以供後面計算週轉率與市值
+        fundamentals[code]["capital"] = capital_data.get(code)
         
         net_inc = eps_info.get("netIncome")
         equity = equity_data.get(code)
@@ -637,6 +647,16 @@ def run_screener():
             debt_ratio = fund_info.get("debtRatio")
             eps_val = fund_info.get("eps")
             roe_val = fund_info.get("roe")
+            capital_val = fund_info.get("capital")
+
+            # 智慧批量計算週轉率與市值 (100% 覆蓋)
+            turnover_val = None
+            market_cap_val = None
+            if capital_val and capital_val > 0:
+                # 週轉率 (%) = 當日成交量(股) / (股本(千元) * 100) * 100 = vol / 股本
+                turnover_val = round((vol / capital_val) * 100, 2)
+                # 市值 (億) = 收盤價 * (股本(千元) * 100) / 100,000,000 = close * 股本 / 1,000,000
+                market_cap_val = round((close * capital_val) / 1000000, 2)
 
             results.append({
                 "id": symbol, "name": name, "market": market,
@@ -650,8 +670,8 @@ def run_screener():
                 "trustDays": trust_net_buy, 
                 "foreignBuy": foreign_buy_bool,
                 "foreignNetBuy": foreign_net_buy,
-                "volRatio": vol_ratio, "turnover": None,
-                "marketCap": None, "dailyVol": vol // 1000,
+                "volRatio": vol_ratio, "turnover": turnover_val,
+                "marketCap": market_cap_val, "dailyVol": vol // 1000,
                 "type": tech_type,
                 "maBull": ma_bull,
                 "ma20Rising": ma20_rising,
