@@ -270,7 +270,7 @@ function renderScreenerTable(data) {
       <td><span class="badge" style="background:var(--primary)">Type ${s.type}</span></td>
       <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
-      <td>${s.epsYoY != null ? s.epsYoY + '%' : '--'}</td>
+      <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
       <td>${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</td>
@@ -347,7 +347,7 @@ function renderWhitelistGrid() {
         </div>
         <div class="wl-card-body">
           <div>收盤：${s.price} (${s.change}%)</div>
-          <div>EPS YoY：${s.epsYoY != null ? s.epsYoY + '%' : '--'}</div>
+          <div>EPS：${s.eps != null ? s.eps + '元' : '--'} (YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'})</div>
           <div>營收 YoY：${s.revYoY != null ? s.revYoY + '%' : '--'}</div>
           <div>投信當日：${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</div>
           <div>外資當日：${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</div>

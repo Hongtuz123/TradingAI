@@ -246,7 +246,7 @@ def fetch_openapi_fundamentals():
         net_inc = eps_info.get("netIncome")
         equity = equity_data.get(code)
         if net_inc is not None and equity is not None and equity > 0:
-            fundamentals[code]["roe"] = round((net_inc / equity) * 4 * 100, 2)
+            fundamentals[code]["roe"] = round((net_inc / equity) * 100, 2)
         else:
             fundamentals[code]["roe"] = None
 
