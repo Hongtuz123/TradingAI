@@ -544,6 +544,16 @@ def run_screener():
     tickers = []
     for s in csv_stocks:
         code = s['Code']
+        
+        # 智慧前導零補正邏輯：
+        # 如果原始代碼不在 all_market_info 裡面，但補零為 6 碼後在裡面，就自動修正（解決 Excel/CSV 將 009816 轉成 9816 的前導零丟失問題）
+        if code not in all_market_info and len(code) < 6:
+            candidate = code.zfill(6)
+            if candidate in all_market_info:
+                print(f"  💡 偵測到 CSV 股票代碼 {code} 前導零丟失，已智慧修正為 {candidate} ({all_market_info[candidate].get('Name')})")
+                code = candidate
+                s['Code'] = candidate
+
         name = s.get('Name', code)
         
         # 智慧判定市場：OpenAPI 優先，再來以 B 結尾為上櫃，其餘預設上市
