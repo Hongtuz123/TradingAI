@@ -2,6 +2,20 @@
 let currentResults = [];
 let currentWhitelist = [];
 
+// 技術面微型標籤產生器
+function getTechBadgesHTML(typeStr) {
+  if (!typeStr || typeStr === 'none') return '--';
+  return typeStr.split(',').map(t => {
+    let color = 'var(--primary)';
+    if (t === 'A') color = '#ec4899'; // 突破型粉紅
+    if (t === 'B') color = '#3b82f6'; // 均線多頭藍
+    if (t === 'C') color = '#10b981'; // 剛轉強綠
+    if (t === 'D') color = '#f59e0b'; // 強勢回檔橘
+    if (t === 'E') color = '#8b5cf6'; // 趨勢多頭紫
+    return `<span class="badge" style="background:${color};margin-right:2px;padding:2px 4px;font-size:10px;">Type ${t}</span>`;
+  }).join('');
+}
+
 // 即時時鐘與開盤倒數
 function startClock() {
   const clockEl = document.getElementById('currentTime');
@@ -164,7 +178,7 @@ function runScreener() {
     typeB: document.getElementById('f_type_b').checked,
     typeC: document.getElementById('f_type_c').checked,
     typeD: document.getElementById('f_type_d').checked,
-    trendFilter: document.getElementById('f_trend_filter').checked,
+    typeE: document.getElementById('f_type_e').checked,
     dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
     closeHigh: document.getElementById('f_close_high').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 6
@@ -175,20 +189,19 @@ function runScreener() {
   currentResults = [];
   currentWhitelist = [];
   
-  let stats = { A:0, B:0, C:0, D:0, totalScore: 0 };
+  let stats = { A:0, B:0, C:0, D:0, E:0, totalScore: 0 };
 
   mockStocks.forEach(s => {
+    // 支援多型態判定
+    const stockTypes = s.type ? s.type.split(',') : [];
+    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD && !p.typeE) || 
+                      (p.typeA && stockTypes.includes('A')) || 
+                      (p.typeB && stockTypes.includes('B')) || 
+                      (p.typeC && stockTypes.includes('C')) || 
+                      (p.typeD && stockTypes.includes('D')) || 
+                      (p.typeE && stockTypes.includes('E'));
 
-    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD) || 
-                      (p.typeA && s.type === 'A') || 
-                      (p.typeB && s.type === 'B') || 
-                      (p.typeC && s.type === 'C') || 
-                      (p.typeD && s.type === 'D');
-
-    // 多頭趨勢濾網：若勾選，股價必須高於 20MA 且 20MA 走升
-    const trendMatch = !p.trendFilter || (s.price >= s.ma20 && s.ma20Rising);
-
-    // 計算 12 個條件的得分與未達成項目（null 值欄位跳過不計）
+    // 計算 12 個條件 of 得分與未達成項目（null 值欄位跳過不計）
     let failedConditions = [];
     let checkedCount = 0;
     function chk(val, cond, label) { if (val != null) { checkedCount++; if (!cond) failedConditions.push(label); } }
@@ -211,8 +224,8 @@ function runScreener() {
     s.dynamicScore = 12 - failedConditions.length;
     s.failedConditions = failedConditions;
 
-    // L4 與 L5 的嚴格過濾與總得分過濾
-    if (s.dynamicScore >= p.minScore && typeMatch && trendMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
+    // L4 與 L5 的嚴格過濾與總得分過濾 (Type E 已經完全融入 typeMatch)
+    if (s.dynamicScore >= p.minScore && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
   });
@@ -225,7 +238,12 @@ function runScreener() {
   currentResults.forEach(s => {
     if (s.dynamicScore >= p.minScore) {
       currentWhitelist.push(s);
-      stats[s.type] = (stats[s.type] || 0) + 1;
+      const stockTypes = s.type ? s.type.split(',') : [];
+      stockTypes.forEach(t => {
+        if (t !== 'none') {
+          stats[t] = (stats[t] || 0) + 1;
+        }
+      });
       stats.totalScore += s.dynamicScore;
     }
   });
@@ -267,7 +285,7 @@ function renderScreenerTable(data) {
     tr.title = '點擊查看未達標項目';
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}</td>
-      <td><span class="badge" style="background:var(--primary)">Type ${s.type}</span></td>
+      <td>${getTechBadgesHTML(s.type)}</td>
       <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
@@ -311,7 +329,7 @@ function renderWhitelistPreview() {
       <div class="dash-wl-rank">${idx + 1}</div>
       <div class="dash-wl-info">
         <strong>${s.id} ${s.name}</strong>
-        <span class="badge" style="background:var(--primary);margin-left:6px;font-size:10px">${s.type !== 'none' ? 'Type ' + s.type : '--'}</span>
+        <span style="margin-left:6px;">${getTechBadgesHTML(s.type)}</span>
       </div>
       <div class="dash-wl-price ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</div>
       <div class="dash-wl-score">${s.dynamicScore}<span style="font-size:10px;color:var(--text-muted)">/12</span></div>
@@ -341,7 +359,7 @@ function renderWhitelistGrid() {
         <div class="wl-card-header">
           <div>
             <h3>${s.id} ${s.name}</h3>
-            <span class="badge" style="background:var(--primary)">類型 ${s.type}</span>
+            ${getTechBadgesHTML(s.type)}
           </div>
           <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 12</span></div>
         </div>

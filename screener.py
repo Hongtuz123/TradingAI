@@ -364,27 +364,34 @@ def calc_indicators(df):
 
 def classify_tech_type(latest, prev, close, vol):
     """
-    技術型態分類（優先級：A > C > B > D）
+    技術型態分類（可多選）
     A = 突破型：收盤站上近20日新高 + 量能放大
     B = 均線多頭：5MA > 20MA > 60MA 且股價 > 5MA
     C = 剛轉強：MACD 柱由負轉正 且 RSI 從 ≤50 突破 50
     D = 強勢回檔：股價 > 20MA 但量能偏低（回檔整理）
+    E = 趨勢多頭：股價 >= 20MA 且 20MA 走升
+    回傳以逗號分隔的字串，若皆不符合則回傳 'none'
     """
+    types = []
     recent_high = latest.get('recent_high', close) if hasattr(latest, 'get') else latest['recent_high'] if 'recent_high' in latest else close
 
-    # A 型優先級最高
+    # A 型突破型
     if close >= recent_high and vol > latest['vol_ma20'] * 1.5:
-        return 'A'
-    # C 型次之
-    elif prev['hist'] <= 0 and latest['hist'] > 0 and prev['rsi14'] <= 50 and latest['rsi14'] > 50:
-        return 'C'
-    # B 型
-    elif latest['ma5'] > latest['ma20'] > latest['ma60'] and close > latest['ma5']:
-        return 'B'
-    # D 型（最低優先級）
-    elif close > latest['ma20'] and vol < latest['vol_ma20']:
-        return 'D'
-    return 'none'
+        types.append('A')
+    # C 型剛轉強
+    if prev['hist'] <= 0 and latest['hist'] > 0 and prev['rsi14'] <= 50 and latest['rsi14'] > 50:
+        types.append('C')
+    # B 型均線多頭
+    if latest['ma5'] > latest['ma20'] > latest['ma60'] and close > latest['ma5']:
+        types.append('B')
+    # D 型強勢回檔
+    if close > latest['ma20'] and vol < latest['vol_ma20']:
+        types.append('D')
+    # E 型趨勢多頭
+    if close >= latest['ma20'] and latest.get('ma20_rising', False):
+        types.append('E')
+
+    return ",".join(types) if types else 'none'
 
 
 def fetch_institutional_data():
