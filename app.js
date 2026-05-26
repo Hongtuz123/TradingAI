@@ -608,15 +608,107 @@ function filterChartList(val) {
   });
 }
 
+// 表格點擊排序狀態記錄器
+let currentSortKey = 'score'; // 預設排序欄位
+let currentSortDir = 'desc';  // 預設降序
+
 function sortResults(by) {
+  currentSortKey = by;
+  currentSortDir = 'desc'; // 下拉選單預設以降序排列
+  applyCurrentSort();
+}
+
+function toggleSort(key) {
+  if (currentSortKey === key) {
+    // 同一欄位點擊，切換升降序
+    currentSortDir = currentSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    // 新欄位點擊，預設改為降序 (更符合交易員看最大值習慣)
+    currentSortKey = key;
+    currentSortDir = 'desc';
+  }
+  applyCurrentSort();
+}
+
+function applyCurrentSort() {
   let sorted = [...currentResults];
-  if(by === 'score') sorted.sort((a,b) => b.dynamicScore - a.dynamicScore);
-  if(by === 'epsGrowth') sorted.sort((a,b) => b.epsYoY - a.epsYoY);
-  if(by === 'revGrowth') sorted.sort((a,b) => b.revYoY - a.revYoY);
-  if(by === 'trustDays') sorted.sort((a,b) => b.trustDays - a.trustDays);
-  if(by === 'techType') sorted.sort((a,b) => a.type.localeCompare(b.type));
-  
+  const isDesc = currentSortDir === 'desc';
+
+  sorted.sort((a, b) => {
+    let valA = getSortValue(a, currentSortKey);
+    let valB = getSortValue(b, currentSortKey);
+
+    // 處理空值 (null/undefined) 永遠沉底的防爆設計
+    if (valA === null || valA === undefined) return 1;
+    if (valB === null || valB === undefined) return -1;
+
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      return isDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
+    }
+    return isDesc ? valB - valA : valA - valB;
+  });
+
+  // 更新所有標頭的 UI 排序圖示
+  updateSortIcons();
+
   renderScreenerTable(sorted);
+}
+
+// 根據 key 抓取對應屬性值
+function getSortValue(item, key) {
+  switch (key) {
+    case 'id':
+      return item.id;
+    case 'techType':
+      return item.type || '';
+    case 'price':
+      return item.price;
+    case 'score':
+      return item.dynamicScore;
+    case 'epsGrowth':
+      return item.epsYoY;
+    case 'revGrowth':
+      return item.revYoY;
+    case 'roe':
+      return item.roe;
+    case 'trustDays':
+      return item.trustDays;
+    case 'foreignNet':
+      return item.foreignNetBuy;
+    case 'dealerNet':
+      return item.dealerDays;
+    case 'volRatio':
+      return item.volRatio;
+    default:
+      return 0;
+  }
+}
+
+// 更新 results Table 標頭的視覺圖標
+function updateSortIcons() {
+  const keys = ['id', 'techType', 'price', 'score', 'epsGrowth', 'revGrowth', 'roe', 'trustDays', 'foreignNet', 'dealerNet', 'volRatio'];
+  keys.forEach(k => {
+    const el = document.getElementById(`sort-${k}`);
+    if (el) {
+      if (currentSortKey === k) {
+        el.innerText = currentSortDir === 'desc' ? '▼' : '▲';
+        el.style.color = 'var(--primary)';
+        el.style.fontWeight = 'bold';
+      } else {
+        el.innerText = '↕';
+        el.style.color = 'var(--text-muted)';
+        el.style.fontWeight = 'normal';
+      }
+    }
+  });
+
+  // 連動更新 results-meta 的下拉選單選項 value
+  const selectSort = document.getElementById('resultSort');
+  if (selectSort) {
+    if (['score', 'techType', 'epsGrowth', 'revGrowth', 'trustDays'].includes(currentSortKey)) {
+      selectSort.value = currentSortKey;
+    }
+  }
 }
 
 function exportWhitelist() {

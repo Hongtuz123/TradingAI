@@ -348,17 +348,17 @@
             <table class="results-table" id="resultsTable">
               <thead>
                 <tr>
-                  <th>代號/名稱</th>
-                  <th>技術類型</th>
-                  <th>收盤價</th>
-                  <th>達標數</th>
-                  <th>EPS / 成長</th>
-                  <th>營收↑</th>
-                  <th>ROE</th>
-                  <th>投信</th>
-                  <th>外資</th>
-                  <th>自營商</th>
-                  <th>量比</th>
+                  <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
+                  <th onclick="toggleSort('techType')" style="cursor:pointer; user-select:none;" title="點擊按技術類型排序">技術類型 <span class="sort-icon" id="sort-techType">↕</span></th>
+                  <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
+                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按達標數排序">達標數 <span class="sort-icon" id="sort-score">↕</span></th>
+                  <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>
+                  <th onclick="toggleSort('revGrowth')" style="cursor:pointer; user-select:none;" title="點擊按營收成長排序">營收↑ <span class="sort-icon" id="sort-revGrowth">↕</span></th>
+                  <th onclick="toggleSort('roe')" style="cursor:pointer; user-select:none;" title="點擊按ROE排序">ROE <span class="sort-icon" id="sort-roe">↕</span></th>
+                  <th onclick="toggleSort('trustDays')" style="cursor:pointer; user-select:none;" title="點擊按投信買超排序">投信 <span class="sort-icon" id="sort-trustDays">↕</span></th>
+                  <th onclick="toggleSort('foreignNet')" style="cursor:pointer; user-select:none;" title="點擊按外資買超排序">外資 <span class="sort-icon" id="sort-foreignNet">↕</span></th>
+                  <th onclick="toggleSort('dealerNet')" style="cursor:pointer; user-select:none;" title="點擊按自營商買超排序">自營商 <span class="sort-icon" id="sort-dealerNet">↕</span></th>
+                  <th onclick="toggleSort('volRatio')" style="cursor:pointer; user-select:none;" title="點擊按量能比排序">量比 <span class="sort-icon" id="sort-volRatio">↕</span></th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -443,8 +443,8 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=25"></script>
-  <script src="app.js?v=25"></script>
-  <script src="stock-dashboard.js?v=25"></script>
+  <script src="data.js?v=26"></script>
+  <script src="app.js?v=26"></script>
+  <script src="stock-dashboard.js?v=26"></script>
 </body>
 </html>
