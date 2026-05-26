@@ -113,16 +113,36 @@ function initDashboard() {
     return `<span class="badge ${cls}" style="font-size:10px;padding:2px 6px;">${txt}</span>`;
   }
 
+  // ── 輔助量能格式化與 Badge 產生器 ─────────────────────
+  function formatVolNum(v) {
+    if (v === null || v === undefined) return '--';
+    if (v >= 1e9) return (v / 1e9).toFixed(2) + ' B';
+    if (v >= 1e6) return (v / 1e6).toFixed(1) + ' M';
+    return v.toLocaleString();
+  }
+  
+  function getVolLevelBadge(level) {
+    if (!level) return '';
+    let cls = 'warning'; // 普通
+    if (level === '多') cls = 'success';
+    if (level === '少') cls = 'danger';
+    return `<span class="badge ${cls}" style="font-size: 9px; padding: 1px 5px; margin-left: 4px;">量:${level}</span>`;
+  }
+
   // ── 台股版塊 ──────────────────────────────────────────
   const twData = marketData.tw_indices || [];
   const twHTML = twData.map(idx => `
     <div class="health-indicator-card tw-card">
       <div class="idx-name">${idx.label}</div>
       <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
-      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700;">
-        ${pctStr(idx.pct_chg)}
+      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
+        <span>${pctStr(idx.pct_chg)}</span>
+        <span>${getVolLevelBadge(idx.vol_level)}</span>
       </div>
-      <div class="idx-ma-badges">
+      <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+        成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(idx.volume)}</span>
+      </div>
+      <div class="idx-ma-badges" style="margin-top: 4px;">
         ${maBadge(idx.above_20ma, '>20MA')}
         ${maBadge(idx.above_60ma, '>60MA')}
       </div>
@@ -135,11 +155,21 @@ function initDashboard() {
 
   // 大盤量
   const volVal = marketData.vol_above_20ma;
+  const volLevel = marketData.vol_level || '普通';
+  const latestVolNum = marketData.latest_vol_num;
   document.getElementById('volIndicator').innerHTML = volVal !== null && volVal !== undefined
-    ? `<div class="health-indicator-card vol-card" style="position: relative;">
-         <span style="font-size:12px;">大盤量</span>
-         <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
-         <div style="font-size: 8px; color: var(--text-muted); position: absolute; bottom: 1px; right: 8px;">
+    ? `<div class="health-indicator-card vol-card" style="position: relative; padding-bottom: 18px;">
+         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+           <span style="font-size:12px; font-weight: 600;">大盤成交量</span>
+           <div>
+             <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
+             ${getVolLevelBadge(volLevel)}
+           </div>
+         </div>
+         <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+           日成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(latestVolNum)}</span>
+         </div>
+         <div style="font-size: 8px; color: var(--text-muted); position: absolute; bottom: 2px; right: 8px;">
            ${updateTime}
          </div>
        </div>`
@@ -151,8 +181,12 @@ function initDashboard() {
     <div class="health-indicator-card us-card">
       <div class="idx-name">${idx.label}</div>
       <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
-      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700;">
-        ${pctStr(idx.pct_chg)}
+      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
+        <span>${pctStr(idx.pct_chg)}</span>
+        <span>${getVolLevelBadge(idx.vol_level)}</span>
+      </div>
+      <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+        成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(idx.volume)}</span>
       </div>
       <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
         更新：${updateTime}

@@ -279,14 +279,31 @@ def calc_market_health():
                 return round((curr - prev) / prev * 100, 2)
         return None
 
+    def _calc_vol_level(volume, hist_df):
+        """依據今日 Volume 相比 20MA 均量，劃分 少/普通/多 三個等級"""
+        if not volume or hist_df.empty or len(hist_df) < 20:
+            return '普通'
+        avg_vol = hist_df['Volume'].rolling(20).mean().iloc[-1]
+        if not avg_vol or avg_vol == 0:
+            return '普通'
+        ratio = volume / avg_vol
+        if ratio < 0.85:
+            return '少'
+        elif ratio > 1.15:
+            return '多'
+        else:
+            return '普通'
+
     def _tw_index(symbol, label):
-        """回傳台股指數所需欄位"""
+        """回傳台股指數所需欄位（加入成交量與等級）"""
         item = {
             'label': label,
             'pct_chg': None,
             'close': None,
             'above_20ma': None,
             'above_60ma': None,
+            'volume': None,
+            'vol_level': '普通'
         }
         try:
             hist = yf.Ticker(symbol).history(period='130d', interval='1d')
@@ -294,6 +311,12 @@ def calc_market_health():
                 return item
             item['close'] = round(float(hist['Close'].iloc[-1]), 2)
             item['pct_chg'] = _safe_pct(hist)
+            
+            # 取得成交量
+            latest_vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else None
+            item['volume'] = latest_vol
+            item['vol_level'] = _calc_vol_level(latest_vol, hist)
+
             if len(hist) >= 20:
                 ma20 = float(hist['Close'].rolling(20).mean().iloc[-1])
                 item['above_20ma'] = item['close'] > ma20
@@ -305,14 +328,25 @@ def calc_market_health():
         return item
 
     def _us_index(symbol, label):
-        """回傳美股指數所需欄位（只要漲跌幅）"""
-        item = {'label': label, 'pct_chg': None, 'close': None}
+        """回傳美股指數所需欄位（加入成交量與等級）"""
+        item = {
+            'label': label,
+            'pct_chg': None,
+            'close': None,
+            'volume': None,
+            'vol_level': '普通'
+        }
         try:
-            hist = yf.Ticker(symbol).history(period='5d', interval='1d')
+            hist = yf.Ticker(symbol).history(period='35d', interval='1d')
             if hist.empty:
                 return item
             item['close'] = round(float(hist['Close'].iloc[-1]), 2)
             item['pct_chg'] = _safe_pct(hist)
+            
+            # 取得成交量
+            latest_vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else None
+            item['volume'] = latest_vol
+            item['vol_level'] = _calc_vol_level(latest_vol, hist)
         except Exception as e:
             print(f'  美股指數 {symbol} 計算失敗: {e}')
         return item
@@ -323,12 +357,23 @@ def calc_market_health():
 
     # 大盤量 > 20MA（用加權指數量）
     vol_above_20ma = None
+    vol_level = '普通'
+    latest_vol_num = None
     try:
         hist_vol = yf.Ticker('^TWII').history(period='60d', interval='1d')
         if len(hist_vol) >= 20:
             vol_ma20 = float(hist_vol['Volume'].rolling(20).mean().iloc[-1])
-            latest_vol = float(hist_vol['Volume'].iloc[-1])
-            vol_above_20ma = latest_vol > vol_ma20
+            latest_vol_num = float(hist_vol['Volume'].iloc[-1])
+            vol_above_20ma = latest_vol_num > vol_ma20
+            
+            # 大盤量分級
+            ratio = latest_vol_num / vol_ma20
+            if ratio < 0.85:
+                vol_level = '少'
+            elif ratio > 1.15:
+                vol_level = '多'
+            else:
+                vol_level = '普通'
     except Exception as e:
         print(f'  大盤量計算失敗: {e}')
 
@@ -344,6 +389,8 @@ def calc_market_health():
     return {
         'tw': [twii_data, twoii_data],
         'vol_above_20ma': vol_above_20ma,
+        'vol_level': vol_level,
+        'latest_vol_num': latest_vol_num,
         'us': us_indices,
         # 向下相容舊欄位
         'twii': twii_data.get('above_60ma', True),
@@ -857,12 +904,14 @@ def run_screener():
 
     # 包含失敗股票清單在 marketData 中
     market_data_dict = {
-        # 新結構：台股指數（含漲跌幅、20MA、60MA）
+        # 新結構：台股指數（含漲跌幅、20MA、60MA、量與量能級別）
         "tw_indices": market_health['tw'],
-        # 新結構：美股指數（含漲跌幅）
+        # 新結構：美股指數（含漲跌幅、量與量能級別）
         "us_indices": market_health['us'],
         # 大盤量指標
         "vol_above_20ma": market_health['vol_above_20ma'],
+        "vol_level": market_health['vol_level'],
+        "latest_vol_num": market_health['latest_vol_num'],
         # 向下相容舊欄位（避免 JS 舊引用爆炸）
         "twii_above_60ma": bool(market_health['twii']),
         "otc_above_60ma":  bool(market_health['otc']),
