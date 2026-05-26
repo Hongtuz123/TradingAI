@@ -280,10 +280,16 @@ def calc_market_health():
         return None
 
     def _calc_vol_level(volume, hist_df):
-        """依據今日 Volume 相比 20MA 均量，劃分 少/普通/多 三個等級"""
+        """依據今日 Volume 相比 20MA 均量，劃分 少/普通/多 三個等級 (過濾 0 值)"""
         if not volume or hist_df.empty or len(hist_df) < 20:
             return '普通'
-        avg_vol = hist_df['Volume'].rolling(20).mean().iloc[-1]
+        
+        # 計算不含今日/最後一天的 20 日均量
+        valid_vols = hist_df['Volume'][hist_df['Volume'] > 0]
+        if len(valid_vols) < 20:
+            return '普通'
+        avg_vol = valid_vols.rolling(20).mean().iloc[-1]
+        
         if not avg_vol or avg_vol == 0:
             return '普通'
         ratio = volume / avg_vol
@@ -295,7 +301,7 @@ def calc_market_health():
             return '普通'
 
     def _tw_index(symbol, label):
-        """回傳台股指數所需欄位（加入成交量與等級）"""
+        """回傳台股指數所需欄位（加入成交量防禦 0 值過濾）"""
         item = {
             'label': label,
             'pct_chg': None,
@@ -312,8 +318,11 @@ def calc_market_health():
             item['close'] = round(float(hist['Close'].iloc[-1]), 2)
             item['pct_chg'] = _safe_pct(hist)
             
-            # 取得成交量
-            latest_vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else None
+            # 成交量防禦 0 值過濾：若最後一天的 Volume 為 0 (例如 yfinance 還沒更新好該欄位)，使用最近一筆 > 0 的成交量
+            vols_series = hist['Volume']
+            valid_vols = vols_series[vols_series > 0]
+            latest_vol = int(valid_vols.iloc[-1]) if not valid_vols.empty else 0
+            
             item['volume'] = latest_vol
             item['vol_level'] = _calc_vol_level(latest_vol, hist)
 
@@ -328,7 +337,7 @@ def calc_market_health():
         return item
 
     def _us_index(symbol, label):
-        """回傳美股指數所需欄位（加入成交量與等級）"""
+        """回傳美股指數所需欄位（加入成交量防禦 0 值過濾）"""
         item = {
             'label': label,
             'pct_chg': None,
@@ -343,8 +352,11 @@ def calc_market_health():
             item['close'] = round(float(hist['Close'].iloc[-1]), 2)
             item['pct_chg'] = _safe_pct(hist)
             
-            # 取得成交量
-            latest_vol = int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else None
+            # 成交量防禦 0 值過濾
+            vols_series = hist['Volume']
+            valid_vols = vols_series[vols_series > 0]
+            latest_vol = int(valid_vols.iloc[-1]) if not valid_vols.empty else 0
+            
             item['volume'] = latest_vol
             item['vol_level'] = _calc_vol_level(latest_vol, hist)
         except Exception as e:
@@ -355,25 +367,28 @@ def calc_market_health():
     twii_data  = _tw_index('^TWII',  '加權指數')
     twoii_data = _tw_index('^TWOII', '櫃買指數')
 
-    # 大盤量 > 20MA（用加權指數量）
+    # 大盤量 > 20MA（用加權指數量，過濾 0 值）
     vol_above_20ma = None
     vol_level = '普通'
     latest_vol_num = None
     try:
         hist_vol = yf.Ticker('^TWII').history(period='60d', interval='1d')
         if len(hist_vol) >= 20:
-            vol_ma20 = float(hist_vol['Volume'].rolling(20).mean().iloc[-1])
-            latest_vol_num = float(hist_vol['Volume'].iloc[-1])
-            vol_above_20ma = latest_vol_num > vol_ma20
+            valid_vols = hist_vol['Volume'][hist_vol['Volume'] > 0]
+            vol_ma20 = float(valid_vols.rolling(20).mean().iloc[-1]) if len(valid_vols) >= 20 else 0
             
-            # 大盤量分級
-            ratio = latest_vol_num / vol_ma20
-            if ratio < 0.85:
-                vol_level = '少'
-            elif ratio > 1.15:
-                vol_level = '多'
-            else:
-                vol_level = '普通'
+            # 最新有效量
+            latest_vol_num = float(valid_vols.iloc[-1]) if not valid_vols.empty else 0
+            
+            if vol_ma20 > 0:
+                vol_above_20ma = latest_vol_num > vol_ma20
+                ratio = latest_vol_num / vol_ma20
+                if ratio < 0.85:
+                    vol_level = '少'
+                elif ratio > 1.15:
+                    vol_level = '多'
+                else:
+                    vol_level = '普通'
     except Exception as e:
         print(f'  大盤量計算失敗: {e}')
 
