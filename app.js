@@ -126,6 +126,9 @@ function initDashboard() {
         ${maBadge(idx.above_20ma, '>20MA')}
         ${maBadge(idx.above_60ma, '>60MA')}
       </div>
+      <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
+        更新：${updateTime}
+      </div>
     </div>
   `).join('');
   document.getElementById('twIndicators').innerHTML = twHTML;
@@ -133,9 +136,12 @@ function initDashboard() {
   // 大盤量
   const volVal = marketData.vol_above_20ma;
   document.getElementById('volIndicator').innerHTML = volVal !== null && volVal !== undefined
-    ? `<div class="health-indicator-card vol-card">
+    ? `<div class="health-indicator-card vol-card" style="position: relative;">
          <span style="font-size:12px;">大盤量</span>
          <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
+         <div style="font-size: 8px; color: var(--text-muted); position: absolute; bottom: 1px; right: 8px;">
+           ${updateTime}
+         </div>
        </div>`
     : '';
 
@@ -147,6 +153,9 @@ function initDashboard() {
       <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
       <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700;">
         ${pctStr(idx.pct_chg)}
+      </div>
+      <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
+        更新：${updateTime}
       </div>
     </div>
   `).join('');
