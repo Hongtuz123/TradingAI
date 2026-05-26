@@ -132,8 +132,11 @@ function initDashboard() {
   // ── 台股版塊 ──────────────────────────────────────────
   const twData = marketData.tw_indices || [];
   const twHTML = twData.map(idx => `
-    <div class="health-indicator-card tw-card">
-      <div class="idx-name">${idx.label}</div>
+    <div class="health-indicator-card tw-card" style="position: relative;">
+      <div class="idx-name" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <span>${idx.label}</span>
+        <button onclick="openIndexIntroModal('${idx.label}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+      </div>
       <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
       <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
         <span>${pctStr(idx.pct_chg)}</span>
@@ -160,7 +163,10 @@ function initDashboard() {
   document.getElementById('volIndicator').innerHTML = volVal !== null && volVal !== undefined
     ? `<div class="health-indicator-card vol-card" style="position: relative; padding-bottom: 18px;">
          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-           <span style="font-size:12px; font-weight: 600;">大盤成交量</span>
+           <div style="display: flex; align-items: center; gap: 4px;">
+             <span style="font-size:12px; font-weight: 600;">大盤成交量</span>
+             <button onclick="openIndexIntroModal('大盤成交量')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; padding: 1px 4px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+           </div>
            <div>
              <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
              ${getVolLevelBadge(volLevel)}
@@ -179,7 +185,10 @@ function initDashboard() {
   const usData = marketData.us_indices || [];
   const usHTML = usData.map(idx => `
     <div class="health-indicator-card us-card">
-      <div class="idx-name">${idx.label}</div>
+      <div class="idx-name" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <span>${idx.label}</span>
+        <button onclick="openIndexIntroModal('${idx.label}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+      </div>
       <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
       <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
         <span>${pctStr(idx.pct_chg)}</span>
@@ -721,3 +730,86 @@ function toggleMobileFilter() {
     panel.classList.toggle('active');
   }
 }
+
+// ========== 各指數意涵科普彈窗 ==========
+function openIndexIntroModal(label) {
+  const data = {
+    '加權指數': {
+      title: '加權指數 (TAIEX) 🇹🇼',
+      desc: '俗稱「大盤」，是台灣證券交易所編製的股價指數，用來衡量「全台灣所有上市公司」的整體表現。它是以市值加權計分，市值越大的公司影響越大。',
+      influence: '台灣前幾大權值股，包含<b>台積電 (2330)</b>（影響高達30%以上）、鴻海、聯發科、廣達等。當大盤上漲時，通常代表大型權值股受外資青睞，市場信心強勁。'
+    },
+    '櫃買指數': {
+      title: '櫃買指數 (OTC) 🇹🇼',
+      desc: '代表台灣證券櫃檯買賣中心（上櫃市場）的整體股價指數。上櫃公司多為「中小型企業」或「新創高科技公司」，股性通常比上市公司活潑、波動較劇烈。',
+      influence: '中小型半導體、IC設計（如信驊、力旺）、生技類股（如藥華藥）等。櫃買指數通常被視為「內資與主力散戶」的信心指標，當它強於加權指數時，中小型股會百花齊放。'
+    },
+    '大盤成交量': {
+      title: '大盤成交量 📊',
+      desc: '指當天加權市場成交的總股數與成交金額。成交量代表市場的資金動能，是價格能否持續上漲的「油門」。',
+      influence: '<b>量增價揚</b>是健康多頭，當量大於 20MA（20日平均量）時，代表資金進場，強勢股容易續漲；若出現<b>量縮價跌</b>通常是高檔整理，但如果是<b>價漲量縮</b>則要提防虛胖無量拉回。'
+    },
+    '費半 SOX': {
+      title: '費城半導體指數 (SOX) 🇺🇸',
+      desc: '由美股市場中最大的 30 家半導體（設計、設備、製造）晶片企業組成的指數，是全球半導體景氣的終極指標。',
+      influence: '<b>台灣半導體產業鏈</b>。台積電、聯電、聯發科、全新、日月光等都與費半走勢高度正相關，費半大漲通常隔天台股科技股也會跟著噴出。'
+    },
+    '那斯達克 100': {
+      title: '那斯達克 100 指數 (NDX) 🇺🇸',
+      desc: '成分股包含在那斯達克交易所上市的 100 家最大型「非金融企業」，主要由頂尖的「高科技、軟體、網路與生技」巨頭組成。',
+      influence: '美股科技七巨頭（蘋果、微軟、輝達、亞馬遜、Meta、Google、特斯拉）。影響台股所有<b>AI伺服器供應鏈（廣達、緯創、台達電）</b>及關鍵電子零組件股的出口展望。'
+    },
+    '羅素 2000': {
+      title: '羅素 2000 指數 (RUT) 🇺🇸',
+      desc: '由美國股市中市值較小的 2000 家中小型企業組成，是觀察美國「本土實體經濟」與中小企業活力的最重要櫥窗。',
+      influence: '主要對應台灣的<b>外銷中小型股與傳產出口商</b>。當羅素2000轉強，代表美國消費力道強勁，降息預期高，熱錢容易流入新興市場。'
+    },
+    '道瓊 DJI': {
+      title: '道瓊工業平均指數 (DJI) 🇺🇸',
+      desc: '歷史最悠久的美股指數，由美國 30 家最知名、最具代表性的「藍籌優質特大型企業」組成（非科技股居多，如波音、高盛、可口可樂）。',
+      influence: '台股中的<b>傳統產業、金融股、塑化與鋼鐵板塊</b>。道瓊大漲代表美國傳統產業景氣與基本面良好，資金風格偏向安全穩健的價值股。'
+    },
+    'S&P 500': {
+      title: '標準普爾 500 指數 (SPX) 🇺🇸',
+      desc: '由美國 500 家最具代表性的上市公司組成，涵蓋多種產業。因為產業結構均衡，被公認為最能代表「美國整體股市」與大局趨勢的指標。',
+      influence: '幾乎影響<b>全球所有資產定價與外資熱錢的流向</b>。當S&P 500大漲，代表外資風險胃口大開，熱錢會批量湧入台灣股市，帶動台幣升值與加權指數齊漲。'
+    }
+  };
+
+  const info = data[label] || {
+    title: label,
+    desc: '市場重要參考指標，提供當下大環境資金與多空景氣脈絡。',
+    influence: '影響整體市場氣氛與外資對該特定板塊的持股信心。'
+  };
+
+  const box = document.getElementById('modalContent');
+  box.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <h2 style="color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <span>${info.title}</span>
+      </h2>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 16px;">
+      
+      <div style="margin-bottom: 18px;">
+        <h4 style="color: var(--warning); margin-bottom: 6px;">💡 代表什麼意涵？</h4>
+        <p style="color: var(--text-main); font-size: 14px; line-height: 1.6; text-align: justify;">
+          ${info.desc}
+        </p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h4 style="color: var(--success); margin-bottom: 6px;">🎯 影響哪些相關股票？</h4>
+        <p style="color: var(--text-main); font-size: 14px; line-height: 1.6; text-align: justify;">
+          ${info.influence}
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <button class="btn-primary" onclick="closeModal()" style="padding: 6px 20px; font-size: 14px;">我明白了！</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('stockModal').classList.add('active');
+}
+
