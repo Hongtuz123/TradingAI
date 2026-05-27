@@ -37,6 +37,9 @@
 
     </nav>
     <div class="topbar-status">
+      <button class="btn-primary" style="margin-right: 12px; font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 32px; font-size: 13px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
+        <span>🎯</span> 趨勢突破選股
+      </button>
       <div class="market-status-badge" id="marketStatusBadge">
         <span class="status-dot"></span>
         <span id="marketStatusText">市場評估中...</span>
@@ -424,10 +427,12 @@
               </div>
 
               <div style="display:flex; align-items:center; gap: 8px; background: rgba(30, 41, 59, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <label style="display:flex; align-items:center; gap:6px; color:var(--text-main); font-size:13px; cursor:pointer; user-select:none; margin:0;">
-                  <input type="checkbox" id="enable-strategy-toggle" onchange="toggleStrategyLayer(this.checked)" style="cursor:pointer; width:15px; height:15px;">
-                  <span>啟用 Super-Trend 策略</span>
-                </label>
+                <span style="font-size:13px; color:var(--text-muted);">策略圖層：</span>
+                <select id="strategy-select" onchange="changeStrategyLayer(this.value)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; cursor:pointer; font-weight:500;">
+                  <option value="none" style="background:var(--bg-panel); color:white;">無 (純K線)</option>
+                  <option value="supertrend" style="background:var(--bg-panel); color:white;">Super-Trend 策略</option>
+                  <option value="trendline" style="background:var(--bg-panel); color:white;">下行趨勢線突破策略</option>
+                </select>
               </div>
 
               <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">

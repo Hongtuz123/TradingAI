@@ -5,6 +5,85 @@ let currentChartSymbol = null;
 let currentLWChart = null;
 let currentLWDashChart = null;
 
+// 全域策略選擇狀態：'none' | 'supertrend' | 'trendline'
+if (window.activeStrategy === undefined) {
+  window.activeStrategy = 'none';
+}
+
+// ---- 下行趨勢線突破策略技術函式 ----
+
+// 尋找高點 Pivot Highs 左右各 3 根極大值，並保證在 t 日是已經收盤確認的 (也就是高點 index <= t - 3)
+function getPivotHighsUntil(candles, t) {
+  const pivots = [];
+  const left = 3;
+  const right = 3;
+  for (let i = left; i <= t - right; i++) {
+    const targetHigh = parseFloat(candles[i].high);
+    let isPivot = true;
+    for (let j = i - left; j <= i + right; j++) {
+      if (j === i || j >= candles.length) continue;
+      if (parseFloat(candles[j].high) >= targetHigh) {
+        isPivot = false;
+        break;
+      }
+    }
+    if (isPivot) {
+      pivots.push({ index: i, time: candles[i].time, high: targetHigh });
+    }
+  }
+  return pivots;
+}
+
+// 計算 t 日時點的趨勢線資訊 (保證無未來數據)
+function calculateTrendlineAt(candles, t) {
+  const pivots = getPivotHighsUntil(candles, t);
+  if (pivots.length < 2) return null;
+
+  // 尋找符合下行條件 (H1 > H2) 且在過去25天內有確認點的最鄰近高點連線
+  let found = false;
+  let idx1 = pivots.length - 2;
+  let idx2 = pivots.length - 1;
+  while (idx2 > 0) {
+    idx1 = idx2 - 1;
+    while (idx1 >= 0) {
+      if (pivots[idx1].high > pivots[idx2].high) {
+        found = true;
+        break;
+      }
+      idx1--;
+    }
+    if (found) break;
+    idx2--;
+  }
+  if (!found) return null;
+
+  const pt2 = pivots[idx2];
+  const pt1 = pivots[idx1];
+
+  // 限制最近的確認點不能太遙遠，確保具有即時參考性 (在25天內)
+  if (t - pt2.index > 25) return null;
+
+  const slope = (pt2.high - pt1.high) / (pt2.index - pt1.index);
+  const valAtT = pt2.high + slope * (t - pt2.index);
+  const valAtPrev = pt2.high + slope * (t - 1 - pt2.index);
+  return { value: valAtT, prevValue: valAtPrev, pt1, pt2, slope };
+}
+
+// 計算成交量的 20MA
+function calculateVolumeMA(candles, period = 20) {
+  if (candles.length < period) return new Array(candles.length).fill(0);
+  const vma = new Array(candles.length).fill(0);
+  let sum = 0;
+  for (let i = 0; i < period; i++) {
+    sum += parseFloat(candles[i].volume || 0);
+  }
+  vma[period - 1] = sum / period;
+  for (let i = period; i < candles.length; i++) {
+    vma[i] = (vma[i - 1] * (period - 1) + parseFloat(candles[i].volume || 0)) / period;
+  }
+  return vma;
+}
+
 // ---- 技術指標計算函式 ----
 function calculateSupertrend(data, period = 10, multiplier = 3) {
   if (data.length < period) return [];
@@ -400,9 +479,9 @@ function renderLWChart(containerId, klineData, height = 260) {
     crosshairMarkerVisible: false,
   });
 
-  // 全域策略啟用狀態
-  if (window.supertrendEnabled === undefined) {
-    window.supertrendEnabled = false;
+  // 全域策略選擇狀態
+  if (window.activeStrategy === undefined) {
+    window.activeStrategy = 'none';
   }
 
   // 繪製 Supertrend 上升軌道（綠色實線，箱體底邊）
@@ -421,6 +500,16 @@ function renderLWChart(containerId, klineData, height = 260) {
     lineWidth: 2,
     lineStyle: 0,
     title: '超級趨勢(空)',
+    crosshairMarkerVisible: true,
+    crosshairMarkerRadius: 4,
+  });
+
+  // 繪製動態下行趨勢線 (亮粉紅色實線)
+  const trendlineSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#ec4899',
+    lineWidth: 2.5,
+    lineStyle: 0,
+    title: '下行趨勢線',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
   });
@@ -477,94 +566,81 @@ function renderLWChart(containerId, klineData, height = 260) {
     smaSeries.setData(calculateSMA(formattedCandles, 5));
     rsiSeries.setData(calculateRSI(formattedCandles, 14));
 
-    // 同步外部 Toggle Checkbox 狀態
-    const toggleCheckbox = document.getElementById('enable-strategy-toggle');
-    if (toggleCheckbox) {
-      toggleCheckbox.checked = window.supertrendEnabled;
+    // 同步外部 Select 狀態
+    const strategySelect = document.getElementById('strategy-select');
+    if (strategySelect) {
+      strategySelect.value = window.activeStrategy;
     }
 
-    // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
-    const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
+    // 清除任何先前殘留的 markers
+    LightweightCharts.createSeriesMarkers(candleSeries, []);
 
-    // 實作策略回測功能
-    function runSupertrendBacktest(candles, stData) {
-      let equity = 1.0;
-      let position = null; // null | { buyPrice, time }
-      let trades = []; // 每次完成的交易
-      let equityHistory = [1.0]; // 追蹤淨值歷史曲線
+    // ---- 策略 A: Super-Trend 策略 ----
+    if (window.activeStrategy === 'supertrend') {
+      trendlineSeries.setData([]);
+      
+      const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
-      for (let i = 1; i < stData.length; i++) {
-        const prev = stData[i - 1];
-        const curr = stData[i];
-        
-        // 尋找對應的 K 線價格
-        const candle = candles.find(c => c.time === curr.time);
-        if (!candle) continue;
-        const price = parseFloat(candle.close);
+      function runSupertrendBacktest(candles, stData) {
+        let equity = 1.0;
+        let position = null;
+        let trades = [];
+        let equityHistory = [1.0];
 
-        // 買入訊號: 當趨勢由空轉多 (-1 轉 1)
-        if (prev.trend === -1 && curr.trend === 1) {
-          if (position === null) {
-            position = { buyPrice: price, time: curr.time };
+        for (let i = 1; i < stData.length; i++) {
+          const prev = stData[i - 1];
+          const curr = stData[i];
+          const candle = candles.find(c => c.time === curr.time);
+          if (!candle) continue;
+          const price = parseFloat(candle.close);
+
+          if (prev.trend === -1 && curr.trend === 1) {
+            if (position === null) {
+              position = { buyPrice: price, time: curr.time };
+            }
+          } else if (prev.trend === 1 && curr.trend === -1) {
+            if (position !== null) {
+              const profitPct = (price - position.buyPrice) / position.buyPrice;
+              equity = equity * (1 + profitPct);
+              trades.push({
+                buyPrice: position.buyPrice,
+                sellPrice: price,
+                profitPct: profitPct
+              });
+              equityHistory.push(equity);
+              position = null;
+            }
           }
         }
-        // 賣出訊號: 當趨勢由多轉空 (1 轉 -1)
-        else if (prev.trend === 1 && curr.trend === -1) {
-          if (position !== null) {
-            const profitPct = (price - position.buyPrice) / position.buyPrice;
-            equity = equity * (1 + profitPct);
-            trades.push({
-              buyPrice: position.buyPrice,
-              sellPrice: price,
-              profitPct: profitPct
-            });
-            equityHistory.push(equity);
-            position = null;
-          }
+
+        if (position !== null && candles.length > 0) {
+          const lastPrice = parseFloat(candles[candles.length - 1].close);
+          const profitPct = (lastPrice - position.buyPrice) / position.buyPrice;
+          equity = equity * (1 + profitPct);
+          trades.push({
+            buyPrice: position.buyPrice,
+            sellPrice: lastPrice,
+            profitPct: profitPct,
+            unrealized: true
+          });
+          equityHistory.push(equity);
         }
+
+        let maxDrawdown = 0;
+        let peak = 0;
+        for (const eq of equityHistory) {
+          if (eq > peak) peak = eq;
+          const dd = peak > 0 ? (peak - eq) / peak : 0;
+          if (dd > maxDrawdown) maxDrawdown = dd;
+        }
+
+        return {
+          totalTrades: trades.length,
+          totalProfitPct: (equity - 1.0) * 100,
+          mddPct: maxDrawdown * 100
+        };
       }
 
-      // 處理最後一筆未平倉部位 (以最新收盤價作估算)
-      if (position !== null && candles.length > 0) {
-        const lastPrice = parseFloat(candles[candles.length - 1].close);
-        const profitPct = (lastPrice - position.buyPrice) / position.buyPrice;
-        equity = equity * (1 + profitPct);
-        trades.push({
-          buyPrice: position.buyPrice,
-          sellPrice: lastPrice,
-          profitPct: profitPct,
-          unrealized: true
-        });
-        equityHistory.push(equity);
-      }
-
-      // 計算最大回撤 (Max Drawdown)
-      let maxDrawdown = 0;
-      let peak = 0;
-      for (const eq of equityHistory) {
-        if (eq > peak) {
-          peak = eq;
-        }
-        const dd = peak > 0 ? (peak - eq) / peak : 0;
-        if (dd > maxDrawdown) {
-          maxDrawdown = dd;
-        }
-      }
-
-      const totalTrades = trades.length;
-      const totalProfitPct = (equity - 1.0) * 100;
-      const mddPct = maxDrawdown * 100;
-
-      return {
-        totalTrades,
-        totalProfitPct,
-        mddPct
-      };
-    }
-
-    // 當啟用 Supertrend 策略時，才渲染軌道與執行回測
-    if (window.supertrendEnabled) {
-      // 1. 執行回測運算並渲染統計面板
       const backtestResult = runSupertrendBacktest(formattedCandles, supertrendData);
       const summaryEl = document.getElementById('backtest-summary');
       if (summaryEl) {
@@ -578,13 +654,11 @@ function renderLWChart(containerId, klineData, height = 260) {
         `;
       }
 
-      // 2. 準備上升與下降軌道數據（嚴格互斥：每個 bar 只屬於一種趨勢）
       const upData = [];
       const dnData = [];
       for (let i = 0; i < supertrendData.length; i++) {
         const curr = supertrendData[i];
         if (curr.value === null) continue;
-
         if (curr.trend === 1) {
           upData.push({ time: curr.time, value: curr.value });
         } else {
@@ -592,8 +666,7 @@ function renderLWChart(containerId, klineData, height = 260) {
         }
       }
 
-      // 3. 識別連續趨勢段，繪製 Highlighter 區塊
-      const segments = []; // { trend, startIdx, endIdx }
+      const segments = [];
       let segStart = -1;
       let segTrend = null;
       for (let i = 0; i < supertrendData.length; i++) {
@@ -612,10 +685,9 @@ function renderLWChart(containerId, klineData, height = 260) {
       }
 
       for (const seg of segments) {
-        // 收集段內 K 線與 Supertrend 值
         const segCloseData = [];
-        let segStMin = Infinity;   // 該段 Supertrend 值的最小值
-        let segStMax = -Infinity;  // 該段 Supertrend 值的最大值
+        let segStMin = Infinity;
+        let segStMax = -Infinity;
         for (let i = seg.startIdx; i <= seg.endIdx; i++) {
           if (supertrendData[i].value === null) continue;
           const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
@@ -629,7 +701,6 @@ function renderLWChart(containerId, klineData, height = 260) {
         if (segCloseData.length === 0) continue;
 
         if (seg.trend === 1) {
-          // High-trend highlighter
           const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segStMin },
             topLineColor: 'transparent',
@@ -647,7 +718,6 @@ function renderLWChart(containerId, klineData, height = 260) {
           hlSeries.setData(segCloseData);
           highlighterSeriesList.push(hlSeries);
         } else {
-          // Low-trend highlighter
           const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segStMax },
             topLineColor: 'transparent',
@@ -667,7 +737,6 @@ function renderLWChart(containerId, klineData, height = 260) {
         }
       }
 
-      // 4. 計算買賣轉折訊號標籤
       const buyMarkers = [];
       const sellMarkers = [];
       for (let i = 1; i < supertrendData.length; i++) {
@@ -699,26 +768,170 @@ function renderLWChart(containerId, klineData, height = 260) {
       supertrendUpSeries.setData(upData);
       supertrendDnSeries.setData(dnData);
 
-      // 買標籤掛在 Supertrend 綠線，賣標籤掛在 Supertrend 紅線
       if (buyMarkers.length > 0) {
         LightweightCharts.createSeriesMarkers(supertrendUpSeries, buyMarkers);
       }
       if (sellMarkers.length > 0) {
         LightweightCharts.createSeriesMarkers(supertrendDnSeries, sellMarkers);
       }
-    } else {
-      // 策略未啟用時，隱藏績效看板
+    }
+    // ---- 策略 B: 下行趨勢線突破策略 ----
+    else if (window.activeStrategy === 'trendline') {
+      supertrendUpSeries.setData([]);
+      supertrendDnSeries.setData([]);
+
+      function runTrendlineBacktest(candles) {
+        let equity = 1.0;
+        let position = null;
+        let trades = [];
+        let equityHistory = [1.0];
+        const ma20 = calculateSMA(candles, 20);
+        const ma60 = calculateSMA(candles, 60);
+        const vma = calculateVolumeMA(candles, 20);
+
+        for (let t = 20; t < candles.length; t++) {
+          const curr = candles[t];
+          const price = parseFloat(curr.close);
+          const vol = parseFloat(curr.volume || 0);
+
+          const m20Obj = ma20.find(m => m.time === curr.time);
+          const m60Obj = ma60.find(m => m.time === curr.time);
+          if (!m20Obj || !m60Obj) continue;
+          const m20 = m20Obj.value;
+          const m60 = m60Obj.value;
+          const vmaVal = vma[t];
+
+          const tl = calculateTrendlineAt(candles, t);
+
+          if (position === null) {
+            if (tl && tl.value !== null) {
+              const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+              const isVolLarge = vol > vmaVal * 1.5;
+              const isBullishMA = m20 > m60;
+
+              if (isBreak && isVolLarge && isBullishMA) {
+                position = { buyPrice: price, time: curr.time };
+              }
+            }
+          } else {
+            // 賣出訊號：收盤跌破 20MA
+            if (price < m20) {
+              const profitPct = (price - position.buyPrice) / position.buyPrice;
+              equity = equity * (1 + profitPct);
+              trades.push({
+                buyPrice: position.buyPrice,
+                sellPrice: price,
+                profitPct: profitPct,
+                buyTime: position.time,
+                sellTime: curr.time
+              });
+              equityHistory.push(equity);
+              position = null;
+            }
+          }
+        }
+
+        if (position !== null && candles.length > 0) {
+          const lastPrice = parseFloat(candles[candles.length - 1].close);
+          const profitPct = (lastPrice - position.buyPrice) / position.buyPrice;
+          equity = equity * (1 + profitPct);
+          trades.push({
+            buyPrice: position.buyPrice,
+            sellPrice: lastPrice,
+            profitPct: profitPct,
+            buyTime: position.time,
+            sellTime: candles[candles.length - 1].time,
+            unrealized: true
+          });
+          equityHistory.push(equity);
+        }
+
+        let maxDrawdown = 0;
+        let peak = 0;
+        for (const eq of equityHistory) {
+          if (eq > peak) peak = eq;
+          const dd = peak > 0 ? (peak - eq) / peak : 0;
+          if (dd > maxDrawdown) maxDrawdown = dd;
+        }
+
+        return {
+          totalTrades: trades.length,
+          totalProfitPct: (equity - 1.0) * 100,
+          mddPct: maxDrawdown * 100,
+          trades
+        };
+      }
+
+      const backtestResult = runTrendlineBacktest(formattedCandles);
+      const summaryEl = document.getElementById('backtest-summary');
+      if (summaryEl) {
+        summaryEl.style.display = 'flex';
+        const profitColor = backtestResult.totalProfitPct >= 0 ? 'var(--success)' : 'var(--danger)';
+        summaryEl.innerHTML = `
+          <span>📊 策略回測報告 (基數=1)</span>
+          <span>交易次數: <strong style="color:var(--warning);">${backtestResult.totalTrades}</strong> 次</span>
+          <span>累積獲利: <strong style="color:${profitColor};">${backtestResult.totalProfitPct >= 0 ? '+' : ''}${backtestResult.totalProfitPct.toFixed(2)}%</strong></span>
+          <span>最大回撤: <strong style="color:var(--danger);">${backtestResult.mddPct.toFixed(2)}%</strong></span>
+        `;
+      }
+
+      // 1. 繪製最新一天的動態下行趨勢線
+      const tl = calculateTrendlineAt(formattedCandles, formattedCandles.length - 1);
+      if (tl && tl.pt1 && tl.pt2) {
+        const tlData = [];
+        for (let i = tl.pt1.index; i < formattedCandles.length; i++) {
+          const val = tl.pt2.high + tl.slope * (i - tl.pt2.index);
+          tlData.push({ time: formattedCandles[i].time, value: val });
+        }
+        trendlineSeries.setData(tlData);
+      } else {
+        trendlineSeries.setData([]);
+      }
+
+      // 2. 標註買賣訊號點到 K 線主圖上
+      const btMarkers = [];
+      backtestResult.trades.forEach(t => {
+        if (t.buyTime) {
+          btMarkers.push({
+            time: t.buyTime,
+            position: 'belowBar',
+            color: '#ec4899',
+            shape: 'arrowUp',
+            text: ' [ BUY ] ',
+            size: 2.4
+          });
+        }
+        if (t.sellTime && !t.unrealized) {
+          btMarkers.push({
+            time: t.sellTime,
+            position: 'aboveBar',
+            color: '#ef4444',
+            shape: 'arrowDown',
+            text: ' [ SELL ] ',
+            size: 2.4
+          });
+        }
+      });
+
+      if (btMarkers.length > 0) {
+        btMarkers.sort((a, b) => (a.time < b.time ? -1 : 1));
+        LightweightCharts.createSeriesMarkers(candleSeries, btMarkers);
+      }
+    }
+    // ---- 無策略 ----
+    else {
       const summaryEl = document.getElementById('backtest-summary');
       if (summaryEl) {
         summaryEl.style.display = 'none';
       }
       supertrendUpSeries.setData([]);
       supertrendDnSeries.setData([]);
+      trendlineSeries.setData([]);
     }
 
     mainChart.timeScale().fitContent();
     if (rsiChart) rsiChart.timeScale().fitContent();
-    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Supertrend strategy toggle.`);
+    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Strategy [${window.activeStrategy}]`);
   } catch (err) {
     console.error('[LWC Error]', err);
     container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
@@ -728,8 +941,8 @@ function renderLWChart(containerId, klineData, height = 260) {
 }
 
 // 動態圖層策略切換函式
-window.toggleStrategyLayer = function(enabled) {
-  window.supertrendEnabled = enabled;
+window.changeStrategyLayer = function(strategyName) {
+  window.activeStrategy = strategyName;
   if (currentChartSymbol) {
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
     if (stock) {
@@ -876,3 +1089,121 @@ async function searchAndLoadChart() {
 
 function renderChartStockList() {}
 function filterChartList() {}
+
+// ---- 🎯 趨勢突破選股動態即時掃描功能 ----
+window.openTrendlineBreakoutModal = function() {
+  const matchedStocks = [];
+  
+  mockStocks.forEach(s => {
+    if (!s.kline || s.kline.length < 20) return;
+    
+    // 取得日K candles (以 calculateTrendlineAt 的格式進行對齊)
+    const candles = s.kline.map(d => ({
+      time: d.date,
+      open: parseFloat(d.open),
+      high: parseFloat(d.high),
+      low: parseFloat(d.low),
+      close: parseFloat(d.close),
+      volume: parseFloat(d.volume || 0)
+    }));
+
+    const t = candles.length - 1;
+    const curr = candles[t];
+    const price = curr.close;
+    const vol = curr.volume;
+
+    const ma20 = calculateSMA(candles, 20);
+    const ma60 = calculateSMA(candles, 60);
+    const vma = calculateVolumeMA(candles, 20);
+
+    const m20Obj = ma20.find(m => m.time === curr.time);
+    const m60Obj = ma60.find(m => m.time === curr.time);
+    if (!m20Obj || !m60Obj) return;
+    const m20 = m20Obj.value;
+    const m60 = m60Obj.value;
+    const vmaVal = vma[t];
+
+    const tl = calculateTrendlineAt(candles, t);
+
+    if (tl && tl.value !== null) {
+      const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+      const isVolLarge = vol > vmaVal * 1.5;
+      const isBullishMA = m20 > m60;
+
+      if (isBreak && isVolLarge && isBullishMA) {
+        matchedStocks.push({
+          id: s.id,
+          name: s.name,
+          price: price,
+          change: s.change,
+          volRatio: (vol / vmaVal).toFixed(2)
+        });
+      }
+    }
+  });
+
+  // 渲染彈跳視窗
+  const box = document.getElementById('modalContent');
+  if (!box) return;
+
+  let listHTML = '';
+  if (matchedStocks.length === 0) {
+    listHTML = `
+      <div style="text-align:center; padding: 30px 10px; color: var(--text-muted);">
+        <div style="font-size: 40px; margin-bottom: 12px;">🔍</div>
+        <p style="font-size: 14px; margin-top: 8px;">目前暫無監控標的符合「下行趨勢線突破」策略條件。</p>
+        <p style="font-size: 12px; margin-top: 6px; color: var(--text-muted);">提示：可前往篩選器執行篩選並更新白名單以擴充監控標的。</p>
+      </div>
+    `;
+  } else {
+    listHTML = matchedStocks.map(s => `
+      <div class="dash-wl-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:6px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05); transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <strong style="color:white; font-size:14px;">${s.id}</strong>
+          <span style="color:var(--text-muted); font-size:14px;">${s.name}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="font-size:14px; color:var(--text-main); font-weight:600;">$${s.price}</span>
+          <span class="${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}" style="font-size:12px; font-weight:700;">${s.change >= 0 ? '+' : ''}${s.change}%</span>
+          <span class="badge success" style="font-size:11px; padding:2px 6px;">量比: ${s.volRatio}x</span>
+          <button class="btn-primary" style="padding: 2px 10px; font-size:12px; height: 26px; font-weight: 500;" onclick="closeModal(); handleTrendlineJump('${s.id}')">
+            即刻回測 →
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  box.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <h2 style="color: var(--primary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+        <span>🎯 下行趨勢線突破選股</span>
+      </h2>
+      <p style="color:var(--text-muted); font-size:12px; margin-bottom: 16px; line-height: 1.5;">
+        依據條件篩選：過去20日顯著高點連線突破 + 爆量達1.5倍均量 + MA20 > MA60 多頭排列，精準捕捉爆量起漲波段。
+      </p>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 16px;">
+      
+      <div style="max-height: 320px; overflow-y: auto; padding-right: 4px;">
+        ${listHTML}
+      </div>
+
+      <div style="text-align: center; margin-top:20px;">
+        <button class="btn-secondary" onclick="closeModal()" style="padding: 6px 20px; font-size: 14px;">關閉</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('stockModal').classList.add('active');
+};
+
+// 一鍵跳轉並自動切換至下行趨勢線圖層策略
+window.handleTrendlineJump = function(symbolId) {
+  const stock = mockStocks.find(s => s.id === symbolId);
+  if (stock) {
+    window.activeStrategy = 'trendline';
+    switchView('chart');
+    setTimeout(() => loadTVChart(stock), 300);
+  }
+};
+
