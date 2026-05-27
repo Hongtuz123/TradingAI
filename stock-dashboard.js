@@ -1091,13 +1091,56 @@ function renderChartStockList() {}
 function filterChartList() {}
 
 // ---- 🎯 趨勢突破選股動態即時掃描功能 ----
-window.openTrendlineBreakoutModal = function() {
+window.openTrendlineBreakoutModal = async function() {
   const matchedStocks = [];
-  
-  mockStocks.forEach(s => {
-    if (!s.kline || s.kline.length < 20) return;
+  const notFoundStocks = [];
+  let csvStocks = [];
+
+  // 1. 讀取並解析本地的「股票分析清單.csv」
+  try {
+    const response = await fetch('股票分析清單.csv');
+    if (!response.ok) throw new Error(`HTTP 錯誤 ${response.status}`);
+    const text = await response.text();
+    const lines = text.split('\n');
     
-    // 取得日K candles (以 calculateTrendlineAt 的格式進行對齊)
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const cols = line.split(',');
+      if (cols.length >= 3) {
+        const rawCode = cols[1].trim();
+        const rawName = cols[2].trim();
+        if (rawCode && rawCode !== '股票代碼') {
+          // 智慧補零邏輯
+          let formattedCode = rawCode;
+          if (/^\d+$/.test(rawCode)) {
+            const val = parseInt(rawCode, 10);
+            if (val < 100) {
+              formattedCode = String(val).padStart(4, '0');
+            } else if (val < 1000) {
+              formattedCode = '00' + val;
+            }
+          }
+          csvStocks.push({ code: formattedCode, name: rawName });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("無法讀取股票分析清單.csv:", err);
+    alert(`無法讀取股票分析清單.csv，將使用系統預設監控清單。\n錯誤訊息: ${err.message}`);
+    // 降級 fallback
+    csvStocks = mockStocks.slice(0, 40).map(s => ({ code: s.id, name: s.name }));
+  }
+
+  // 2. 針對 CSV 的股票在已載入的 mockStocks 內查找 K 線並做分析
+  csvStocks.forEach(csvStock => {
+    const s = mockStocks.find(item => item.id === csvStock.code);
+    if (!s || !s.kline || s.kline.length < 20) {
+      notFoundStocks.push(csvStock);
+      return;
+    }
+    
+    // 取得日K candles
     const candles = s.kline.map(d => ({
       time: d.date,
       open: parseFloat(d.open),
@@ -1146,13 +1189,18 @@ window.openTrendlineBreakoutModal = function() {
   const box = document.getElementById('modalContent');
   if (!box) return;
 
+  // 取得資料庫最新更新時間
+  const dataTime = (typeof marketData !== 'undefined' && marketData.lastUpdate) 
+    ? marketData.lastUpdate.replace(/-/g, '/') 
+    : '未明';
+
   let listHTML = '';
   if (matchedStocks.length === 0) {
     listHTML = `
       <div style="text-align:center; padding: 30px 10px; color: var(--text-muted);">
         <div style="font-size: 40px; margin-bottom: 12px;">🔍</div>
-        <p style="font-size: 14px; margin-top: 8px;">目前暫無監控標的符合「下行趨勢線突破」策略條件。</p>
-        <p style="font-size: 12px; margin-top: 6px; color: var(--text-muted);">提示：可前往篩選器執行篩選並更新白名單以擴充監控標的。</p>
+        <p style="font-size: 14px; font-weight: 500;">目前暫無標的符合「下行趨勢線突破」策略條件。</p>
+        <p style="font-size: 12px; margin-top: 6px; color: var(--text-muted);">共掃描了 CSV 清單內 ${csvStocks.length - notFoundStocks.length} 檔有 K 線數據之股票。</p>
       </div>
     `;
   } else {
@@ -1174,19 +1222,39 @@ window.openTrendlineBreakoutModal = function() {
     `).join('');
   }
 
+  // 如果有 CSV 中但本系統暫無 K 線資料的股票，以精巧小提示列在視窗底部
+  let notFoundHTML = '';
+  if (notFoundStocks.length > 0) {
+    notFoundHTML = `
+      <div style="margin-top: 12px; padding: 6px 12px; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 6px; font-size: 11px; color: var(--text-muted); max-height: 70px; overflow-y: auto;">
+        ⚠️ 清單內有 <strong>${notFoundStocks.length}</strong> 檔個股系統暫無 K 線資料，請至篩選器更新以進行分析：
+        ${notFoundStocks.map(ns => `${ns.code} ${ns.name}`).join(', ')}
+      </div>
+    `;
+  }
+
   box.innerHTML = `
     <div style="margin-bottom:20px;">
-      <h2 style="color: var(--primary); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+      <h2 style="color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
         <span>🎯 下行趨勢線突破選股</span>
       </h2>
-      <p style="color:var(--text-muted); font-size:12px; margin-bottom: 16px; line-height: 1.5;">
-        依據條件篩選：過去20日顯著高點連線突破 + 爆量達1.5倍均量 + MA20 > MA60 多頭排列，精準捕捉爆量起漲波段。
-      </p>
-      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 16px;">
       
-      <div style="max-height: 320px; overflow-y: auto; padding-right: 4px;">
+      <!-- 交代資料接回來的時間，防止價格太舊 -->
+      <div style="display:flex; align-items:center; gap:6px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: var(--warning); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 14px;">
+        <span>⏳</span>
+        <span>資料接回時間：${dataTime} (防範部分價格資料過舊)</span>
+      </div>
+
+      <p style="color:var(--text-muted); font-size:12px; margin-bottom: 12px; line-height: 1.5;">
+        依據條件篩選：過去20日顯著高點連線突破 + 爆量達1.5倍均量 + MA20 > MA60 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
+      </p>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+      
+      <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
         ${listHTML}
       </div>
+
+      ${notFoundHTML}
 
       <div style="text-align: center; margin-top:20px;">
         <button class="btn-secondary" onclick="closeModal()" style="padding: 6px 20px; font-size: 14px;">關閉</button>
