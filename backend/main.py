@@ -29,7 +29,7 @@ def read_root():
 import yfinance as yf
 
 @app.get("/api/history", response_model=KlineResponse)
-async def get_kline_history(symbol: str, days: int = 120, interval: str = "1d", market: str = "TSE"):
+async def get_kline_history(symbol: str, days: int = 250, interval: str = "1d", market: str = "TSE"):
     """
     抓取指定標的 (透過 yfinance)
     market: TSE=上市(.TW), OTC=上櫃(.TWO)

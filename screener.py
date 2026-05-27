@@ -402,6 +402,7 @@ def calc_market_health():
         _us_index('^RUT',  '羅素 2000'),
         _us_index('^DJI',  '道瓊 DJI'),
         _us_index('^GSPC', 'S&P 500'),
+        _us_index('^VIX',  'VIX 恐慌指數'),
     ]
 
     return {
@@ -778,15 +779,15 @@ def run_screener():
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 漲跌幅：以當日 9:00 開盤價為基準計算當前現價的漲跌幅
+            # 漲跌幅：改用昨收價計算（台股標準）
             try:
-                open_price = float(latest['open'])
-                if open_price > 0:
-                    change_num = round(((close - open_price) / open_price) * 100, 2)
+                prev_close = float(prev['close'])
+                if prev_close > 0:
+                    change_num = round(((close - prev_close) / prev_close) * 100, 2)
                 else:
-                    change_num = round(((close - float(prev['close'])) / float(prev['close'])) * 100, 2) if float(prev['close']) > 0 else 0.0
+                    change_num = 0.0
             except Exception:
-                change_num = round(((close - float(prev['close'])) / float(prev['close'])) * 100, 2) if float(prev['close']) > 0 else 0.0
+                change_num = 0.0
 
             # 真實技術指標值
             rsi_val  = round(float(latest['rsi14']), 2)
@@ -818,8 +819,8 @@ def run_screener():
             turnover_val = None
             market_cap_val = None
             if capital_val and capital_val > 0:
-                # 週轉率 (%) = 當日成交量(股) / (股本(千元) * 100) * 100 = vol / 股本
-                turnover_val = round((vol / capital_val) * 100, 2)
+                # 週轉率 (%) = 當日成交量(股) / (股本(千元) * 100) * 100 = vol / (capital_val * 100) * 100 = vol / capital_val
+                turnover_val = round(vol / capital_val, 2)
                 # 市值 (億) = 收盤價 * (股本(千元) * 100) / 100,000,000 = close * 股本 / 1,000,000
                 market_cap_val = round((close * capital_val) / 1000000, 2)
 
@@ -852,7 +853,7 @@ def run_screener():
                 "ma20": ma20_val,
                 "ma60": ma60_val,
                 "blacklist": [],
-                "kline": sorted(candles, key=lambda x: x['date'])[-120:]
+                "kline": sorted(candles, key=lambda x: x['date'])[-250:]
             })
             
         except Exception as e:
@@ -944,33 +945,6 @@ const marketData = {json.dumps(market_data_dict, ensure_ascii=False, indent=2)};
 const rulesConfig = {rules_json_str};
 
 const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
-
-// 評分邏輯 (滿分 12 分，null 值欄位不計分不扣分)
-function calculateScore(stock) {{
-  let score = 0;
-  let totalChecks = 0;
-  function check(val, cond) {{ if (val != null) {{ totalChecks++; if (cond) score++; }} }}
-  
-  const sc = rulesConfig.scoring;
-  // 基本面（可能為 null）
-  check(stock.revYoY,     stock.revYoY > sc.rev_growth);
-  check(stock.epsYoY,     stock.epsYoY > sc.eps_growth);
-  check(stock.roe,        stock.roe > sc.roe);
-  // 籌碼（可能為 null）
-  check(stock.trustDays,  stock.trustDays >= sc.trust_days);
-  check(stock.foreignBuy, stock.foreignBuy === true);
-  // 技術面（真實計算，部份欄位如週轉率、市值為 null）
-  if (stock.dailyVol   > sc.daily_vol) score++;
-  check(stock.marketCap, stock.marketCap > sc.market_cap);
-  if (stock.maBull)            score++;
-  if (stock.ma20Rising)        score++;
-  if (stock.volRatio   > sc.vol_ratio)  score++;
-  if (stock.closeToHigh)       score++;
-  if (stock.dist52W    < sc.dist_52w)   score++;
-  return score;
-}}
-
-mockStocks.forEach(s => s.score = calculateScore(s));
 """
 
     with open('data.js', 'w', encoding='utf-8') as f:

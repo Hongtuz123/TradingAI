@@ -328,6 +328,32 @@ function generateMockTimeframeData(dailyKline, resolution) {
   return result;
 }
 
+// ---- 離線模擬分K高亮警告 Banner ----
+function showMockWarning(show, timeframe = '') {
+  let warnEl = document.getElementById('mock-timeframe-warning');
+  if (!show) {
+    if (warnEl) warnEl.remove();
+    return;
+  }
+  if (!warnEl) {
+    warnEl = document.createElement('div');
+    warnEl.id = 'mock-timeframe-warning';
+    warnEl.style.cssText = 'position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:100; background:rgba(239, 68, 68, 0.9); color:white; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); pointer-events:none; display:flex; align-items:center; gap:8px;';
+    const container = document.getElementById('tvChartContainer');
+    if (container) {
+      container.style.position = 'relative';
+      container.appendChild(warnEl);
+    }
+  }
+  
+  let friendlyTF = timeframe;
+  if (timeframe === '15m') friendlyTF = '15分鐘';
+  if (timeframe === '1h') friendlyTF = '1小時';
+  if (timeframe === '4h') friendlyTF = '4小時';
+  
+  warnEl.innerHTML = `⚠️ 偵測到與本地交易伺服器斷線。當前 <strong>${friendlyTF}</strong> 為日K模擬數據，僅供介面展示！`;
+}
+
 // ---- Lightweight Charts 渲染函式 ----
 function renderLWChart(containerId, klineData, height = 260) {
   const container = document.getElementById(containerId);
@@ -1023,7 +1049,7 @@ async function changeResolution(res) {
 
   // 映射 UI 選項 → yfinance interval & days（yfinance 不支援 4h，改用 60m 近似）
   const intervalMap = { '15m':'15m', '1h':'60m', '4h':'60m', '1D':'1d', '1W':'1wk', '1M':'1mo' };
-  const daysMap    = { '15m':59,   '1h':60,  '4h':180, '1D':120, '1W':365, '1M':730 };
+  const daysMap    = { '15m':59,   '1h':60,  '4h':180, '1D':250, '1W':365, '1M':730 };
   const interval = intervalMap[res] || '1d';
   const days     = daysMap[res]    || 120;
   const market   = window.currentChartMarket || 'TSE';
@@ -1038,8 +1064,10 @@ async function changeResolution(res) {
     if (data.kline && data.kline.length > 0) {
       currentKlineData = data.kline;
       currentLWChart = renderLWChart('tvChartContainer', data.kline);
+      showMockWarning(false); // 成功拿到真實資料，關閉警告
     } else {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
+      showMockWarning(false);
     }
   } catch (err) {
     console.warn("無法取得 API K 線，嘗試進入離線多時框模擬模式：", err.message);
@@ -1049,8 +1077,16 @@ async function changeResolution(res) {
       const simulatedKline = generateMockTimeframeData(stock.kline, res);
       currentKlineData = simulatedKline;
       currentLWChart = renderLWChart('tvChartContainer', simulatedKline);
+      
+      // 如果切換的是分K時框，則顯示模擬警告
+      if (res === '15m' || res === '1h' || res === '4h') {
+        showMockWarning(true, res);
+      } else {
+        showMockWarning(false);
+      }
     } else {
       container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料 (${err.message})</div>`;
+      showMockWarning(false);
     }
   }
 }

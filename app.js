@@ -32,13 +32,30 @@ function startClock() {
     
     clockEl.innerText = `${Y}/${M}/${D} ${h}:${m}:${s}`;
 
-    // 台股開盤倒數 (09:00:00)
-    if (h === '08') {
-      const minutesLeft = 59 - now.getMinutes();
-      const secondsLeft = 59 - now.getSeconds();
-      marketStatusText.innerText = `距離開盤還有 ${minutesLeft} 分 ${secondsLeft} 秒`;
-    } else if (h === '09' && now.getMinutes() < 5) {
+    // 完整的台股市場狀態判斷（覆蓋休市、非交易時段、開盤倒數與收盤）
+    const day = now.getDay();
+    const isWeekend = day === 0 || day === 6;
+    const currentMin = now.getMinutes();
+
+    if (isWeekend) {
+      marketStatusText.innerText = `今日休市，請參考上週五盤後資料`;
+    } else if (h < '09') {
+      if (h === '08') {
+        const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+        const diffMs = targetTime - now;
+        const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
+        const minutesLeft = Math.floor(totalSeconds / 60);
+        const secondsLeft = totalSeconds % 60;
+        marketStatusText.innerText = `距離開盤還有 ${minutesLeft} 分 ${secondsLeft} 秒`;
+      } else {
+        marketStatusText.innerText = `非交易時段 (09:00 開盤)`;
+      }
+    } else if (h === '09' && currentMin < 5) {
       marketStatusText.innerText = `台股剛開盤！請留意劇烈波動`;
+    } else if ((h === '13' && currentMin >= 30) || h > '13') {
+      marketStatusText.innerText = `台股已收盤，顯示靜態數據`;
+    } else {
+      marketStatusText.innerText = `台股盤中交易中，即時監控中`;
     }
   }, 1000);
 }
@@ -183,25 +200,68 @@ function initDashboard() {
 
   // ── 美股版塊 ──────────────────────────────────────────
   const usData = marketData.us_indices || [];
-  const usHTML = usData.map(idx => `
-    <div class="health-indicator-card us-card">
-      <div class="idx-name" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-        <span>${idx.label}</span>
-        <button onclick="openIndexIntroModal('${idx.label}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+  const usHTML = usData.map(idx => {
+    if (idx.label.includes('VIX')) {
+      let vixStatus = '安全';
+      let vixColor = 'var(--success)';
+      let vixBg = 'rgba(16, 185, 129, 0.12)';
+      let vixBorder = 'rgba(16, 185, 129, 0.3)';
+      const val = idx.close;
+      if (val !== null && val !== undefined) {
+        if (val > 30) {
+          vixStatus = '極度恐慌';
+          vixColor = 'var(--danger)';
+          vixBg = 'rgba(239, 68, 68, 0.12)';
+          vixBorder = 'rgba(239, 68, 68, 0.3)';
+        } else if (val >= 20) {
+          vixStatus = '警戒偏高';
+          vixColor = 'var(--warning)';
+          vixBg = 'rgba(245, 158, 11, 0.12)';
+          vixBorder = 'rgba(245, 158, 11, 0.3)';
+        }
+      }
+      return `
+        <div class="health-indicator-card us-card" style="border: 1px solid ${vixBorder}; background: ${vixBg}; transition: all 0.3s; position: relative;">
+          <div class="idx-name" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span style="font-weight: 700; color: var(--text-main);">${idx.label}</span>
+            <button onclick="openIndexIntroModal('${idx.label}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+          </div>
+          <div class="idx-close" style="font-size: 24px; font-weight: 800; color: ${vixColor}; margin: 4px 0;">${val !== null ? val.toFixed(2) : '--'}</div>
+          <div class="idx-pct" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span class="badge" style="color: ${vixColor}; background: ${vixBg}; border: 1px solid ${vixBorder}; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 4px; width: fit-content; display: inline-block;">${vixStatus}</span>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">波動率指標</span>
+          </div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px; display: flex; justify-content: space-between;">
+            <span>避險情緒指標</span>
+            <span style="color: var(--text-main); font-weight: 600;">無成交量限制</span>
+          </div>
+          <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
+            更新：${updateTime}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="health-indicator-card us-card">
+        <div class="idx-name" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <span>${idx.label}</span>
+          <button onclick="openIndexIntroModal('${idx.label}')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
+        </div>
+        <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
+        <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
+          <span>${pctStr(idx.pct_chg)}</span>
+          <span>${getVolLevelBadge(idx.vol_level)}</span>
+        </div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+          成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(idx.volume)}</span>
+        </div>
+        <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
+          更新：${updateTime}
+        </div>
       </div>
-      <div class="idx-close">${idx.close !== null ? idx.close.toLocaleString() : '--'}</div>
-      <div class="idx-pct" style="color:${pctColor(idx.pct_chg)};font-weight:700; display: flex; align-items: center; justify-content: space-between;">
-        <span>${pctStr(idx.pct_chg)}</span>
-        <span>${getVolLevelBadge(idx.vol_level)}</span>
-      </div>
-      <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
-        成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(idx.volume)}</span>
-      </div>
-      <div style="font-size: 9px; color: var(--text-muted); margin-top: 4px; text-align: right; width: 100%;">
-        更新：${updateTime}
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
   document.getElementById('usIndicators').innerHTML = usHTML;
 
   // ── 評分與評級系統 ────────────────────────────────────
@@ -230,9 +290,9 @@ function initDashboard() {
   }
 
   // 2. 美股評分系統 (總分 5 分)
-  // 5 個指標：費半、那斯達克100、羅素2000、道瓊、S&P 500
+  // 5 個指標：費半、那斯達克100、羅素2000、道瓊、S&P 500 (篩除 VIX)
   let usTotalScore = 0;
-  usData.forEach(idx => {
+  usData.filter(idx => !idx.label.includes('VIX')).forEach(idx => {
     if (idx.pct_chg && idx.pct_chg > 0) {
       usTotalScore += 1;
     }
@@ -402,11 +462,15 @@ function runScreener() {
     // 籌碼（可能為 null）
     chk(s.trustDays,   s.trustDays >= p.trustDays, `投信當日買超 (${s.trustDays ?? '--'}張 < ${p.trustDays}張)`);
     if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資當日買超 (未達標)`); }
-    // 技術面（真實計算）
-    if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
+    // 技術面（加入 null 防護）
+    if (s.volRatio != null) {
+      if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
+    }
     chk(s.turnover,    s.turnover >= p.turnover, `週轉率 (${s.turnover ?? '--'}% < ${p.turnover}%)`);
     chk(s.marketCap,   s.marketCap >= p.mktCap,  `市值 (${s.marketCap ?? '--'}億 < ${p.mktCap}億)`);
-    if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+    if (s.dailyVol != null) {
+      if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+    }
     if (!s.ma20Rising) failedConditions.push('20MA未走升');
 
     s.dynamicScore = 12 - failedConditions.length;
@@ -740,27 +804,29 @@ function showEmptyResultModal(p, passedCount) {
   const total = mockStocks.length;
   
   const typeFail = mockStocks.filter(s => {
-    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD) || 
-                      (p.typeA && s.type === 'A') || 
-                      (p.typeB && s.type === 'B') || 
-                      (p.typeC && s.type === 'C') || 
-                      (p.typeD && s.type === 'D');
+    const stockTypes = s.type ? s.type.split(',') : [];
+    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD && !p.typeE) || 
+                      (p.typeA && stockTypes.includes('A')) || 
+                      (p.typeB && stockTypes.includes('B')) || 
+                      (p.typeC && stockTypes.includes('C')) || 
+                      (p.typeD && stockTypes.includes('D')) || 
+                      (p.typeE && stockTypes.includes('E'));
     return !typeMatch;
   }).length;
 
   const fails = {
     '綜合評分不足': mockStocks.filter(s => s.dynamicScore < p.minScore).length,
-    '月營收 YoY': mockStocks.filter(s => s.revYoY < p.rev).length,
-    'EPS YoY':    mockStocks.filter(s => s.epsYoY < p.eps).length,
-    'ROE':        mockStocks.filter(s => s.roe < p.roe).length,
-    '毛利率':     mockStocks.filter(s => s.grossMargin < p.margin).length,
-    '負債比':     mockStocks.filter(s => s.debtRatio > p.debt).length,
-    '投信買超不足': mockStocks.filter(s => s.trustDays < p.trustDays).length,
-    '外資未買超':   mockStocks.filter(s => p.fb && !s.foreignBuy).length,
-    '量能比':     mockStocks.filter(s => s.volRatio < p.volRatio).length,
-    '週轉率':     mockStocks.filter(s => s.turnover < p.turnover).length,
-    '市值':       mockStocks.filter(s => s.marketCap < p.mktCap).length,
-    '日均量':     mockStocks.filter(s => s.dailyVol < p.dailyVol).length,
+    '月營收 YoY': mockStocks.filter(s => s.revYoY != null && s.revYoY < p.rev).length,
+    'EPS YoY':    mockStocks.filter(s => s.epsYoY != null && s.epsYoY < p.eps).length,
+    'ROE':        mockStocks.filter(s => s.roe != null && s.roe < p.roe).length,
+    '毛利率':     mockStocks.filter(s => s.grossMargin != null && s.grossMargin < p.margin).length,
+    '負債比':     mockStocks.filter(s => s.debtRatio != null && s.debtRatio > p.debt).length,
+    '投信買超不足': mockStocks.filter(s => s.trustDays != null && s.trustDays < p.trustDays).length,
+    '外資未買超':   mockStocks.filter(s => p.fb && s.foreignBuy != null && !s.foreignBuy).length,
+    '量能比':     mockStocks.filter(s => s.volRatio != null && s.volRatio < p.volRatio).length,
+    '週轉率':     mockStocks.filter(s => s.turnover != null && s.turnover < p.turnover).length,
+    '市值':       mockStocks.filter(s => s.marketCap != null && s.marketCap < p.mktCap).length,
+    '日均量':     mockStocks.filter(s => s.dailyVol != null && s.dailyVol < p.dailyVol).length,
     '技術類型':   typeFail,
     '多頭趨勢濾網': mockStocks.filter(s => p.trendFilter && !(s.price >= s.ma20 && s.ma20Rising)).length,
     '距52週高點': mockStocks.filter(s => s.dist52W > p.dist52W).length,
@@ -865,6 +931,11 @@ function openIndexIntroModal(label) {
       title: '標準普爾 500 指數 (SPX) 🇺🇸',
       desc: '由美國 500 家最具代表性的上市公司組成，涵蓋多種產業。因為產業結構均衡，被公認為最能代表「美國整體股市」與大局趨勢的指標。',
       influence: '幾乎影響<b>全球所有資產定價與外資熱錢的流向</b>。當S&P 500大漲，代表外資風險胃口大開，熱錢會批量湧入台灣股市，帶動台幣升值與加權指數齊漲。'
+    },
+    'VIX 恐慌指數': {
+      title: 'VIX 波動率恐慌指數 (VIX) 🇺🇸',
+      desc: '又稱「恐慌指數」，是芝加哥選擇權交易所 (CBOE) 波動率指數的代號，用來衡量 S&P 500 指數未來 30 天的預期波動程度。當市場恐慌時，VIX 會急遽飆高；市場穩定時，VIX 會處於低位。',
+      influence: '全球避險情緒與台美股修正警戒。<b>VIX < 20 (安全區)</b>：代表大盤平穩健康；<b>20 ~ 30 (警戒區)</b>：需提防市場出現劇烈震盪或拉回；<b>> 30 (恐慌區)</b>：代表系統性危機爆發，主力爆量殺出，宜保留高成數現金避險。'
     }
   };
 

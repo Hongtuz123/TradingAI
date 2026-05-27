@@ -37,9 +37,6 @@
 
     </nav>
     <div class="topbar-status">
-      <button class="btn-primary" style="margin-right: 12px; font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 32px; font-size: 13px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
-        <span>🎯</span> 趨勢突破選股
-      </button>
       <div class="market-status-badge" id="marketStatusBadge">
         <span class="status-dot"></span>
         <span id="marketStatusText">市場評估中...</span>
@@ -434,6 +431,10 @@
                   <option value="trendline" style="background:var(--bg-panel); color:white;">下行趨勢線突破策略</option>
                 </select>
               </div>
+
+              <button class="btn-primary" style="font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
+                <span>🎯 趨勢突破選股</span>
+              </button>
 
               <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
