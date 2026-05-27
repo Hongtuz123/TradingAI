@@ -1136,12 +1136,14 @@ window.openTrendlineBreakoutModal = async function() {
   const paramTimeframeVal = document.getElementById('tb_param_timeframe');
   const paramBarsVal = document.getElementById('tb_param_bars');
   const paramVolVal = document.getElementById('tb_param_vol');
+  const paramVolNVal = document.getElementById('tb_param_vol_n');
   const paramMaFastVal = document.getElementById('tb_param_ma_fast');
   const paramMaSlowVal = document.getElementById('tb_param_ma_slow');
 
   const paramTimeframe = paramTimeframeVal ? paramTimeframeVal.value : 'daily';
   const paramBars = paramBarsVal ? parseInt(paramBarsVal.value, 10) : 20;
   const paramVol = paramVolVal ? parseFloat(paramVolVal.value) : 1.5;
+  const paramVolN = paramVolNVal ? parseInt(paramVolNVal.value, 10) : 20;
   const paramMaFast = paramMaFastVal ? parseInt(paramMaFastVal.value, 10) : 20;
   const paramMaSlow = paramMaSlowVal ? parseInt(paramMaSlowVal.value, 10) : 60;
 
@@ -1204,7 +1206,7 @@ window.openTrendlineBreakoutModal = async function() {
       candlesSource = generateMockTimeframeData(s.kline, paramTimeframe);
     }
 
-    if (!candlesSource || candlesSource.length < Math.max(paramBars, paramMaSlow)) {
+    if (!candlesSource || candlesSource.length < Math.max(paramBars, paramMaSlow, paramVolN)) {
       notFoundStocks.push(csvStock);
       return;
     }
@@ -1226,7 +1228,7 @@ window.openTrendlineBreakoutModal = async function() {
 
     const maFastArr = calculateSMA(candles, paramMaFast);
     const maSlowArr = calculateSMA(candles, paramMaSlow);
-    const vma = calculateVolumeMA(candles, paramBars); // 均量以設定的 K 棒根數為準
+    const vma = calculateVolumeMA(candles, paramVolN); // 均量以設定的 n 根 K 棒為準
 
     const mFastObj = maFastArr.find(m => m.time === curr.time);
     const mSlowObj = maSlowArr.find(m => m.time === curr.time);
@@ -1336,11 +1338,21 @@ window.openTrendlineBreakoutModal = async function() {
           </div>
           <div>
             <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">⚡ 快線均線 (MA)：</label>
-            <input type="number" id="tb_param_ma_fast" value="${paramMaFast}" min="5" max="100" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+            <input type="number" id="tb_param_ma_fast" value="${paramMaFast}" min="5" max="100" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;" />
           </div>
           <div>
             <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">🐢 慢線均線 (MA)：</label>
-            <input type="number" id="tb_param_ma_slow" value="${paramMaSlow}" min="10" max="200" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+            <input type="number" id="tb_param_ma_slow" value="${paramMaSlow}" min="10" max="200" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;" />
+          </div>
+          <div style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">🔥 爆量倍數 (倍)：</label>
+              <input type="number" id="tb_param_vol" value="${paramVol}" step="0.1" min="0.5" max="5" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;" />
+            </div>
+            <div>
+              <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">📊 均量回溯 (K棒)：</label>
+              <input type="number" id="tb_param_vol_n" value="${paramVolN}" min="5" max="100" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;" />
+            </div>
           </div>
         </div>
         <div style="text-align: right; margin-top: 12px;">
@@ -1351,7 +1363,7 @@ window.openTrendlineBreakoutModal = async function() {
       </div>
 
       <p style="color:var(--text-muted); font-size:12px; margin-bottom: 12px; line-height: 1.5;">
-        依據條件篩選：<strong>${paramTimeframe === 'daily' ? '日線' : paramTimeframe === '1h' ? '1小時' : paramTimeframe === '4h' ? '4小時' : '15分鐘'}</strong> 時框下，過去 <strong>${paramBars}</strong> 根 K 棒顯著高點連線突破 + 爆量達 <strong>${paramVol}</strong> 倍均量 + <strong>MA${paramMaFast} &gt; MA${paramMaSlow}</strong> 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
+        依據條件篩選：<strong>${paramTimeframe === 'daily' ? '日線' : paramTimeframe === '1h' ? '1小時' : paramTimeframe === '4h' ? '4小時' : '15分鐘'}</strong> 時框下，過去 <strong>${paramBars}</strong> 根 K 棒顯著高點連線突破 + 爆量達近 <strong>${paramVolN}</strong> 根 K 棒平均量 <strong>${paramVol}</strong> 倍以上 + <strong>MA${paramMaFast} &gt; MA${paramMaSlow}</strong> 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
       </p>
       <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
       
