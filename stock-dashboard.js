@@ -1133,12 +1133,14 @@ window.openTrendlineBreakoutModal = async function() {
   let csvStocks = [];
 
   // 讀取動態參數（附帶預設值防禦）
-  const paramDaysVal = document.getElementById('tb_param_days');
+  const paramTimeframeVal = document.getElementById('tb_param_timeframe');
+  const paramBarsVal = document.getElementById('tb_param_bars');
   const paramVolVal = document.getElementById('tb_param_vol');
   const paramMaFastVal = document.getElementById('tb_param_ma_fast');
   const paramMaSlowVal = document.getElementById('tb_param_ma_slow');
 
-  const paramDays = paramDaysVal ? parseInt(paramDaysVal.value, 10) : 20;
+  const paramTimeframe = paramTimeframeVal ? paramTimeframeVal.value : 'daily';
+  const paramBars = paramBarsVal ? parseInt(paramBarsVal.value, 10) : 20;
   const paramVol = paramVolVal ? parseFloat(paramVolVal.value) : 1.5;
   const paramMaFast = paramMaFastVal ? parseInt(paramMaFastVal.value, 10) : 20;
   const paramMaSlow = paramMaSlowVal ? parseInt(paramMaSlowVal.value, 10) : 60;
@@ -1191,14 +1193,25 @@ window.openTrendlineBreakoutModal = async function() {
       if (s) csvStock.code = padded; // 同步修正代碼以便後續顯示正確
     }
 
-    if (!s || !s.kline || s.kline.length < Math.max(paramDays, paramMaSlow)) {
+    if (!s || !s.kline || s.kline.length === 0) {
       notFoundStocks.push(csvStock);
       return;
     }
     
-    // 取得日K candles
-    const candles = s.kline.map(d => ({
-      time: d.date,
+    // 根據選擇的選股時框獲取數據
+    let candlesSource = s.kline;
+    if (paramTimeframe !== 'daily') {
+      candlesSource = generateMockTimeframeData(s.kline, paramTimeframe);
+    }
+
+    if (!candlesSource || candlesSource.length < Math.max(paramBars, paramMaSlow)) {
+      notFoundStocks.push(csvStock);
+      return;
+    }
+    
+    // 取得 candles
+    const candles = candlesSource.map(d => ({
+      time: d.date || d.time,
       open: parseFloat(d.open),
       high: parseFloat(d.high),
       low: parseFloat(d.low),
@@ -1213,7 +1226,7 @@ window.openTrendlineBreakoutModal = async function() {
 
     const maFastArr = calculateSMA(candles, paramMaFast);
     const maSlowArr = calculateSMA(candles, paramMaSlow);
-    const vma = calculateVolumeMA(candles, paramDays); // 均量以設定的天數為準
+    const vma = calculateVolumeMA(candles, paramBars); // 均量以設定的 K 棒根數為準
 
     const mFastObj = maFastArr.find(m => m.time === curr.time);
     const mSlowObj = maSlowArr.find(m => m.time === curr.time);
@@ -1223,7 +1236,7 @@ window.openTrendlineBreakoutModal = async function() {
     const vmaVal = vma[t];
 
     // 動態趨勢線計算，回溯點與確認點時限連動
-    const tl = calculateTrendlineAt(candles, t, paramDays + 5);
+    const tl = calculateTrendlineAt(candles, t, paramBars + 5);
 
     if (tl && tl.value !== null) {
       const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
@@ -1309,12 +1322,17 @@ window.openTrendlineBreakoutModal = async function() {
         </div>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px; color: var(--text-muted);">
           <div>
-            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">📈 高點回溯 (天)：</label>
-            <input type="number" id="tb_param_days" value="${paramDays}" min="5" max="60" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">⏰ 選股時框：</label>
+            <select id="tb_param_timeframe" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;">
+              <option value="15m" ${paramTimeframe === '15m' ? 'selected' : ''}>15分鐘</option>
+              <option value="1h" ${paramTimeframe === '1h' ? 'selected' : ''}>1小時</option>
+              <option value="4h" ${paramTimeframe === '4h' ? 'selected' : ''}>4小時</option>
+              <option value="daily" ${paramTimeframe === 'daily' ? 'selected' : ''}>日線</option>
+            </select>
           </div>
           <div>
-            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">🔥 爆量倍數 (倍)：</label>
-            <input type="number" id="tb_param_vol" value="${paramVol}" step="0.1" min="0.5" max="5" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">📈 高點回溯 (K棒根數)：</label>
+            <input type="number" id="tb_param_bars" value="${paramBars}" min="5" max="100" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600; height: 28px;" />
           </div>
           <div>
             <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">⚡ 快線均線 (MA)：</label>
