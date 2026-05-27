@@ -1,4 +1,4 @@
-// 由 yfinance 產生之真實資料 — 2026-05-27 09:58:20
+// 由 yfinance 產生之真實資料 — 2026-05-27 19:37:59
 const marketData = {
   "tw_indices": [
     {
@@ -63,7 +63,7 @@ const marketData = {
   "twii_above_60ma": true,
   "otc_above_60ma": true,
   "vol_above_20ma_bool": true,
-  "lastUpdate": "2026-05-27 09:58:20",
+  "lastUpdate": "2026-05-27 19:37:59",
   "price_failed_stocks": [
     {
       "Code": "00403A",
