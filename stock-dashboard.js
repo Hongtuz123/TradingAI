@@ -1132,6 +1132,17 @@ window.openTrendlineBreakoutModal = async function() {
   const notFoundStocks = [];
   let csvStocks = [];
 
+  // 讀取動態參數（附帶預設值防禦）
+  const paramDaysVal = document.getElementById('tb_param_days');
+  const paramVolVal = document.getElementById('tb_param_vol');
+  const paramMaFastVal = document.getElementById('tb_param_ma_fast');
+  const paramMaSlowVal = document.getElementById('tb_param_ma_slow');
+
+  const paramDays = paramDaysVal ? parseInt(paramDaysVal.value, 10) : 20;
+  const paramVol = paramVolVal ? parseFloat(paramVolVal.value) : 1.5;
+  const paramMaFast = paramMaFastVal ? parseInt(paramMaFastVal.value, 10) : 20;
+  const paramMaSlow = paramMaSlowVal ? parseInt(paramMaSlowVal.value, 10) : 60;
+
   // 1. 讀取並解析本地的「股票分析清單.csv」
   try {
     const response = await fetch('股票分析清單.csv');
@@ -1180,7 +1191,7 @@ window.openTrendlineBreakoutModal = async function() {
       if (s) csvStock.code = padded; // 同步修正代碼以便後續顯示正確
     }
 
-    if (!s || !s.kline || s.kline.length < 20) {
+    if (!s || !s.kline || s.kline.length < Math.max(paramDays, paramMaSlow)) {
       notFoundStocks.push(csvStock);
       return;
     }
@@ -1200,23 +1211,24 @@ window.openTrendlineBreakoutModal = async function() {
     const price = curr.close;
     const vol = curr.volume;
 
-    const ma20 = calculateSMA(candles, 20);
-    const ma60 = calculateSMA(candles, 60);
-    const vma = calculateVolumeMA(candles, 20);
+    const maFastArr = calculateSMA(candles, paramMaFast);
+    const maSlowArr = calculateSMA(candles, paramMaSlow);
+    const vma = calculateVolumeMA(candles, paramDays); // 均量以設定的天數為準
 
-    const m20Obj = ma20.find(m => m.time === curr.time);
-    const m60Obj = ma60.find(m => m.time === curr.time);
-    if (!m20Obj || !m60Obj) return;
-    const m20 = m20Obj.value;
-    const m60 = m60Obj.value;
+    const mFastObj = maFastArr.find(m => m.time === curr.time);
+    const mSlowObj = maSlowArr.find(m => m.time === curr.time);
+    if (!mFastObj || !mSlowObj) return;
+    const mFast = mFastObj.value;
+    const mSlow = mSlowObj.value;
     const vmaVal = vma[t];
 
-    const tl = calculateTrendlineAt(candles, t);
+    // 動態趨勢線計算，回溯點與確認點時限連動
+    const tl = calculateTrendlineAt(candles, t, paramDays + 5);
 
     if (tl && tl.value !== null) {
       const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
-      const isVolLarge = vol > vmaVal * 1.5;
-      const isBullishMA = m20 > m60;
+      const isVolLarge = vol > vmaVal * paramVol;
+      const isBullishMA = mFast > mSlow;
 
       if (isBreak && isVolLarge && isBullishMA) {
         matchedStocks.push({
@@ -1285,13 +1297,43 @@ window.openTrendlineBreakoutModal = async function() {
       </h2>
       
       <!-- 交代資料接回來的時間，防止價格太舊 -->
-      <div style="display:flex; align-items:center; gap:6px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: var(--warning); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 14px;">
+      <div style="display:flex; align-items:center; gap:6px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: var(--warning); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 12px;">
         <span>⏳</span>
         <span>資料接回時間：${dataTime} (防範部分價格資料過舊)</span>
       </div>
 
+      <!-- 🛠️ 參數調整面板 -->
+      <div style="background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 8px; margin-bottom: 14px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);">
+        <div style="font-weight: 700; font-size: 13px; color: white; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">
+          <span>⚙️</span> <span>動態參數調整 (自訂回測鬆緊)</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 12px; color: var(--text-muted);">
+          <div>
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">📈 高點回溯 (天)：</label>
+            <input type="number" id="tb_param_days" value="${paramDays}" min="5" max="60" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+          </div>
+          <div>
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">🔥 爆量倍數 (倍)：</label>
+            <input type="number" id="tb_param_vol" value="${paramVol}" step="0.1" min="0.5" max="5" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+          </div>
+          <div>
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">⚡ 快線均線 (MA)：</label>
+            <input type="number" id="tb_param_ma_fast" value="${paramMaFast}" min="5" max="100" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+          </div>
+          <div>
+            <label style="display:block; margin-bottom: 4px; color: #cbd5e1;">🐢 慢線均線 (MA)：</label>
+            <input type="number" id="tb_param_ma_slow" value="${paramMaSlow}" min="10" max="200" style="width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 4px 8px; border-radius: 4px; outline: none; font-weight: 600;" />
+          </div>
+        </div>
+        <div style="text-align: right; margin-top: 12px;">
+          <button class="btn-primary" onclick="openTrendlineBreakoutModal()" style="font-size: 12px; padding: 4px 16px; height: 28px; background: linear-gradient(135deg, #ec4899, #8b5cf6); border:none; border-radius: 4px; cursor: pointer; color:white; font-weight:700; box-shadow: 0 2px 6px rgba(236,72,153,0.35);">
+            🔄 重新動態掃描
+          </button>
+        </div>
+      </div>
+
       <p style="color:var(--text-muted); font-size:12px; margin-bottom: 12px; line-height: 1.5;">
-        依據條件篩選：過去20日顯著高點連線突破 + 爆量達1.5倍均量 + MA20 > MA60 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
+        依據條件篩選：過去 <strong>${paramDays}</strong> 日顯著高點連線突破 + 爆量達 <strong>${paramVol}</strong> 倍均量 + <strong>MA${paramMaFast} &gt; MA${paramMaSlow}</strong> 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
       </p>
       <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
       
