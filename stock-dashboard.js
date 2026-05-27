@@ -1351,7 +1351,7 @@ window.openTrendlineBreakoutModal = async function() {
       </div>
 
       <p style="color:var(--text-muted); font-size:12px; margin-bottom: 12px; line-height: 1.5;">
-        依據條件篩選：過去 <strong>${paramDays}</strong> 日顯著高點連線突破 + 爆量達 <strong>${paramVol}</strong> 倍均量 + <strong>MA${paramMaFast} &gt; MA${paramMaSlow}</strong> 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
+        依據條件篩選：<strong>${paramTimeframe === 'daily' ? '日線' : paramTimeframe === '1h' ? '1小時' : paramTimeframe === '4h' ? '4小時' : '15分鐘'}</strong> 時框下，過去 <strong>${paramBars}</strong> 根 K 棒顯著高點連線突破 + 爆量達 <strong>${paramVol}</strong> 倍均量 + <strong>MA${paramMaFast} &gt; MA${paramMaSlow}</strong> 多頭排列。本次共掃描 <strong>'股票分析清單.csv'</strong> 內 <strong>${csvStocks.length}</strong> 檔股票。
       </p>
       <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
       
