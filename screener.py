@@ -25,7 +25,10 @@ def format_stock_code(code_str):
     智慧股票代碼補零邏輯 (解決 Excel/CSV 開頭零丟失問題)：
     - 小於 100 補為 4 碼 (例如 50 -> 0050)
     - 100~999 補為 5 碼 (例如 919 -> 00919)
-    - 其餘保留原樣
+    - 1000 以上保留原樣 (例如 2330 -> 2330)
+    注意：類似 009816 的 ETF 代碼，Excel 可能將其變為 9816 (4碼純數字)。
+    這類情況由 run_screener() 中的 zfill(6) fallback 處理，
+    前端則由 stock-dashboard.js 中的 padStart(6) fallback 補救。
     """
     code_str = str(code_str).strip()
     if code_str.isdigit():

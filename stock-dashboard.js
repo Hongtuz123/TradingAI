@@ -1134,7 +1134,16 @@ window.openTrendlineBreakoutModal = async function() {
 
   // 2. 針對 CSV 的股票在已載入的 mockStocks 內查找 K 線並做分析
   csvStocks.forEach(csvStock => {
-    const s = mockStocks.find(item => item.id === csvStock.code);
+    // 主查找：以 CSV 解析出的代碼直接比對
+    let s = mockStocks.find(item => item.id === csvStock.code);
+
+    // 回退查找：若找不到，嘗試補零至 6 碼 (解決 Excel 前導零丟失：9816 → 009816)
+    if (!s && /^\d+$/.test(csvStock.code) && csvStock.code.length < 6) {
+      const padded = csvStock.code.padStart(6, '0');
+      s = mockStocks.find(item => item.id === padded);
+      if (s) csvStock.code = padded; // 同步修正代碼以便後續顯示正確
+    }
+
     if (!s || !s.kline || s.kline.length < 20) {
       notFoundStocks.push(csvStock);
       return;
