@@ -483,7 +483,7 @@ function renderScreenerTable(data) {
       <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
       <td>${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</td>
       <td>${s.volRatio}x</td>
-      <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">看圖</button></td>
+      <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">回測</button></td>
     `;
     
     // 點擊顯示未達標項目
@@ -566,7 +566,7 @@ function renderWhitelistGrid() {
           <div>ATR(14)：${s.atr14 ?? '--'}</div>
         </div>
         <div style="margin-top:10px;text-align:right;">
-          <button class="btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="openChart('${s.id}')">查看K線 →</button>
+          <button class="btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="openChart('${s.id}')">策略回測 →</button>
         </div>
       </div>
     `;

@@ -32,7 +32,7 @@
         <span class="nav-icon">★</span> 白名單
       </button>
       <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
-        <span class="nav-icon">📈</span> K線圖
+        <span class="nav-icon">📈</span> 回測功能
       </button>
 
     </nav>
@@ -401,13 +401,13 @@
       </div>
     </section>
 
-    <!-- ======================== K線圖視圖 ======================== -->
+    <!-- ======================== K線與回測功能視圖 ======================== -->
     <section class="view" id="view-chart">
       <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;overflow:hidden;">
         <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
-          <div class="chart-toolbar" style="justify-content:space-between;flex-shrink:0;">
-            <div class="chart-stock-info" style="display:flex; align-items:center; gap: 12px;">
-              <span class="chart-name" style="color:var(--text-muted)">💡 提示：點選白名單或篩選結果中的「看圖」按鈕來載入 K 線</span>
+          <div class="chart-toolbar" style="justify-content:space-between;flex-shrink:0;gap:12px;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;">
+            <div class="chart-stock-info" style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+              <span class="chart-name" style="color:var(--text-muted)">💡 提示：點選白名單或篩選結果中的「回測」按鈕來載入 K 線並進行指標回測</span>
               
               <!-- 搜尋功能 -->
               <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
@@ -415,9 +415,21 @@
                 <input type="text" id="chartSearchInput" placeholder="輸入股號 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:14px; width:130px;" onkeydown="if(event.key==='Enter') searchAndLoadChart()">
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="searchAndLoadChart()">搜尋</button>
               </div>
-
             </div>
-            <div style="display:flex; align-items:center; gap: 8px;">
+
+            <!-- 策略控制與績效看板 -->
+            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+              <div id="backtest-summary" style="display:none; align-items:center; gap: 12px; background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); font-size:13px; color: white;">
+                <!-- 由 JS 動態寫入回測數據 -->
+              </div>
+
+              <div style="display:flex; align-items:center; gap: 8px; background: rgba(30, 41, 59, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                <label style="display:flex; align-items:center; gap:6px; color:var(--text-main); font-size:13px; cursor:pointer; user-select:none; margin:0;">
+                  <input type="checkbox" id="enable-strategy-toggle" onchange="toggleStrategyLayer(this.checked)" style="cursor:pointer; width:15px; height:15px;">
+                  <span>啟用 Super-Trend 策略</span>
+                </label>
+              </div>
+
               <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1h')">1小時</button>

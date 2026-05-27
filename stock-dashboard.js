@@ -400,6 +400,11 @@ function renderLWChart(containerId, klineData, height = 260) {
     crosshairMarkerVisible: false,
   });
 
+  // 全域策略啟用狀態
+  if (window.supertrendEnabled === undefined) {
+    window.supertrendEnabled = false;
+  }
+
   // 繪製 Supertrend 上升軌道（綠色實線，箱體底邊）
   const supertrendUpSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
     color: '#22c55e',
@@ -419,6 +424,9 @@ function renderLWChart(containerId, klineData, height = 260) {
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
   });
+
+  // 保存 highlighter series 的陣列以方便後續動態添加/刪除
+  const highlighterSeriesList = [];
 
   // ---- RSI Series（根據是否為主圖，決定掛在哪個 chart 上）----
   const rsiTargetChart = isMainChart ? rsiChart : mainChart;
@@ -469,141 +477,248 @@ function renderLWChart(containerId, klineData, height = 260) {
     smaSeries.setData(calculateSMA(formattedCandles, 5));
     rsiSeries.setData(calculateRSI(formattedCandles, 14));
 
+    // 同步外部 Toggle Checkbox 狀態
+    const toggleCheckbox = document.getElementById('enable-strategy-toggle');
+    if (toggleCheckbox) {
+      toggleCheckbox.checked = window.supertrendEnabled;
+    }
+
     // 計算超級趨勢指標 (預設：ATR=10, 乘數=3)
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
-    // 準備上升與下降軌道數據（嚴格互斥：每個 bar 只屬於一種趨勢）
-    const upData = [];
-    const dnData = [];
-    for (let i = 0; i < supertrendData.length; i++) {
-      const curr = supertrendData[i];
-      if (curr.value === null) continue;
+    // 實作策略回測功能
+    function runSupertrendBacktest(candles, stData) {
+      let equity = 1.0;
+      let position = null; // null | { buyPrice, time }
+      let trades = []; // 每次完成的交易
+      let equityHistory = [1.0]; // 追蹤淨值歷史曲線
 
-      if (curr.trend === 1) {
-        upData.push({ time: curr.time, value: curr.value });
-      } else {
-        dnData.push({ time: curr.time, value: curr.value });
-      }
-    }
+      for (let i = 1; i < stData.length; i++) {
+        const prev = stData[i - 1];
+        const curr = stData[i];
+        
+        // 尋找對應的 K 線價格
+        const candle = candles.find(c => c.time === curr.time);
+        if (!candle) continue;
+        const price = parseFloat(candle.close);
 
-    // 識別連續趨勢段，為 high-trend 底部畫綠色實線、low-trend 頂部畫紅色實線
-    const segments = []; // { trend, startIdx, endIdx }
-    let segStart = -1;
-    let segTrend = null;
-    for (let i = 0; i < supertrendData.length; i++) {
-      const curr = supertrendData[i];
-      if (curr.value === null) continue;
-      if (curr.trend !== segTrend) {
-        if (segTrend !== null && segStart >= 0) {
-          segments.push({ trend: segTrend, startIdx: segStart, endIdx: i - 1 });
-        }
-        segTrend = curr.trend;
-        segStart = i;
-      }
-    }
-    if (segTrend !== null && segStart >= 0) {
-      segments.push({ trend: segTrend, startIdx: segStart, endIdx: supertrendData.length - 1 });
-    }
-
-    for (const seg of segments) {
-      // 收集段內 K 線與 Supertrend 值
-      const segCloseData = [];
-      let segStMin = Infinity;   // 該段 Supertrend 值的最小值
-      let segStMax = -Infinity;  // 該段 Supertrend 值的最大值
-      for (let i = seg.startIdx; i <= seg.endIdx; i++) {
-        if (supertrendData[i].value === null) continue;
-        const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
-        if (candle) {
-          segCloseData.push({ time: candle.time, value: candle.close });
-          segStMin = Math.min(segStMin, supertrendData[i].value);
-          segStMax = Math.max(segStMax, supertrendData[i].value);
-        }
-      }
-
-      if (segCloseData.length === 0) continue;
-
-      if (seg.trend === 1) {
-        // High-trend highlighter：以 Supertrend 線最低值為基準，往上填綠色
-        const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
-          baseValue: { type: 'price', price: segStMin },
-          topLineColor: 'transparent',
-          topFillColor1: 'rgba(34, 197, 94, 0.18)',
-          topFillColor2: 'rgba(34, 197, 94, 0.04)',
-          bottomLineColor: 'transparent',
-          bottomFillColor1: 'transparent',
-          bottomFillColor2: 'transparent',
-          lineWidth: 0,
-          title: '',
-          crosshairMarkerVisible: false,
-          priceLineVisible: false,
-          lastValueVisible: false,
-        });
-        hlSeries.setData(segCloseData);
-      } else {
-        // Low-trend highlighter：以 Supertrend 線最高值為基準，往下填紅色
-        const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
-          baseValue: { type: 'price', price: segStMax },
-          topLineColor: 'transparent',
-          topFillColor1: 'transparent',
-          topFillColor2: 'transparent',
-          bottomLineColor: 'transparent',
-          bottomFillColor1: 'rgba(239, 68, 68, 0.04)',
-          bottomFillColor2: 'rgba(239, 68, 68, 0.18)',
-          lineWidth: 0,
-          title: '',
-          crosshairMarkerVisible: false,
-          priceLineVisible: false,
-          lastValueVisible: false,
-        });
-        hlSeries.setData(segCloseData);
-      }
-    }
-
-    // 計算買賣轉折訊號標籤
-    // 買 → 掛在 supertrendUpSeries（Supertrend 綠線），顯示在線下方
-    // 賣 → 掛在 supertrendDnSeries（Supertrend 紅線），顯示在線上方
-    const buyMarkers = [];
-    const sellMarkers = [];
-    for (let i = 1; i < supertrendData.length; i++) {
-      const prev = supertrendData[i - 1];
-      const curr = supertrendData[i];
-      if (prev.value !== null && curr.value !== null) {
+        // 買入訊號: 當趨勢由空轉多 (-1 轉 1)
         if (prev.trend === -1 && curr.trend === 1) {
-          buyMarkers.push({
-            time: curr.time,
-            position: 'belowBar',
-            color: '#22c55e',
-            shape: 'arrowUp',
-            text: ' [ BUY ] ',
-            size: 2.4,
-          });
-        } else if (prev.trend === 1 && curr.trend === -1) {
-          sellMarkers.push({
-            time: curr.time,
-            position: 'aboveBar',
-            color: '#ef4444',
-            shape: 'arrowDown',
-            text: ' [ SELL ] ',
-            size: 2.4,
-          });
+          if (position === null) {
+            position = { buyPrice: price, time: curr.time };
+          }
+        }
+        // 賣出訊號: 當趨勢由多轉空 (1 轉 -1)
+        else if (prev.trend === 1 && curr.trend === -1) {
+          if (position !== null) {
+            const profitPct = (price - position.buyPrice) / position.buyPrice;
+            equity = equity * (1 + profitPct);
+            trades.push({
+              buyPrice: position.buyPrice,
+              sellPrice: price,
+              profitPct: profitPct
+            });
+            equityHistory.push(equity);
+            position = null;
+          }
         }
       }
+
+      // 處理最後一筆未平倉部位 (以最新收盤價作估算)
+      if (position !== null && candles.length > 0) {
+        const lastPrice = parseFloat(candles[candles.length - 1].close);
+        const profitPct = (lastPrice - position.buyPrice) / position.buyPrice;
+        equity = equity * (1 + profitPct);
+        trades.push({
+          buyPrice: position.buyPrice,
+          sellPrice: lastPrice,
+          profitPct: profitPct,
+          unrealized: true
+        });
+        equityHistory.push(equity);
+      }
+
+      // 計算最大回撤 (Max Drawdown)
+      let maxDrawdown = 0;
+      let peak = 0;
+      for (const eq of equityHistory) {
+        if (eq > peak) {
+          peak = eq;
+        }
+        const dd = peak > 0 ? (peak - eq) / peak : 0;
+        if (dd > maxDrawdown) {
+          maxDrawdown = dd;
+        }
+      }
+
+      const totalTrades = trades.length;
+      const totalProfitPct = (equity - 1.0) * 100;
+      const mddPct = maxDrawdown * 100;
+
+      return {
+        totalTrades,
+        totalProfitPct,
+        mddPct
+      };
     }
 
-    supertrendUpSeries.setData(upData);
-    supertrendDnSeries.setData(dnData);
+    // 當啟用 Supertrend 策略時，才渲染軌道與執行回測
+    if (window.supertrendEnabled) {
+      // 1. 執行回測運算並渲染統計面板
+      const backtestResult = runSupertrendBacktest(formattedCandles, supertrendData);
+      const summaryEl = document.getElementById('backtest-summary');
+      if (summaryEl) {
+        summaryEl.style.display = 'flex';
+        const profitColor = backtestResult.totalProfitPct >= 0 ? 'var(--success)' : 'var(--danger)';
+        summaryEl.innerHTML = `
+          <span>📊 策略回測報告 (基數=1)</span>
+          <span>交易次數: <strong style="color:var(--warning);">${backtestResult.totalTrades}</strong> 次</span>
+          <span>累積獲利: <strong style="color:${profitColor};">${backtestResult.totalProfitPct >= 0 ? '+' : ''}${backtestResult.totalProfitPct.toFixed(2)}%</strong></span>
+          <span>最大回撤: <strong style="color:var(--danger);">${backtestResult.mddPct.toFixed(2)}%</strong></span>
+        `;
+      }
 
-    // 買標籤掛在 Supertrend 綠線，賣標籤掛在 Supertrend 紅線
-    if (buyMarkers.length > 0) {
-      LightweightCharts.createSeriesMarkers(supertrendUpSeries, buyMarkers);
-    }
-    if (sellMarkers.length > 0) {
-      LightweightCharts.createSeriesMarkers(supertrendDnSeries, sellMarkers);
+      // 2. 準備上升與下降軌道數據（嚴格互斥：每個 bar 只屬於一種趨勢）
+      const upData = [];
+      const dnData = [];
+      for (let i = 0; i < supertrendData.length; i++) {
+        const curr = supertrendData[i];
+        if (curr.value === null) continue;
+
+        if (curr.trend === 1) {
+          upData.push({ time: curr.time, value: curr.value });
+        } else {
+          dnData.push({ time: curr.time, value: curr.value });
+        }
+      }
+
+      // 3. 識別連續趨勢段，繪製 Highlighter 區塊
+      const segments = []; // { trend, startIdx, endIdx }
+      let segStart = -1;
+      let segTrend = null;
+      for (let i = 0; i < supertrendData.length; i++) {
+        const curr = supertrendData[i];
+        if (curr.value === null) continue;
+        if (curr.trend !== segTrend) {
+          if (segTrend !== null && segStart >= 0) {
+            segments.push({ trend: segTrend, startIdx: segStart, endIdx: i - 1 });
+          }
+          segTrend = curr.trend;
+          segStart = i;
+        }
+      }
+      if (segTrend !== null && segStart >= 0) {
+        segments.push({ trend: segTrend, startIdx: segStart, endIdx: supertrendData.length - 1 });
+      }
+
+      for (const seg of segments) {
+        // 收集段內 K 線與 Supertrend 值
+        const segCloseData = [];
+        let segStMin = Infinity;   // 該段 Supertrend 值的最小值
+        let segStMax = -Infinity;  // 該段 Supertrend 值的最大值
+        for (let i = seg.startIdx; i <= seg.endIdx; i++) {
+          if (supertrendData[i].value === null) continue;
+          const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
+          if (candle) {
+            segCloseData.push({ time: candle.time, value: candle.close });
+            segStMin = Math.min(segStMin, supertrendData[i].value);
+            segStMax = Math.max(segStMax, supertrendData[i].value);
+          }
+        }
+
+        if (segCloseData.length === 0) continue;
+
+        if (seg.trend === 1) {
+          // High-trend highlighter
+          const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+            baseValue: { type: 'price', price: segStMin },
+            topLineColor: 'transparent',
+            topFillColor1: 'rgba(34, 197, 94, 0.18)',
+            topFillColor2: 'rgba(34, 197, 94, 0.04)',
+            bottomLineColor: 'transparent',
+            bottomFillColor1: 'transparent',
+            bottomFillColor2: 'transparent',
+            lineWidth: 0,
+            title: '',
+            crosshairMarkerVisible: false,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+          hlSeries.setData(segCloseData);
+          highlighterSeriesList.push(hlSeries);
+        } else {
+          // Low-trend highlighter
+          const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+            baseValue: { type: 'price', price: segStMax },
+            topLineColor: 'transparent',
+            topFillColor1: 'transparent',
+            topFillColor2: 'transparent',
+            bottomLineColor: 'transparent',
+            bottomFillColor1: 'rgba(239, 68, 68, 0.04)',
+            bottomFillColor2: 'rgba(239, 68, 68, 0.18)',
+            lineWidth: 0,
+            title: '',
+            crosshairMarkerVisible: false,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+          hlSeries.setData(segCloseData);
+          highlighterSeriesList.push(hlSeries);
+        }
+      }
+
+      // 4. 計算買賣轉折訊號標籤
+      const buyMarkers = [];
+      const sellMarkers = [];
+      for (let i = 1; i < supertrendData.length; i++) {
+        const prev = supertrendData[i - 1];
+        const curr = supertrendData[i];
+        if (prev.value !== null && curr.value !== null) {
+          if (prev.trend === -1 && curr.trend === 1) {
+            buyMarkers.push({
+              time: curr.time,
+              position: 'belowBar',
+              color: '#22c55e',
+              shape: 'arrowUp',
+              text: ' [ BUY ] ',
+              size: 2.4,
+            });
+          } else if (prev.trend === 1 && curr.trend === -1) {
+            sellMarkers.push({
+              time: curr.time,
+              position: 'aboveBar',
+              color: '#ef4444',
+              shape: 'arrowDown',
+              text: ' [ SELL ] ',
+              size: 2.4,
+            });
+          }
+        }
+      }
+
+      supertrendUpSeries.setData(upData);
+      supertrendDnSeries.setData(dnData);
+
+      // 買標籤掛在 Supertrend 綠線，賣標籤掛在 Supertrend 紅線
+      if (buyMarkers.length > 0) {
+        LightweightCharts.createSeriesMarkers(supertrendUpSeries, buyMarkers);
+      }
+      if (sellMarkers.length > 0) {
+        LightweightCharts.createSeriesMarkers(supertrendDnSeries, sellMarkers);
+      }
+    } else {
+      // 策略未啟用時，隱藏績效看板
+      const summaryEl = document.getElementById('backtest-summary');
+      if (summaryEl) {
+        summaryEl.style.display = 'none';
+      }
+      supertrendUpSeries.setData([]);
+      supertrendDnSeries.setData([]);
     }
 
     mainChart.timeScale().fitContent();
     if (rsiChart) rsiChart.timeScale().fitContent();
-    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Supertrend`);
+    console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Supertrend strategy toggle.`);
   } catch (err) {
     console.error('[LWC Error]', err);
     container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
@@ -611,6 +726,17 @@ function renderLWChart(containerId, klineData, height = 260) {
 
   return mainChart;
 }
+
+// 動態圖層策略切換函式
+window.toggleStrategyLayer = function(enabled) {
+  window.supertrendEnabled = enabled;
+  if (currentChartSymbol) {
+    const stock = mockStocks.find(s => s.id === currentChartSymbol);
+    if (stock) {
+      loadTVChart(stock);
+    }
+  }
+};
 
 let currentKlineData = null;
 
