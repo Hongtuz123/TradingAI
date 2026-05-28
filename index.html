@@ -14,10 +14,12 @@
 <body>
   <!-- 頂部導航 -->
   <header class="topbar" id="topbar">
-    <div class="topbar-brand">
-      <div class="brand-logo">🌱</div>
+    <div class="topbar-brand" style="gap: 8px;">
+      <div class="brand-logo" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 1.5px solid #f97316; background: rgba(255,255,255,0.15);">
+        <img src="photo/doudou_happy.png" style="width: 100%; height: 100%; object-fit: cover;" alt="荳荳" />
+      </div>
       <div class="brand-text">
-        <span class="brand-name">荳荳AI</span>
+        <span class="brand-name" style="color: #f97316; font-weight: 800; font-size: 16px;">🐾 荳荳柴犬 AI</span>
         <span class="brand-sub">股票篩選器</span>
       </div>
     </div>
@@ -462,6 +464,14 @@
     <div class="modal-box" id="modalBox">
       <button class="modal-close" onclick="closeModal()">✕</button>
       <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- 🐾 荳荳柴犬吉祥物對話框 🐾 -->
+  <div class="shiba-mascot-container" id="shibaMascotContainer">
+    <div class="shiba-bubble" id="shibaMascotBubble">汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！</div>
+    <div class="shiba-avatar-wrap" onclick="triggerShibaMascotTalk()">
+      <img src="photo/doudou_happy.png" class="shiba-avatar" id="shibaMascotAvatar" alt="荳荳柴犬" />
     </div>
   </div>
 

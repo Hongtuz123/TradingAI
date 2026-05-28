@@ -1416,6 +1416,17 @@ window.triggerSystemDataUpdate = async function() {
     
     if (response.ok) {
       const data = await response.json();
+      
+      // 吉祥物反饋
+      const bubble = document.getElementById('shibaMascotBubble');
+      const avatar = document.getElementById('shibaMascotAvatar');
+      if (bubble) {
+        if (avatar) avatar.src = "photo/doudou_happy.png";
+        bubble.innerText = "🐾 汪！後端更新任務已經全速跑起來了，荳荳會幫您一直盯著直到數據跑出來！";
+        bubble.classList.add('active');
+        setTimeout(() => bubble.classList.remove('active'), 6000);
+      }
+      
       alert(`🎉 成功啟動！\n\n${data.message}`);
       btn.innerText = '⚙️ 後端運行中';
       // 2 分鐘後恢復按鈕狀態
@@ -1438,4 +1449,67 @@ window.triggerSystemDataUpdate = async function() {
     btn.innerText = '🔄 重跑選股API';
   }
 };
+
+// ================= 🐾 荳荳柴犬吉祥物互動邏輯 🐾 =================
+
+const SHIBA_GOLDEN_PHRASES = [
+  "🐾 荳荳今天也很努力幫您守護帳戶汪！",
+  "🐾 拔麻今天也要記得按時吃飯，荳荳陪您一起看盤！",
+  "🐾 汪！荳荳剛才做夢夢到股票全部拉漲停耶！",
+  "🐾 拔麻，荳荳隨時準備好用小短腿去刨那些突破大飆股喔！",
+  "🐾 今日的均線多頭排列有如荳荳滑順的毛髮汪！",
+  "🐾 汪！大盤今天熱烘烘的，像烤熟的肉骨頭！",
+  "🐾 荳荳貼心提醒：順勢交易，防守好移動停利唷！"
+];
+
+window.triggerShibaMascotTalk = function() {
+  const bubble = document.getElementById('shibaMascotBubble');
+  if (!bubble) return;
+  
+  const randIdx = Math.floor(Math.random() * SHIBA_GOLDEN_PHRASES.length);
+  bubble.innerText = SHIBA_GOLDEN_PHRASES[randIdx];
+  bubble.classList.add('active');
+  
+  setTimeout(() => {
+    bubble.classList.remove('active');
+  }, 4000);
+};
+
+window.initShibaMascotInteractions = function() {
+  const bubble = document.getElementById('shibaMascotBubble');
+  const avatar = document.getElementById('shibaMascotAvatar');
+  if (!bubble || !avatar) return;
+
+  setTimeout(() => {
+    let healthScore = 60;
+    
+    // 大盤高分健康
+    if (healthScore >= 75) {
+      avatar.src = "photo/doudou_happy.png";
+      bubble.innerText = "🐾 汪！荳荳覺得大盤超棒超健康！此時不刨突破股更待何時！今天荳荳要加肉骨頭！";
+    }
+    // 大盤普通
+    else if (healthScore >= 45) {
+      avatar.src = "photo/doudou_cute.png";
+      bubble.innerText = "🐾 汪！市場平平穩穩的，荳荳乖乖坐著等好機會，拔麻要細心挑選喔！";
+    }
+    // 大盤弱勢危險
+    else {
+      avatar.src = "photo/doudou_sad.png";
+      bubble.innerText = "⚠️ 嗚嗚汪...荳荳聞到危險的氣味！大盤風吹得太冷了，拔麻要注意倉位安全防守喔！";
+    }
+    
+    bubble.classList.add('active');
+    setTimeout(() => {
+      bubble.classList.remove('active');
+    }, 7000);
+  }, 1200);
+};
+
+// 自動掛載初始化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.initShibaMascotInteractions);
+} else {
+  window.initShibaMascotInteractions();
+}
 
