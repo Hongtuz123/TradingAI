@@ -1397,6 +1397,19 @@ window.triggerSystemDataUpdate = async function() {
   const btn = document.getElementById('updateDataBtn');
   if (!btn || btn.disabled) return;
 
+  // 偵測是否為本機環境（Vercel/雲端部署無法連接 localhost:8000）
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  if (!isLocal) {
+    alert(
+      '⚠️ 此功能僅在本機環境可用。\n\n' +
+      '您目前從 Vercel 雲端版本開啟此頁面，無法連線至本機後端。\n\n' +
+      '若要更新資料，請：\n' +
+      '1. 在您的電腦上啟動後端（執行「啟動系統.bat」）\n' +
+      '2. 用瀏覽器開啟 http://localhost:5500 或直接開啟 index.html'
+    );
+    return;
+  }
+
   const confirmUpdate = confirm(
     "確定要觸發後端重跑選股策略與資料更新嗎？\n" +
     "這將會抓取台股/美股最新 250 天 K 線與基本面數據。\n" +
