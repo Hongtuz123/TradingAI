@@ -42,7 +42,12 @@
         <span id="marketStatusText">市場評估中...</span>
       </div>
       <div class="current-time">現在時間：<span id="currentTime">----/--/-- --:--:--</span></div>
-      <div class="last-update">資料更新：<span id="lastUpdateTime"></span></div>
+      <div class="last-update" style="display: flex; align-items: center; gap: 8px;">
+        <span>資料更新：<span id="lastUpdateTime"></span></span>
+        <button id="updateDataBtn" class="btn-primary" onclick="triggerSystemDataUpdate()" style="font-size: 11px; padding: 2px 8px; height: 22px; line-height: 1; display: inline-flex; align-items: center; gap: 4px; border-radius: 4px; border:none; background: linear-gradient(135deg, #3b82f6, #1d4ed8); cursor:pointer; color:white; font-weight:700; transition: all 0.2s;">
+          🔄 重跑選股API
+        </button>
+      </div>
     </div>
   </header>
 

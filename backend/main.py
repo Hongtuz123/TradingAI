@@ -70,6 +70,32 @@ async def get_kline_history(symbol: str, days: int = 250, interval: str = "1d", 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+import subprocess
+import sys
+import os
+
+@app.post("/api/update_data")
+async def trigger_update_data():
+    """
+    非同步觸發重跑後端的 screener.py 篩選器
+    將抓取最新 250 天台股/美股 OpenAPI 歷史 K 線與基本面數據，並重新生成前端的 data.js
+    """
+    try:
+        parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        screener_path = os.path.join(parent_dir, "screener.py")
+        
+        if not os.path.exists(screener_path):
+            raise HTTPException(status_code=404, detail="找不到選股腳本 screener.py")
+            
+        # 使用 Popen 非同步啟動，避免阻塞 FastAPI 導致前端 HTTP 請求逾時
+        subprocess.Popen([sys.executable, screener_path], cwd=parent_dir)
+        return {
+            "status": "success", 
+            "message": "後端選股重跑任務已非同步啟動！正在調用 Open API、yfinance 更新 400 檔個股最新 K 線與基本面，預計 1-2 分鐘後完成並生成新數據。"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

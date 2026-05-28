@@ -1392,3 +1392,50 @@ window.handleTrendlineJump = function(symbolId) {
   }
 };
 
+// 🔄 右上角重跑選股 API 的觸發函數
+window.triggerSystemDataUpdate = async function() {
+  const btn = document.getElementById('updateDataBtn');
+  if (!btn) return;
+  
+  if (btn.disabled) return;
+  
+  const confirmUpdate = confirm("確定要觸發後端重跑選股策略與資料更新嗎？\n這將會抓取台股/美股最新 250 天 K 線與基本面數據，並重新生成 data.js。\n執行過程約需 1-2 分鐘，期間不會影響您的網頁操作，完成後請手動重新整理網頁。");
+  if (!confirmUpdate) return;
+  
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  btn.innerText = '⏳ 任務啟動中...';
+  
+  try {
+    const response = await fetch('http://localhost:8000/api/update_data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      alert(`🎉 成功啟動！\n\n${data.message}`);
+      btn.innerText = '⚙️ 後端運行中';
+      // 2 分鐘後恢復按鈕狀態
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerText = '🔄 重跑選股API';
+      }, 120000);
+    } else {
+      const errData = await response.json();
+      alert(`❌ 啟動失敗：${errData.detail || '未知的後端錯誤'}`);
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerText = '🔄 重跑選股API';
+    }
+  } catch (err) {
+    alert(`❌ 無法連接至後端 API 伺服器 (${err.message})。\n請確保您已在終端機啟動後端：\ncd backend && python main.py`);
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerText = '🔄 重跑選股API';
+  }
+};
+
