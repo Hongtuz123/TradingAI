@@ -958,6 +958,17 @@ const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
         print(f"已覆寫 data.js 並記錄失敗標的。")
     print(f"==========================================\n")
 
+    # 自動 git commit + push，讓 Vercel 同步更新雲端網站
+    try:
+        import subprocess as _sp
+        _sp.run(['git', 'add', 'data.js'], check=True)
+        _sp.run(['git', 'commit', '-m', f'data: 自動更新選股數據 {now_str}'], check=True)
+        # post-commit hook 會自動 push，這裡額外再 push 一次確保成功
+        _sp.run(['git', 'push', 'origin', 'main'], check=True)
+        print("✅ data.js 已自動推送至 GitHub，Vercel 雲端網站將在約 30 秒內同步更新！")
+    except Exception as git_err:
+        print(f"⚠️  自動 git push 失敗（不影響本機使用）：{git_err}")
+
 
 if __name__ == "__main__":
     run_screener()
