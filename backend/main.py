@@ -96,6 +96,19 @@ async def trigger_update_data():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/data_status")
+async def get_data_status():
+    """
+    回傳 data.js 的最後修改時間戳 (Unix timestamp)
+    前端可拿此值輪詢：若 mtime 比觸發前大，代表 screener.py 已完成並寫入新資料
+    """
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_js_path = os.path.join(parent_dir, "data.js")
+    if not os.path.exists(data_js_path):
+        return {"mtime": 0}
+    mtime = os.path.getmtime(data_js_path)
+    return {"mtime": round(mtime)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

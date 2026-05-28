@@ -1392,58 +1392,101 @@ window.handleTrendlineJump = function(symbolId) {
   }
 };
 
-// 🔄 右上角重跑選股 API 的觸發函數
+// 🔄 右上角重跑選股 API 的觸發函數（含自動輪詢+Hard Reload）
 window.triggerSystemDataUpdate = async function() {
   const btn = document.getElementById('updateDataBtn');
-  if (!btn) return;
-  
-  if (btn.disabled) return;
-  
-  const confirmUpdate = confirm("確定要觸發後端重跑選股策略與資料更新嗎？\n這將會抓取台股/美股最新 250 天 K 線與基本面數據，並重新生成 data.js。\n執行過程約需 1-2 分鐘，期間不會影響您的網頁操作，完成後請手動重新整理網頁。");
+  if (!btn || btn.disabled) return;
+
+  const confirmUpdate = confirm(
+    "確定要觸發後端重跑選股策略與資料更新嗎？\n" +
+    "這將會抓取台股/美股最新 250 天 K 線與基本面數據。\n" +
+    "執行過程約需 1-3 分鐘，完成後系統會自動刷新頁面！"
+  );
   if (!confirmUpdate) return;
-  
+
   btn.disabled = true;
   btn.style.opacity = '0.6';
-  btn.innerText = '⏳ 任務啟動中...';
-  
+  btn.innerText = '⏳ 啟動中...';
+
+  // 先抓取 data.js 當前的 mtime（作為基準值比對）
+  let baseMtime = 0;
+  try {
+    const statusRes = await fetch('http://localhost:8000/api/data_status');
+    if (statusRes.ok) {
+      const statusData = await statusRes.json();
+      baseMtime = statusData.mtime || 0;
+    }
+  } catch (_) { /* 不影響流程 */ }
+
+  // 觸發後端非同步更新
   try {
     const response = await fetch('http://localhost:8000/api/update_data', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
-    
-    if (response.ok) {
-      const data = await response.json();
-      
-      // 吉祥物反饋
-      const bubble = document.getElementById('shibaMascotBubble');
-      const avatar = document.getElementById('shibaMascotAvatar');
-      if (bubble) {
-        if (avatar) avatar.src = "photo/doudou_happy.png";
-        bubble.innerText = "🐾 汪！後端更新任務已經全速跑起來了，荳荳會幫您一直盯著直到數據跑出來！";
-        bubble.classList.add('active');
-        setTimeout(() => bubble.classList.remove('active'), 6000);
-      }
-      
-      alert(`🎉 成功啟動！\n\n${data.message}`);
-      btn.innerText = '⚙️ 後端運行中';
-      // 2 分鐘後恢復按鈕狀態
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.innerText = '🔄 重跑選股API';
-      }, 120000);
-    } else {
+
+    if (!response.ok) {
       const errData = await response.json();
       alert(`❌ 啟動失敗：${errData.detail || '未知的後端錯誤'}`);
       btn.disabled = false;
       btn.style.opacity = '1';
       btn.innerText = '🔄 重跑選股API';
+      return;
     }
+
+    // 吉祥物反饋
+    const bubble = document.getElementById('shibaMascotBubble');
+    const avatar = document.getElementById('shibaMascotAvatar');
+    if (bubble) {
+      if (avatar) avatar.src = 'photo/doudou_happy.png';
+      bubble.innerText = '🐾 汪！後端更新全速跑起來了，荳荳在幫您盯著，完成後自動刷新！';
+      bubble.classList.add('active');
+    }
+
+    btn.innerText = '⚙️ 等待更新完成...';
+
+    // ── 每 10 秒輪詢 data_status，偵測到 mtime 更新後自動 hard reload ──
+    let elapsed = 0;
+    const MAX_WAIT = 300; // 最多等 300 秒（5 分鐘）
+    const POLL_INTERVAL = 10;
+
+    const pollTimer = setInterval(async () => {
+      elapsed += POLL_INTERVAL;
+      btn.innerText = `⚙️ 等待中 (${elapsed}s)...`;
+
+      try {
+        const st = await fetch('http://localhost:8000/api/data_status');
+        if (st.ok) {
+          const stData = await st.json();
+          if (stData.mtime > baseMtime) {
+            // data.js 已更新 → 清除計時器，Hard Reload 帶新版本號
+            clearInterval(pollTimer);
+            if (bubble) {
+              bubble.innerText = '🐾 汪汪！新資料跑出來啦，荳荳幫您自動刷新頁面！';
+              bubble.classList.add('active');
+            }
+            setTimeout(() => {
+              // 使用時間戳作為版本號，強制瀏覽器忽略快取
+              const newVer = `v=${stData.mtime}`;
+              const url = window.location.pathname + '?' + newVer;
+              window.location.replace(url);
+            }, 1500);
+            return;
+          }
+        }
+      } catch (_) { /* 後端可能短暫重啟，忽略錯誤繼續等 */ }
+
+      if (elapsed >= MAX_WAIT) {
+        clearInterval(pollTimer);
+        alert('⚠️ 等待逾時（5分鐘），請手動按 Ctrl+F5 強制刷新頁面以載入最新資料。');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerText = '🔄 重跑選股API';
+      }
+    }, POLL_INTERVAL * 1000);
+
   } catch (err) {
-    alert(`❌ 無法連接至後端 API 伺服器 (${err.message})。\n請確保您已在終端機啟動後端：\ncd backend && python main.py`);
+    alert(`❌ 無法連接至後端 API 伺服器 (${err.message})。\n請確保後端已啟動：執行「啟動系統.bat」或 cd backend && python main.py`);
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.innerText = '🔄 重跑選股API';
