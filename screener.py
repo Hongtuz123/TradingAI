@@ -370,6 +370,58 @@ def calc_market_health():
     twii_data  = _tw_index('^TWII',  '加權指數')
     twoii_data = _tw_index('^TWOII', '櫃買指數')
 
+    # 🚀 TWSE/TPEx 官方 API 大盤補償防禦機制，解決 yfinance 指數數據滯後問題
+    import requests as _req
+    
+    # 1. 補償加權指數 (^TWII)
+    try:
+        print("🔍 正在透過 TWSE 官方 API 驗證加權指數精準度...")
+        res = _req.get("https://www.twse.com.tw/exchangeReport/FMTQIK?response=json", timeout=8)
+        if res.status_code == 200:
+            f_data = res.json()
+            if 'data' in f_data and len(f_data['data']) > 0:
+                last_row = f_data['data'][-1]
+                # last_row: ['115/05/28', '19,686,100,251', '1,670,718,874,089', '9,346,566', '43,636.44', '-620.36']
+                raw_close = float(last_row[4].replace(',', ''))
+                raw_diff = float(last_row[5].replace(',', ''))
+                prev_close = raw_close - raw_diff
+                pct_chg = round((raw_diff / prev_close) * 100, 2)
+                
+                print(f"  TWSE 官方最新加權指數: {raw_close} (漲跌: {raw_diff}, 幅度: {pct_chg}%)")
+                
+                # 如果 yfinance 滯後（yfinance 的 close 與官方不同），使用官方最新精準數據覆蓋
+                if twii_data['close'] != raw_close:
+                    print(f"  ⚠️ 偵測到 yfinance 加權數據滯後 (yf: {twii_data['close']} vs 官方: {raw_close})，已自動採用官方最新盤後數據進行精準覆蓋！")
+                    twii_data['close'] = raw_close
+                    twii_data['pct_chg'] = pct_chg
+    except Exception as e_twii:
+        print(f"  ⚠️ TWSE 官方加權指數補償失敗 (將維持 yfinance 預設值): {e_twii}")
+
+    # 2. 補償櫃買指數 (^TWOII)
+    try:
+        print("🔍 正在透過 TPEx 官方 API 驗證櫃買指數精準度...")
+        res = _req.get("https://www.tpex.org.tw/web/stock/aftertrading/index_summary/summary_result.php?l=zh-tw&o=json", timeout=8)
+        if res.status_code == 200:
+            otc_data = res.json()
+            if 'tables' in otc_data and len(otc_data['tables']) > 0:
+                t0 = otc_data['tables'][0]
+                if 'data' in t0 and len(t0['data']) > 0:
+                    for row in t0['data']:
+                        if row[0] == '櫃買指數':
+                            # row: ['櫃買指數', '432.48', '-7.71', '-1.75', ...]
+                            raw_close = float(row[1].replace(',', ''))
+                            pct_chg = float(row[3].replace(',', ''))
+                            print(f"  TPEx 官方最新櫃買指數: {raw_close} (幅度: {pct_chg}%)")
+                            
+                            if twoii_data['close'] != raw_close:
+                                print(f"  ⚠️ 偵測到 yfinance 櫃買數據滯後 (yf: {twoii_data['close']} vs 官方: {raw_close})，已自動採用官方最新數據進行覆蓋！")
+                                twoii_data['close'] = raw_close
+                                twoii_data['pct_chg'] = pct_chg
+                            break
+    except Exception as e_otc:
+        print(f"  ⚠️ TPEx 官方櫃買指數補償失敗 (將維持 yfinance 預設值): {e_otc}")
+
+
     # 大盤量 > 20MA（用加權指數量，過濾 0 值）
     vol_above_20ma = None
     vol_level = '普通'
