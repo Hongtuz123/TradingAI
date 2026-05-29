@@ -98,57 +98,34 @@
       </div>
 
 
-      <!-- 統計卡片列 -->
-      <div class="stats-row">
-        <div class="stat-card" id="statTotal">
-          <div class="stat-icon">📊</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statTotalVal">0</div>
-            <div class="stat-label">篩選標的</div>
-          </div>
-        </div>
-        <div class="stat-card highlight" id="statWhitelist">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statWhitelistVal">0</div>
-            <div class="stat-label">白名單</div>
-          </div>
-        </div>
-
-        <div class="stat-card" id="statAvgScore">
-          <div class="stat-icon">🏆</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statAvgScoreVal">0</div>
-            <div class="stat-label">平均評分</div>
-          </div>
-        </div>
-        <div class="stat-card" id="statTypeA">
-          <div class="stat-icon">💥</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statTypeAVal">0</div>
-            <div class="stat-label">突破型</div>
-          </div>
-        </div>
-        <div class="stat-card" id="statTypeB">
-          <div class="stat-icon">📶</div>
-          <div class="stat-info">
-            <div class="stat-value" id="statTypeBVal">0</div>
-            <div class="stat-label">均線多頭</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 主體：白名單列表 -->
-      <div class="dash-main-layout">
-        <!-- 白名單列表 -->
-        <div class="dash-wl-panel">
+      <!-- ======================== 資金族群熱力圖與排行榜區塊 ======================== -->
+      <div class="market-flow-dashboard">
+        <!-- 左半邊：熱力圖 -->
+        <div class="flow-map-panel">
           <div class="panel-header">
-            <h3>🌟 白名單（點選跳轉 K 線圖）</h3>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button class="btn-link" onclick="switchView('whitelist')">全部 →</button>
+            <h3>🔥 資金族群熱力圖 <span style="font-size:12px;color:var(--text-muted);font-weight:normal;margin-left:8px;">TW-Stock Sector Flow Map</span></h3>
+            <div style="font-size: 11px; color: var(--text-muted);">
+              面積: 熱量比 (成交量/日均量) | 顏色: 漲跌幅
             </div>
           </div>
-          <div id="dashWlList"></div>
+          <div class="flow-map-container" id="sectorTreeMap">
+            <!-- 由 JS 動態繪製 Treemap -->
+          </div>
+        </div>
+
+        <!-- 右半邊：四大排行 -->
+        <div class="flow-rankings-panel">
+          <!-- 頂部切換 Tab -->
+          <div class="rankings-tabs">
+            <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
+            <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
+            <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
+            <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
+          </div>
+
+          <div class="rank-list-container" id="rankListContent">
+            <!-- 由 JS 動態填充 -->
+          </div>
         </div>
       </div>
     </section>

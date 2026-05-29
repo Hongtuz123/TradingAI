@@ -505,19 +505,13 @@ function runScreener() {
     showEmptyResultModal(p, currentResults.length);
   }
 
-  // 更新 Dashboard 統計
-  document.getElementById('statTotalVal').innerText = currentResults.length;
-  document.getElementById('statWhitelistVal').innerText = currentWhitelist.length;
-  document.getElementById('statTypeAVal').innerText = stats.A;
-  document.getElementById('statTypeBVal').innerText = stats.B;
-  
-  const avgScore = currentWhitelist.length > 0 ? (stats.totalScore / currentWhitelist.length).toFixed(1) : 0;
-  document.getElementById('statAvgScoreVal').innerText = avgScore;
-
   // 更新預覽區與清單
   renderScreenerTable(currentResults);
-  renderWhitelistPreview();
   renderWhitelistGrid();
+  
+  // 動態繪製熱力圖與強弱排行榜
+  renderSectorFlowMap();
+  renderRankings();
 }
 
 // 渲染篩選器表格
@@ -563,37 +557,247 @@ function renderScreenerTable(data) {
   });
 }
 
-function renderWhitelistPreview() {
-  // 同時更新儀表板內嵌列表
-  const container = document.getElementById('dashWlList');
+// 全域排行分頁狀態
+let currentRankTab = 'strong';
+
+// 核心股票之產業族群快速補償表 (當 mockStocks 內未特別定義時)
+const SECTOR_COMPENSATION = {
+  '2330': '半導體:晶圓代工',
+  '2303': '半導體:晶圓代工',
+  '6770': '半導體:晶圓代工',
+  '2408': '半導體:DRAM',
+  '2449': '半導體:封測',
+  '6239': '半導體:封測',
+  '3711': '半導體:封測',
+  '2317': 'AI產業鏈:伺服器組裝',
+  '2382': 'AI產業鏈:伺服器組裝',
+  '3231': 'AI產業鏈:伺服器組裝',
+  '6669': 'AI產業鏈:伺服器組裝',
+  '3017': '電源能源:散熱元件',
+  '6531': 'IC設計:ASIC關鍵',
+  '3443': 'IC設計:ASIC關鍵',
+  '2383': 'PCB:銅箔基板',
+  '2368': 'PCB:PCB硬板',
+  '3037': 'PCB:IC載板',
+  '2344': '半導體:DRAM',
+  '2308': '電源能源:電源管理',
+  '2337': '半導體:Flash',
+  '2324': '電腦週邊:系統整合',
+  '2474': '電腦週邊:機殼輕量',
+  '3481': '面板:LCD面板',
+  '2409': '面板:LCD面板',
+  '8043': '電子零件:綜合零件',
+  '5351': 'IC設計:記憶體IC',
+  '6182': '半導體:矽晶圓',
+  '4931': '電源能源:電源與散熱',
+  '6488': '半導體:矽晶圓'
+};
+
+// 取得股票所屬的產業族群
+function getStockSector(s) {
+  if (s.industry) return s.industry;
+  if (SECTOR_COMPENSATION[s.id]) return SECTOR_COMPENSATION[s.id];
+  return '其他板塊:一般傳統';
+}
+
+// 1. 繪製資金族群熱力圖 (TreeMap)
+function renderSectorFlowMap() {
+  const container = document.getElementById('sectorTreeMap');
   if (!container) return;
   container.innerHTML = '';
 
-  const sorted = [...currentWhitelist].sort((a, b) => b.dynamicScore - a.dynamicScore);
-  if (sorted.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted);padding:10px 0">無白名單標的，請先到篩選器執行篩選</p>';
-    return;
+  // 對 mockStocks 進行產業分組
+  const sectorGroups = {};
+  mockStocks.forEach(s => {
+    const sector = getStockSector(s);
+    if (!sectorGroups[sector]) {
+      sectorGroups[sector] = {
+        name: sector,
+        stocks: [],
+        totalVolRatio: 0,
+        avgChange: 0
+      };
+    }
+    sectorGroups[sector].stocks.push(s);
+    sectorGroups[sector].totalVolRatio += (s.volRatio || 1);
+  });
+
+  // 計算每個族群的平均值
+  const sectorsArray = Object.values(sectorGroups);
+  sectorsArray.forEach(g => {
+    const sumChange = g.stocks.reduce((sum, s) => sum + (s.change || 0), 0);
+    g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
+  });
+
+  // 排序：依據資金熱度 (總量能比) 降序排列，以填滿 Grid 排版
+  sectorsArray.sort((a, b) => b.totalVolRatio - a.totalVolRatio);
+
+  // 動態分配 CSS Grid 的 span 寬度 (總共 12 欄格柵)
+  const totalHeat = sectorsArray.reduce((sum, s) => sum + s.totalVolRatio, 0);
+  
+  sectorsArray.forEach((g, idx) => {
+    // 根據熱度占比分配 Grid Span (最大 span 6, 最小 span 2)
+    const ratio = g.totalVolRatio / totalHeat;
+    let span = 2;
+    if (ratio > 0.15) span = 6;
+    else if (ratio > 0.08) span = 4;
+    else if (ratio > 0.04) span = 3;
+
+    // 依漲跌幅決定背景配色
+    let colorClass = 'node-flat';
+    if (g.avgChange > 2.0) colorClass = 'node-up-heavy';
+    else if (g.avgChange > 0) colorClass = 'node-up-light';
+    else if (g.avgChange < -2.0) colorClass = 'node-down-heavy';
+    else if (g.avgChange < 0) colorClass = 'node-down-light';
+
+    const node = document.createElement('div');
+    node.className = `treemap-node ${colorClass}`;
+    node.style.gridColumn = `span ${span}`;
+    
+    // 主力飆股顯示
+    const leadStock = g.stocks.sort((a,b) => (b.volRatio||0) - (a.volRatio||0))[0];
+    const leadStockStr = leadStock ? `${leadStock.id} ${leadStock.name}` : '--';
+
+    node.innerHTML = `
+      <div class="treemap-node-header" title="${g.name}">
+        ${g.name.split(':')[1] || g.name}
+      </div>
+      <div class="treemap-node-body">
+        <div class="treemap-node-meta">
+          熱門: ${leadStockStr}<br>
+          家數: ${g.stocks.length}檔
+        </div>
+        <div class="treemap-node-change">
+          ${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%
+        </div>
+      </div>
+    `;
+
+    // 點擊熱力圖快速在篩選器中定位該族群的領頭羊
+    node.onclick = () => {
+      if (leadStock) {
+        openChart(leadStock.id);
+      }
+    };
+
+    container.appendChild(node);
+  });
+}
+
+// 2. 切換排行榜 Tab
+function switchRankTab(tabId) {
+  currentRankTab = tabId;
+  document.querySelectorAll('.rank-tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeBtn = document.querySelector(`.rank-tab-btn[onclick="switchRankTab('${tabId}')"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+  
+  renderRankings();
+}
+
+// 3. 渲染排行榜
+function renderRankings() {
+  const container = document.getElementById('rankListContent');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // 預先對 mockStocks 進行產業分組，提供族群強弱排行使用
+  const sectorGroups = {};
+  mockStocks.forEach(s => {
+    const sector = getStockSector(s);
+    if (!sectorGroups[sector]) {
+      sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0 };
+    }
+    sectorGroups[sector].stocks.push(s);
+    sectorGroups[sector].totalVol += (s.dailyVol || 0) * (s.price || 0); // 估算成交金額
+  });
+  
+  const sectorsArray = Object.values(sectorGroups);
+  sectorsArray.forEach(g => {
+    const sumChange = g.stocks.reduce((sum, s) => sum + (s.change || 0), 0);
+    g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
+  });
+
+  let listHTML = '';
+
+  if (currentRankTab === 'strong') {
+    // 強勢族群排行榜 (漲幅前 5)
+    const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, 5);
+    listHTML = sorted.map((g, idx) => {
+      const displayTitle = g.name.replace(':', ' ▸ ');
+      const val = (g.totalVol / 1e8).toFixed(1); // 億元
+      return `
+        <div class="rank-item-row" onclick="openChart('${g.stocks[0]?.id}')">
+          <div class="rank-number top${idx+1}">${idx+1}</div>
+          <div class="rank-info">
+            <div class="rank-title">${displayTitle}</div>
+            <div class="rank-desc">成分股: ${g.stocks.length}檔 | 估算資金: ${val}億</div>
+          </div>
+          <div class="rank-value text-up">+${g.avgChange.toFixed(2)}%</div>
+        </div>
+      `;
+    }).join('');
+
+  } else if (currentRankTab === 'weak') {
+    // 弱勢族群排行榜 (跌幅前 5)
+    const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, 5);
+    listHTML = sorted.map((g, idx) => {
+      const displayTitle = g.name.replace(':', ' ▸ ');
+      const val = (g.totalVol / 1e8).toFixed(1); // 億元
+      return `
+        <div class="rank-item-row" onclick="openChart('${g.stocks[0]?.id}')">
+          <div class="rank-number top${idx+1}">${idx+1}</div>
+          <div class="rank-info">
+            <div class="rank-title">${displayTitle}</div>
+            <div class="rank-desc">成分股: ${g.stocks.length}檔 | 估算資金: ${val}億</div>
+          </div>
+          <div class="rank-value text-down">${g.avgChange.toFixed(2)}%</div>
+        </div>
+      `;
+    }).join('');
+
+  } else if (currentRankTab === 'hot') {
+    // 熱門標的排行榜 (量能比 volRatio 排序前 5)
+    const sorted = [...mockStocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 5);
+    listHTML = sorted.map((s, idx) => {
+      const sector = getStockSector(s).split(':')[1] || '一般';
+      return `
+        <div class="rank-item-row" onclick="openChart('${s.id}')">
+          <div class="rank-number top${idx+1}">${idx+1}</div>
+          <div class="rank-info">
+            <div class="rank-title">${s.id} ${s.name}</div>
+            <div class="rank-desc">${sector} | 成交量: ${s.dailyVol?.toLocaleString() || '--'}張</div>
+          </div>
+          <div class="rank-value text-up" style="color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
+        </div>
+      `;
+    }).join('');
+
+  } else if (currentRankTab === 'inst') {
+    // 法人買超排行榜 (投信+外資買超張數加總排序前 5)
+    const sorted = [...mockStocks].sort((a, b) => {
+      const sumA = (a.trustDays || 0) + (a.foreignNetBuy || 0);
+      const sumB = (b.trustDays || 0) + (b.foreignNetBuy || 0);
+      return sumB - sumA;
+    }).slice(0, 5);
+    
+    listHTML = sorted.map((s, idx) => {
+      const sumBuy = (s.trustDays || 0) + (s.foreignNetBuy || 0);
+      return `
+        <div class="rank-item-row" onclick="openChart('${s.id}')">
+          <div class="rank-number top${idx+1}">${idx+1}</div>
+          <div class="rank-info">
+            <div class="rank-title">${s.id} ${s.name}</div>
+            <div class="rank-desc">外資: ${s.foreignNetBuy || 0}張 | 投信: ${s.trustDays || 0}張</div>
+          </div>
+          <div class="rank-value text-up">+${sumBuy.toLocaleString()}張</div>
+        </div>
+      `;
+    }).join('');
   }
 
-  sorted.forEach((s, idx) => {
-    const row = document.createElement('div');
-    row.className = 'dash-wl-row';
-    row.innerHTML = `
-      <div class="dash-wl-rank">${idx + 1}</div>
-      <div class="dash-wl-info">
-        <strong>${s.id} ${s.name}</strong>
-        <span style="margin-left:6px;">${getTechBadgesHTML(s.type)}</span>
-      </div>
-      <div class="dash-wl-price ${parseFloat(s.change) >= 0 ? 'text-up' : 'text-down'}">${s.price}</div>
-      <div class="dash-wl-score">${s.dynamicScore}<span style="font-size:10px;color:var(--text-muted)">/12</span></div>
-    `;
-    row.onclick = () => {
-      document.querySelectorAll('.dash-wl-row').forEach(r => r.classList.remove('selected'));
-      row.classList.add('selected');
-      openChart(s.id);
-    };
-    container.appendChild(row);
-  });
+  container.innerHTML = listHTML || '<p style="color:var(--text-muted);padding:10px;">查無排行資料</p>';
 }
 
 
