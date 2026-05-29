@@ -963,7 +963,11 @@ const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
         import subprocess as _sp
         _sp.run(['git', 'add', 'data.js'], check=True)
         _sp.run(['git', 'commit', '-m', f'data: 自動更新選股數據 {now_str}'], check=True)
-        # post-commit hook 會自動 push，這裡額外再 push 一次確保成功
+        
+        # 🚀 防禦機制：推送前先做 pull --rebase，並在衝突時優先使用我們本地新產出的 data.js，避免 rejected
+        print("🔄 正在拉取遠端最新狀態以防止 Git 衝突...")
+        _sp.run(['git', 'pull', '--rebase', '-X', 'ours', 'origin', 'main'], check=True)
+        
         _sp.run(['git', 'push', 'origin', 'main'], check=True)
         print("✅ data.js 已自動推送至 GitHub，Vercel 雲端網站將在約 30 秒內同步更新！")
     except Exception as git_err:
