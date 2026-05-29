@@ -845,7 +845,6 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 .sd-diag-content { font-size: 12px; color: var(--text-muted); line-height: 1.6; padding-left: 4px; }
 
 /* 進出場訊號 */
-.sd-signal { }
 
 /* 底部技術指標列 */
 .sd-indicators {
