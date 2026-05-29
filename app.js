@@ -847,8 +847,9 @@ function renderRankings() {
     listHTML = sorted.map((g, idx) => {
       const displayTitle = g.name.replace(':', ' ▸ ');
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
+      // 🚀 改為呼叫 openSectorDetailModal 彈出視窗呈現前 3~5 檔個股與產業簡介
       return `
-        <div class="rank-item-row" onclick="openChart('${g.stocks[0]?.id}')">
+        <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info">
             <div class="rank-title">${displayTitle}</div>
@@ -865,8 +866,9 @@ function renderRankings() {
     listHTML = sorted.map((g, idx) => {
       const displayTitle = g.name.replace(':', ' ▸ ');
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
+      // 🚀 改為呼叫 openSectorDetailModal 彈出視窗呈現前 3~5 檔個股與產業簡介
       return `
-        <div class="rank-item-row" onclick="openChart('${g.stocks[0]?.id}')">
+        <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info">
             <div class="rank-title">${displayTitle}</div>
