@@ -114,13 +114,20 @@
         </div>
 
         <!-- 右半邊：四大排行 -->
-        <div class="flow-rankings-panel">
-          <!-- 頂部切換 Tab -->
-          <div class="rankings-tabs">
-            <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
-            <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
-            <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
-            <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
+          <!-- 頂部切換 Tab 與顯示個數限制 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
+            <div class="rankings-tabs" style="flex:1; margin-bottom:0;">
+              <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
+              <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
+              <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
+              <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
+            </div>
+            <select id="rankLimitSelect" onchange="renderRankings()" style="background:var(--bg-card); color:white; border:1px solid var(--border-color); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; height:34px; cursor:pointer;">
+              <option value="5">前 5 名</option>
+              <option value="10" selected>前 10 名</option>
+              <option value="15">前 15 名</option>
+              <option value="20">前 20 名</option>
+            </select>
           </div>
 
           <div class="rank-list-container" id="rankListContent">

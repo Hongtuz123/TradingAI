@@ -707,23 +707,51 @@ def fetch_institutional_data():
 
 
 def run_screener():
-    print("讀取股票評估清單 CSV...")
+    print("載入 TWSE/TPEX OpenAPI 全市場資訊以計算合併市值前 500 大標的...")
+    all_market_info = load_all_market_info()
+    
+    # 智慧型動態資料源：優先讀取 CSV，若無則自動動態計算全台股「合併市值前 500 名」
     base_dir = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(base_dir, "股票分析清單.csv")
     csv_stocks = read_stock_list_from_csv(csv_path)
     
     if not csv_stocks:
-        print("⚠️ CSV 清單為空或讀取失敗，改用預設 WATCHLIST...")
-        csv_stocks = WATCHLIST
+        print("💡 未檢測到 CSV 檔，啟動「智慧大數據選股」：自動計算上市櫃合併市值前 500 大標的...")
+        # 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比、股本)
+        openapi_fund = fetch_openapi_fundamentals()
+        
+        # 結合 basic info 與股本計算市值
+        mkt_cap_list = []
+        for code, info in all_market_info.items():
+            # 過濾權證與非普通股 (代碼長度為 4 且為純數字)
+            if len(code) == 4 and code.isdigit():
+                # 取得股本 (以元為單位)
+                fund_data = openapi_fund.get(code, {})
+                capital = fund_data.get('capital')
+                
+                # 取得昨日收盤價
+                close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
+                
+                if capital and close_price:
+                    # 市值 = 股本 / 10 * 收盤價 (股本為元，面額10元，故除以10換算為股數)
+                    mkt_cap = (capital / 10) * close_price
+                    mkt_cap_list.append({
+                        'Code': code,
+                        'Name': info.get('Name') or info.get('CompanyName'),
+                        'mkt_cap': mkt_cap
+                    })
+        
+        # 依市值降序排列，取前 500 大
+        mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
+        csv_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:500]]
+        print(f"📊 成功篩選出合併市值前 500 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
         
     print("下載三大法人當日買賣超資料...")
     inst_data = fetch_institutional_data()
     
-    # 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比)
-    openapi_fund = fetch_openapi_fundamentals()
-        
-    print(f"載入 TWSE/TPEX OpenAPI 市場資訊...")
-    all_market_info = load_all_market_info()
+    # 批量抓取官方 OpenAPI 基本面數據 (如果上面沒抓過的話)
+    if 'openapi_fund' not in locals():
+        openapi_fund = fetch_openapi_fundamentals()
     
     # 建立 yfinance 代碼與股票資料對照表
     yf_to_stock = {}

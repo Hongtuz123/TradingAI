@@ -839,15 +839,18 @@ function renderRankings() {
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
+  // 讀取前台設定的限制個數，預設為 10
+  const limitSelect = document.getElementById('rankLimitSelect');
+  const limit = limitSelect ? parseInt(limitSelect.value) : 10;
+
   let listHTML = '';
 
   if (currentRankTab === 'strong') {
-    // 強勢族群排行榜 (漲幅前 5)
-    const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, 5);
+    // 強勢族群排行榜 (漲幅前 N 名)
+    const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
       const displayTitle = g.name.replace(':', ' ▸ ');
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
-      // 🚀 改為呼叫 openSectorDetailModal 彈出視窗呈現前 3~5 檔個股與產業簡介
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
@@ -861,12 +864,11 @@ function renderRankings() {
     }).join('');
 
   } else if (currentRankTab === 'weak') {
-    // 弱勢族群排行榜 (跌幅前 5)
-    const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, 5);
+    // 弱勢族群排行榜 (跌幅前 N 名)
+    const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
       const displayTitle = g.name.replace(':', ' ▸ ');
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
-      // 🚀 改為呼叫 openSectorDetailModal 彈出視窗呈現前 3~5 檔個股與產業簡介
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
@@ -880,8 +882,8 @@ function renderRankings() {
     }).join('');
 
   } else if (currentRankTab === 'hot') {
-    // 熱門標的排行榜 (量能比 volRatio 排序前 5)
-    const sorted = [...mockStocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 5);
+    // 熱門標的排行榜 (量能比 volRatio 排序前 N 名)
+    const sorted = [...mockStocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, limit);
     listHTML = sorted.map((s, idx) => {
       const sector = getStockSector(s).split(':')[1] || '一般';
       return `
@@ -897,12 +899,12 @@ function renderRankings() {
     }).join('');
 
   } else if (currentRankTab === 'inst') {
-    // 法人買超排行榜 (投信+外資買超張數加總排序前 5)
+    // 法人買超排行榜 (投信+外資買超張數加總排序前 N 名)
     const sorted = [...mockStocks].sort((a, b) => {
       const sumA = (a.trustDays || 0) + (a.foreignNetBuy || 0);
       const sumB = (b.trustDays || 0) + (b.foreignNetBuy || 0);
       return sumB - sumA;
-    }).slice(0, 5);
+    }).slice(0, limit);
     
     listHTML = sorted.map((s, idx) => {
       const sumBuy = (s.trustDays || 0) + (s.foreignNetBuy || 0);
