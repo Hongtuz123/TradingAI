@@ -560,45 +560,25 @@ function renderScreenerTable(data) {
 // 全域排行分頁狀態
 let currentRankTab = 'strong';
 
-// 核心股票之產業族群快速補償表 (當 mockStocks 內未特別定義時)
-const SECTOR_COMPENSATION = {
-  '2330': '半導體:晶圓代工',
-  '2303': '半導體:晶圓代工',
-  '6770': '半導體:晶圓代工',
-  '2408': '半導體:DRAM',
-  '2449': '半導體:封測',
-  '6239': '半導體:封測',
-  '3711': '半導體:封測',
-  '2317': 'AI產業鏈:伺服器組裝',
-  '2382': 'AI產業鏈:伺服器組裝',
-  '3231': 'AI產業鏈:伺服器組裝',
-  '6669': 'AI產業鏈:伺服器組裝',
-  '3017': '電源能源:散熱元件',
-  '6531': 'IC設計:ASIC關鍵',
-  '3443': 'IC設計:ASIC關鍵',
-  '2383': 'PCB:銅箔基板',
-  '2368': 'PCB:PCB硬板',
-  '3037': 'PCB:IC載板',
-  '2344': '半導體:DRAM',
-  '2308': '電源能源:電源管理',
-  '2337': '半導體:Flash',
-  '2324': '電腦週邊:系統整合',
-  '2474': '電腦週邊:機殼輕量',
-  '3481': '面板:LCD面板',
-  '2409': '面板:LCD面板',
-  '8043': '電子零件:綜合零件',
-  '5351': 'IC設計:記憶體IC',
-  '6182': '半導體:矽晶圓',
-  '4931': '電源能源:電源與散熱',
-  '6488': '半導體:矽晶圓'
+// 核心產業族群產業簡介資料庫
+const SECTOR_DESCRIPTIONS = {
+  '半導體:晶圓代工': '晶圓代工是半導體產業鏈的核心，將晶片設計公司的線路設計實體化為晶圓晶片。台積電為全球領頭羊，擁有最先進的奈米製程與極高的市佔率，是台股最重要的資金避風港。',
+  'AI產業鏈:伺服器組裝': '隨AI運算爆發，高階AI晶片（如NVIDIA）需要高精度的伺服器組裝、高散熱規格與電源配置。台股廠商在此板塊具備全球獨佔性組裝優勢，是市場投機與波段主力資金的最愛。',
+  '電源能源:散熱元件': 'AI高階晶片功耗（TDP）極高，傳統氣冷散熱已達瓶頸，液冷散熱、熱導管與 3D VC 散熱元件需求爆發性成長。奇鋐、雙鴻等為此領域核心先驅。',
+  'IC設計:ASIC關鍵': 'ASIC（客製化IC）與IP授權能協助雲端大廠（如Google、Amazon）設計自主晶片，擁有極高毛利率與技術壁壘。愛普*與創意等在此板塊扮演關鍵智財角色。',
+  'PCB:銅箔基板': '銅箔基板 (CCL) 是印刷電路板 (PCB) 最核心之基礎材料。AI伺服器需要極高層數與低損耗的高階板材，推動相關大廠營收高成長。',
+  'PCB:PCB硬板': '印刷電路板 (PCB) 被譽為「電子工業之母」，負責承載所有關鍵電子元件。台廠產值世界第一，AI與車用板材是高毛利的驅動力。',
+  'PCB:IC載板': 'IC載板是高階晶片封裝（如 CoWoS）不可或缺的基板，連接晶片與 PCB 主機板。欣興、景碩、南電等大廠產能為全球核心。',
+  '半導體:DRAM': '記憶體是電子系統的三大核心晶片之一，DRAM 負責暫存高速運行資料。隨AI PC與AI手機導入，高頻寬記憶體 (HBM) 與高階 DDR5 需求強勁。',
+  '電源能源:電源管理': '高效能運算需要高功率、低損耗的關鍵電源管理系統與變壓模組。台達電在此領域擁有世界級的專利與市佔領先優勢。',
+  '半導體:Flash': '快閃記憶體負責非易失性資料儲存，應用廣泛涵蓋伺服器 SSD、車用與消費性電子，與全球景氣循環高度連動。',
+  '電腦週邊:系統整合': '結合雲端、資安與硬體規劃，協助企業或大型政府機構進行智慧化與數位轉型，營收表現相對穩健。',
+  '電腦週邊:機殼輕量': '高階伺服器與AI系統的機殼設計要求高剛性、防干擾與輕量化，精準機殼工藝是台廠的一大技術優勢。',
+  '面板:LCD面板': '負責顯示器製造，包含車用面板、電競顯示與大尺寸電視。產業歷經長期產能整併後，現正朝高附加價值的 MiniLED/MicroLED 轉型。',
+  '電子零件:綜合零件': '涵蓋各式主被動元件、連接器、石英元件等電子基石，是台股最龐大且高週轉率的中小型股板塊。',
+  '半導體:矽晶圓': '矽晶圓是所有半導體製造最基礎、最底層的原料，純度要求高達 99.999999999%，環球晶等為世界頂尖大廠。',
+  '其他板塊:一般傳統': '涵蓋鋼鐵、塑化、航運、營建與金融等傳統產業，主要受全球報價、原物料循環或央行利差影響。'
 };
-
-// 取得股票所屬的產業族群
-function getStockSector(s) {
-  if (s.industry) return s.industry;
-  if (SECTOR_COMPENSATION[s.id]) return SECTOR_COMPENSATION[s.id];
-  return '其他板塊:一般傳統';
-}
 
 // 1. 繪製資金族群熱力圖 (TreeMap)
 function renderSectorFlowMap() {
@@ -636,7 +616,6 @@ function renderSectorFlowMap() {
   const totalHeat = sectorsArray.reduce((sum, s) => sum + s.totalVolRatio, 0);
   
   sectorsArray.forEach((g, idx) => {
-    // 根據熱度占比分配 Grid Span (最大 span 6, 最小 span 2)
     const ratio = g.totalVolRatio / totalHeat;
     let span = 2;
     if (ratio > 0.15) span = 6;
@@ -664,7 +643,7 @@ function renderSectorFlowMap() {
       </div>
       <div class="treemap-node-body">
         <div class="treemap-node-meta">
-          熱門: ${leadStockStr}<br>
+          領頭: ${leadStockStr}<br>
           家數: ${g.stocks.length}檔
         </div>
         <div class="treemap-node-change">
@@ -673,15 +652,109 @@ function renderSectorFlowMap() {
       </div>
     `;
 
-    // 點擊熱力圖快速在篩選器中定位該族群的領頭羊
+    // 🚀 重構：點擊熱力圖後彈出該族群內前 3~5 檔成分股的清單面板
     node.onclick = () => {
-      if (leadStock) {
-        openChart(leadStock.id);
-      }
+      openSectorDetailModal(g.name, g.stocks, g.avgChange);
     };
 
     container.appendChild(node);
   });
+}
+
+// 彈出產業詳細成分股及產業簡介之 Modal
+function openSectorDetailModal(sectorName, stocks, avgChange) {
+  const box = document.getElementById('modalContent');
+  if (!box) return;
+
+  // 排序選出最核心/量比最大的前 5 支成分股
+  const topStocks = [...stocks]
+    .sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0))
+    .slice(0, 5);
+
+  const sectorDesc = SECTOR_DESCRIPTIONS[sectorName] || '台灣重要科技/傳統核心發展板塊，在產業供應鏈中扮演不可或缺的支援地位。';
+  const displayTitle = sectorName.replace(':', ' ▸ ');
+
+  // 產生個股清單 HTML
+  const stocksHTML = topStocks.map(s => {
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" 
+           onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='rgba(59, 130, 246, 0.3)';" 
+           onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.borderColor='rgba(255,255,255,0.05)';"
+           onclick="showStockSectorIntro('${s.id}', '${s.name}', '${sectorName}', decodeURIComponent('${encodeURIComponent(sectorDesc)}'))">
+        <div>
+          <strong style="font-size:14px; color: var(--text-main);">${s.id} ${s.name}</strong>
+          <span class="badge" style="font-size: 10px; margin-left: 6px;">量比: ${s.volRatio?.toFixed(1) || '1.0'}x</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-weight: 700;" class="${s.change >= 0 ? 'text-up' : 'text-down'}">${s.price} (${s.change >= 0 ? '+' : ''}${s.change}%)</span>
+          <button class="btn-primary" style="padding: 2px 8px; font-size:11px; height:24px;" onclick="event.stopPropagation(); closeModal(); openChart('${s.id}')">K線回測 📈</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  box.innerHTML = `
+    <div style="margin-bottom:15px;">
+      <h2 style="color: var(--primary); margin-bottom: 6px; font-size: 18px;">🌱 ${displayTitle}</h2>
+      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        族群今日平均漲跌幅：<span class="${avgChange >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${avgChange >= 0 ? '+' : ''}${avgChange.toFixed(2)}%</span>
+      </div>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 15px;">
+      
+      <div style="background: rgba(30, 41, 59, 0.6); padding: 12px 16px; border-radius: 8px; border: 1.5px dashed rgba(245, 158, 11, 0.3); margin-bottom: 16px;">
+        <h4 style="color: var(--warning); margin-bottom: 4px; font-size: 13px;">💡 產業簡介</h4>
+        <p style="color: var(--text-main); font-size: 13px; line-height: 1.6; text-align: justify; margin: 0;">
+          ${sectorDesc}
+        </p>
+      </div>
+
+      <h4 style="color: var(--success); margin-bottom: 8px; font-size: 13px;">🎯 核心領頭成分股 (點擊看個股與產業連動)：</h4>
+      <div style="max-height: 220px; overflow-y: auto; padding-right: 4px;">
+        ${stocksHTML}
+      </div>
+
+      <div style="text-align: right; margin-top: 15px;">
+        <button class="btn-secondary" onclick="closeModal()" style="padding: 4px 16px; font-size: 12px;">關閉</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('stockModal').classList.add('active');
+}
+
+// 點擊個股後，呈現該個股的專屬產業簡介與策略連動
+function showStockSectorIntro(stockId, stockName, sectorName, sectorDesc) {
+  const box = document.getElementById('modalContent');
+  if (!box) return;
+
+  box.innerHTML = `
+    <div style="margin-bottom:15px;">
+      <h2 style="color: var(--primary); margin-bottom: 4px; font-size: 18px;">🔍 標的產業簡介：${stockId} ${stockName}</h2>
+      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+        細分所屬板塊：<span style="color: var(--text-main); font-weight:700;">${sectorName.replace(':', ' ▸ ')}</span>
+      </div>
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 15px;">
+      
+      <div style="margin-bottom: 18px;">
+        <h4 style="color: var(--warning); margin-bottom: 6px; font-size: 13px;">🌱 所屬產業描述</h4>
+        <p style="color: var(--text-main); font-size: 13px; line-height: 1.6; text-align: justify;">
+          ${sectorDesc}
+        </p>
+      </div>
+
+      <div style="margin-bottom: 20px; background: rgba(16, 185, 129, 0.08); padding: 12px; border-radius: 8px; border-left: 4px solid var(--success);">
+        <h4 style="color: var(--success); margin-bottom: 4px; font-size: 13px;">⚡ 個股與產業連動關係</h4>
+        <p style="color: var(--text-main); font-size: 12.5px; line-height: 1.5; margin: 0;">
+          當 <b>${sectorName.split(':')[1] || sectorName}</b> 族群啟動且整體平均量比大於 1.5 倍時，<b>${stockName}</b> 作為板塊主力，極易吸引投信與主力隔日沖資金進駐，進而產生突破型 (Type A) 或均線多頭 (Type B) 的技術面黃金買點！
+        </p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+        <button class="btn-secondary" onclick="closeModal()" style="padding: 4px 16px; font-size: 12px;">關閉</button>
+        <button class="btn-primary" style="padding: 4px 20px; font-size: 12px;" onclick="closeModal(); openChart('${stockId}')">策略 K 線回測 📈</button>
+      </div>
+    </div>
+  `;
 }
 
 // 2. 切換排行榜 Tab
