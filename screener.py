@@ -710,41 +710,51 @@ def run_screener():
     print("載入 TWSE/TPEX OpenAPI 全市場資訊以計算合併市值前 500 大標的...")
     all_market_info = load_all_market_info()
     
-    # 智慧型動態資料源：優先讀取 CSV，若無則自動動態計算全台股「合併市值前 500 名」
+    # 1. 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比、股本)
+    openapi_fund = fetch_openapi_fundamentals()
+    
+    # 2. 計算全台股「合併市值前 500 名」
+    mkt_cap_list = []
+    for code, info in all_market_info.items():
+        # 過濾權證與非普通股 (代碼長度為 4 或 5 且開頭為數字，容納 0050 等)
+        if (len(code) == 4 or len(code) == 5) and code.isdigit():
+            # 取得股本 (以元為單位)
+            fund_data = openapi_fund.get(code, {})
+            capital = fund_data.get('capital')
+            
+            # 取得昨日收盤價
+            close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
+            
+            if capital and close_price:
+                # 市值 = 股本 / 10 * 收盤價 (股本為元，面額10元，故除以10換算為股數)
+                mkt_cap = (capital / 10) * close_price
+                mkt_cap_list.append({
+                    'Code': code,
+                    'Name': info.get('Name') or info.get('CompanyName'),
+                    'mkt_cap': mkt_cap
+                })
+    
+    # 依市值降序排列，取前 500 大
+    mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
+    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:500]]
+    print(f"📊 成功篩選出合併市值前 500 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
+    
+    # 3. 讀取 CSV 作為自選觀察清單與前 500 大合併去重
     base_dir = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(base_dir, "股票分析清單.csv")
     csv_stocks = read_stock_list_from_csv(csv_path)
     
-    if not csv_stocks:
-        print("💡 未檢測到 CSV 檔，啟動「智慧大數據選股」：自動計算上市櫃合併市值前 500 大標的...")
-        # 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比、股本)
-        openapi_fund = fetch_openapi_fundamentals()
-        
-        # 結合 basic info 與股本計算市值
-        mkt_cap_list = []
-        for code, info in all_market_info.items():
-            # 過濾權證與非普通股 (代碼長度為 4 且為純數字)
-            if len(code) == 4 and code.isdigit():
-                # 取得股本 (以元為單位)
-                fund_data = openapi_fund.get(code, {})
-                capital = fund_data.get('capital')
-                
-                # 取得昨日收盤價
-                close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
-                
-                if capital and close_price:
-                    # 市值 = 股本 / 10 * 收盤價 (股本為元，面額10元，故除以10換算為股數)
-                    mkt_cap = (capital / 10) * close_price
-                    mkt_cap_list.append({
-                        'Code': code,
-                        'Name': info.get('Name') or info.get('CompanyName'),
-                        'mkt_cap': mkt_cap
-                    })
-        
-        # 依市值降序排列，取前 500 大
-        mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
-        csv_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:500]]
-        print(f"📊 成功篩選出合併市值前 500 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
+    # 合併去重邏輯
+    final_stocks_map = {item['Code']: item for item in top_500_stocks}
+    added_count = 0
+    for s in csv_stocks:
+        code = s['Code']
+        if code not in final_stocks_map:
+            final_stocks_map[code] = s
+            added_count += 1
+            
+    csv_stocks = list(final_stocks_map.values())
+    print(f"🔗 合併完成！前 500 大股票加上 CSV 專屬自選股，共計分析 {len(csv_stocks)} 檔標的 (額外疊加自選: {added_count} 檔)！")
         
     print("下載三大法人當日買賣超資料...")
     inst_data = fetch_institutional_data()
