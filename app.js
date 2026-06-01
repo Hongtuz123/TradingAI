@@ -689,8 +689,8 @@ function renderSectorFlowMap() {
     node.className = `treemap-node ${colorClass}`;
     node.style.gridColumn = `span ${span}`;
     
-    // 主力飆股顯示
-    const leadStock = g.stocks.sort((a,b) => (b.volRatio||0) - (a.volRatio||0))[0];
+    // 主力飆股顯示 (使用展開運算子保護原始 stocks 數組，防止 in-place sort 污染原資料結構導致點擊彈窗個股順序錯亂)
+    const leadStock = [...g.stocks].sort((a,b) => (b.volRatio||0) - (a.volRatio||0))[0];
     const leadStockStr = leadStock ? `${leadStock.id} ${leadStock.name}` : '--';
 
     node.innerHTML = `
