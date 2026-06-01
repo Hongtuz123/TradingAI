@@ -1342,7 +1342,7 @@ function updateSortIcons() {
 }
 
 function exportWhitelist() {
-  if (currentWhitelist.length === 0) { alert('白名單為空，請先執行篩選'); return; }
+  if (currentWhitelist.length === 0) { alert('基本面推薦清單為空，請先執行篩選'); return; }
   const headers = ['代號','名稱','市場','收盤','漲跌%','技術類型','評分','EPS YoY%','營收 YoY%','ROE%','量比','距52W高%','20MA走升'];
   const rows = currentWhitelist.map(s => [
     s.id, s.name, s.market, s.price, s.change,
@@ -1356,7 +1356,7 @@ function exportWhitelist() {
   a.href = url;
   const now = new Date();
   const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  a.download = `荳荳白名單_${ts}.csv`;
+  a.download = `荳荳基本面推薦清單_${ts}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -1421,7 +1421,7 @@ function showEmptyResultModal(p, passedCount) {
   box.innerHTML = `
     <div style="text-align:center; margin-bottom:20px;">
       <div style="font-size:48px; margin-bottom:8px;">🔍</div>
-      <h2 style="margin-bottom:4px;">白名單 0 檔</h2>
+      <h2 style="margin-bottom:4px;">推薦清單 0 檔</h2>
       <p style="color:var(--text-muted);">
         共 ${total} 檔標的中，有 ${passedCount} 檔通過基礎篩選，<br>但無任何標的達到最低評分 ${p.minScore} 分
       </p>
