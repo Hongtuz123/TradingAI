@@ -1668,12 +1668,13 @@ function compileShibaData() {
   // 1. 計算今日所有板塊/細分族群的平均漲跌幅
   const sectorGroups = {};
   mockStocks.forEach(s => {
-    // 取得產業分類
-    let sector = '一般產業:其他';
+    // 取得產業分類 (直接提取細分類主鍵如 水泥、食品、IC設計)
+    let sector = '其他';
     if (typeof getStockSector === 'function') {
-      sector = getStockSector(s);
+      const full = getStockSector(s);
+      sector = full.split(':')[1] || full;
     } else if (s.industry) {
-      sector = `一般板塊:${s.industry}`;
+      sector = s.industry.replace('業', '');
     }
 
     if (!sectorGroups[sector]) {

@@ -819,7 +819,8 @@ function renderSectorFlowMap() {
   // 對 mockStocks 進行產業分組
   const sectorGroups = {};
   mockStocks.forEach(s => {
-    const sector = getStockSector(s);
+    const fullSector = getStockSector(s);
+    const sector = fullSector.split(':')[1] || fullSector; // 直接使用細分類作為分組主鍵，例如 水泥、食品、塑膠
     if (!sectorGroups[sector]) {
       sectorGroups[sector] = {
         name: sector,
