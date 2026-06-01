@@ -103,6 +103,8 @@ function switchView(viewId) {
         setTimeout(() => loadTVChart(defaultStock), 100);
       }
     }
+  } else if (viewId === 'portfolio') {
+    renderPortfolioGrid();
   }
 }
 
@@ -541,7 +543,14 @@ function renderScreenerTable(data) {
       <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
       <td>${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</td>
       <td>${s.volRatio}x</td>
-      <td><button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">回測</button></td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">回測</button>
+          <button class="btn-link" style="color:var(--warning);" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')">
+            ${isStockInPortfolio(s.id) ? '★ 已自選' : '☆ 自選'}
+          </button>
+        </div>
+      </td>
     `;
     
     // 點擊顯示未達標項目
@@ -1303,4 +1312,200 @@ function openIndexIntroModal(label) {
 
   document.getElementById('stockModal').classList.add('active');
 }
+
+// ======================== ⭐ 自選清單管理與卡片繪製邏輯 ========================
+
+// 初始化自選清單 (從 localStorage 讀取以永久保存)
+let userPortfolio = JSON.parse(localStorage.getItem('trading_ai_portfolio')) || ['2330', '2317', '2382']; // 預設提供熱門股範例以防空白
+
+// 判斷股票是否已加入自選
+window.isStockInPortfolio = function(symbolId) {
+  return userPortfolio.includes(symbolId);
+};
+
+// 切換自選狀態 (增 / 刪)
+window.toggleStockPortfolio = function(symbolId) {
+  const idx = userPortfolio.indexOf(symbolId);
+  if (idx > -1) {
+    userPortfolio.splice(idx, 1);
+  } else {
+    userPortfolio.push(symbolId);
+  }
+  localStorage.setItem('trading_ai_portfolio', JSON.stringify(userPortfolio));
+  
+  // 即時更新各視圖的自選按鈕狀態
+  if (typeof currentResults !== 'undefined') renderScreenerTable(currentResults);
+  renderPortfolioGrid();
+  updateChartPortfolioButton();
+};
+
+// 針對 K 線圖當前標的進行自選切換
+window.toggleCurrentStockPortfolio = function() {
+  if (typeof currentChartSymbol !== 'undefined' && currentChartSymbol) {
+    toggleStockPortfolio(currentChartSymbol);
+  } else {
+    alert('請先在圖表載入股票喔！🐾');
+  }
+};
+
+// 動態更新 K 線圖「自選此股」按鈕之文字樣式
+function updateChartPortfolioButton() {
+  const btn = document.getElementById('btn-chart-add-portfolio');
+  if (!btn || typeof currentChartSymbol === 'undefined' || !currentChartSymbol) return;
+
+  if (isStockInPortfolio(currentChartSymbol)) {
+    btn.innerHTML = '<span>★ 已在自選</span>';
+    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    btn.style.boxShadow = '0 0 10px rgba(16,185,129,0.35)';
+  } else {
+    btn.innerHTML = '<span>☆ 自選此股</span>';
+    btn.style.background = 'linear-gradient(135deg, #f59e0b, #eab308)';
+    btn.style.boxShadow = '0 0 10px rgba(245,158,11,0.35)';
+  }
+}
+
+// 監聽原載入 K 線方法 loadTVChart，在載入時同步刷新自選按鈕狀態
+const originalLoadTVChart = window.loadTVChart;
+window.loadTVChart = function(s) {
+  if (typeof originalLoadTVChart === 'function') {
+    originalLoadTVChart(s);
+  }
+  updateChartPortfolioButton();
+};
+
+// 繪製自選清單卡片格 ( portfolio-grid )
+window.renderPortfolioGrid = function() {
+  const grid = document.getElementById('portfolioGrid');
+  if (!grid) return;
+
+  if (userPortfolio.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-row" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted); background: rgba(30,41,59,0.3); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+        <div style="font-size: 48px; margin-bottom: 12px;">⭐</div>
+        <p style="font-size: 15px; font-weight: 600; color: white;">目前自選清單空空如也汪！</p>
+        <p style="font-size: 12px; margin-top: 6px;">請前往【篩選器結果】或【K線回測功能】將優質飆股加入自選追蹤唷！🐶</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = '';
+
+  userPortfolio.forEach((symbolId, index) => {
+    const s = mockStocks.find(item => item.id === symbolId);
+    if (!s) return;
+
+    // 計算連續日數 (D) 籌碼累計數據
+    // 因為靜態模擬庫數據限制，我們根據個股籌碼基準，動態微調生成高擬真 5D、3D、20D 籌碼累計，並與 data.js 保持一致
+    const fNet = s.foreignNetBuy || 0;
+    const tDays = s.trustDays || 0;
+
+    // 外資 5D 籌碼累計量
+    const f5D = fNet * 5 + (s.id.charCodeAt(0) % 7 - 3) * 1500;
+    // 投信 5D 籌碼累計量
+    const t5D = tDays > 0 ? (tDays * 5 + 4) * 850 : -3500;
+    // 自營 5D 籌碼累計量
+    const d5D = (s.dealerDays || 0) * 5 + (s.id.charCodeAt(1) % 5 - 2) * 450;
+    // 法人 5D 籌碼累計 (外資+投信+自營)
+    const inst5D = f5D + t5D + d5D;
+    // 投信 3D 籌碼累計量
+    const t3D = tDays > 0 ? (tDays * 3 + 2) * 910 : -2100;
+    // 前 20D 籌碼累計量
+    const total20D = inst5D * 4 + (s.id.charCodeAt(2) % 9 - 4) * 3500;
+
+    // 計算成交金額：現價 * 成交量 (台股通常 1張 = 1000股)
+    const dailyVol = s.dailyVol || 8500;
+    const volMoneyInBillion = ((s.price * dailyVol * 1000) / 100000000).toFixed(1);
+
+    // 格式化數字
+    function fmtVal(v, suffix = '張') {
+      const sign = v >= 0 ? '+' : '';
+      const color = v >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+      return `<strong style="color:${color}; font-size:16px;">${sign}${v.toLocaleString()}</strong> <span style="font-size:11px; color:var(--text-muted);">${suffix}</span>`;
+    }
+
+    // 取得產業細分
+    const sectorStr = getStockSector(s);
+    const mainSector = sectorStr.split(':')[0];
+    const subSector = sectorStr.split(':')[1] || sectorStr;
+
+    // 卡片卡號 (01, 02...)
+    const cardNum = String(index + 1).padStart(2, '0');
+
+    grid.innerHTML += `
+      <div class="portfolio-card" style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px; border-left: 4px solid var(--primary); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        
+        <!-- 卡片頭部：股號、股名、產業 -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background:var(--primary); color:white; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">${cardNum}</div>
+            <div>
+              <span style="font-size:18px; font-weight:800; color:white;">${s.id} ${s.name}</span>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">上市 • ${mainSector} ➔ ${subSector}</div>
+            </div>
+          </div>
+          <button class="shiba-chat-close" style="padding: 2px;" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')" title="移出自選">✕</button>
+        </div>
+
+        <!-- 價格與漲幅 -->
+        <div style="display:flex; align-items:baseline; gap:8px; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 8px;">
+          <strong style="font-size:28px; font-weight:900; color:white; font-family:'Inter';">${s.price}</strong>
+          <span class="${s.change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:800;">
+            ${s.change >= 0 ? '+' : ''}${s.change}%
+          </span>
+          <span style="font-size:12px; color:var(--text-muted);">
+            ↑ ${(s.price * (s.change / 100)).toFixed(2)} / 5D +${(s.change * 1.8).toFixed(2)}%
+          </span>
+          ${s.change >= 9.8 ? `<span class="badge danger" style="font-size:10px; padding:1px 4px; margin-left:auto;">漲停板</span>` : ''}
+        </div>
+
+        <!-- 買賣盤籌碼表格 (連續日數 D) -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow:hidden;">
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">外資 5D</div>
+            <div>${fmtVal(f5D)}</div>
+          </div>
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">投信 5D</div>
+            <div>${fmtVal(t5D)}</div>
+          </div>
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">自營 5D</div>
+            <div>${fmtVal(d5D)}</div>
+          </div>
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">法人 5D</div>
+            <div>${fmtVal(inst5D)}</div>
+          </div>
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">投信 3D</div>
+            <div>${fmtVal(t3D)}</div>
+          </div>
+          <div style="background:var(--bg-panel); padding: 8px 12px;">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">前 20D</div>
+            <div>${fmtVal(total20D)}</div>
+          </div>
+        </div>
+
+        <!-- 卡片底部：成交張數與成交金額 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); margin-top:2px;">
+          <div>成交 <strong>${dailyVol.toLocaleString()}</strong> 張 / <strong>${volMoneyInBillion}</strong> 億</div>
+          <div style="color:var(--primary); font-weight:700;">5 / 5 天買盤 🐾</div>
+        </div>
+
+        <!-- 卡片動作按鈕 -->
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button class="btn-primary" style="flex:1; font-size:11px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; gap:4px; font-weight:700;" onclick="closeModal(); openChart('${s.id}')">
+            📈 進入K線策略回測 →
+          </button>
+        </div>
+      </div>
+    `;
+  });
+};
+
+// 頁面初始化掛載自選渲染
+document.addEventListener('DOMContentLoaded', () => {
+  renderPortfolioGrid();
+});
 
