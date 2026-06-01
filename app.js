@@ -1023,7 +1023,7 @@ function renderRankings() {
       sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0 };
     }
     sectorGroups[sector].stocks.push(s);
-    sectorGroups[sector].totalVol += (s.dailyVol || 0) * (s.price || 0); // 估算成交金額
+    sectorGroups[sector].totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0); // 估算成交金額（張×1000股×元）
   });
   
   const sectorsArray = Object.values(sectorGroups);
