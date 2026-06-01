@@ -1579,7 +1579,55 @@ window.sendShibaMessage = function() {
     const query = val.toLowerCase();
     let botReply = '';
 
-    if (query.includes('漲幅') || query.includes('類股') || query.includes('強勢') || query.includes('板塊') || query.includes('推薦') || query.includes('好股') || query.includes('飆股')) {
+    // 解析出使用者詢問的「漲幅百分比限制」 (例如: "不到 5%"、"小於 3%")
+    let pctLimit = 5.0; // 預設 5%
+    const pctMatch = query.match(/(?:不到|低於|小於|不滿|低於|在|以內)\s*([0-9.]+)\s*%/);
+    if (pctMatch && pctMatch[1]) {
+      pctLimit = parseFloat(pctMatch[1]);
+    }
+
+    if (query.includes('限價') || query.includes('上漲不到') || query.includes('不到') || query.includes('小於') || query.includes('優質') || query.includes('推薦') && query.includes('%')) {
+      // 智慧篩選：篩選出今日漲幅 > 0 且 < pctLimit，並且具備優質技術形態或法人同買指標的「優質股票」
+      // 優質定義：maBull為true (多頭排列) 或是 foreignBuy為true，且成交量大於1000張，或評分優良的股票
+      const highQualityStocks = mockStocks.filter(s => {
+        const change = parseFloat(s.change || 0);
+        const dailyVol = parseInt(s.dailyVol || 0);
+        const isBull = s.maBull === true || s.foreignBuy === true;
+        return change >= 0 && change < pctLimit && dailyVol > 800 && isBull;
+      });
+
+      // 排序：以法人買超力道或技術型態多空評分排序，選出前 5 支
+      highQualityStocks.sort((a, b) => {
+        const scoreA = (a.foreignNetBuy || 0) + (a.trustDays || 0) * 10;
+        const scoreB = (b.foreignNetBuy || 0) + (b.trustDays || 0) * 10;
+        return scoreB - scoreA;
+      });
+
+      const selected = highQualityStocks.slice(0, 5);
+
+      if (selected.length === 0) {
+        botReply = `汪嗚！荳荳在全台股前 500 大中，暫時沒有刨到今日漲幅在 <b>0% ~ ${pctLimit}%</b> 之間、且符合多頭型態的優質標的耶！🐾<br>要不要稍微放寬一下漲幅限制，或是荳荳幫您改找其他爆量突破股汪？🐶` + disclaimer;
+      } else {
+        const listStr = selected.map((s, idx) => {
+          let reason = '';
+          if (s.maBull && s.foreignBuy) reason = '🔥 多頭排列+外資同買';
+          else if (s.maBull) reason = '📈 技術面均線多頭排列';
+          else if (s.foreignBuy) reason = '💼 外資主力悄悄吃貨';
+          else reason = '⚡ 量增強勢整理中';
+
+          return `${idx + 1}. <b>${s.id} ${s.name}</b><br>` +
+                 `   • 今日漲幅：<span style="color:var(--up-color); font-weight:700;">+${s.change}%</span> (上漲不到 ${pctLimit}%)<br>` +
+                 `   • 昨收/現價：$${s.price} | 量能：${(s.dailyVol || 0).toLocaleString()}張<br>` +
+                 `   • 荳荳診斷：${reason} 汪！🐶`;
+        }).join('<br><br>');
+
+        botReply = `汪！荳荳出動小短腿幫拔麻把數據刨出來囉！🐾<br>
+目前系統內上漲不到 <b>${pctLimit}%</b> 且型態優良、具備法人或技術面優勢的 5 支精選標的如下：<br><br>
+${listStr}<br><br>
+限價與多頭格局代表下檔支撐強勁，拔麻可以點擊 K 線頁面，守好趨勢突破防守點進行回測汪！🐶` + disclaimer;
+      }
+    }
+    else if (query.includes('漲幅') || query.includes('類股') || query.includes('強勢') || query.includes('板塊') || query.includes('推薦') || query.includes('好股') || query.includes('飆股')) {
       const topSect = data.sectors[0];
       const secondSect = data.sectors[1];
       const topStocksStr = topSect.stocks.slice(0, 4).map(s => `• <b>${s.id} ${s.name}</b> (漲幅 ${s.change >= 0 ? '+' : ''}${s.change}%, 現價 $${s.price})`).join('<br>');
