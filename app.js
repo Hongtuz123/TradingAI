@@ -423,7 +423,16 @@ function isMarketActive() {
 // 獲取盤中即時模擬波動之價格與漲跌幅 (輔助盤中參考)
 window.getLiveStockData = function(s) {
   if (!isMarketActive()) {
-    return { price: s.price, change: s.change };
+    // 關盤後：使用該股最後一天 K 線與前一天的收盤價計算出精準的昨收價格與昨收漲跌幅
+    if (s.kline && s.kline.length >= 2) {
+      const lastCandle = s.kline[s.kline.length - 1];
+      const prevCandle = s.kline[s.kline.length - 2];
+      const price = parseFloat(lastCandle.close);
+      const prevPrice = parseFloat(prevCandle.close);
+      const change = prevPrice > 0 ? ((price - prevPrice) / prevPrice * 100) : 0;
+      return { price: price, change: parseFloat(change.toFixed(2)) };
+    }
+    return { price: s.price || 0, change: s.change || 0 };
   }
   
   // 盤中即時狀態：依據隨機數做非常微幅的實時隨機波動 (波動率為 0.05% 至 0.2%)
@@ -609,97 +618,95 @@ let currentRankTab = 'strong';
 
 // 核心股票之「產業 > 族群」三層高精細分類補償表 (參照 CMoney 股市爆料同學會 category 產業分類大綱與細分標準)
 const SECTOR_COMPENSATION = {
-  // 格式: [股票代號]: "大產業:細分族群"
-  '2330': '半導體:AI/CoWoS先進封裝',
-  '2303': '半導體:成熟製程代工',
-  '6770': '半導體:成熟製程代工',
-  '2408': '半導體:DRAM記憶體',
-  '2344': '半導體:DRAM記憶體',
-  '2337': '半導體:Flash快閃記憶體',
-  '3711': '半導體:IC封測',
-  '6239': '半導體:IC封測',
-  '3707': '半導體:功率元件',
-  '2317': '電腦週邊:AI伺服器組裝',
-  '2382': '電腦週邊:AI伺服器組裝',
-  '3231': '電腦週邊:AI伺服器組裝',
-  '6669': '電腦週邊:AI伺服器組裝',
-  '2324': '電腦週邊:伺服器組裝',
-  '2474': '電腦週邊:機殼輕量',
-  '3017': '電子零件:AI液冷散熱',
-  '33383': '電子零件:AI液冷散熱', // 雙鴻等
-  '2308': '電子零件:電源管理',
-  '2383': '電子零件:銅箔基板(CCL)',
-  '2368': '電子零件:PCB硬板',
-  '3037': '電子零件:IC載板',
-  '6531': 'IC設計:ASIC/IP授權',
-  '3443': 'IC設計:ASIC/IP授權',
-  '5351': 'IC設計:記憶體IC',
-  '2454': 'IC設計:手機/通訊晶片',
-  '3481': '光電面板:LCD大尺寸',
-  '2409': '光電面板:LCD大尺寸',
-  '8043': '電子零件:綜合零件',
-  '6182': '半導體:矽晶圓',
-  '6488': '半導體:矽晶圓',
-  '4931': '電子零件:電源與散熱',
-  '3030': '半導體:檢測設備',
-  '2360': '半導體:檢測設備',
-  '6788': '半導體:檢測設備',
+  // 格式: [股票代號]: "大分類:細分族群"
+  '2330': '電子上游:AI/CoWoS先進封裝',
+  '2303': '電子上游:成熟製程代工',
+  '6770': '電子上游:成熟製程代工',
+  '2408': '電子上游:DRAM記憶體',
+  '2344': '電子上游:DRAM記憶體',
+  '2337': '電子上游:Flash快閃記憶體',
+  '3711': '電子上游:IC封測',
+  '6239': '電子上游:IC封測',
+  '3707': '電子上游:功率元件',
+  '2317': '電子下游:AI伺服器組裝',
+  '2382': '電子下游:AI伺服器組裝',
+  '3231': '電子下游:AI伺服器組裝',
+  '6669': '電子下游:AI伺服器組裝',
+  '2324': '電子下游:伺服器組裝',
+  '2474': '電子中游:機殼輕量',
+  '3017': '電子中游:AI液冷散熱',
+  '33383': '電子中游:AI液冷散熱', // 雙鴻等
+  '2308': '電子中游:電源管理',
+  '2383': '電子中游:銅箔基板(CCL)',
+  '2368': '電子中游:PCB硬板',
+  '3037': '電子中游:IC載板',
+  '6531': '電子上游:ASIC/IP授權',
+  '3443': '電子上游:ASIC/IP授權',
+  '5351': '電子上游:記憶體IC',
+  '2454': '電子上游:手機/通訊晶片',
+  '3481': '電子中游:LCD大尺寸',
+  '2409': '電子中游:LCD大尺寸',
+  '8043': '電子中游:綜合零件',
+  '6182': '電子上游:矽晶圓',
+  '6488': '電子上游:矽晶圓',
+  '4931': '電子中游:電源與散熱',
+  '3030': '電子中游:檢測設備',
+  '2360': '電子中游:檢測設備',
+  '6788': '電子中游:檢測設備',
 
   // 擴充 CMoney 精準板塊
-  '2603': '航運業:貨櫃航運',
-  '2609': '航運業:貨櫃航運',
-  '2615': '航運業:貨櫃航運',
-  '2618': '航運業:航空客貨運',
-  '2610': '航運業:航空客貨運',
-  '2881': '金融保險:金控業',
-  '2882': '金融保險:金控業',
-  '2891': '金融保險:金控業',
-  '2886': '金融保險:金控業',
-  '2357': '電腦週邊:品牌PC與伺服器',
-  '2353': '電腦週邊:品牌PC與伺服器',
-  '2327': '電子零件:被動元件MLCC',
-  '2492': '電子零件:被動元件MLCC',
-  '2449': '半導體:IC封測',
-  '3189': '電子零件:IC載板',
-  '8046': '電子零件:IC載板',
-  '3008': '光電學:光學鏡頭',
-  '3406': '光電學:光學鏡頭'
+  '2603': '傳產:貨櫃航運',
+  '2609': '傳產:貨櫃航運',
+  '2615': '傳產:貨櫃航運',
+  '2618': '傳產:航空客貨運',
+  '2610': '傳產:航空客貨運',
+  '2881': '金融:金控業',
+  '2882': '金融:金控業',
+  '2891': '金融:金控業',
+  '2886': '金融:金控業',
+  '2357': '電子下游:品牌PC與伺服器',
+  '2353': '電子下游:品牌PC與伺服器',
+  '2327': '電子上游:被動元件MLCC',
+  '2492': '電子上游:被動元件MLCC',
+  '2449': '電子上游:IC封測',
+  '3189': '電子中游:IC載板',
+  '8046': '電子中游:IC載板',
+  '3008': '電子中游:光學鏡頭',
+  '3406': '電子中游:光學鏡頭'
 };
 
-// 智慧取得股票所屬的 [大產業] 與 [細分族群]
 // 智慧取得股票所屬的 [大產業] 與 [細分族群]
 function getStockSector(s) {
   if (SECTOR_COMPENSATION[s.id]) {
     return SECTOR_COMPENSATION[s.id];
   }
   
-  // 透過 OpenAPI 基本資料與名稱特徵動態精準對齊 CMoney 類股
-  let a = '傳產'; // 預設大分類
-  let b = '其他傳產'; // 預設細分類
+  // 透過 OpenAPI 基本資料與名稱特徵動態精準對齊 CMoney 類股，第一層總分類限制為 6 大類
+  let a = '傳產'; // 預設總分類為 傳產
+  let b = '其他傳產'; // 預設細細分類
   
   const ind = s.industry || '';
   const name = s.name || '';
   const idStr = s.id ? String(s.id) : '';
 
   if (ind.includes('半導體') || idStr === '2330' || idStr === '2303' || idStr === '3711') {
-    a = '電子';
+    // 半導體分類
     if (name.includes('設計') || idStr === '2454' || idStr === '3034' || idStr === '2379' || idStr === '3661' || idStr === '3443' || idStr === '6531') {
-      b = 'IC設計';
+      a = '電子上游'; b = 'IC設計';
     } else if (name.includes('封') || name.includes('測') || idStr === '3711' || idStr === '2449' || idStr === '3264') {
-      b = 'IC封測';
+      a = '電子上游'; b = 'IC封測';
     } else if (name.includes('晶圓') || idStr === '2330' || idStr === '2303' || idStr === '6770' || idStr === '6182' || idStr === '6488') {
-      b = '半導體代工';
+      a = '電子上游'; b = '半導體代工';
     } else {
-      b = '半導體';
+      a = '電子上游'; b = '半導體其他';
     }
   } else if (ind.includes('電腦') || ind.includes('週邊') || idStr === '2317' || idStr === '2382' || idStr === '3231') {
-    a = '電子';
     if (name.includes('奇鋐') || name.includes('雙鴻') || name.includes('散熱') || idStr === '3017' || idStr === '3324') {
-      b = '散熱零組件';
+      a = '電子中游'; b = '散熱零組件';
     } else if (name.includes('廣達') || name.includes('緯創') || name.includes('英業達') || name.includes('神達') || name.includes('和碩') || name.includes('鴻海') || idStr === '2317' || idStr === '2382' || idStr === '3231' || idStr === '6669') {
-      b = 'AI伺服器/組裝';
+      a = '電子下游'; b = 'AI伺服器/組裝';
     } else {
-      b = '電腦週邊';
+      a = '電子下游'; b = '電腦週邊';
     }
   } else if (ind.includes('金融') || ind.includes('保險') || idStr.startsWith('28') || idStr.startsWith('58')) {
     a = '金融';
@@ -722,27 +729,27 @@ function getStockSector(s) {
       b = '航運';
     }
   } else if (ind.includes('生技') || ind.includes('醫療') || ind.includes('藥')) {
-    a = '生技';
+    a = '傳產'; // 生技歸類在傳產
     b = '生技醫療';
   } else if (ind.includes('光電') || name.includes('光') || idStr === '2409' || idStr === '3481') {
-    a = '電子';
     if (name.includes('鏡頭') || idStr === '3008' || idStr === '3406') {
-      b = '光學鏡頭';
+      a = '電子中游'; b = '光學鏡頭';
     } else if (name.includes('面板') || name.includes('友達') || name.includes('群創') || idStr === '2409' || idStr === '3481') {
-      b = '面板';
+      a = '電子中游'; b = '面板';
     } else {
-      b = '光電';
+      a = '電子中游'; b = '光電其他';
     }
   } else if (ind.includes('零組件') || ind.includes('通信') || ind.includes('網通') || ind.includes('電子零件') || ind.includes('資訊服務')) {
-    a = '電子';
-    if (name.includes('國巨') || name.includes('華新科') || idStr === '2327' || idStr === '2492') {
-      b = '被動元件MLCC';
+    if (ind.includes('資訊服務') || name.includes('遊戲') || name.includes('軟體')) {
+      a = '軟體'; b = '軟體服務/遊戲';
+    } else if (name.includes('國巨') || name.includes('華新科') || idStr === '2327' || idStr === '2492') {
+      a = '電子上游'; b = '被動元件MLCC';
     } else if (name.includes('欣興') || name.includes('南電') || name.includes('景碩') || idStr === '3037' || idStr === '3189' || idStr === '8046') {
-      b = 'IC載板';
+      a = '電子中游'; b = 'IC載板';
     } else if (ind.includes('通信') || ind.includes('網通')) {
-      b = '網通設備';
+      a = '電子中游'; b = '網通設備';
     } else {
-      b = '電子零組件';
+      a = '電子中游'; b = '電子零組件';
     }
   } else if (ind.includes('水泥')) {
     a = '傳產'; b = '水泥';
