@@ -238,6 +238,48 @@ function calculateRSI(data, period = 14) {
     rsi.push({ time: data[i].time, value: rsiValue });
   }
   return rsi;
+function calculateEMA(data, period) {
+  const ema = [];
+  if (data.length === 0) return ema;
+  const k = 2 / (period + 1);
+  let emaVal = data[0].close;
+  ema.push({ time: data[0].time, value: emaVal });
+  for (let i = 1; i < data.length; i++) {
+    emaVal = data[i].close * k + emaVal * (1 - k);
+    ema.push({ time: data[i].time, value: emaVal });
+  }
+  return ema;
+}
+
+function calculateMACD(data, shortPeriod = 12, longPeriod = 26, signalPeriod = 9) {
+  const shortEma = calculateEMA(data, shortPeriod);
+  const longEma = calculateEMA(data, longPeriod);
+  const macdLine = [];
+  
+  for (let i = 0; i < data.length; i++) {
+    const sVal = shortEma[i] ? shortEma[i].value : 0;
+    const lVal = longEma[i] ? longEma[i].value : 0;
+    macdLine.push({ time: data[i].time, value: sVal - lVal });
+  }
+
+  // 計算 Signal Line (DIF 的 9 EMA)
+  const signalLine = [];
+  const k = 2 / (signalPeriod + 1);
+  let sigVal = macdLine[0] ? macdLine[0].value : 0;
+  signalLine.push({ time: data[0].time, value: sigVal });
+  for (let i = 1; i < macdLine.length; i++) {
+    sigVal = macdLine[i].value * k + sigVal * (1 - k);
+    signalLine.push({ time: macdLine[i].time, value: sigVal });
+  }
+
+  const histogram = [];
+  for (let i = 0; i < data.length; i++) {
+    const mVal = macdLine[i].value;
+    const sVal = signalLine[i].value;
+    histogram.push({ time: data[i].time, value: mVal - sVal });
+  }
+
+  return { macdLine, signalLine, histogram };
 }
 
 // ---- 多時框數據模擬生成器 (支援 Vercel 靜態部署的多時框顯示) ----
@@ -543,54 +585,113 @@ function renderLWChart(containerId, klineData, height = 260) {
   // 保存 highlighter series 的陣列以方便後續動態添加/刪除
   const highlighterSeriesList = [];
 
-  // ---- RSI Series（根據是否為主圖，決定掛在哪個 chart 上）----
-  const rsiTargetChart = isMainChart ? rsiChart : mainChart;
-  const rsiSeriesOptions = {
-    color: '#eab308',
-    lineWidth: 1.5,
-    title: 'RSI(14)',
-  };
-  if (!isMainChart) {
-    rsiSeriesOptions.priceScaleId = 'rsi';
-  }
-  const rsiSeries = rsiTargetChart.addSeries(LightweightCharts.LineSeries, rsiSeriesOptions);
-  if (!isMainChart) {
-    rsiTargetChart.priceScale('rsi').applyOptions({
-      scaleMargins: { top: 0.7, bottom: 0.15 },
-    });
+  // 全域副圖指標選擇狀態
+  if (window.activeIndicator === undefined) {
+    window.activeIndicator = 'rsi'; // 預設 RSI
   }
 
-  // RSI 面板加上 30/70 超買超賣參考線（僅主圖）
-  if (isMainChart && rsiChart) {
-    const rsi70Series = rsiTargetChart.addSeries(LightweightCharts.LineSeries, {
-      color: 'rgba(239,68,68,0.35)',
-      lineWidth: 1,
-      lineStyle: 2, // Dashed
-      title: '',
-      crosshairMarkerVisible: false,
-      priceLineVisible: false,
-      lastValueVisible: false,
+  // 同步副圖指標下拉選單 UI 狀態
+  const indicatorSelect = document.getElementById('indicator-select');
+  if (indicatorSelect) {
+    indicatorSelect.value = window.activeIndicator;
+  }
+
+  // ---- 副圖 Series 根據選擇動態加入 ----
+  const subTargetChart = isMainChart ? rsiChart : mainChart;
+  
+  // 宣告副圖 Series 用於動態清理與寫入
+  let rsiSeries = null;
+  let macdLineSeries = null;
+  let macdSignalSeries = null;
+  let macdHistSeries = null;
+  let rsi70Series = null;
+  let rsi30Series = null;
+
+  if (window.activeIndicator === 'rsi') {
+    // 渲染 RSI 指標
+    const rsiSeriesOptions = {
+      color: '#eab308',
+      lineWidth: 1.5,
+      title: 'RSI(14)',
+    };
+    if (!isMainChart) {
+      rsiSeriesOptions.priceScaleId = 'rsi';
+    }
+    rsiSeries = subTargetChart.addSeries(LightweightCharts.LineSeries, rsiSeriesOptions);
+    if (!isMainChart) {
+      subTargetChart.priceScale('rsi').applyOptions({
+        scaleMargins: { top: 0.7, bottom: 0.15 },
+      });
+    }
+
+    if (isMainChart && rsiChart) {
+      rsi70Series = subTargetChart.addSeries(LightweightCharts.LineSeries, {
+        color: 'rgba(239,68,68,0.35)',
+        lineWidth: 1,
+        lineStyle: 2, // Dashed
+        title: '',
+        crosshairMarkerVisible: false,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      rsi30Series = subTargetChart.addSeries(LightweightCharts.LineSeries, {
+        color: 'rgba(34,197,94,0.35)',
+        lineWidth: 1,
+        lineStyle: 2,
+        title: '',
+        crosshairMarkerVisible: false,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      const refLineData = formattedCandles.map(d => ({ time: d.time }));
+      rsi70Series.setData(refLineData.map(d => ({ time: d.time, value: 70 })));
+      rsi30Series.setData(refLineData.map(d => ({ time: d.time, value: 30 })));
+    }
+  } else {
+    // 渲染 MACD 指標 (Short 12, Long 26, Signal 9)
+    const macdOptions = { lineWidth: 1.5, title: 'DIF' };
+    const signalOptions = { color: '#3b82f6', lineWidth: 1.5, title: 'MACD' };
+    const histOptions = { priceScaleId: 'macdHist', title: 'OSC' };
+    
+    if (!isMainChart) {
+      macdOptions.priceScaleId = 'macd';
+      signalOptions.priceScaleId = 'macd';
+    }
+
+    macdLineSeries = subTargetChart.addSeries(LightweightCharts.LineSeries, { color: '#ec4899', ...macdOptions });
+    macdSignalSeries = subTargetChart.addSeries(LightweightCharts.LineSeries, signalOptions);
+    macdHistSeries = subTargetChart.addSeries(LightweightCharts.HistogramSeries, {
+      color: '#10b981',
+      ...histOptions
     });
-    const rsi30Series = rsiTargetChart.addSeries(LightweightCharts.LineSeries, {
-      color: 'rgba(34,197,94,0.35)',
-      lineWidth: 1,
-      lineStyle: 2,
-      title: '',
-      crosshairMarkerVisible: false,
-      priceLineVisible: false,
-      lastValueVisible: false,
-    });
-    // 填充 70/30 水平線
-    const refLineData = formattedCandles.map(d => ({ time: d.time }));
-    rsi70Series.setData(refLineData.map(d => ({ time: d.time, value: 70 })));
-    rsi30Series.setData(refLineData.map(d => ({ time: d.time, value: 30 })));
+
+    if (!isMainChart) {
+      subTargetChart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.7, bottom: 0.15 } });
+    }
   }
 
   try {
     candleSeries.setData(formattedCandles);
     volumeSeries.setData(formattedVolume);
     smaSeries.setData(calculateSMA(formattedCandles, 5));
-    rsiSeries.setData(calculateRSI(formattedCandles, 14));
+
+    // 動態計算並載入指標數據
+    const rsiData = calculateRSI(formattedCandles, 14);
+    const macdData = calculateMACD(formattedCandles, 12, 26, 9);
+
+    if (window.activeIndicator === 'rsi') {
+      rsiSeries.setData(rsiData);
+    } else {
+      macdLineSeries.setData(macdData.macdLine);
+      macdSignalSeries.setData(macdData.signalLine);
+      
+      const histFormatted = macdData.histogram.map(h => ({
+        time: h.time,
+        value: h.value,
+        color: h.value >= 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)' // 紅柱與綠柱
+      }));
+      macdHistSeries.setData(histFormatted);
+    }
 
     // 同步外部 Select 狀態
     const strategySelect = document.getElementById('strategy-select');
@@ -600,6 +701,123 @@ function renderLWChart(containerId, klineData, height = 260) {
 
     // 清除任何先前殘留的 markers
     LightweightCharts.createSeriesMarkers(candleSeries, []);
+
+    // ── 🎯 智慧型指標與特殊 K 線標註系統 ──
+    const customMarkers = [];
+    const candleColors = []; // 用於保存自定義 K 棒著色
+
+    if (window.activeIndicator === 'macd') {
+      // 1. MACD 金叉 / 死叉 自動標註並著色為白色 K 棒
+      const macdLine = macdData.macdLine;
+      const sigLine = macdData.signalLine;
+      
+      for (let i = 1; i < macdLine.length; i++) {
+        const prevDiff = macdLine[i - 1].value - sigLine[i - 1].value;
+        const currDiff = macdLine[i].value - sigLine[i].value;
+        const time = macdLine[i].time;
+
+        if (prevDiff <= 0 && currDiff > 0) {
+          // 黃金交叉
+          customMarkers.push({
+            time: time,
+            position: 'belowBar',
+            color: '#ef4444', // 紅色金叉
+            shape: 'arrowUp',
+            text: '金叉',
+            size: 2.0
+          });
+          candleColors.push({ time: time, color: '#ffffff' }); // 塗成白色
+        } else if (prevDiff >= 0 && currDiff < 0) {
+          // 死亡交叉
+          customMarkers.push({
+            time: time,
+            position: 'aboveBar',
+            color: '#10b981', // 綠色死叉
+            shape: 'arrowDown',
+            text: '死叉',
+            size: 2.0
+          });
+          candleColors.push({ time: time, color: '#ffffff' }); // 塗成白色
+        }
+      }
+    } 
+    else if (window.activeIndicator === 'rsi') {
+      // 2. RSI 特殊 K 線高機率型態與反轉/延續標註
+      // 規則：看漲型態搭配 RSI 位於 30-60 之間視為看漲 (著色白色 K 棒)；看跌搭配 RSI 高於 70 視為看跌 (著色白色 K 棒)
+      for (let i = 2; i < formattedCandles.length; i++) {
+        const c1 = formattedCandles[i - 2];
+        const c2 = formattedCandles[i - 1];
+        const c3 = formattedCandles[i];
+        const time = c3.time;
+
+        // 取得該根 K 棒的 RSI 值
+        const rsiObj = rsiData.find(r => r.time === time);
+        if (!rsiObj) continue;
+        const rsiVal = rsiObj.value;
+
+        // (A) 早晨之星 / 錘子線 / 看漲吞沒（看漲型態判定）
+        const isBullishEngulfing = c3.close > c3.open && c2.close < c2.open && (c3.close >= c2.open) && (c3.open <= c2.close);
+        const isHammer = (c3.high - Math.max(c3.open, c3.close)) < (c3.high - c3.low) * 0.1 && (Math.min(c3.open, c3.close) - c3.low) > (c3.high - c3.low) * 0.6;
+        const isMorningStar = c1.close < c1.open && Math.abs(c2.close - c2.open) < (c1.open - c1.close) * 0.3 && c3.close > c3.open && c3.close > (c1.open + c1.close) / 2;
+
+        if (isBullishEngulfing || isHammer || isMorningStar) {
+          // 看漲條件：極值與超賣區 30-60
+          if (rsiVal >= 30 && rsiVal <= 60) {
+            customMarkers.push({
+              time: time,
+              position: 'belowBar',
+              color: '#ef4444', // 紅色字
+              shape: 'arrowUp',
+              text: 'RSI超買 (看漲)',
+              size: 2.0
+            });
+            candleColors.push({ time: time, color: '#ffffff' }); // 著色為白色 K 棒
+          }
+        }
+
+        // (B) 黃昏之星 / 流星線 / 看跌吞沒（看跌型態判定）
+        const isBearishEngulfing = c3.close < c3.open && c2.close > c2.open && (c3.close <= c2.open) && (c3.open >= c2.close);
+        const isShootingStar = (c3.high - Math.max(c3.open, c3.close)) > (c3.high - c3.low) * 0.6 && (Math.min(c3.open, c3.close) - c3.low) < (c3.high - c3.low) * 0.1;
+        const isEveningStar = c1.close > c1.open && Math.abs(c2.close - c2.open) < (c1.close - c1.open) * 0.3 && c3.close < c3.open && c3.close < (c1.open + c1.close) / 2;
+
+        if (isBearishEngulfing || isShootingStar || isEveningStar) {
+          // 看跌條件：RSI 超過 70
+          if (rsiVal >= 70) {
+            customMarkers.push({
+              time: time,
+              position: 'aboveBar',
+              color: '#10b981', // 綠色字
+              shape: 'arrowDown',
+              text: 'RSI超賣 (看跌)',
+              size: 2.0
+            });
+            candleColors.push({ time: time, color: '#ffffff' }); // 著色為白色 K 棒
+          }
+        }
+      }
+    }
+
+    // 將所有計算出來的黃金交叉/特殊型態 marker 加上
+    if (customMarkers.length > 0) {
+      LightweightCharts.createSeriesMarkers(candleSeries, customMarkers);
+    }
+
+    // 動態套用 K 棒的著色 (若有白色 K 棒)
+    if (candleColors.length > 0) {
+      candleSeries.setData(formattedCandles.map(c => {
+        const colObj = candleColors.find(cc => cc.time === c.time);
+        if (colObj) {
+          return {
+            ...c,
+            color: colObj.color,
+            borderColor: colObj.color,
+            wickColor: colObj.color
+          };
+        }
+        return c;
+      }));
+    }
+
 
     // ---- 策略 A: Super-Trend 策略 ----
     if (window.activeStrategy === 'supertrend') {
@@ -969,6 +1187,17 @@ function renderLWChart(containerId, klineData, height = 260) {
 // 動態圖層策略切換函式
 window.changeStrategyLayer = function(strategyName) {
   window.activeStrategy = strategyName;
+  if (currentChartSymbol) {
+    const stock = mockStocks.find(s => s.id === currentChartSymbol);
+    if (stock) {
+      loadTVChart(stock);
+    }
+  }
+};
+
+// 動態副圖指標切換函式
+window.changeSubIndicator = function(indicatorName) {
+  window.activeIndicator = indicatorName;
   if (currentChartSymbol) {
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
     if (stock) {

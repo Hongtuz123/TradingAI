@@ -462,6 +462,15 @@
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('4h')">4小時</button>
                 <button class="btn-secondary active" style="padding: 2px 8px; font-size:12px; height: 24px; background:var(--primary-color);" onclick="changeResolution('1D')">日</button>
               </div>
+
+              <!-- 副圖表指標下拉選單 -->
+              <div style="display:flex; align-items:center; gap: 6px; background: rgba(30, 41, 59, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-size:13px; color:var(--text-muted);">副圖指標：</span>
+                <select id="indicator-select" onchange="changeSubIndicator(this.value)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; cursor:pointer; font-weight:500;">
+                  <option value="rsi" style="background:var(--bg-panel); color:white;">RSI ＋ 形態特殊標註</option>
+                  <option value="macd" style="background:var(--bg-panel); color:white;">MACD ＋ 金叉/死叉標註</option>
+                </select>
+              </div>
             </div>
           </div>
           <!-- Lightweight Charts 容器：flex:1 + min-height:0 讓圖表填滿剩餘空間 -->
