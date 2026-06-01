@@ -881,14 +881,20 @@ function renderSectorFlowMap() {
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
-  // 排序：依據資金熱度 (總量能比) 降序排列，以填滿 Grid 排版
-  sectorsArray.sort((a, b) => b.totalVolRatio - a.totalVolRatio);
+  // 統計所有族群的「漲跌幅平移權重」（平移 +10% 確保全為正數）
+  // 漲停 +10% -> 權重 20；跌停 -10% -> 權重 0.1；以實現「漲越多區塊越大，跌的越小」
+  sectorsArray.forEach(g => {
+    g.weight = Math.max(0.1, g.avgChange + 10);
+  });
+
+  // 排序：依據平均漲跌幅 (avgChange) 降序排列 (漲最多的排最前面)
+  sectorsArray.sort((a, b) => b.avgChange - a.avgChange);
 
   // 動態分配 CSS Grid 的 span 寬度 (總共 12 欄格柵)
-  const totalHeat = sectorsArray.reduce((sum, s) => sum + s.totalVolRatio, 0);
+  const totalWeight = sectorsArray.reduce((sum, s) => sum + s.weight, 0);
   
   sectorsArray.forEach((g, idx) => {
-    const ratio = g.totalVolRatio / totalHeat;
+    const ratio = totalWeight > 0 ? (g.weight / totalWeight) : (1 / sectorsArray.length);
     let span = 2;
     if (ratio > 0.15) span = 6;
     else if (ratio > 0.08) span = 4;
