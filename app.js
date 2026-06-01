@@ -409,6 +409,36 @@ function initDashboard() {
 }
 
 
+// 判斷台股當前是否為交易時段 (盤中週一至五 09:00 - 13:30)
+function isMarketActive() {
+  const now = new Date();
+  const day = now.getDay();
+  if (day === 0 || day === 6) return false; // 週末休市
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const timeVal = h * 100 + m;
+  return timeVal >= 900 && timeVal <= 1330;
+}
+
+// 獲取盤中即時模擬波動之價格與漲跌幅 (輔助盤中參考)
+window.getLiveStockData = function(s) {
+  if (!isMarketActive()) {
+    return { price: s.price, change: s.change };
+  }
+  
+  // 盤中即時狀態：依據隨機數做非常微幅的實時隨機波動 (波動率為 0.05% 至 0.2%)
+  // 保持同一分鐘內波動相對穩定 (用當前分鐘數當種子)
+  const minuteSeed = new Date().getMinutes();
+  const idHash = (s.id.charCodeAt(0) || 0) + (s.id.charCodeAt(1) || 0) * 10;
+  const rand = Math.sin(minuteSeed + idHash) * 0.5 + 0.5; // 0 到 1 之間
+  const wavePct = (rand - 0.5) * 0.4; // -0.2% 到 +0.2%
+  
+  const livePrice = Math.round(s.price * (1 + wavePct / 100) * 100) / 100;
+  const liveChange = Math.round((s.change + wavePct) * 100) / 100;
+
+  return { price: livePrice, change: liveChange };
+};
+
 // 執行篩選
 function runScreener() {
   // 取得篩選參數
@@ -436,12 +466,19 @@ function runScreener() {
 
   document.getElementById('scoreThresholdDisplay').innerText = p.minScore;
 
+  // 全域變數重設
   currentResults = [];
   currentWhitelist = [];
   
   let stats = { A:0, B:0, C:0, D:0, E:0, totalScore: 0 };
 
+  // 全數標的走訪：即時盤中運算動態套用
   mockStocks.forEach(s => {
+    // 盤中時，更新股票暫時運算價格與漲跌幅
+    const live = getLiveStockData(s);
+    s.livePrice = live.price;
+    s.liveChange = live.change;
+
     // 支援多型態判定
     const stockTypes = s.type ? s.type.split(',') : [];
     const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD && !p.typeE) || 
@@ -478,17 +515,15 @@ function runScreener() {
     s.dynamicScore = 12 - failedConditions.length;
     s.failedConditions = failedConditions;
 
-    // L4 與 L5 的嚴格過濾與總得分過濾 (Type E 已經完全融入 typeMatch)
+    // L4 與 L5 的嚴格過濾與總得分過濾
     if (s.dynamicScore >= p.minScore && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
   });
 
-  // 依據新規則：最多篩選出前 40 檔符合規則之標的 (依達標數降序排列)
+  // 排序並過濾白名單（白名單不受篩選器前40檔切片限制，完全獨立呈現符合分數的白名單）
   currentResults.sort((a, b) => b.dynamicScore - a.dynamicScore);
-  currentResults = currentResults.slice(0, 40);
 
-  // 根據前 40 檔結果計算白名單與統計數據
   currentResults.forEach(s => {
     if (s.dynamicScore >= p.minScore) {
       currentWhitelist.push(s);
@@ -507,11 +542,14 @@ function runScreener() {
     showEmptyResultModal(p, currentResults.length);
   }
 
+  // 只有在【篩選器表格結果】時，才進行前 40 檔切片限制渲染！
+  const slicedScreenerResults = currentResults.slice(0, 40);
+
   // 更新預覽區與清單
-  renderScreenerTable(currentResults);
+  renderScreenerTable(slicedScreenerResults);
   renderWhitelistGrid();
   
-  // 動態繪製熱力圖與強弱排行榜
+  // 動態繪製熱力圖與強弱排行榜（現在使用 mockStocks 全體標的進行計算）
   renderSectorFlowMap();
   renderRankings();
 }
@@ -534,7 +572,7 @@ function renderScreenerTable(data) {
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td>${getTechBadgesHTML(s.type)}</td>
-      <td>${s.price} <span class="${s.change>=0?'text-up':'text-down'}">${s.change>0?'+':''}${s.change}%</span></td>
+      <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
@@ -658,10 +696,10 @@ function renderSectorFlowMap() {
     sectorGroups[sector].totalVolRatio += (s.volRatio || 1);
   });
 
-  // 計算每個族群的平均值
+  // 計算每個族群的平均值 (動態支援盤中 liveChange 即時大數據運算)
   const sectorsArray = Object.values(sectorGroups);
   sectorsArray.forEach(g => {
-    const sumChange = g.stocks.reduce((sum, s) => sum + (s.change || 0), 0);
+    const sumChange = g.stocks.reduce((sum, s) => sum + (s.liveChange !== undefined ? s.liveChange : (s.change || 0)), 0);
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
@@ -742,7 +780,7 @@ function openSectorDetailModal(sectorName, stocks, avgChange) {
           <span class="badge" style="font-size: 10px; margin-left: 6px;">量比: ${s.volRatio?.toFixed(1) || '1.0'}x</span>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-weight: 700;" class="${s.change >= 0 ? 'text-up' : 'text-down'}">${s.price} (${s.change >= 0 ? '+' : ''}${s.change}%)</span>
+          <span style="font-weight: 700;" class="${(s.liveChange !== undefined ? s.liveChange : s.change) >= 0 ? 'text-up' : 'text-down'}">${s.livePrice || s.price} (${(s.liveChange !== undefined ? s.liveChange : s.change) >= 0 ? '+' : ''}${(s.liveChange !== undefined ? s.liveChange : s.change)}%)</span>
           <button class="btn-primary" style="padding: 2px 8px; font-size:11px; height:24px;" onclick="event.stopPropagation(); closeModal(); openChart('${s.id}')">K線回測 📈</button>
         </div>
       </div>
