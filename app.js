@@ -1006,10 +1006,11 @@ function renderRankings() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 預先對 mockStocks 進行產業分組，提供族群強弱排行使用
+  // 預先對 mockStocks 進行產業分組，提供族群強弱排行使用 (直接以細分類分組)
   const sectorGroups = {};
   mockStocks.forEach(s => {
-    const sector = getStockSector(s);
+    const sectorStr = getStockSector(s);
+    const sector = sectorStr.split(':')[1] || sectorStr; // 直接使用細分類作為分組主鍵，例如 水泥、食品、IC設計
     if (!sectorGroups[sector]) {
       sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0 };
     }
@@ -1019,7 +1020,17 @@ function renderRankings() {
   
   const sectorsArray = Object.values(sectorGroups);
   sectorsArray.forEach(g => {
-    const sumChange = g.stocks.reduce((sum, s) => sum + (s.change || 0), 0);
+    // 支援實時波動價格計算
+    const sumChange = g.stocks.reduce((sum, s) => {
+      // 優先使用實時 change，若無則用靜態 change
+      const now = new Date();
+      const isMarketOpen = checkIsMarketOpen ? checkIsMarketOpen(now) : false;
+      if (isMarketOpen && typeof getRealtimeVolatilePrice === 'function') {
+        return sum + getRealtimeVolatilePrice(s).change;
+      }
+      if (s.liveChange !== undefined) return sum + s.liveChange;
+      return sum + (s.change || 0);
+    }, 0);
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
@@ -1033,7 +1044,7 @@ function renderRankings() {
     // 強勢族群排行榜 (漲幅前 N 名)
     const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
-      const displayTitle = g.name.replace(':', ' ▸ ');
+      const displayTitle = g.name; // 直接顯示細細分類，如 水泥、食品、IC設計
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
@@ -1051,7 +1062,7 @@ function renderRankings() {
     // 弱勢族群排行榜 (跌幅前 N 名)
     const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
-      const displayTitle = g.name.replace(':', ' ▸ ');
+      const displayTitle = g.name; // 直接顯示細細分類
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
