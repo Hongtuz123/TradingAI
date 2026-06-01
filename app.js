@@ -1195,8 +1195,11 @@ function renderWhitelistGrid() {
           <div>RSI(14)：${s.rsi14 ?? '--'}</div>
           <div>ATR(14)：${s.atr14 ?? '--'}</div>
         </div>
-        <div style="margin-top:10px;text-align:right;">
-          <button class="btn-secondary" style="font-size:12px;padding:4px 8px;" onclick="openChart('${s.id}')">策略回測 →</button>
+        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <button class="btn-secondary" style="font-size:12px;padding:4px 8px; flex:1;" onclick="openChart('${s.id}')">策略回測 →</button>
+          <button class="btn-primary" style="font-size:12px;padding:4px 8px; flex:1; background:${isStockInPortfolio(s.id)?'#10b981':'var(--warning)'}; font-weight:bold;" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')">
+            ${isStockInPortfolio(s.id) ? '★ 已自選' : '☆ 自選'}
+          </button>
         </div>
       </div>
     `;
@@ -1565,6 +1568,7 @@ window.toggleStockPortfolio = function(symbolId) {
   // 即時更新各視圖的自選按鈕狀態
   if (typeof currentResults !== 'undefined') renderScreenerTable(currentResults);
   renderPortfolioGrid();
+  renderWhitelistGrid(); // 連動重繪推薦清單的自選按鈕狀態
   updateChartPortfolioButton();
 };
 
