@@ -1383,6 +1383,174 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   object-fit: cover;
 }
 
+/* ================= 🐾 荳荳 AI 戰術室對話面板樣式 🐾 ================= */
+.shiba-chat-panel {
+  position: absolute;
+  bottom: 90px;
+  right: 0;
+  width: 360px;
+  height: 480px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(249, 115, 22, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1000;
+  pointer-events: auto;
+  animation: shiba-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes shiba-slide-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.shiba-chat-header {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shiba-chat-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.shiba-chat-close:hover {
+  color: #ef4444;
+}
+
+.shiba-chat-body {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.shiba-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.shiba-msg-bot {
+  align-self: flex-start;
+}
+
+.shiba-msg-user {
+  align-self: flex-end;
+}
+
+.shiba-msg-text {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.shiba-msg-bot .shiba-msg-text {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  border-top-left-radius: 2px;
+}
+
+.shiba-msg-user .shiba-msg-text {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  border-top-right-radius: 2px;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+}
+
+.shiba-chat-quick-tags {
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: rgba(30, 41, 59, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.quick-tag-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-tag-btn:hover {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: var(--primary);
+  color: white;
+}
+
+.shiba-chat-input-wrap {
+  padding: 8px 12px;
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: 8px;
+}
+
+#shibaChatInput {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#shibaChatInput:focus {
+  border-color: var(--primary);
+}
+
+.shiba-chat-send {
+  background: var(--primary);
+  border: none;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.shiba-chat-send:hover {
+  background: var(--primary-hover);
+}
+
+@media (max-width: 480px) {
+  .shiba-chat-panel {
+    width: 290px;
+    height: 380px;
+    bottom: 80px;
+  }
+}
+
 /* ================= 🐾 K線加載中 荳荳小腳印與轉轉 🐾 ================= */
 .shiba-loading-container {
   display: flex;

@@ -1393,7 +1393,7 @@ window.handleTrendlineJump = function(symbolId) {
 };
 
 
-// ================= 🐾 荳荳柴犬吉祥物互動邏輯 🐾 =================
+// ================= 🐾 荳荳柴犬吉祥物與 AI 戰術室互動邏輯 🐾 =================
 
 const SHIBA_GOLDEN_PHRASES = [
   "🐾 荳荳今天也很努力幫您守護帳戶汪！",
@@ -1404,6 +1404,235 @@ const SHIBA_GOLDEN_PHRASES = [
   "🐾 汪！大盤今天熱烘烘的，像烤熟的肉骨頭！",
   "🐾 荳荳貼心提醒：順勢交易，防守好移動停利唷！"
 ];
+
+// 控制對話視窗開關
+window.toggleShibaChatPanel = function(show) {
+  const panel = document.getElementById('shibaChatPanel');
+  const bubble = document.getElementById('shibaMascotBubble');
+  if (!panel) return;
+
+  if (show === undefined) {
+    show = (panel.style.display === 'none');
+  }
+
+  if (show) {
+    panel.style.display = 'flex';
+    if (bubble) bubble.classList.remove('active'); // 打開面板時隱藏泡泡
+    // 捲動到底部
+    setTimeout(() => {
+      const body = document.getElementById('shibaChatBody');
+      if (body) body.scrollTop = body.scrollHeight;
+    }, 50);
+  } else {
+    panel.style.display = 'none';
+  }
+};
+
+// 荳荳大數據彙整分析引擎 (基於 mockStocks)
+function compileShibaData() {
+  if (typeof mockStocks === 'undefined' || mockStocks.length === 0) {
+    return null;
+  }
+
+  // 1. 計算今日所有板塊/細分族群的平均漲跌幅
+  const sectorGroups = {};
+  mockStocks.forEach(s => {
+    // 取得產業分類
+    let sector = '一般產業:其他';
+    if (typeof getStockSector === 'function') {
+      sector = getStockSector(s);
+    } else if (s.industry) {
+      sector = `一般板塊:${s.industry}`;
+    }
+
+    if (!sectorGroups[sector]) {
+      sectorGroups[sector] = { sumChange: 0, count: 0, stocks: [] };
+    }
+    sectorGroups[sector].sumChange += parseFloat(s.change || 0);
+    sectorGroups[sector].count += 1;
+    sectorGroups[sector].stocks.push(s);
+  });
+
+  const sectorList = [];
+  for (const [name, data] of Object.entries(sectorGroups)) {
+    const avgChange = data.sumChange / data.count;
+    // 排序該族群成分股 (漲幅高到低)
+    data.stocks.sort((a, b) => b.change - a.change);
+    sectorList.push({
+      name: name,
+      avgChange: avgChange,
+      stocks: data.stocks
+    });
+  }
+
+  // 依照族群平均漲幅排序
+  sectorList.sort((a, b) => b.avgChange - a.avgChange);
+
+  // 2. 篩選出法人（外資+投信）合力買超前三名
+  // mockStocks 中的外資買超為 foreignBuy=true, 且 foreignNetBuy 可代表淨買超張數
+  // 加上投信天數 trustDays > 0
+  const faves = [...mockStocks];
+  faves.sort((a, b) => {
+    const scoreA = (a.foreignNetBuy || 0) + (a.trustDays || 0) * 100;
+    const scoreB = (b.foreignNetBuy || 0) + (b.trustDays || 0) * 100;
+    return scoreB - scoreA;
+  });
+  const institutionalFavorites = faves.slice(0, 3);
+
+  // 3. 篩選出量比最大（爆量突破）的前三名飆股
+  const volumeSpikes = [...mockStocks];
+  volumeSpikes.sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0));
+  const topVolumeSpikes = volumeSpikes.slice(0, 3);
+
+  return {
+    sectors: sectorList, // 由強到弱
+    favorites: institutionalFavorites,
+    volSpikes: topVolumeSpikes
+  };
+}
+
+// 快捷提問
+window.askShiba = function(type) {
+  let userText = '';
+  if (type === 'today_strong') userText = '🔥 今日大盤最強勢的板塊是哪一類股？幫我列出幾支標的清單！';
+  if (type === 'today_weak') userText = '❄️ 今日大盤比較弱勢的是哪一類股？成分股表現如何？';
+  if (type === 'trust_favorite') userText = '💼 法人今天最看好、同買的標的是哪些？幫我列出來！';
+  if (type === 'volume_burst') userText = '⚡ 今日爆量、資金大量流入的突破飆股是哪幾支？';
+
+  appendChatMessage(userText, 'user');
+
+  // 荳荳開始思考回答
+  setTimeout(() => {
+    const data = compileShibaData();
+    if (!data) {
+      appendChatMessage('嗚嗚汪...荳荳發現資料庫空空的，沒辦法進行統計分析耶！拔麻要不要先確認篩選器設定汪？🐶', 'bot');
+      return;
+    }
+
+    let botReply = '';
+    const disclaimer = '<br><br><span style="color:var(--text-muted); font-size:10px; display:block; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; margin-top:6px;">⚠️ 拔麻注意：以上數據為荳荳從大盤合併市值前 500 大個股中動態即時彙整所得，僅供策略參考，不構成任何投資建議汪！🐶</span>';
+
+    if (type === 'today_strong') {
+      const topSect = data.sectors[0];
+      const secondSect = data.sectors[1];
+      
+      const topStocksStr = topSect.stocks.slice(0, 5).map(s => `• <b>${s.id} ${s.name}</b> (漲幅 ${s.change >= 0 ? '+' : ''}${s.change}%, 價格 $${s.price})`).join('<br>');
+      const secondStocksStr = secondSect.stocks.slice(0, 3).map(s => `• <b>${s.id} ${s.name}</b> (${s.change >= 0 ? '+' : ''}${s.change}%)`).join('<br>');
+
+      botReply = `汪！荳荳幫拔麻統計出來囉！🐶<br>
+今日大盤最強勢的板塊是 <b>${topSect.name.split(':')[0]} ➔ ${topSect.name.split(':')[1]}</b> 族群！平均今日漲幅高達 <span style="color:var(--up-color); font-weight:bold;">+${topSect.avgChange.toFixed(2)}%</span> 汪！🐾<br><br>
+荳荳精選該族群前幾名強勢標的：<br>${topStocksStr}<br><br>
+另外，第二強的板塊是 <b>${secondSect.name.split(':')[0]} ➔ ${secondSect.name.split(':')[1]}</b>，平均漲幅約為 +${secondSect.avgChange.toFixed(2)}%，熱門標的包含：<br>${secondStocksStr}` + disclaimer;
+    } 
+    else if (type === 'today_weak') {
+      const weakSect = data.sectors[data.sectors.length - 1];
+      const secondWeak = data.sectors[data.sectors.length - 2];
+
+      const weakStocksStr = weakSect.stocks.slice(-5).reverse().map(s => `• <b>${s.id} ${s.name}</b> (跌幅 ${s.change >= 0 ? '+' : ''}${s.change}%, 價格 $${s.price})`).join('<br>');
+      
+      botReply = `汪嗚...今天比較冷清疲軟的板塊是 <b>${weakSect.name.split(':')[0]} ➔ ${weakSect.name.split(':')[1]}</b> 族群汪！平均今日跌幅為 <span style="color:var(--down-color); font-weight:bold;">${weakSect.avgChange.toFixed(2)}%</span> ❄️<br><br>
+這裡面跌勢最重的標的清單：<br>${weakStocksStr}<br><br>
+拔麻操作這些弱勢族群時，一定要嚴格執行移動停損守好錢包喔！汪！` + disclaimer;
+    }
+    else if (type === 'trust_favorite') {
+      const favStr = data.favorites.map((s, idx) => `${idx + 1}. <b>${s.id} ${s.name}</b> (投信連買 ${s.trustDays || 0} 天, 今日外資買超張數：${s.foreignNetBuy || 0} 張, 現價 $${s.price})`).join('<br>');
+
+      botReply = `汪汪！大戶跟法人吃肉，拔麻喝湯囉！🐾<br>
+荳荳掃描大盤籌碼，發現目前法人籌碼最集中的前三名標的是：<br><br>
+${favStr}<br><br>
+這些股票背後都有法人金主撐腰，往往在均線糾結處更容易往上噴射，拔麻可以多加留意圖表突破訊號喔！` + disclaimer;
+    }
+    else if (type === 'volume_burst') {
+      const spikeStr = data.volSpikes.map((s, idx) => `${idx + 1}. <b>${s.id} ${s.name}</b> (今日成交量比平常暴增 <b>${s.volRatio || 1}</b> 倍！現價 $${s.price}, 漲幅 ${s.change >= 0 ? '+' : ''}${s.change}%)`).join('<br>');
+
+      botReply = `轟隆汪！今日爆量資金搶進的狂熱標的來了！🔥<br>
+成交量是股票的靈魂，荳荳幫拔麻抓出今天量能增幅最誇張的飆股前三名：<br><br>
+${spikeStr}<br><br>
+大量通常代表有主力吃貨或利多引爆，很容易觸發我們的「下行趨勢線突破」策略汪！快點擊 K 線頁面看看吧！` + disclaimer;
+    }
+
+    appendChatMessage(botReply, 'bot');
+  }, 600);
+};
+
+// 手動送出訊息與 NLP 問答匹配
+window.sendShibaMessage = function() {
+  const input = document.getElementById('shibaChatInput');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+
+  appendChatMessage(val, 'user');
+  input.value = '';
+
+  // 模擬荳荳打字與回答
+  setTimeout(() => {
+    const data = compileShibaData();
+    const disclaimer = '<br><br><span style="color:var(--text-muted); font-size:10px; display:block; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; margin-top:6px;">⚠️ 拔麻注意：以上數據為荳荳從大盤合併市值前 500 大個股中動態即時彙整所得，僅供策略參考，不構成任何投資建議汪！🐶</span>';
+
+    if (!data) {
+      appendChatMessage('嗚嗚汪...荳荳發現資料庫沒有載入股票，沒辦法統計大數據耶。', 'bot');
+      return;
+    }
+
+    // 匹配關鍵字
+    const query = val.toLowerCase();
+    let botReply = '';
+
+    if (query.includes('漲幅') || query.includes('類股') || query.includes('強勢') || query.includes('板塊') || query.includes('推薦') || query.includes('好股') || query.includes('飆股')) {
+      const topSect = data.sectors[0];
+      const secondSect = data.sectors[1];
+      const topStocksStr = topSect.stocks.slice(0, 4).map(s => `• <b>${s.id} ${s.name}</b> (漲幅 ${s.change >= 0 ? '+' : ''}${s.change}%, 現價 $${s.price})`).join('<br>');
+      
+      botReply = `汪！拔麻您問對狗了！🐾 荳荳用小短腿算了一下：<br>
+今天大盤漲幅最兇悍的板塊是 <b>${topSect.name.split(':')[0]} ➔ ${topSect.name.split(':')[1]}</b> 族群，今日平均大漲 <span style="color:var(--up-color); font-weight:bold;">+${topSect.avgChange.toFixed(2)}%</span> 汪！<br><br>
+荳荳幫拔麻列出該類股中最強勢的標的清單：<br>
+${topStocksStr}<br><br>
+還有還有！ <b>${secondSect.name.split(':')[0]} ➔ ${secondSect.name.split(':')[1]}</b> 今天平均也漲了 +${secondSect.avgChange.toFixed(2)}%，也是不可忽視的吸金板塊喔！` + disclaimer;
+    }
+    else if (query.includes('法人') || query.includes('外資') || query.includes('投信') || query.includes('主力')) {
+      const favStr = data.favorites.map((s, idx) => `${idx + 1}. <b>${s.id} ${s.name}</b> (投信連買 ${s.trustDays || 0} 天, 今日外資淨買超 ${s.foreignNetBuy || 0} 張, 現價 $${s.price})`).join('<br>');
+      botReply = `汪汪！法人跟外資大戶的籌碼流向都在荳荳的靈敏鼻子底下！👃<br>
+目前市值前 500 大中，法人最看好且同買的前三名標的是：<br><br>
+${favStr}` + disclaimer;
+    }
+    else if (query.includes('跌') || query.includes('弱勢') || query.includes('慘')) {
+      const weakSect = data.sectors[data.sectors.length - 1];
+      const weakStocksStr = weakSect.stocks.slice(-4).reverse().map(s => `• <b>${s.id} ${s.name}</b> (跌幅 ${s.change >= 0 ? '+' : ''}${s.change}%)`).join('<br>');
+      botReply = `汪嗚...今天最冷颼颼的弱勢板塊是 <b>${weakSect.name.split(':')[0]} ➔ ${weakSect.name.split(':')[1]}</b>，今日平均跌幅達 ${weakSect.avgChange.toFixed(2)}% ❄️<br><br>
+裡面主要拉回的成分股有：<br>${weakStocksStr}<br><br>
+拔麻買這些股票要防守好均線或趨勢線，千萬別盲目攤平喔！` + disclaimer;
+    }
+    else if (query.includes('荳荳') || query.includes('哈囉') || query.includes('你好') || query.includes('誰')) {
+      botReply = `汪！我是拔麻最貼心的台股智能小助理荳荳！🐶<br>
+我可以透過後台 Python 爬回來的全台股市值前 500 大個股大數據，幫您即時統計出今天最吸金的強勢股、法人同買股與爆量飆股！隨時可以問我「今天漲幅最大的是什麼類股」或「推薦幾支法人買的股票」汪！🐾`;
+    }
+    else {
+      // 兜底萬用回答
+      const topSect = data.sectors[0];
+      const topStocksStr = topSect.stocks.slice(0, 3).map(s => `• <b>${s.id} ${s.name}</b> (${s.change >= 0 ? '+' : ''}${s.change}%)`).join('<br>');
+      botReply = `汪！荳荳對「${val}」思考了很久，雖然我的小腦袋還在學習怎麼回答這個，但荳荳建議您可以關注今天最強勢的 <b>${topSect.name.split(':')[0]} ➔ ${topSect.name.split(':')[1]}</b> 板塊汪！🐶<br><br>
+今日熱門強勢股如：<br>${topStocksStr}<br><br>
+您可以試著問我：「今天漲幅最大的是什麼類股？」或「推薦幾支法人股」！` + disclaimer;
+    }
+
+    appendChatMessage(botReply, 'bot');
+  }, 750);
+};
+
+// 插入聊天訊息至 DOM
+function appendChatMessage(text, sender) {
+  const body = document.getElementById('shibaChatBody');
+  if (!body) return;
+
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `shiba-msg shiba-msg-${sender}`;
+  msgDiv.innerHTML = `<div class="shiba-msg-text">${text}</div>`;
+  body.appendChild(msgDiv);
+
+  // 捲動到底部
+  body.scrollTop = body.scrollHeight;
+}
 
 window.triggerShibaMascotTalk = function() {
   const bubble = document.getElementById('shibaMascotBubble');

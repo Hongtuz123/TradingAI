@@ -451,8 +451,40 @@
 
   <!-- 🐾 荳荳柴犬吉祥物對話框 🐾 -->
   <div class="shiba-mascot-container" id="shibaMascotContainer">
+    <!-- 荳荳 AI 戰術室智能對話面板 -->
+    <div class="shiba-chat-panel" id="shibaChatPanel" style="display: none;">
+      <div class="shiba-chat-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="photo/doudou_happy.png" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--primary);" alt="荳荳">
+          <div>
+            <strong style="color:white; font-size:13px;">荳荳 AI 數據戰術室 🐾</strong>
+            <div style="font-size:10px; color:var(--primary);">大盤前 500 大實時統計中汪！🐶</div>
+          </div>
+        </div>
+        <button class="shiba-chat-close" onclick="toggleShibaChatPanel(false)">✕</button>
+      </div>
+      <div class="shiba-chat-body" id="shibaChatBody">
+        <div class="shiba-msg shiba-msg-bot">
+          <div class="shiba-msg-text">
+            嗨！我是荳荳🐾！今天也來陪拔麻一起找出強勢大飆股汪！<br>
+            我可以幫您分析大盤最新數據，您可以直接問我或點選下方快捷提問喔！🐶
+          </div>
+        </div>
+      </div>
+      <div class="shiba-chat-quick-tags">
+        <button class="quick-tag-btn" onclick="askShiba('today_strong')">🔥 今日強勢類股與清單</button>
+        <button class="quick-tag-btn" onclick="askShiba('today_weak')">❄️ 今日弱勢類股與清單</button>
+        <button class="quick-tag-btn" onclick="askShiba('trust_favorite')">💼 法人狂買追蹤</button>
+        <button class="quick-tag-btn" onclick="askShiba('volume_burst')">⚡ 今日爆量突破飆股</button>
+      </div>
+      <div class="shiba-chat-input-wrap">
+        <input type="text" id="shibaChatInput" placeholder="問荳荳：今日漲幅都是哪一類股？" onkeydown="if(event.key==='Enter') sendShibaMessage()">
+        <button class="shiba-chat-send" onclick="sendShibaMessage()">發送</button>
+      </div>
+    </div>
+
     <div class="shiba-bubble" id="shibaMascotBubble">汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！</div>
-    <div class="shiba-avatar-wrap" onclick="triggerShibaMascotTalk()">
+    <div class="shiba-avatar-wrap" onclick="toggleShibaChatPanel()">
       <img src="photo/doudou_happy.png" class="shiba-avatar" id="shibaMascotAvatar" alt="荳荳柴犬" />
     </div>
   </div>
