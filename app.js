@@ -105,6 +105,8 @@ function switchView(viewId) {
     }
   } else if (viewId === 'portfolio') {
     renderPortfolioGrid();
+  } else if (viewId === 'cmoney') {
+    initCMoneyView();
   }
 }
 
@@ -667,15 +669,116 @@ const SECTOR_COMPENSATION = {
 };
 
 // 智慧取得股票所屬的 [大產業] 與 [細分族群]
+// 智慧取得股票所屬的 [大產業] 與 [細分族群]
 function getStockSector(s) {
   if (SECTOR_COMPENSATION[s.id]) {
     return SECTOR_COMPENSATION[s.id];
   }
-  // 透過 OpenAPI 基本資料兜底
-  if (s.industry) {
-    return `一般板塊:${s.industry}`;
+  
+  // 透過 OpenAPI 基本資料與名稱特徵動態精準對齊 CMoney 類股
+  let a = '傳產'; // 預設大分類
+  let b = '其他傳產'; // 預設細分類
+  
+  const ind = s.industry || '';
+  const name = s.name || '';
+  const idStr = s.id ? String(s.id) : '';
+
+  if (ind.includes('半導體') || idStr === '2330' || idStr === '2303' || idStr === '3711') {
+    a = '電子';
+    if (name.includes('設計') || idStr === '2454' || idStr === '3034' || idStr === '2379' || idStr === '3661' || idStr === '3443' || idStr === '6531') {
+      b = 'IC設計';
+    } else if (name.includes('封') || name.includes('測') || idStr === '3711' || idStr === '2449' || idStr === '3264') {
+      b = 'IC封測';
+    } else if (name.includes('晶圓') || idStr === '2330' || idStr === '2303' || idStr === '6770' || idStr === '6182' || idStr === '6488') {
+      b = '半導體代工';
+    } else {
+      b = '半導體';
+    }
+  } else if (ind.includes('電腦') || ind.includes('週邊') || idStr === '2317' || idStr === '2382' || idStr === '3231') {
+    a = '電子';
+    if (name.includes('奇鋐') || name.includes('雙鴻') || name.includes('散熱') || idStr === '3017' || idStr === '3324') {
+      b = '散熱零組件';
+    } else if (name.includes('廣達') || name.includes('緯創') || name.includes('英業達') || name.includes('神達') || name.includes('和碩') || name.includes('鴻海') || idStr === '2317' || idStr === '2382' || idStr === '3231' || idStr === '6669') {
+      b = 'AI伺服器/組裝';
+    } else {
+      b = '電腦週邊';
+    }
+  } else if (ind.includes('金融') || ind.includes('保險') || idStr.startsWith('28') || idStr.startsWith('58')) {
+    a = '金融';
+    if (name.includes('金控') || idStr === '2881' || idStr === '2882' || idStr === '2891' || idStr === '2886' || idStr === '2884') {
+      b = '金控';
+    } else if (name.includes('銀行')) {
+      b = '銀行';
+    } else if (name.includes('證')) {
+      b = '證券';
+    } else {
+      b = '保險/其他金融';
+    }
+  } else if (ind.includes('航運') || idStr === '2603' || idStr === '2609' || idStr === '2618') {
+    a = '傳產';
+    if (name.includes('航') || name.includes('飛') || idStr === '2618' || idStr === '2610') {
+      b = '航空客貨運';
+    } else if (name.includes('長榮') || name.includes('陽明') || name.includes('萬海') || idStr === '2603' || idStr === '2609' || idStr === '2615') {
+      b = '貨櫃航運';
+    } else {
+      b = '航運';
+    }
+  } else if (ind.includes('生技') || ind.includes('醫療') || ind.includes('藥')) {
+    a = '生技';
+    b = '生技醫療';
+  } else if (ind.includes('光電') || name.includes('光') || idStr === '2409' || idStr === '3481') {
+    a = '電子';
+    if (name.includes('鏡頭') || idStr === '3008' || idStr === '3406') {
+      b = '光學鏡頭';
+    } else if (name.includes('面板') || name.includes('友達') || name.includes('群創') || idStr === '2409' || idStr === '3481') {
+      b = '面板';
+    } else {
+      b = '光電';
+    }
+  } else if (ind.includes('零組件') || ind.includes('通信') || ind.includes('網通') || ind.includes('電子零件') || ind.includes('資訊服務')) {
+    a = '電子';
+    if (name.includes('國巨') || name.includes('華新科') || idStr === '2327' || idStr === '2492') {
+      b = '被動元件MLCC';
+    } else if (name.includes('欣興') || name.includes('南電') || name.includes('景碩') || idStr === '3037' || idStr === '3189' || idStr === '8046') {
+      b = 'IC載板';
+    } else if (ind.includes('通信') || ind.includes('網通')) {
+      b = '網通設備';
+    } else {
+      b = '電子零組件';
+    }
+  } else if (ind.includes('水泥')) {
+    a = '傳產'; b = '水泥';
+  } else if (ind.includes('食品')) {
+    a = '傳產'; b = '食品';
+  } else if (ind.includes('塑膠')) {
+    a = '傳產'; b = '塑膠';
+  } else if (ind.includes('紡織')) {
+    a = '傳產'; b = '紡織纖維';
+  } else if (ind.includes('電機') || ind.includes('機械')) {
+    a = '傳產'; b = '電機';
+  } else if (ind.includes('電線') || ind.includes('電纜')) {
+    a = '傳產'; b = '電線電纜';
+  } else if (ind.includes('化學') || ind.includes('化工')) {
+    a = '傳產'; b = '化學工業';
+  } else if (ind.includes('營建') || ind.includes('建材')) {
+    a = '傳產'; b = '營建';
+  } else if (ind.includes('鋼鐵')) {
+    a = '傳產'; b = '鋼鐵';
+  } else if (ind.includes('橡膠')) {
+    a = '傳產'; b = '橡膠';
+  } else if (ind.includes('汽車')) {
+    a = '傳產'; b = '汽車零組件';
+  } else if (ind.includes('觀光') || ind.includes('餐旅')) {
+    a = '傳產'; b = '觀光餐旅';
+  } else if (ind.includes('百貨') || ind.includes('貿易')) {
+    a = '傳產'; b = '百貨貿易';
+  } else {
+    if (ind) {
+      b = ind.replace('業', '');
+    }
   }
-  return '傳統產業:一般傳統';
+
+  return `${a}:${b}`;
 }
 
 // 核心產業與細分族群之詳細描述資料庫 (三層結構簡介)
@@ -1574,4 +1677,281 @@ window.renderPortfolioGrid = function() {
 document.addEventListener('DOMContentLoaded', () => {
   renderPortfolioGrid();
 });
+
+// =============================================
+// CMoney 產業分類總覽控制邏輯 (全自動對齊版)
+// =============================================
+let cmoneySelectedCategory = 'all';
+let cmoneySelectedSub = 'all';
+
+function initCMoneyView() {
+  if (typeof mockStocks === 'undefined' || mockStocks.length === 0) return;
+  
+  // 1. 統計大類股數量
+  let elecCount = 0;
+  let tradCount = 0;
+  let finCount = 0;
+  let bioCount = 0;
+  
+  mockStocks.forEach(s => {
+    const sectorStr = getStockSector(s);
+    const bigCat = sectorStr.split(':')[0];
+    if (bigCat === '電子') elecCount++;
+    else if (bigCat === '金融') finCount++;
+    else if (bigCat === '生技') bioCount++;
+    else tradCount++; // 傳產
+  });
+  
+  const elElec = document.getElementById('cmoneyStatElec');
+  const elTrad = document.getElementById('cmoneyStatTrad');
+  const elFin = document.getElementById('cmoneyStatFin');
+  const elBio = document.getElementById('cmoneyStatBio');
+  
+  if (elElec) elElec.innerText = elecCount + ' 檔';
+  if (elTrad) elTrad.innerText = tradCount + ' 檔';
+  if (elFin) elFin.innerText = finCount + ' 檔';
+  if (elBio) elBio.innerText = bioCount + ' 檔';
+  
+  // 2. 初始化渲染大分類為 "all"
+  selectCMoneyCategory(cmoneySelectedCategory);
+}
+
+function selectCMoneyCategory(category) {
+  cmoneySelectedCategory = category;
+  cmoneySelectedSub = 'all';
+  
+  // 更新大類股按鈕樣式
+  document.querySelectorAll('.cmoney-tab-btn').forEach(btn => {
+    const btnCat = btn.getAttribute('data-category');
+    if (btnCat === category) {
+      btn.classList.add('active');
+      btn.style.background = 'rgba(249, 115, 22, 0.1)';
+      btn.style.borderColor = 'rgba(249, 115, 22, 0.3)';
+      btn.style.color = '#f97316';
+    } else {
+      btn.classList.remove('active');
+      btn.style.background = 'rgba(255, 255, 255, 0.03)';
+      btn.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+      btn.style.color = 'var(--text-muted)';
+    }
+  });
+  
+  // 收集該大分類下所有的細項分類
+  const subs = new Set();
+  mockStocks.forEach(s => {
+    const sectorStr = getStockSector(s);
+    const parts = sectorStr.split(':');
+    const big = parts[0];
+    const sub = parts[1] || '其他';
+    
+    if (category === 'all' || big === category) {
+      subs.add(sub);
+    }
+  });
+  
+  // 渲染左側細分類藥丸按鈕
+  const subContainer = document.getElementById('cmoneySublist');
+  if (subContainer) {
+    subContainer.innerHTML = '';
+    
+    // "全部細分類" 按鈕
+    const allBtn = document.createElement('button');
+    allBtn.className = 'cmoney-sub-pill active';
+    allBtn.innerText = '✨ 全部細分類';
+    allBtn.style.cssText = `
+      text-align: left;
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    `;
+    allBtn.onclick = () => selectCMoneySub('all', allBtn);
+    subContainer.appendChild(allBtn);
+    
+    // 細分類按鈕
+    Array.from(subs).sort().forEach(subName => {
+      const pill = document.createElement('button');
+      pill.className = 'cmoney-sub-pill';
+      pill.innerText = `🏷️ ${subName}`;
+      pill.style.cssText = `
+        text-align: left;
+        background: rgba(255,255,255,0.03);
+        color: var(--text-muted);
+        border: 1px solid rgba(255,255,255,0.06);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+      `;
+      pill.onclick = () => selectCMoneySub(subName, pill);
+      subContainer.appendChild(pill);
+    });
+  }
+  
+  renderCMoneyTable();
+}
+
+function selectCMoneySub(sub, clickedBtn) {
+  cmoneySelectedSub = sub;
+  
+  // 更新藥丸 Active 樣式
+  document.querySelectorAll('.cmoney-sub-pill').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.background = 'rgba(255, 255, 255, 0.03)';
+    btn.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+    btn.style.color = 'var(--text-muted)';
+  });
+  
+  if (clickedBtn) {
+    clickedBtn.classList.add('active');
+    clickedBtn.style.background = '#f97316';
+    clickedBtn.style.color = 'white';
+    clickedBtn.style.borderColor = 'transparent';
+  }
+  
+  renderCMoneyTable();
+}
+
+function filterCMoneyStocks() {
+  renderCMoneyTable();
+}
+
+function renderCMoneyTable() {
+  const tbody = document.getElementById('cmoneyTableBody');
+  const searchInput = document.getElementById('cmoneySearchInput');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const filterTitle = document.getElementById('cmoneyCurrentFilterTitle');
+  
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  let filtered = mockStocks.filter(s => {
+    const sectorStr = getStockSector(s);
+    const parts = sectorStr.split(':');
+    const big = parts[0];
+    const sub = parts[1] || '其他';
+    
+    // 大類股篩選
+    if (cmoneySelectedCategory !== 'all' && big !== cmoneySelectedCategory) return false;
+    
+    // 細分類篩選
+    if (cmoneySelectedSub !== 'all' && sub !== cmoneySelectedSub) return false;
+    
+    // 搜尋關鍵字
+    if (query) {
+      const matchId = String(s.id).includes(query);
+      const matchName = String(s.name).toLowerCase().includes(query);
+      if (!matchId && !matchName) return false;
+    }
+    
+    return true;
+  });
+  
+  // 更新表格上方標題數量
+  if (filterTitle) {
+    let titleStr = '';
+    if (cmoneySelectedCategory === 'all') titleStr = '全部';
+    else titleStr = cmoneySelectedCategory;
+    
+    if (cmoneySelectedSub !== 'all') titleStr += ` ▸ ${cmoneySelectedSub}`;
+    
+    filterTitle.innerText = `${titleStr} (${filtered.length} 檔)`;
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
+          🔍 未找到符合當前分類或搜尋條件的個股汪...
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  // 依代碼排序
+  filtered.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  
+  // 動態獲取最新交易日實時波動狀態
+  const now = new Date();
+  const isMarketOpen = checkIsMarketOpen(now);
+  
+  filtered.forEach(s => {
+    const sectorStr = getStockSector(s);
+    const parts = sectorStr.split(':');
+    const big = parts[0];
+    const sub = parts[1] || '其他';
+    
+    // 價格與漲跌幅 (實時計算)
+    let displayPrice = s.price;
+    let displayChange = s.change;
+    
+    if (isMarketOpen && typeof getRealtimeVolatilePrice === 'function') {
+      const real = getRealtimeVolatilePrice(s);
+      displayPrice = real.price;
+      displayChange = real.change;
+    }
+    
+    const changeVal = parseFloat(displayChange || 0);
+    const changeColor = changeVal > 0 ? '#ef4444' : changeVal < 0 ? '#22c55e' : 'var(--text-muted)';
+    const changeSign = changeVal > 0 ? '+' : '';
+    
+    // 是否已在自選清單中
+    const isSaved = userPortfolio.some(item => item.id === s.id);
+    const saveBtnHtml = isSaved 
+      ? `<button onclick="toggleCMoneyPortfolio('${s.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;">❤️ 已自選</button>`
+      : `<button onclick="toggleCMoneyPortfolio('${s.id}')" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;">⭐ 加自選</button>`;
+      
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; cursor: pointer;';
+    tr.onmouseover = () => { tr.style.background = 'rgba(255,255,255,0.02)'; };
+    tr.onmouseout = () => { tr.style.background = 'transparent'; };
+    
+    tr.innerHTML = `
+      <td style="padding: 10px 12px; font-weight: 500; color: var(--text-muted);">${big}</td>
+      <td style="padding: 10px 12px;"><span style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: white;">${sub}</span></td>
+      <td style="padding: 10px 12px; font-weight: 700; color: #f97316; font-family: monospace;">${s.id}</td>
+      <td style="padding: 10px 12px; font-weight: 600; color: white;">${s.name}</td>
+      <td style="padding: 10px 12px; text-align: right; font-weight: 700; font-family: monospace;">${displayPrice.toFixed(2)}</td>
+      <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: ${changeColor}; font-family: monospace;">${changeSign}${displayChange.toFixed(2)}%</td>
+      <td style="padding: 10px 12px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        ${saveBtnHtml}
+        <button onclick="switchView('chart'); openChart('${s.id}')" style="background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.4); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: all 0.2s;">📈 策略回測</button>
+      </td>
+    `;
+    
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleCMoneyPortfolio(stockId) {
+  const stock = mockStocks.find(s => s.id === stockId);
+  if (!stock) return;
+  
+  const idx = userPortfolio.findIndex(item => item.id === stockId);
+  if (idx !== -1) {
+    userPortfolio.splice(idx, 1);
+    showNotification(`已從自選清單移除 ${stock.name} 🐾`);
+  } else {
+    userPortfolio.push({
+      id: stock.id,
+      name: stock.name,
+      addedAt: new Date().toISOString()
+    });
+    showNotification(`已新增 ${stock.name} 至自選清單 ⭐`);
+  }
+  
+  savePortfolio();
+  renderPortfolioGrid();
+  renderCMoneyTable();
+}
+
 
