@@ -105,6 +105,9 @@ function switchView(viewId) {
     }
   } else if (viewId === 'portfolio') {
     renderPortfolioGrid();
+  } else if (viewId === 'cmoney') {
+    // CMoney 產業對照功能已整合至儀表板，此頁籤目前導向儀表板
+    switchView('dashboard');
   }
 }
 
@@ -836,7 +839,12 @@ function renderSectorFlowMap() {
   // 計算每個族群的平均值 (動態支援盤中 liveChange 即時大數據運算)
   const sectorsArray = Object.values(sectorGroups);
   sectorsArray.forEach(g => {
-    const sumChange = g.stocks.reduce((sum, s) => sum + (s.liveChange !== undefined ? s.liveChange : (s.change || 0)), 0);
+    const sumChange = g.stocks.reduce((sum, s) => {
+      if (s.liveChange !== undefined) return sum + s.liveChange;
+      // 若 liveChange 尚未被 runScreener 初始化，動態計算
+      const live = getLiveStockData(s);
+      return sum + (live.change || 0);
+    }, 0);
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
@@ -1020,16 +1028,12 @@ function renderRankings() {
   
   const sectorsArray = Object.values(sectorGroups);
   sectorsArray.forEach(g => {
-    // 支援實時波動價格計算
     const sumChange = g.stocks.reduce((sum, s) => {
-      // 優先使用實時 change，若無則用靜態 change
-      const now = new Date();
-      const isMarketOpen = checkIsMarketOpen ? checkIsMarketOpen(now) : false;
-      if (isMarketOpen && typeof getRealtimeVolatilePrice === 'function') {
-        return sum + getRealtimeVolatilePrice(s).change;
-      }
+      // 優先使用已計算的 liveChange，再 fallback 到靜態 change
       if (s.liveChange !== undefined) return sum + s.liveChange;
-      return sum + (s.change || 0);
+      // 若 liveChange 尚未初始化（runScreener 未執行過），動態計算
+      const live = getLiveStockData(s);
+      return sum + (live.change || 0);
     }, 0);
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
@@ -1689,10 +1693,4 @@ window.renderPortfolioGrid = function() {
     `;
   });
 };
-
-// 頁面初始化掛載自選渲染
-document.addEventListener('DOMContentLoaded', () => {
-  renderPortfolioGrid();
-});
-
 
