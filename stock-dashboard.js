@@ -770,7 +770,7 @@ function renderLWChart(containerId, klineData, height = 260) {
               position: 'belowBar',
               color: '#ef4444', // 紅色字
               shape: 'arrowUp',
-              text: 'RSI超買 (看漲)',
+              text: 'RSI超買(漲)',
               size: 2.0
             });
             candleColors.push({ time: time, color: '#ffffff' }); // 著色為白色 K 棒
@@ -790,7 +790,7 @@ function renderLWChart(containerId, klineData, height = 260) {
               position: 'aboveBar',
               color: '#10b981', // 綠色字
               shape: 'arrowDown',
-              text: 'RSI超賣 (看跌)',
+              text: 'RSI超賣(跌)',
               size: 2.0
             });
             candleColors.push({ time: time, color: '#ffffff' }); // 著色為白色 K 棒
