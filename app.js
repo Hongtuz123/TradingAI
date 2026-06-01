@@ -1572,6 +1572,36 @@ window.toggleStockPortfolio = function(symbolId) {
   updateChartPortfolioButton();
 };
 
+// 自選清單：手動輸入代碼或名稱加入自選
+window.addStockToPortfolioFromInput = function() {
+  const input = document.getElementById('portfolioSearchInput');
+  if (!input) return;
+  const val = input.value.trim().toLowerCase();
+  if (!val) {
+    alert('請先輸入股票代碼或名稱喔！🐾');
+    return;
+  }
+
+  // 在 mockStocks 全域資料庫中尋找匹配的股票 (精確代碼或部分名稱)
+  const stock = mockStocks.find(s => s.id === val || s.name.toLowerCase() === val || s.name.toLowerCase().includes(val));
+  
+  if (!stock) {
+    alert(`找不到代碼或名稱為「${val}」的股票汪...🐶`);
+    return;
+  }
+
+  if (isStockInPortfolio(stock.id)) {
+    alert(`【${stock.id} ${stock.name}】已經在您的自選清單裡囉！🐾`);
+    input.value = '';
+    return;
+  }
+
+  // 加入自選並同步重繪
+  toggleStockPortfolio(stock.id);
+  alert(`🎉 成功將【${stock.id} ${stock.name}】加入自選清單汪！🐾`);
+  input.value = '';
+};
+
 // 針對 K 線圖當前標的進行自選切換
 window.toggleCurrentStockPortfolio = function() {
   if (typeof currentChartSymbol !== 'undefined' && currentChartSymbol) {

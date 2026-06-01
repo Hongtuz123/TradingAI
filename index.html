@@ -397,8 +397,12 @@
             <h2>⭐ 自選監控戰術看板</h2>
             <p class="subtitle">追蹤您加入自選的台股核心強勢飆股，動態分析 5D/20D 籌碼與多天空金買賣盤汪！🐶</p>
           </div>
-          <div class="whitelist-actions">
-            <span style="font-size: 13px; color: var(--text-muted);">歷史回測或篩選列表中點擊「★ 自選」即可追蹤！</span>
+          <div class="whitelist-actions" style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+              <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
+              <input type="text" id="portfolioSearchInput" placeholder="輸入股號或名稱 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; width:200px;" onkeydown="if(event.key==='Enter') addStockToPortfolioFromInput()">
+              <button class="btn-primary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="addStockToPortfolioFromInput()">加入自選</button>
+            </div>
           </div>
         </div>
         
