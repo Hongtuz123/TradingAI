@@ -238,6 +238,8 @@ function calculateRSI(data, period = 14) {
     rsi.push({ time: data[i].time, value: rsiValue });
   }
   return rsi;
+}
+
 function calculateEMA(data, period) {
   const ema = [];
   if (data.length === 0) return ema;
