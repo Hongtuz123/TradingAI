@@ -36,9 +36,6 @@
       <button class="nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
         <span class="nav-icon">⭐</span> 自選清單
       </button>
-      <button class="nav-btn" data-view="cmoney" onclick="switchView('cmoney')">
-        <span class="nav-icon">📁</span> CMoney 分類
-      </button>
       <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
         <span class="nav-icon">📈</span> 回測功能
       </button>
@@ -108,7 +105,7 @@
         <!-- 左半邊：熱力圖 -->
         <div class="flow-map-panel">
           <div class="panel-header">
-            <h3>🔥 資金族群熱力圖 <span style="font-size:12px;color:var(--text-muted);font-weight:normal;margin-left:8px;">TW-Stock Sector Flow Map</span></h3>
+            <h3>🔥 荳花漲跌區塊偵測 <span style="font-size:12px;color:var(--text-muted);font-weight:normal;margin-left:8px;">TW-Stock Sector Flow Map</span></h3>
             <div style="font-size: 11px; color: var(--text-muted);">
               面積: 熱量比 (成交量/日均量) | 顏色: 漲跌幅
             </div>
@@ -478,118 +475,6 @@
           </div>
           <!-- Lightweight Charts 容器：flex:1 + min-height:0 讓圖表填滿剩餘空間 -->
           <div id="tvChartContainer" style="flex:1;min-height:0;overflow:hidden;"></div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- ======================== CMoney 產業分類視圖 ======================== -->
-    <section class="view" id="view-cmoney">
-      <div class="cmoney-container" style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- 頂部主題卡片 -->
-        <div class="cmoney-header-card" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(249, 115, 22, 0.25); border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-            <div>
-              <h2 style="color: #f97316; margin: 0 0 4px 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                <span>📁 CMoney 個股產業總覽分類</span>
-                <span style="font-size: 11px; background: rgba(249, 115, 22, 0.15); color: #f97316; padding: 2px 8px; border-radius: 99px; border: 1.5px solid rgba(249,115,22,0.3);">股市爆料同學會對齊版</span>
-              </h2>
-              <p style="color: var(--text-muted); margin: 0; font-size: 13px;">本表將系統內 500 大個股與觀察股，100% 精準對齊 CMoney 類股，完美涵蓋「產業類股 ➔ 細分分類 ➔ 代碼與名稱」四層映射。</p>
-            </div>
-            
-            <!-- 搜尋框 -->
-            <div class="cmoney-search-wrap" style="position: relative; width: 280px;">
-              <input type="text" id="cmoneySearchInput" oninput="filterCMoneyStocks()" placeholder="搜尋股票代號或名稱..." style="width: 100%; background: rgba(15, 23, 42, 0.6); border: 1.5px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 8px 12px; padding-right: 36px; color: white; outline: none; font-size: 13px; transition: all 0.3s;" onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
-              <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;">🔍</span>
-            </div>
-          </div>
-          
-          <!-- 統計卡片 -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 15px;">
-            <div style="background: rgba(30, 41, 59, 0.4); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-              <div style="font-size: 11px; color: var(--text-muted);">電子產業個股</div>
-              <div style="font-size: 20px; font-weight: 700; color: #60a5fa;" id="cmoneyStatElec">0 檔</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.4); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-              <div style="font-size: 11px; color: var(--text-muted);">傳產及航運個股</div>
-              <div style="font-size: 20px; font-weight: 700; color: #facc15;" id="cmoneyStatTrad">0 檔</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.4); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-              <div style="font-size: 11px; color: var(--text-muted);">金融與保險個股</div>
-              <div style="font-size: 20px; font-weight: 700; color: #34d399;" id="cmoneyStatFin">0 檔</div>
-            </div>
-            <div style="background: rgba(30, 41, 59, 0.4); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
-              <div style="font-size: 11px; color: var(--text-muted);">生技與醫療個股</div>
-              <div style="font-size: 20px; font-weight: 700; color: #ec4899;" id="cmoneyStatBio">0 檔</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 左右主控台區塊 -->
-        <div class="cmoney-main-grid" style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start;">
-          
-          <!-- 左側：CMoney 大產業與細分族群選擇面板 -->
-          <div class="cmoney-left-sidebar" style="display: flex; flex-direction: column; gap: 15px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; max-height: 80vh; overflow-y: auto;">
-            <div style="font-size: 13px; font-weight: 700; color: white; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 5px; display: flex; align-items: center; gap: 6px;">
-              <span>📁 大類股與分類目錄</span>
-            </div>
-            
-            <!-- 大類股切換 -->
-            <div class="cmoney-category-tabs" style="display: flex; flex-direction: column; gap: 6px;">
-              <button class="cmoney-tab-btn active" data-category="all" onclick="selectCMoneyCategory('all')" style="width: 100%; text-align: left; background: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249,115,22,0.3); color: #f97316; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                🌐 全體個股產業總覽
-              </button>
-              <button class="cmoney-tab-btn" data-category="電子" onclick="selectCMoneyCategory('電子')" style="width: 100%; text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                💻 電子產業類股
-              </button>
-              <button class="cmoney-tab-btn" data-category="傳產" onclick="selectCMoneyCategory('傳產')" style="width: 100%; text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                🏭 傳統產業類股
-              </button>
-              <button class="cmoney-tab-btn" data-category="金融" onclick="selectCMoneyCategory('金融')" style="width: 100%; text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                🏦 金融保險類股
-              </button>
-              <button class="cmoney-tab-btn" data-category="生技" onclick="selectCMoneyCategory('生技')" style="width: 100%; text-align: left; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                🧬 生技醫療類股
-              </button>
-            </div>
-            
-            <!-- 細分分類藥丸 -->
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 10px; display: flex; align-items: center; gap: 4px;">
-              <span>🏷️ 細分族群快速切換：</span>
-            </div>
-            <div id="cmoneySublist" style="display: flex; flex-direction: column; gap: 4px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
-              <!-- 由 JS 動態繪製分類細項按鈕 -->
-            </div>
-          </div>
-
-          <!-- 右側：資料對照表格 -->
-          <div class="cmoney-right-content" style="background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 15px; min-height: 400px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
-              <span style="font-size: 14px; font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
-                <span>📋 分類映射表</span>
-                <span id="cmoneyCurrentFilterTitle" style="font-size: 11px; background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px; color: var(--text-muted);">全部 (0 檔)</span>
-              </span>
-            </div>
-            
-            <!-- 表格容器 -->
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                <thead>
-                  <tr style="border-bottom: 1.5px solid rgba(255,255,255,0.1); color: var(--text-muted); font-weight: 600;">
-                    <th style="padding: 10px 12px; font-size: 12px;">產業類股 (欄位 a)</th>
-                    <th style="padding: 10px 12px; font-size: 12px;">細分類 (欄位 b)</th>
-                    <th style="padding: 10px 12px; font-size: 12px;">股票代碼 (欄位 c)</th>
-                    <th style="padding: 10px 12px; font-size: 12px;">股票名稱 (欄位 d)</th>
-                    <th style="padding: 10px 12px; font-size: 12px; text-align: right;">現價</th>
-                    <th style="padding: 10px 12px; font-size: 12px; text-align: right;">漲跌幅</th>
-                    <th style="padding: 10px 12px; font-size: 12px; text-align: center;">實戰連動</th>
-                  </tr>
-                </thead>
-                <tbody id="cmoneyTableBody" style="color: white;">
-                  <!-- 由 JS 動態渲染列 -->
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </section>
