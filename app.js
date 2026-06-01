@@ -57,11 +57,40 @@ function startClock() {
     } else {
       marketStatusText.innerText = `台股盤中交易中，即時監控中`;
     }
+
+    // 盤中定時（每 5 秒）自動更新價格並刷新當前啟動之視圖畫面，非盤中則固定保留昨收數據
+    if (s % 5 === 0 && isMarketActive()) {
+      updateAllStockPrices();
+      if (currentActiveView === 'dashboard') {
+        renderSectorFlowMap();
+        renderRankings();
+      } else if (currentActiveView === 'screener') {
+        runScreener();
+      } else if (currentActiveView === 'whitelist') {
+        renderWhitelistGrid();
+      } else if (currentActiveView === 'portfolio') {
+        renderPortfolioGrid();
+      }
+    }
   }, 1000);
 }
 
+// 全域同步更新所有股票的最新價格與漲跌幅
+window.updateAllStockPrices = function() {
+  if (typeof mockStocks !== 'undefined' && Array.isArray(mockStocks)) {
+    mockStocks.forEach(s => {
+      const live = getLiveStockData(s);
+      s.price = live.price;
+      s.change = live.change;
+    });
+  }
+};
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+  // 優先同步所有股票之最新價格與漲跌幅
+  updateAllStockPrices();
+
   // 從 data.js 中的 rulesConfig 載入預設篩選規則
   if (typeof rulesConfig !== 'undefined') {
     const sc = rulesConfig.scoring;
@@ -87,7 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 切換視圖
+let currentActiveView = 'dashboard';
 function switchView(viewId) {
+  currentActiveView = viewId;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   
@@ -453,6 +484,9 @@ window.getLiveStockData = function(s) {
 
 // 執行篩選
 function runScreener() {
+  // 每次執行篩選前，全面同步一次所有股票最新價格與漲跌幅
+  updateAllStockPrices();
+
   // 取得篩選參數
   const p = {
     eps: parseFloat(document.getElementById('f_eps_growth').value) || 0,
@@ -486,10 +520,9 @@ function runScreener() {
 
   // 全數標的走訪：即時盤中運算動態套用
   mockStocks.forEach(s => {
-    // 盤中時，更新股票暫時運算價格與漲跌幅
-    const live = getLiveStockData(s);
-    s.livePrice = live.price;
-    s.liveChange = live.change;
+    // 同步相容屬性以供舊程式碼安全讀取
+    s.livePrice = s.price;
+    s.liveChange = s.change;
 
     // 支援多型態判定
     const stockTypes = s.type ? s.type.split(',') : [];
