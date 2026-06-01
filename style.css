@@ -1577,5 +1577,227 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   50% { transform: rotate(8deg) translateY(-8px); }
 }
 
+/* ================= 📱 手機與平板全站 RWD 響應式優化 📱 ================= */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+  }
+
+  /* 頂部導航列手機端優化 */
+  .topbar {
+    flex-direction: column;
+    height: auto;
+    padding: 12px;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .topbar-brand {
+    align-self: center;
+  }
+
+  .topbar-nav {
+    width: 100%;
+    justify-content: space-around;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .topbar-status {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .last-update {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .view {
+    padding: 10px;
+  }
+
+  /* 儀表板市場健康度橫幅手機端自適應 */
+  .market-health-banner {
+    padding: 12px;
+  }
+
+  .health-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .health-header h2 {
+    font-size: 16px;
+  }
+
+  .health-overall {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .health-grade {
+    font-size: 14px;
+    padding: 2px 6px;
+  }
+
+  /* 荳花漲跌區塊偵測 (熱力圖) 手機端強大保護 */
+  .flow-map-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-auto-rows: minmax(85px, auto);
+    gap: 6px;
+  }
+
+  .treemap-node {
+    grid-column: span 1 !important; /* 手機端一律改為單格/雙格對齊，防止被擠成小扁格 */
+    padding: 8px;
+  }
+
+  .treemap-node-header {
+    font-size: 11px;
+  }
+
+  .treemap-node-change {
+    font-size: 13px;
+  }
+
+  .treemap-node-meta {
+    font-size: 9px;
+    display: none; /* 窄螢幕隱藏次要內容以防破版 */
+  }
+
+  /* 排行榜手機端字型縮放 */
+  .rankings-tabs {
+    border-radius: 6px;
+  }
+
+  .rank-tab-btn {
+    padding: 6px 1px;
+    font-size: 9px;
+  }
+
+  .rank-item-row {
+    padding: 8px 10px;
+  }
+
+  .rank-title {
+    font-size: 12px;
+  }
+
+  .rank-desc {
+    font-size: 9px;
+  }
+
+  /* 篩選器視圖 - 手機端側邊滑出抽屜效果 */
+  .screener-layout {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .mobile-filter-toggle {
+    display: block !important;
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(249,115,22,0.25);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .filter-panel {
+    position: fixed;
+    top: 0;
+    left: -330px; /* 預設完全收縮在螢幕外 */
+    width: 300px;
+    height: 100vh;
+    z-index: 10000;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(10px);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.6);
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .filter-panel.active {
+    left: 0; /* 展開滑入 */
+  }
+
+  /* 行動端關閉按鈕 */
+  .filter-panel:after {
+    content: "✕ 點擊此處收合條件";
+    display: block;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    padding: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border-top: 1px solid var(--border-color);
+  }
+
+  /* 點擊面板關閉 */
+  .filter-panel.active:after {
+    pointer-events: auto;
+  }
+
+  /* 篩選表格自適應滾動，防止左右溢出破版 */
+  .results-table-wrap {
+    width: 100%;
+    overflow-x: auto !important; /* 啟用完美橫向滾動 */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .results-table {
+    min-width: 750px; /* 強制保持表格最窄寬度，避免文字擠成一團 */
+  }
+
+  /* 白名單與自選清單手機卡片排版 */
+  .whitelist-grid, .portfolio-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .wl-card, .portfolio-card {
+    padding: 12px;
+  }
+
+  /* 回測與 K 線圖 RWD */
+  .chart-layout {
+    flex-direction: column;
+    height: auto !important;
+  }
+
+  .chart-main {
+    height: 520px !important;
+  }
+
+  .chart-toolbar {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+
+  .chart-toolbar div, .chart-toolbar button {
+    font-size: 11px !important;
+  }
+}
+
 
 

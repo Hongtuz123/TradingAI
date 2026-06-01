@@ -463,9 +463,9 @@ function renderLWChart(containerId, klineData, height = 260) {
     mainDiv.style.cssText = 'flex:3;min-height:0;position:relative;';
     container.appendChild(mainDiv);
 
-    // RSI 面板分隔線
+    // RSI 面板分隔線（保留 12px 透明空格間隔）
     const separator = document.createElement('div');
-    separator.style.cssText = 'height:1px;background:rgba(71,85,105,0.6);flex-shrink:0;';
+    separator.style.cssText = 'height:12px;background:transparent;flex-shrink:0;';
     container.appendChild(separator);
 
     const rsiDiv = document.createElement('div');
@@ -932,10 +932,14 @@ function renderLWChart(containerId, klineData, height = 260) {
 
       for (const seg of segments) {
         const segCloseData = [];
+        const segLineData = [];
         let segStMin = Infinity;
         let segStMax = -Infinity;
         for (let i = seg.startIdx; i <= seg.endIdx; i++) {
           if (supertrendData[i].value === null) continue;
+          
+          segLineData.push({ time: supertrendData[i].time, value: supertrendData[i].value });
+
           const candle = formattedCandles.find(c => c.time === supertrendData[i].time);
           if (candle) {
             segCloseData.push({ time: candle.time, value: candle.close });
@@ -946,12 +950,13 @@ function renderLWChart(containerId, klineData, height = 260) {
 
         if (segCloseData.length === 0) continue;
 
+        // 繪製背景填充 (透明度調低，顏色更飽滿)
         if (seg.trend === 1) {
           const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segStMin },
             topLineColor: 'transparent',
-            topFillColor1: 'rgba(34, 197, 94, 0.18)',
-            topFillColor2: 'rgba(34, 197, 94, 0.04)',
+            topFillColor1: 'rgba(34, 197, 94, 0.35)',
+            topFillColor2: 'rgba(34, 197, 94, 0.08)',
             bottomLineColor: 'transparent',
             bottomFillColor1: 'transparent',
             bottomFillColor2: 'transparent',
@@ -963,6 +968,18 @@ function renderLWChart(containerId, klineData, height = 260) {
           });
           hlSeries.setData(segCloseData);
           highlighterSeriesList.push(hlSeries);
+
+          // 繪製該段綠色軌道實線 (獨立 Series，轉換趨勢時不連起來)
+          const lineSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+            color: '#22c55e',
+            lineWidth: 2,
+            lineStyle: 0,
+            title: '',
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 4,
+          });
+          lineSeries.setData(segLineData);
+          highlighterSeriesList.push(lineSeries);
         } else {
           const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segStMax },
@@ -970,8 +987,8 @@ function renderLWChart(containerId, klineData, height = 260) {
             topFillColor1: 'transparent',
             topFillColor2: 'transparent',
             bottomLineColor: 'transparent',
-            bottomFillColor1: 'rgba(239, 68, 68, 0.04)',
-            bottomFillColor2: 'rgba(239, 68, 68, 0.18)',
+            bottomFillColor1: 'rgba(239, 68, 68, 0.08)',
+            bottomFillColor2: 'rgba(239, 68, 68, 0.35)',
             lineWidth: 0,
             title: '',
             crosshairMarkerVisible: false,
@@ -980,6 +997,18 @@ function renderLWChart(containerId, klineData, height = 260) {
           });
           hlSeries.setData(segCloseData);
           highlighterSeriesList.push(hlSeries);
+
+          // 繪製該段紅色軌道實線 (獨立 Series，轉換趨勢時不連起來)
+          const lineSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+            color: '#ef4444',
+            lineWidth: 2,
+            lineStyle: 0,
+            title: '',
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 4,
+          });
+          lineSeries.setData(segLineData);
+          highlighterSeriesList.push(lineSeries);
         }
       }
 
@@ -1011,14 +1040,14 @@ function renderLWChart(containerId, klineData, height = 260) {
         }
       }
 
-      supertrendUpSeries.setData(upData);
-      supertrendDnSeries.setData(dnData);
+      // 清空原始整條連線的 Series，改用分段 Series
+      supertrendUpSeries.setData([]);
+      supertrendDnSeries.setData([]);
 
-      if (buyMarkers.length > 0) {
-        LightweightCharts.createSeriesMarkers(supertrendUpSeries, buyMarkers);
-      }
-      if (sellMarkers.length > 0) {
-        LightweightCharts.createSeriesMarkers(supertrendDnSeries, sellMarkers);
+      // 買賣箭頭標記在主 K 線圖（candleSeries）上，更加美觀精準
+      const allMarkers = [...buyMarkers, ...sellMarkers].sort((a, b) => (a.time < b.time ? -1 : 1));
+      if (allMarkers.length > 0) {
+        LightweightCharts.createSeriesMarkers(candleSeries, allMarkers);
       }
     }
     // ---- 策略 B: 下行趨勢線突破策略 ----
