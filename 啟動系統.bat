@@ -1,9 +1,9 @@
 @echo off
-title 荳荳AI股票篩選器 - 啟動器
+title 荳荳AI智能選股 - 啟動器
 chcp 65001 > nul
 
 echo 正在啟動後端 API 服務...
-start "荳荳AI選股後端" cmd /k "cd /d "%~dp0backend" && python main.py"
+start "荳荳AI智能選股後端" cmd /k "cd /d "%~dp0backend" && python main.py"
 
 echo 正在開啟瀏覽器畫面...
 timeout /t 2 > nul
