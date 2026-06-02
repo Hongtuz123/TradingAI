@@ -717,6 +717,66 @@ function runScreener(isAutoRefresh = false) {
   renderRankings();
 }
 
+// 手動評估特定個股評分與通過項目
+window.evaluateManualStock = function() {
+  const inputEl = document.getElementById('screenerManualInput');
+  const resultEl = document.getElementById('manualEvalResult');
+  if (!inputEl || !resultEl) return;
+
+  const rawCode = inputEl.value.trim();
+  if (!rawCode) {
+    resultEl.style.display = 'none';
+    return;
+  }
+
+  // 補零邏輯補正
+  let code = rawCode;
+  if (code.isdigit ? code.isdigit() : /^\d+$/.test(code)) {
+    const val = parseInt(code, 10);
+    if (val < 100) code = String(val).padStart(4, '0');
+    else if (val < 1000) code = '00' + val;
+  }
+
+  const s = mockStocks.find(item => item.id === code);
+  if (!s) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = `<div style="font-size: 12px; color: var(--danger); font-weight: bold; margin-top: 4px;">❌ 找不到代碼 ${code} 的個股資料</div>`;
+    return;
+  }
+
+  // 計算並取得即時評分與指標
+  // 為了精準，如果已經有 dynamicScore 則直接用，否則做基本回防
+  const score = s.dynamicScore !== undefined ? s.dynamicScore : 60;
+  const passed = s.passedIndicators && s.passedIndicators.length > 0 ? s.passedIndicators : ['無明顯技術加分項目'];
+  const failed = s.failedConditions && s.failedConditions.length > 0 ? s.failedConditions : [];
+
+  let advice = '';
+  if (score >= 80) advice = '<span style="color: var(--success);">🟢 多頭強勢</span>';
+  else if (score >= 60) advice = '<span style="color: var(--warning);">🟡 中性觀察</span>';
+  else advice = '<span style="color: var(--danger);">🔴 偏弱不建議</span>';
+
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `
+    <div style="font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.15); margin-top: 8px; padding-top: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <strong style="color: white;">${s.id} ${s.name}</strong>
+        <strong>評分: <span style="color: var(--warning);">${score} 分</span></strong>
+      </div>
+      <div style="margin-bottom: 6px; font-size: 11px;">狀態評級: ${advice}</div>
+      <div style="color: var(--success); font-size: 11px; font-weight: bold; margin-bottom: 4px;">✓ 通過項目：</div>
+      <ul style="margin: 0; padding-left: 12px; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+        ${passed.map(p => `<li>${p}</li>`).join('')}
+      </ul>
+      ${failed.length > 0 ? `
+        <div style="color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 6px; margin-bottom: 4px;">✗ 未達門檻：</div>
+        <ul style="margin: 0; padding-left: 12px; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
+          ${failed.map(f => `<li>${f}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </div>
+  `;
+};
+
 // 渲染篩選器表格
 function renderScreenerTable(data) {
   document.getElementById('resultCount').innerText = data.length;
