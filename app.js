@@ -566,12 +566,15 @@ function runScreener(isAutoRefresh = false) {
         isAboveSt = currSt && price > currSt.value;
       }
 
-      // 2. MA 排列 (MA20 > MA60)，以陣列末端 index 取值避免時間格式不符靜默失分 (S1 修復)
+      // 2. MA 上穿 (MA20 上穿 MA60)，即今 MA20 > MA60 且 昨 MA20 <= MA60 (S1/crossover)
       const ma20Arr = calculateSMA(candles, 20);
       const ma60Arr = calculateSMA(candles, 60);
       const m20 = ma20Arr.length > 0 ? ma20Arr[ma20Arr.length - 1] : null;
       const m60 = ma60Arr.length > 0 ? ma60Arr[ma60Arr.length - 1] : null;
-      const isMaAlign = m20 && m60 && m20.value > m60.value;
+      const prev_m20 = ma20Arr.length > 1 ? ma20Arr[ma20Arr.length - 2] : null;
+      const prev_m60 = ma60Arr.length > 1 ? ma60Arr[ma60Arr.length - 2] : null;
+      
+      const isMaAlign = m20 && m60 && m20.value > m60.value && prev_m20 && prev_m60 && prev_m20.value <= prev_m60.value;
 
       // 3. 下行趨勢線突破與回踩
       const tl = calculateTrendlineAt(candles, t);
@@ -616,17 +619,23 @@ function runScreener(isAutoRefresh = false) {
       else if (dist52W >= 25) score += 10;  // 距高點 25%+ 以上：蓄勢加分 +10
 
       // --- 加權分數評估（調整後：降 ST 站穩、升趨勢線突破與量能）---
-      if (isStBull) score += 20;       // 趨勢方向：Supertrend 多頭 (20分，降權避免已漲一大段輕易過)
-      if (isMaAlign) score += 10;      // 均線結構：MA20 > MA60 (10分，降權 — 這是確認不是起漲點)
-      if (isBreak) score += 30;        // 型態突破：下降趨勢線突破 (30分，升權 — 核心型態)
-      if (isPullback) score += 10;     // 回踩確認：突破後有效回踩 (10分)
-      if (isVolLarge) score += 20;     // 量能：K線即時量 >= 1.2 倍均量 (20分，升權)
-      if (isInstBuy) score += 10;      // 三大法人買超 (10分)
+      let passedIndicators = [];
+      if (isStBull) { score += 20; passedIndicators.push('Supertrend 多頭 (+20分)'); }
+      if (isMaAlign) { score += 10; passedIndicators.push('MA20上穿 MA60 (+10分)'); }
+      if (isBreak) { score += 30; passedIndicators.push('下降趨勢線突破 (+30分)'); }
+      if (isPullback) { score += 10; passedIndicators.push('突破後有效回踩 (+10分)'); }
+      if (isVolLarge) { score += 20; passedIndicators.push('量爆發 >= 1.2倍均量 (+20分)'); }
+      if (isInstBuy) { score += 10; passedIndicators.push('三大法人買超 (+10分)'); }
+      
+      if (dist52W < 5) passedIndicators.push('距52週高點太近 (-15分)');
+      else if (dist52W >= 25) passedIndicators.push('距52週高點夠遠 (+10分)');
+
+      s.passedIndicators = passedIndicators;
 
       // 使用者設定的開關條件若勾選且不符合，則標記為 failed
       if (p.stBull && !isStBull) failedConditions.push('Supertrend非多頭');
       if (p.priceAboveSt && !isAboveSt) failedConditions.push('價格未在Supertrend上方');
-      if (p.maAlignment && !isMaAlign) failedConditions.push('MA20未大於MA60');
+      if (p.maAlignment && !isMaAlign) failedConditions.push('MA20未上穿MA60');
       if (p.trendlineBreak && !isBreak) failedConditions.push('下行趨勢線未突破');
       if (p.trendlinePullback && !isPullback) failedConditions.push('未完成突破回踩');
     } else {
@@ -722,7 +731,7 @@ function renderScreenerTable(data) {
   data.forEach(s => {
     const tr = document.createElement('tr');
     tr.style.cursor = 'pointer';
-    tr.title = '點擊查看未達標項目';
+    tr.title = '點擊查看通過的技術指標與規則';
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td>${getTechBadgesHTML(s.type)}</td>
@@ -745,18 +754,22 @@ function renderScreenerTable(data) {
       </td>
     `;
     
-    // 點擊顯示未達標項目
+    // 點擊顯示通過與未通過細節
     tr.onclick = () => {
       let advice = '';
       if (s.dynamicScore >= 80) advice = '🟢 評分高於 80 分：進入交易/自選觀察名單！';
       else if (s.dynamicScore >= 60) advice = '🟡 評分 60~79 分：列入中性觀察。';
       else advice = '🔴 評分低於 60 分：不納入策略。';
 
-      if (s.failedConditions.length === 0) {
-        alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🎉 控制門檻全數通過！\n${advice}`);
-      } else {
-        alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n未符合的過濾/資金門檻 (${s.failedConditions.length}項)：\n- ` + s.failedConditions.join('\n- ') + `\n\n${advice}`);
-      }
+      const passedStr = s.passedIndicators && s.passedIndicators.length > 0 
+        ? s.passedIndicators.map(i => `✓ ${i}`).join('\n') 
+        : '無';
+
+      const failedStr = s.failedConditions && s.failedConditions.length > 0 
+        ? s.failedConditions.map(i => `- ${i}`).join('\n') 
+        : '無符合過濾條件的未達標項目';
+
+      alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🟢 通過的技術指標與加分項：\n${passedStr}\n\n🔴 未符合的過濾/資金門檻：\n${failedStr}\n\n${advice}`);
     };
     
     tbody.appendChild(tr);
