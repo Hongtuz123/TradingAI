@@ -27,11 +27,11 @@
       <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
         <span class="nav-icon">⊞</span> 儀表板
       </button>
-      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
-        <span class="nav-icon">⚡</span> 篩選器
-      </button>
       <button class="nav-btn" data-view="whitelist" onclick="switchView('whitelist')">
         <span class="nav-icon">★</span> 基本面推薦清單
+      </button>
+      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
+        <span class="nav-icon">⚡</span> 篩選器
       </button>
       <button class="nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
         <span class="nav-icon">⭐</span> 自選清單
@@ -175,46 +175,31 @@
             </div>
           </div>
 
-          <!-- 第二層：基本面 -->
+          <!-- 第二層：技術突破與起漲/回踩設定 -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-2">L2</span>
-              基本面篩選
+              突破與回踩設定
             </div>
             <div class="filter-item">
-              <label>EPS成長 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_eps_growth" value="15" min="0" max="500" />
-                <span class="unit">%以上</span>
-              </div>
+              <label>Supertrend = 多頭</label>
+              <label class="toggle"><input type="checkbox" id="f_st_bull" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>月營收 YoY (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_rev_growth" value="20" min="0" max="500" />
-                <span class="unit">%以上</span>
-              </div>
+              <label>收盤價 > Supertrend</label>
+              <label class="toggle"><input type="checkbox" id="f_price_above_st" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>ROE (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_roe" value="10" min="0" max="100" />
-                <span class="unit">%以上</span>
-              </div>
+              <label>MA20 > MA60 (多頭排列)</label>
+              <label class="toggle"><input type="checkbox" id="f_ma_alignment" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>毛利率 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_gross_margin" value="20" min="0" max="100" />
-                <span class="unit">%以上</span>
-              </div>
+              <label>下行趨勢線突破 (20K)</label>
+              <label class="toggle"><input type="checkbox" id="f_trendline_break" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>負債比 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_debt_ratio" value="60" min="0" max="100" />
-                <span class="unit">%以下</span>
-              </div>
+              <label>回踩趨勢線不破</label>
+              <label class="toggle"><input type="checkbox" id="f_trendline_pullback" /><span></span></label>
             </div>
           </div>
 
@@ -269,7 +254,7 @@
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-4">L4</span>
-              技術面與趨勢
+              技術形態輔助
             </div>
             <div class="filter-item">
               <label>類型A：突破型</label>
@@ -288,16 +273,16 @@
               <label class="toggle"><input type="checkbox" id="f_type_d" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>類型E：趨勢多頭 (股價>20MA+走升)</label>
+              <label>類型E：趨勢多頭</label>
               <label class="toggle"><input type="checkbox" id="f_type_e" checked /><span></span></label>
             </div>
           </div>
 
-          <!-- 基本面推薦計分條件 -->
+          <!-- L5：策略匹配限制條件 -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-5">L5</span>
-              基本面推薦計分條件
+              策略匹配度過濾
             </div>
             <div class="filter-item">
               <label>距52週高點 (%)</label>
@@ -311,10 +296,10 @@
               <label class="toggle"><input type="checkbox" id="f_close_high" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>最低綜合評分</label>
+              <label>最低符合條件數</label>
               <div class="filter-input-wrap">
-                <input type="range" id="f_min_score" min="0" max="12" value="7" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
-                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">7</span>
+                <input type="range" id="f_min_score" min="0" max="10" value="6" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">6</span>
               </div>
             </div>
           </div>

@@ -95,18 +95,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof rulesConfig !== 'undefined') {
     const sc = rulesConfig.scoring;
     if (sc) {
-      document.getElementById('f_eps_growth').value = sc.eps_growth;
-      document.getElementById('f_rev_growth').value = sc.rev_growth;
-      document.getElementById('f_roe').value = sc.roe;
-      document.getElementById('f_trust_days').value = sc.trust_days;
-      document.getElementById('f_vol_ratio').value = sc.vol_ratio;
-      document.getElementById('f_market_cap').value = sc.market_cap;
-      document.getElementById('f_daily_vol').value = sc.daily_vol;
-      document.getElementById('f_52w_pct').value = sc.dist_52w;
+      const f_eps = document.getElementById('f_eps_growth');
+      if (f_eps) f_eps.value = sc.eps_growth;
+      const f_rev = document.getElementById('f_rev_growth');
+      if (f_rev) f_rev.value = sc.rev_growth;
+      const f_roe = document.getElementById('f_roe');
+      if (f_roe) f_roe.value = sc.roe;
+      
+      const f_trust = document.getElementById('f_trust_days');
+      if (f_trust) f_trust.value = sc.trust_days;
+      const f_vol = document.getElementById('f_vol_ratio');
+      if (f_vol) f_vol.value = sc.vol_ratio;
+      const f_mkt = document.getElementById('f_market_cap');
+      if (f_mkt) f_mkt.value = sc.market_cap;
+      const f_daily = document.getElementById('f_daily_vol');
+      if (f_daily) f_daily.value = sc.daily_vol;
+      const f_52w = document.getElementById('f_52w_pct');
+      if (f_52w) f_52w.value = sc.dist_52w;
     }
     const fl = rulesConfig.filtering;
     if (fl && fl.min_score) {
-      document.getElementById('f_min_score').value = fl.min_score;
+      const f_min = document.getElementById('f_min_score');
+      if (f_min) f_min.value = fl.min_score;
     }
   }
 
@@ -489,11 +499,11 @@ function runScreener() {
 
   // 取得篩選參數
   const p = {
-    eps: parseFloat(document.getElementById('f_eps_growth').value) || 0,
-    rev: parseFloat(document.getElementById('f_rev_growth').value) || 0,
-    roe: parseFloat(document.getElementById('f_roe').value) || 0,
-    margin: parseFloat(document.getElementById('f_gross_margin').value) || 0,
-    debt: parseFloat(document.getElementById('f_debt_ratio').value) || 100,
+    stBull: document.getElementById('f_st_bull').checked,
+    priceAboveSt: document.getElementById('f_price_above_st').checked,
+    maAlignment: document.getElementById('f_ma_alignment').checked,
+    trendlineBreak: document.getElementById('f_trendline_break').checked,
+    trendlinePullback: document.getElementById('f_trendline_pullback').checked,
     trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
     fb: document.getElementById('f_foreign_buy').checked,
     volRatio: parseFloat(document.getElementById('f_vol_ratio').value) || 1,
@@ -533,34 +543,91 @@ function runScreener() {
                       (p.typeD && stockTypes.includes('D')) || 
                       (p.typeE && stockTypes.includes('E'));
 
-    // 計算 12 個條件 of 得分與未達成項目（null 值欄位跳過不計）
     let failedConditions = [];
-    let checkedCount = 0;
-    function chk(val, cond, label) { if (val != null) { checkedCount++; if (!cond) failedConditions.push(label); } }
-    // 基本面（可能為 null）
-    chk(s.epsYoY,      s.epsYoY >= p.eps,       `EPS成長 (${s.epsYoY ?? '--'}% < ${p.eps}%)`);
-    chk(s.revYoY,      s.revYoY >= p.rev,       `月營收 YoY (${s.revYoY ?? '--'}% < ${p.rev}%)`);
-    chk(s.roe,         s.roe >= p.roe,           `ROE (${s.roe ?? '--'}% < ${p.roe}%)`);
-    chk(s.grossMargin, s.grossMargin >= p.margin,`毛利率 (${s.grossMargin ?? '--'}% < ${p.margin}%)`);
-    chk(s.debtRatio,   s.debtRatio <= p.debt,    `負債比 (${s.debtRatio ?? '--'}% > ${p.debt}%)`);
-    // 籌碼（可能為 null）
-    chk(s.trustDays,   s.trustDays >= p.trustDays, `投信當日買超 (${s.trustDays ?? '--'}張 < ${p.trustDays}張)`);
-    if (s.foreignBuy != null) { checkedCount++; if (p.fb && !s.foreignBuy) failedConditions.push(`外資當日買超 (未達標)`); }
-    // 技術面（加入 null 防護）
-    if (s.volRatio != null) {
-      if (s.volRatio < p.volRatio) failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
-    }
-    chk(s.turnover,    s.turnover >= p.turnover, `週轉率 (${s.turnover ?? '--'}% < ${p.turnover}%)`);
-    chk(s.marketCap,   s.marketCap >= p.mktCap,  `市值 (${s.marketCap ?? '--'}億 < ${p.mktCap}億)`);
-    if (s.dailyVol != null) {
-      if (s.dailyVol < p.dailyVol) failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
-    }
-    if (!s.ma20Rising) failedConditions.push('20MA未走升');
+    
+    // 技術指標即時運算
+    if (s.kline && s.kline.length >= 60) {
+      const candles = s.kline.map(d => ({
+        time: d.date || d.time,
+        open: parseFloat(d.open),
+        high: parseFloat(d.high),
+        low: parseFloat(d.low),
+        close: parseFloat(d.close),
+        volume: parseFloat(d.volume || 0)
+      }));
 
-    s.dynamicScore = 12 - failedConditions.length;
+      const t = candles.length - 1;
+      const curr = candles[t];
+      const price = curr.close;
+
+      // 1. Supertrend 運算
+      const stData = calculateSupertrend(candles, 10, 3);
+      if (stData.length > 0) {
+        const currSt = stData[stData.length - 1];
+        if (p.stBull && (!currSt || currSt.trend !== 1)) {
+          failedConditions.push('Supertrend非多頭');
+        }
+        if (p.priceAboveSt && (!currSt || price <= currSt.value)) {
+          failedConditions.push('價格未在Supertrend上方');
+        }
+      } else {
+        if (p.stBull || p.priceAboveSt) failedConditions.push('缺少Supertrend數據');
+      }
+
+      // 2. MA 排列 (MA20 > MA60)
+      const ma20Arr = calculateSMA(candles, 20);
+      const ma60Arr = calculateSMA(candles, 60);
+      const m20 = ma20Arr.find(m => m.time === curr.time);
+      const m60 = ma60Arr.find(m => m.time === curr.time);
+      if (p.maAlignment && (!m20 || !m60 || m20.value <= m60.value)) {
+        failedConditions.push('MA20未大於MA60');
+      }
+
+      // 3. 下行趨勢線突破與回踩
+      const tl = calculateTrendlineAt(candles, t);
+      if (tl && tl.value !== null) {
+        const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+        const isPullback = price >= tl.value && price <= tl.value * 1.03 && parseFloat(candles[t - 1].close) > tl.prevValue;
+        
+        if (p.trendlineBreak && !isBreak) {
+          failedConditions.push('未突破下行趨勢線');
+        }
+        if (p.trendlinePullback && !isPullback) {
+          failedConditions.push('未完成突破回踩');
+        }
+      } else {
+        if (p.trendlineBreak || p.trendlinePullback) failedConditions.push('未形成下行趨勢線');
+      }
+    } else {
+      if (p.stBull || p.priceAboveSt || p.maAlignment || p.trendlineBreak || p.trendlinePullback) {
+        failedConditions.push('K線長度不足');
+      }
+    }
+
+    // 籌碼與量能比條件比對
+    if (s.trustDays != null && s.trustDays < p.trustDays) {
+      failedConditions.push(`投信當日買超 (${s.trustDays}張 < ${p.trustDays}張)`);
+    }
+    if (p.fb && s.foreignBuy === false) {
+      failedConditions.push('外資當日未買超');
+    }
+    if (s.volRatio != null && s.volRatio < p.volRatio) {
+      failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
+    }
+    if (s.turnover != null && s.turnover < p.turnover) {
+      failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
+    }
+    if (s.marketCap != null && s.marketCap < p.mktCap) {
+      failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
+    }
+    if (s.dailyVol != null && s.dailyVol < p.dailyVol) {
+      failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+    }
+
+    s.dynamicScore = 10 - failedConditions.length;
     s.failedConditions = failedConditions;
 
-    // L4 與 L5 的嚴格過濾與總得分過濾
+    // 篩選與匹配
     if (s.dynamicScore >= p.minScore && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
@@ -618,7 +685,7 @@ function renderScreenerTable(data) {
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td>${getTechBadgesHTML(s.type)}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
-      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /12</td>
+      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /10</td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
@@ -639,7 +706,7 @@ function renderScreenerTable(data) {
     // 點擊顯示未達標項目
     tr.onclick = () => {
       if (s.failedConditions.length === 0) {
-        alert(`【${s.id} ${s.name}】\n\n🎉 12 項條件全數達標！`);
+        alert(`【${s.id} ${s.name}】\n\n🎉 10 項條件全數達標！`);
       } else {
         alert(`【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ` + s.failedConditions.join('\n- '));
       }
