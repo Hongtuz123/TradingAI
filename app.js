@@ -3176,7 +3176,7 @@ function renderWhitelistGrid() {
   currentWhitelist.sort((a,b)=>b.dynamicScore - a.dynamicScore).forEach(s => {
     const isPerfect = s.failedConditions.length === 0;
     const msg = isPerfect 
-      ? `【${s.id} ${s.name}】\n\n🎉 12 項條件全數達標！`
+      ? `【${s.id} ${s.name}】\n\n🎉 控制門檻與篩選條件全數達標！\n荳荳評分：${s.dynamicScore} 分 (滿分100)`
       : `【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ${s.failedConditions.join('\n- ')}`;
       
     grid.innerHTML += `
@@ -3186,7 +3186,7 @@ function renderWhitelistGrid() {
             <h3>${s.id} ${s.name}</h3>
             ${getTechBadgesHTML(s.type)}
           </div>
-          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 12</span></div>
+          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 100</span></div>
         </div>
         <div class="wl-card-body">
           <div>收盤：${s.price} (${s.change}%)</div>
