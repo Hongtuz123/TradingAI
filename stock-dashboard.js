@@ -1650,6 +1650,7 @@ window.handleTrendlineJump = function(symbolId) {
   const stock = mockStocks.find(s => s.id === symbolId);
   if (stock) {
     window.activeStrategy = 'trendline';
+    currentChartSymbol = stock.id; // 提前設定以防止 switchView 載入預設股票 2330
     switchView('chart');
     setTimeout(() => loadTVChart(stock), 300);
   }

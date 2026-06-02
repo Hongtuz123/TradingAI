@@ -3264,6 +3264,7 @@ function loadChart(stock) {
 function openChart(id) {
   const stock = mockStocks.find(s => s.id === id);
   if (stock) {
+    currentChartSymbol = stock.id; // 提前設定以防止 switchView 載入預設股票 2330
     switchView('chart');
     // 300ms 讓分頁切換的 CSS display 完全生效後再渲染
     setTimeout(() => loadTVChart(stock), 300);
@@ -3274,6 +3275,7 @@ function openChart(id) {
 window.loadStockToChart = function(id) {
   const stock = mockStocks.find(s => s.id === id);
   if (stock) {
+    currentChartSymbol = stock.id; // 提前設定
     switchView('chart');
     setTimeout(() => loadTVChart(stock), 300);
   }
@@ -3682,6 +3684,7 @@ window.loadTVChart = function(s) {
 
 // 繪製自選清單卡片格 ( portfolio-grid )
 window.renderPortfolioGrid = function() {
+  updateAllStockPrices(); // 確保重繪自選清單時同步最新即時價格
   const grid = document.getElementById('portfolioGrid');
   if (!grid) return;
 
