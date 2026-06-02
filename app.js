@@ -3156,6 +3156,15 @@ function openChart(id) {
   }
 }
 
+// 供荳荳對話框回測選股連結調用
+window.loadStockToChart = function(id) {
+  const stock = mockStocks.find(s => s.id === id);
+  if (stock) {
+    switchView('chart');
+    setTimeout(() => loadTVChart(stock), 300);
+  }
+};
+
 function filterChartList(val) {
   const items = document.querySelectorAll('.chart-stock-item');
   items.forEach(item => {
