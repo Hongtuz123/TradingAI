@@ -1759,6 +1759,7 @@ window.askShiba = function(type) {
   if (type === 'today_weak') userText = '❄️ 今日大盤比較弱勢的是哪一類股？成分股表現如何？';
   if (type === 'trust_favorite') userText = '💼 法人今天最看好、同買的標的是哪些？幫我列出來！';
   if (type === 'volume_burst') userText = '⚡ 今日爆量、資金大量流入的突破飆股是哪幾支？';
+  if (type === 'doudou_backtest') userText = '🐾 荳荳回測小助理！請幫我計算並篩選出符合多頭、SuperTrend多頭且下行趨勢線突破爆量的股票清單！';
 
   appendChatMessage(userText, 'user');
 
@@ -1811,6 +1812,87 @@ ${favStr}<br><br>
 ${spikeStr}<br><br>
 大量通常代表有主力吃貨或利多引爆，很容易觸發我們的「下行趨勢線突破」策略汪！快點擊 K 線頁面看看吧！` + disclaimer;
     }
+    else if (type === 'doudou_backtest') {
+      // 荳荳回測計算邏輯
+      const matched = [];
+      mockStocks.forEach(s => {
+        if (!s.kline || s.kline.length < 60) return;
+        
+        // 取得整理後的 K 線
+        const candles = s.kline.map(d => ({
+          time: d.date || d.time,
+          open: parseFloat(d.open),
+          high: parseFloat(d.high),
+          low: parseFloat(d.low),
+          close: parseFloat(d.close),
+          volume: parseFloat(d.volume || 0)
+        }));
+
+        const t = candles.length - 1;
+        if (t < 25) return;
+        const curr = candles[t];
+        const price = curr.close;
+        const vol = curr.volume;
+
+        // A. 必要條件: Supertrend
+        const stData = calculateSupertrend(candles, 10, 3);
+        if (stData.length === 0) return;
+        const currSt = stData[stData.length - 1];
+        if (!currSt || currSt.trend !== 1 || price <= currSt.value) return;
+
+        // A. 必要條件: MA20 > MA60
+        const ma20Arr = calculateSMA(candles, 20);
+        const ma60Arr = calculateSMA(candles, 60);
+        const m20 = ma20Arr.find(m => m.time === curr.time);
+        const m60 = ma60Arr.find(m => m.time === curr.time);
+        if (!m20 || !m60 || m20.value <= m60.value) return;
+
+        // A. 必要條件: 過去 20 根 K 棒下降趨勢線已被突破
+        const tl = calculateTrendlineAt(candles, t);
+        if (!tl || tl.value === null) return;
+        const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+        if (!isBreak) return;
+
+        // B. 觸發條件: 突破當根量 > 20日均量 1.5 倍 (量倍比)
+        const vma = calculateVolumeMA(candles, 20);
+        const vmaVal = vma[t];
+        const volRatio = vol / vmaVal;
+        if (volRatio < 1.5) return;
+
+        // B. 觸發條件: 收盤價站穩突破線上方 && 突破後不立即跌回突破線下方 (由於當根剛突破，滿足 price > tl.value)
+
+        matched.push({
+          id: s.id,
+          name: s.name,
+          price: price,
+          change: s.change,
+          volRatio: volRatio.toFixed(2),
+          sector: s.type || '一般板塊'
+        });
+      });
+
+      // 依量倍比由大到小排序
+      matched.sort((a, b) => b.volRatio - a.volRatio);
+
+      if (matched.length === 0) {
+        botReply = `汪嗚... 荳荳用全力跑了回測，但在目前 ${mockStocks.length} 檔標的內，<b>沒有任何股票</b>同時滿足您的：<br>
+1. <b>Supertrend 多頭排列 (Price > Supertrend)</b><br>
+2. <b>MA20 > MA60</b><br>
+3. <b>下行趨勢線突破 + 量倍比 >= 1.5 倍</b><br>
+拔麻可以稍微放寬條件或等明天開盤數據更新再試試看汪！🐶`;
+      } else {
+        const rowsHTML = matched.slice(0, 10).map((s, idx) => 
+          `• <b>${idx + 1}. ${s.id} ${s.name}</b><br>` +
+          `  現價: $${s.price} (漲跌: ${s.change >= 0 ? '+' : ''}${s.change}%)<br>` +
+          `  ⚡ <b>量倍比: ${s.volRatio} 倍</b><br>` +
+          `  🔍 <a href="javascript:void(0)" onclick="switchView('chart'); loadStockToChart('${s.id}')" style="color:var(--primary); font-weight:bold; text-decoration:underline;">點此載入 K 線回測</a>`
+        ).join('<br><br>');
+
+        botReply = `🐾 <b>荳荳回測小助理報告！</b> 🐶<br>
+荳荳幫拔麻完成大數據回測運算囉！在全市場前 500 大中，共有 <b>${matched.length}</b> 檔完全符合您的策略條件！以下為您列出前 10 檔（依<b>量倍比</b>排序）：<br><br>
+${rowsHTML}` + disclaimer;
+      }
+    }
 
     appendChatMessage(botReply, 'bot');
   }, 600);
@@ -1840,14 +1922,87 @@ window.sendShibaMessage = function() {
     const query = val.toLowerCase();
     let botReply = '';
 
-    // 解析出使用者詢問的「漲幅百分比限制」 (例如: "不到 5%"、"小於 3%")
-    let pctLimit = 5.0; // 預設 5%
-    const pctMatch = query.match(/(?:不到|低於|小於|不滿|低於|在|以內)\s*([0-9.]+)\s*%/);
-    if (pctMatch && pctMatch[1]) {
-      pctLimit = parseFloat(pctMatch[1]);
-    }
+    if (query.includes('回測') || query.includes('策略') || query.includes('小助理') || query.includes('符合')) {
+      // 荳荳回測計算邏輯 (與快捷鍵 doudou_backtest 同步)
+      const matched = [];
+      mockStocks.forEach(s => {
+        if (!s.kline || s.kline.length < 60) return;
+        
+        // 取得整理後的 K 線
+        const candles = s.kline.map(d => ({
+          time: d.date || d.time,
+          open: parseFloat(d.open),
+          high: parseFloat(d.high),
+          low: parseFloat(d.low),
+          close: parseFloat(d.close),
+          volume: parseFloat(d.volume || 0)
+        }));
 
-    if (query.includes('限價') || query.includes('上漲不到') || query.includes('不到') || query.includes('小於') || query.includes('優質') || query.includes('推薦') && query.includes('%')) {
+        const t = candles.length - 1;
+        if (t < 25) return;
+        const curr = candles[t];
+        const price = curr.close;
+        const vol = curr.volume;
+
+        // A. 必要條件: Supertrend
+        const stData = calculateSupertrend(candles, 10, 3);
+        if (stData.length === 0) return;
+        const currSt = stData[stData.length - 1];
+        if (!currSt || currSt.trend !== 1 || price <= currSt.value) return;
+
+        // A. 必要條件: MA20 > MA60
+        const ma20Arr = calculateSMA(candles, 20);
+        const ma60Arr = calculateSMA(candles, 60);
+        const m20 = ma20Arr.find(m => m.time === curr.time);
+        const m60 = ma60Arr.find(m => m.time === curr.time);
+        if (!m20 || !m60 || m20.value <= m60.value) return;
+
+        // A. 必要條件: 過去 20 根 K 棒下降趨勢線已被突破
+        const tl = calculateTrendlineAt(candles, t);
+        if (!tl || tl.value === null) return;
+        const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+        if (!isBreak) return;
+
+        // B. 觸發條件: 突破當根量 > 20日均量 1.5 倍 (量倍比)
+        const vma = calculateVolumeMA(candles, 20);
+        const vmaVal = vma[t];
+        const volRatio = vol / vmaVal;
+        if (volRatio < 1.5) return;
+
+        matched.push({
+          id: s.id,
+          name: s.name,
+          price: price,
+          change: s.change,
+          volRatio: volRatio.toFixed(2),
+          sector: s.type || '一般板塊'
+        });
+      });
+
+      // 依量倍比由大到小排序
+      matched.sort((a, b) => b.volRatio - a.volRatio);
+
+      if (matched.length === 0) {
+        botReply = `汪嗚... 荳荳用全力跑了回測，但在目前 ${mockStocks.length} 檔標的內，<b>沒有任何股票</b>同時滿足您的：<br>
+1. <b>Supertrend 多頭排列 (Price > Supertrend)</b><br>
+2. <b>MA20 > MA60</b><br>
+3. <b>下行趨勢線突破 + 量倍比 >= 1.5 倍</b><br>
+拔麻可以稍微放寬條件或等明天開盤數據更新再試試看汪！🐶`;
+      } else {
+        const rowsHTML = matched.slice(0, 10).map((s, idx) => 
+          `• <b>${idx + 1}. ${s.id} ${s.name}</b><br>` +
+          `  現價: $${s.price} (漲跌: ${s.change >= 0 ? '+' : ''}${s.change}%)<br>` +
+          `  ⚡ <b>量倍比: ${s.volRatio} 倍</b><br>` +
+          `  🔍 <a href="javascript:void(0)" onclick="switchView('chart'); loadStockToChart('${s.id}')" style="color:var(--primary); font-weight:bold; text-decoration:underline;">點此載入 K 線回測</a>`
+        ).join('<br><br>');
+
+        botReply = `🐾 <b>荳荳回測小助理報告！</b> 🐶<br>
+荳荳幫拔麻完成大數據回測運算囉！在全市場前 500 大中，共有 <b>${matched.length}</b> 檔完全符合您的策略條件！以下為您列出前 10 檔（依<b>量倍比</b>排序）：<br><br>
+${rowsHTML}` + disclaimer;
+      }
+    }
+    // 解析出使用者詢問的「漲幅百分比限制」 (例如: "不到 5%"、"小於 3%")
+    else if (query.includes('限價') || query.includes('上漲不到') || query.includes('不到') || query.includes('小於') || query.includes('優質') || query.includes('推薦') && query.includes('%')) {
       // 智慧篩選：篩選出今日漲幅 > 0 且 < pctLimit，並且具備優質技術形態或法人同買指標的「優質股票」
       // 優質定義：maBull為true (多頭排列) 或是 foreignBuy為true，且成交量大於1000張，或評分優良的股票
       const highQualityStocks = mockStocks.filter(s => {
