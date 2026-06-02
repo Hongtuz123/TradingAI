@@ -95,23 +95,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof rulesConfig !== 'undefined') {
     const sc = rulesConfig.scoring;
     if (sc) {
-      const f_eps = document.getElementById('f_eps_growth');
-      if (f_eps) f_eps.value = sc.eps_growth;
-      const f_rev = document.getElementById('f_rev_growth');
-      if (f_rev) f_rev.value = sc.rev_growth;
-      const f_roe = document.getElementById('f_roe');
-      if (f_roe) f_roe.value = sc.roe;
-      
       const f_trust = document.getElementById('f_trust_days');
-      if (f_trust) f_trust.value = sc.trust_days;
+      if (f_trust) f_trust.value = sc.trust_days || 10;
+      const f_foreign = document.getElementById('f_foreign_net_buy_threshold');
+      if (f_foreign) f_foreign.value = 10; // 預設 10 張
+      const f_dealer = document.getElementById('f_dealer_net_buy_threshold');
+      if (f_dealer) f_dealer.value = 10; // 預設 10 張
       const f_vol = document.getElementById('f_vol_ratio');
-      if (f_vol) f_vol.value = sc.vol_ratio;
+      if (f_vol) f_vol.value = sc.vol_ratio || 1.5;
       const f_mkt = document.getElementById('f_market_cap');
-      if (f_mkt) f_mkt.value = sc.market_cap;
+      if (f_mkt) f_mkt.value = sc.market_cap || 50;
       const f_daily = document.getElementById('f_daily_vol');
-      if (f_daily) f_daily.value = sc.daily_vol;
+      if (f_daily) f_daily.value = sc.daily_vol || 2000;
       const f_52w = document.getElementById('f_52w_pct');
-      if (f_52w) f_52w.value = sc.dist_52w;
+      if (f_52w) f_52w.value = sc.dist_52w || 15;
     }
     const fl = rulesConfig.filtering;
     if (fl && fl.min_score) {
@@ -505,7 +502,8 @@ function runScreener() {
     trendlineBreak: document.getElementById('f_trendline_break').checked,
     trendlinePullback: document.getElementById('f_trendline_pullback').checked,
     trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
-    fb: document.getElementById('f_foreign_buy').checked,
+    foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold').value) || 0,
+    dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold').value) || 0,
     volRatio: parseFloat(document.getElementById('f_vol_ratio').value) || 1,
     turnover: parseFloat(document.getElementById('f_turnover').value) || 0,
     mktCap: parseFloat(document.getElementById('f_market_cap').value) || 0,
@@ -517,7 +515,7 @@ function runScreener() {
     typeE: document.getElementById('f_type_e').checked,
     dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
     closeHigh: document.getElementById('f_close_high').checked,
-    minScore: parseInt(document.getElementById('f_min_score').value) || 6
+    minScore: parseInt(document.getElementById('f_min_score').value) || 60
   };
 
   document.getElementById('scoreThresholdDisplay').innerText = p.minScore;
@@ -544,8 +542,9 @@ function runScreener() {
                       (p.typeE && stockTypes.includes('E'));
 
     let failedConditions = [];
+    let score = 0;
     
-    // 技術指標即時運算
+    // 技術指標即時運算 與 加權評分計算
     if (s.kline && s.kline.length >= 60) {
       const candles = s.kline.map(d => ({
         time: d.date || d.time,
@@ -559,19 +558,16 @@ function runScreener() {
       const t = candles.length - 1;
       const curr = candles[t];
       const price = curr.close;
+      const vol = curr.volume;
 
       // 1. Supertrend 運算
       const stData = calculateSupertrend(candles, 10, 3);
+      let isStBull = false;
+      let isAboveSt = false;
       if (stData.length > 0) {
         const currSt = stData[stData.length - 1];
-        if (p.stBull && (!currSt || currSt.trend !== 1)) {
-          failedConditions.push('Supertrend非多頭');
-        }
-        if (p.priceAboveSt && (!currSt || price <= currSt.value)) {
-          failedConditions.push('價格未在Supertrend上方');
-        }
-      } else {
-        if (p.stBull || p.priceAboveSt) failedConditions.push('缺少Supertrend數據');
+        isStBull = currSt && currSt.trend === 1;
+        isAboveSt = currSt && price > currSt.value;
       }
 
       // 2. MA 排列 (MA20 > MA60)
@@ -579,37 +575,54 @@ function runScreener() {
       const ma60Arr = calculateSMA(candles, 60);
       const m20 = ma20Arr.find(m => m.time === curr.time);
       const m60 = ma60Arr.find(m => m.time === curr.time);
-      if (p.maAlignment && (!m20 || !m60 || m20.value <= m60.value)) {
-        failedConditions.push('MA20未大於MA60');
-      }
+      const isMaAlign = m20 && m60 && m20.value > m60.value;
 
       // 3. 下行趨勢線突破與回踩
       const tl = calculateTrendlineAt(candles, t);
+      let isBreak = false;
+      let isPullback = false;
       if (tl && tl.value !== null) {
-        const isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
-        const isPullback = price >= tl.value && price <= tl.value * 1.03 && parseFloat(candles[t - 1].close) > tl.prevValue;
-        
-        if (p.trendlineBreak && !isBreak) {
-          failedConditions.push('未突破下行趨勢線');
-        }
-        if (p.trendlinePullback && !isPullback) {
-          failedConditions.push('未完成突破回踩');
-        }
-      } else {
-        if (p.trendlineBreak || p.trendlinePullback) failedConditions.push('未形成下行趨勢線');
+        isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+        isPullback = price >= tl.value && price <= tl.value * 1.03 && parseFloat(candles[t - 1].close) > tl.prevValue;
       }
+
+      // 4. 量能比 (成交量 > 20日均量 1.5倍)
+      const vma = calculateVolumeMA(candles, 20);
+      const vmaVal = vma[t];
+      const isVolLarge = vmaVal > 0 && vol > vmaVal * 1.5;
+
+      // 三大法人是否有買超 (投信 > 0 或是 外資 > 0 或是 自營商 > 0)
+      const isInstBuy = (s.trustDays && s.trustDays > 0) || (s.foreignNetBuy && s.foreignNetBuy > 0) || (s.dealerDays && s.dealerDays > 0);
+
+      // --- 加權分數評估 ---
+      if (isStBull) score += 25;       // 趨勢方向：Supertrend 多頭 (25分)
+      if (isMaAlign) score += 15;      // 均線結構：MA20 > MA60 (15分)
+      if (isBreak) score += 25;        // 型態突破：下降趨勢線突破 (25分)
+      if (isVolLarge) score += 15;     // 量能：突破量 > 1.5 倍均量 (15分)
+      if (isAboveSt) score += 10;      // 站穩確認：收盤站上突破線/軌道上方 (10分)
+      if (isInstBuy) score += 10;      // 三大法人買超 (10分)
+
+      // 使用者設定的開關條件若勾選且不符合，則標記為 failed
+      if (p.stBull && !isStBull) failedConditions.push('Supertrend非多頭');
+      if (p.priceAboveSt && !isAboveSt) failedConditions.push('價格未在Supertrend上方');
+      if (p.maAlignment && !isMaAlign) failedConditions.push('MA20未大於MA60');
+      if (p.trendlineBreak && !isBreak) failedConditions.push('下行趨勢線未突破');
+      if (p.trendlinePullback && !isPullback) failedConditions.push('未完成突破回踩');
     } else {
       if (p.stBull || p.priceAboveSt || p.maAlignment || p.trendlineBreak || p.trendlinePullback) {
         failedConditions.push('K線長度不足');
       }
     }
 
-    // 籌碼與量能比條件比對
+    // 籌碼門檻與量能門檻過濾
     if (s.trustDays != null && s.trustDays < p.trustDays) {
       failedConditions.push(`投信當日買超 (${s.trustDays}張 < ${p.trustDays}張)`);
     }
-    if (p.fb && s.foreignBuy === false) {
-      failedConditions.push('外資當日未買超');
+    if (s.foreignNetBuy != null && s.foreignNetBuy < p.foreignNetBuyLimit) {
+      failedConditions.push(`外資當日買超 (${s.foreignNetBuy}張 < ${p.foreignNetBuyLimit}張)`);
+    }
+    if (s.dealerDays != null && s.dealerDays < p.dealerNetBuyLimit) {
+      failedConditions.push(`自營當日買超 (${s.dealerDays}張 < ${p.dealerNetBuyLimit}張)`);
     }
     if (s.volRatio != null && s.volRatio < p.volRatio) {
       failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
@@ -624,11 +637,11 @@ function runScreener() {
       failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
     }
 
-    s.dynamicScore = 10 - failedConditions.length;
+    s.dynamicScore = score; // 分數轉為百分制評分
     s.failedConditions = failedConditions;
 
-    // 篩選與匹配
-    if (s.dynamicScore >= p.minScore && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
+    // 篩選與匹配：評分 >= 最低符合評分 && 低於 60 分一律不納入 (安全防線)
+    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0 && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
       currentResults.push(s);
     }
   });
@@ -685,7 +698,7 @@ function renderScreenerTable(data) {
       <td><strong>${s.id}</strong> ${s.name}</td>
       <td>${getTechBadgesHTML(s.type)}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
-      <td><strong style="color:var(--warning)">${s.dynamicScore}</strong> /10</td>
+      <td><strong style="color:var(--warning)">${s.dynamicScore}分</strong></td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
@@ -705,10 +718,15 @@ function renderScreenerTable(data) {
     
     // 點擊顯示未達標項目
     tr.onclick = () => {
+      let advice = '';
+      if (s.dynamicScore >= 80) advice = '🟢 評分高於 80 分：進入交易/自選觀察名單！';
+      else if (s.dynamicScore >= 60) advice = '🟡 評分 60~79 分：列入中性觀察。';
+      else advice = '🔴 評分低於 60 分：不納入策略。';
+
       if (s.failedConditions.length === 0) {
-        alert(`【${s.id} ${s.name}】\n\n🎉 10 項條件全數達標！`);
+        alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🎉 控制門檻全數通過！\n${advice}`);
       } else {
-        alert(`【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ` + s.failedConditions.join('\n- '));
+        alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n未符合的過濾/資金門檻 (${s.failedConditions.length}項)：\n- ` + s.failedConditions.join('\n- ') + `\n\n${advice}`);
       }
     };
     

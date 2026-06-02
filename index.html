@@ -151,63 +151,57 @@
         <aside class="filter-panel" id="filterPanel">
           <div class="filter-panel-header">
             <h2>⚙️ 篩選條件</h2>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 300 檔進行運算，<br>最多篩選出前 40 檔符合規則之標的。</p>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 500 大進行運算，<br>最高 100 分，低於 60 分不予顯示。</p>
             <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
           </div>
 
-          <!-- 第一層：市場健康度 -->
+          <!-- L1：基本面（綁定） -->
           <div class="filter-group">
-            <div class="filter-group-title">
+            <div class="filter-group-title" style="color: var(--primary);">
               <span class="layer-badge layer-1">L1</span>
-              市場健康度
+              基本面門檻 (已綁定)
             </div>
-            <div class="filter-item">
-              <label>加權指數 > 季線(60MA)</label>
-              <label class="toggle"><input type="checkbox" id="f_twii_60ma" checked /><span></span></label>
+            <div class="filter-item" style="opacity: 0.85;">
+              <span style="font-size: 12px; color: var(--text-muted);">• 財務指標前 500 大個股過濾</span>
             </div>
-            <div class="filter-item">
-              <label>OTC指數 > 60MA</label>
-              <label class="toggle"><input type="checkbox" id="f_otc_60ma" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>大盤成交量 > 20日均量</label>
-              <label class="toggle"><input type="checkbox" id="f_market_vol" checked /><span></span></label>
+            <div class="filter-item" style="opacity: 0.85;">
+              <span style="font-size: 12px; color: var(--text-muted);">• EPS / 營收 / ROE 多頭篩選</span>
             </div>
           </div>
 
-          <!-- 第二層：技術突破與起漲/回踩設定 -->
+          <!-- L2：技術面（可調） -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-2">L2</span>
-              突破與回踩設定
+              技術指標 (加權 85分)
             </div>
             <div class="filter-item">
-              <label>Supertrend = 多頭</label>
+              <label>Supertrend = 多頭 (25分)</label>
               <label class="toggle"><input type="checkbox" id="f_st_bull" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>收盤價 > Supertrend</label>
+              <label>收盤價 > Supertrend (10分)</label>
               <label class="toggle"><input type="checkbox" id="f_price_above_st" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>MA20 > MA60 (多頭排列)</label>
+              <label>MA20 > MA60 (15分)</label>
               <label class="toggle"><input type="checkbox" id="f_ma_alignment" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>下行趨勢線突破 (20K)</label>
+              <label>下行趨勢線突破 (25分)</label>
               <label class="toggle"><input type="checkbox" id="f_trendline_break" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>回踩趨勢線不破</label>
-              <label class="toggle"><input type="checkbox" id="f_trendline_pullback" /><span></span></label>
+              <label>回踩趨勢線不破 (量能15分)</label>
+              <label class="toggle"><input type="checkbox" id="f_trendline_pullback" checked /><span></span></label>
             </div>
           </div>
 
-          <!-- 第三層：籌碼資金 -->
+          <!-- L3：籌碼面與資金面 -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-3">L3</span>
-              籌碼與資金面
+              籌碼資金與量能門檻
             </div>
             <div class="filter-item">
               <label>投信當日買超 (張)</label>
@@ -217,8 +211,18 @@
               </div>
             </div>
             <div class="filter-item">
-              <label>外資當日買超</label>
-              <label class="toggle"><input type="checkbox" id="f_foreign_buy" checked /><span></span></label>
+              <label>外資當日買超 (張)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_foreign_net_buy_threshold" value="10" min="0" max="10000" />
+                <span class="unit">張以上</span>
+              </div>
+            </div>
+            <div class="filter-item">
+              <label>自營商當日買超 (張)</label>
+              <div class="filter-input-wrap">
+                <input type="number" id="f_dealer_net_buy_threshold" value="10" min="0" max="10000" />
+                <span class="unit">張以上</span>
+              </div>
             </div>
             <div class="filter-item">
               <label>今日量 > 均量倍數</label>
@@ -230,7 +234,7 @@
             <div class="filter-item">
               <label>週轉率 (%)</label>
               <div class="filter-input-wrap">
-                <input type="number" id="f_turnover" value="3" min="0" max="50" step="0.5" />
+                <input type="number" id="f_turnover" value="2" min="0" max="50" step="0.5" />
                 <span class="unit">%以上</span>
               </div>
             </div>
@@ -250,11 +254,11 @@
             </div>
           </div>
 
-          <!-- 第四層：技術面 -->
+          <!-- L4：技術輔助分類 -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-4">L4</span>
-              技術形態輔助
+              技術形態輔助分類
             </div>
             <div class="filter-item">
               <label>類型A：突破型</label>
@@ -282,7 +286,7 @@
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-5">L5</span>
-              策略匹配度過濾
+              評分篩選門檻
             </div>
             <div class="filter-item">
               <label>距52週高點 (%)</label>
@@ -296,10 +300,10 @@
               <label class="toggle"><input type="checkbox" id="f_close_high" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>最低符合條件數</label>
+              <label>最低符合評分 (滿分100)</label>
               <div class="filter-input-wrap">
-                <input type="range" id="f_min_score" min="0" max="10" value="6" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
-                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">6</span>
+                <input type="range" id="f_min_score" min="0" max="100" value="60" step="5" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
               </div>
             </div>
           </div>
@@ -312,10 +316,9 @@
             <div class="results-meta">
               <span>共 <strong id="resultCount">0</strong> 檔</span>
               <select id="resultSort" onchange="sortResults(this.value)">
-                <option value="score">按達標數排序</option>
+                <option value="score">按荳荳評分排序</option>
                 <option value="techType">按技術類型</option>
-                <option value="epsGrowth">按EPS成長</option>
-                <option value="revGrowth">按營收成長</option>
+                <option value="price">按收盤價</option>
                 <option value="trustDays">按投信當日買超</option>
               </select>
             </div>
@@ -327,7 +330,7 @@
                   <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
                   <th onclick="toggleSort('techType')" style="cursor:pointer; user-select:none;" title="點擊按技術類型排序">技術類型 <span class="sort-icon" id="sort-techType">↕</span></th>
                   <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
-                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按達標數排序">達標數 <span class="sort-icon" id="sort-score">↕</span></th>
+                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按評分排序">荳荳評分 <span class="sort-icon" id="sort-score">↕</span></th>
                   <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>
                   <th onclick="toggleSort('revGrowth')" style="cursor:pointer; user-select:none;" title="點擊按營收成長排序">營收↑ <span class="sort-icon" id="sort-revGrowth">↕</span></th>
                   <th onclick="toggleSort('roe')" style="cursor:pointer; user-select:none;" title="點擊按ROE排序">ROE <span class="sort-icon" id="sort-roe">↕</span></th>
