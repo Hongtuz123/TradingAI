@@ -543,6 +543,21 @@ body {
   align-items: center;
   margin-bottom: 10px;
   font-size: 14px;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.filter-item > label:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-item > .toggle,
+.filter-item > .filter-input-wrap {
+  flex-shrink: 0;
 }
 
 .filter-input-wrap {
@@ -1195,6 +1210,33 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   .filter-panel.active {
     display: flex !important;
   }
+
+  /* 篩選器條件 label 超長時不換行擠壓 toggle */
+  .filter-item {
+    flex-wrap: nowrap;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .filter-item > label:first-child {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filter-item > .toggle {
+    flex-shrink: 0;
+  }
+
+  .filter-item > .filter-input-wrap {
+    flex-shrink: 0;
+  }
+
+  .filter-input-wrap input:not([type="range"]) {
+    width: 60px;
+  }
   
   .results-table-wrap {
     overflow-x: auto; /* 啟用水平滾動 */
@@ -1240,22 +1282,43 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
     min-height: 500px;
   }
   
+  /* 回測工具列：改為水平滾動，避免按鈕換行堆疊看不見 */
   .chart-toolbar {
-    height: auto;
-    flex-direction: column;
-    padding: 10px;
-    gap: 8px;
+    height: auto !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px;
+    gap: 6px;
+    align-items: center;
+    scrollbar-width: none; /* Firefox 隱藏捲軸 */
+  }
+
+  .chart-toolbar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari 隱藏捲軸 */
+  }
+
+  /* 工具列內的每個控制 div 不縮小 */
+  .chart-toolbar > div,
+  .chart-toolbar > button {
+    flex-shrink: 0;
+    white-space: nowrap;
   }
   
   .chart-stock-info {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-shrink: 0;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  /* 提示文字手機版隱藏節省空間 */
+  .chart-stock-info .chart-name {
+    display: none;
   }
   
   #chartSearchInput {
-    width: 100px !important;
+    width: 90px !important;
   }
 
   /* 7. 個股戰情板 (Stock Dash) 手機版大改裝 */
@@ -1789,13 +1852,57 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
     height: 520px !important;
   }
 
+  /* 回測工具列：水平滾動模式，避免按鈕換行堆疊 */
   .chart-toolbar {
-    padding: 6px 8px;
-    gap: 8px;
+    height: auto !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px;
+    gap: 6px;
+    align-items: center;
+    scrollbar-width: none;
   }
 
-  .chart-toolbar div, .chart-toolbar button {
+  .chart-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chart-toolbar > div,
+  .chart-toolbar > button {
+    flex-shrink: 0;
+    white-space: nowrap;
     font-size: 11px !important;
+  }
+
+  /* 提示文字手機版隱藏 */
+  .chart-stock-info .chart-name {
+    display: none;
+  }
+
+  /* 篩選條件 label 超長不換行 */
+  .filter-item {
+    flex-wrap: nowrap;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .filter-item > label:first-child {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filter-item > .toggle,
+  .filter-item > .filter-input-wrap {
+    flex-shrink: 0;
+  }
+
+  .filter-input-wrap input:not([type="range"]) {
+    width: 60px;
   }
 }
 
