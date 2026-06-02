@@ -64,8 +64,6 @@ function startClock() {
       if (currentActiveView === 'dashboard') {
         renderSectorFlowMap();
         renderRankings();
-      } else if (currentActiveView === 'screener') {
-        runScreener(true);
       } else if (currentActiveView === 'whitelist') {
         renderWhitelistGrid();
       } else if (currentActiveView === 'portfolio') {
