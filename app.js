@@ -109,8 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (f_daily) f_daily.value = sc.daily_vol !== undefined ? sc.daily_vol : 1000;
       const f_turnover = document.getElementById('f_turnover');
       if (f_turnover) f_turnover.value = sc.turnover !== undefined ? sc.turnover : 0.5;
-      const f_52w = document.getElementById('f_52w_pct');
-      if (f_52w) f_52w.value = sc.dist_52w !== undefined ? sc.dist_52w : 15;
     }
     const fl = rulesConfig.filtering;
     if (fl && fl.min_score !== undefined) {
@@ -515,8 +513,6 @@ function runScreener(isAutoRefresh = false) {
     typeC: document.getElementById('f_type_c').checked,
     typeD: document.getElementById('f_type_d').checked,
     typeE: document.getElementById('f_type_e').checked,
-    dist52W: parseFloat(document.getElementById('f_52w_pct').value) || 100,
-    closeHigh: document.getElementById('f_close_high').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 60
   };
 
@@ -643,7 +639,7 @@ function runScreener(isAutoRefresh = false) {
     s.failedConditions = failedConditions;
 
     // 篩選與匹配：評分 >= 最低符合評分 && 低於 60 分一律不納入 (安全防線)
-    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0 && typeMatch && s.dist52W <= p.dist52W && (!p.closeHigh || s.closeToHigh)) {
+    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0 && typeMatch) {
       currentResults.push(s);
     }
   });
@@ -3417,8 +3413,6 @@ function showEmptyResultModal(p, passedCount) {
     '日均量':     mockStocks.filter(s => s.dailyVol != null && s.dailyVol < p.dailyVol).length,
     '技術類型':   typeFail,
     '多頭趨勢濾網': mockStocks.filter(s => p.trendFilter && !(s.price >= s.ma20 && s.ma20Rising)).length,
-    '距52週高點': mockStocks.filter(s => s.dist52W > p.dist52W).length,
-    '收盤接近日高': mockStocks.filter(s => p.closeHigh && !s.closeToHigh).length,
   };
 
   // 按失敗數排序，找最嚴苛的前5

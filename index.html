@@ -161,6 +161,13 @@
               <span class="layer-badge layer-1">L1</span>
               基本面門檻 (已綁定)
             </div>
+            <div class="filter-item">
+              <label>最低符合評分 (滿分100)</label>
+              <div class="filter-input-wrap">
+                <input type="range" id="f_min_score" min="0" max="100" value="60" step="5" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
+              </div>
+            </div>
             <div class="filter-item" style="opacity: 0.85;">
               <span style="font-size: 12px; color: var(--text-muted);">• 財務指標前 500 大個股過濾</span>
             </div>
@@ -281,33 +288,7 @@
               <label class="toggle"><input type="checkbox" id="f_type_e" checked /><span></span></label>
             </div>
           </div>
-
-          <!-- L5：策略匹配限制條件 -->
-          <div class="filter-group">
-            <div class="filter-group-title">
-              <span class="layer-badge layer-5">L5</span>
-              評分篩選門檻
-            </div>
-            <div class="filter-item">
-              <label>距52週高點 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_52w_pct" value="15" min="0" max="80" />
-                <span class="unit">%以內</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>收盤接近日高</label>
-              <label class="toggle"><input type="checkbox" id="f_close_high" /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>最低符合評分 (滿分100)</label>
-              <div class="filter-input-wrap">
-                <input type="range" id="f_min_score" min="0" max="100" value="60" step="5" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
-                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
-              </div>
-            </div>
-          </div>
-        </aside>
+         </aside>
 
         <!-- 右側：結果列表 -->
         <div class="screener-results">
