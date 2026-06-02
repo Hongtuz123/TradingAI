@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=35" />
+  <link rel="stylesheet" href="style.css?v=36" />
   <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -180,26 +180,26 @@
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-2">L2</span>
-              技術指標 (加權 85分)
+              技術指標 (加權 100分)
             </div>
             <div class="filter-item">
-              <label>Supertrend = 多頭 (25分)</label>
+              <label>Supertrend = 多頭 (20分)</label>
               <label class="toggle"><input type="checkbox" id="f_st_bull" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>收盤價 > Supertrend (10分)</label>
-              <label class="toggle"><input type="checkbox" id="f_price_above_st" checked /><span></span></label>
+              <label>MA20 &gt; MA60 均線多頭 (10分)</label>
+              <label class="toggle"><input type="checkbox" id="f_price_above_st" /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>MA20 > MA60 (15分)</label>
-              <label class="toggle"><input type="checkbox" id="f_ma_alignment" checked /><span></span></label>
+              <label>MA20/MA60 黃金排列 (10分)</label>
+              <label class="toggle"><input type="checkbox" id="f_ma_alignment" /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>下行趨勢線突破 (25分)</label>
+              <label>下行趨勢線突破 (30分)</label>
               <label class="toggle"><input type="checkbox" id="f_trendline_break" /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>回踩趨勢線不破 (量能15分)</label>
+              <label>突破後回踩確認 (10分)</label>
               <label class="toggle"><input type="checkbox" id="f_trendline_pullback" /><span></span></label>
             </div>
           </div>

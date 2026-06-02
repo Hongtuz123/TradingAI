@@ -276,6 +276,27 @@ body {
   .market-flow-dashboard {
     grid-template-columns: 1fr;
   }
+
+  /* 平板端：篩選器面板縮小到 260px，釋放表格空間 */
+  .filter-panel {
+    width: 260px;
+  }
+
+  /* 平板端：K 線圖側邊欄縮小 */
+  .chart-sidebar {
+    width: 200px;
+  }
+
+  /* 自選清單卡片最小寬度調整，避免在平板被壓太小 */
+  .whitelist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  /* 結果表格欄位字型縮小 */
+  .results-table th, .results-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
 }
 
 .flow-map-panel, .flow-rankings-panel {
@@ -1879,6 +1900,16 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   /* 提示文字手機版隱藏 */
   .chart-stock-info .chart-name {
     display: none;
+  }
+
+  /* 手機版隱藏 K 線圖股票清單側邊欄（圖表已佔滿版面，側欄過高徒增滾動） */
+  .chart-sidebar {
+    display: none;
+  }
+
+  /* 自選清單卡片手機版最小寬度修正，避免超出螢幕 */
+  #portfolioGrid {
+    grid-template-columns: 1fr !important;
   }
 
   /* 篩選條件 label 超長不換行 */

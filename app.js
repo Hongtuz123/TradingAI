@@ -566,11 +566,11 @@ function runScreener(isAutoRefresh = false) {
         isAboveSt = currSt && price > currSt.value;
       }
 
-      // 2. MA 排列 (MA20 > MA60)
+      // 2. MA 排列 (MA20 > MA60)，以陣列末端 index 取值避免時間格式不符靜默失分 (S1 修復)
       const ma20Arr = calculateSMA(candles, 20);
       const ma60Arr = calculateSMA(candles, 60);
-      const m20 = ma20Arr.find(m => m.time === curr.time);
-      const m60 = ma60Arr.find(m => m.time === curr.time);
+      const m20 = ma20Arr.length > 0 ? ma20Arr[ma20Arr.length - 1] : null;
+      const m60 = ma60Arr.length > 0 ? ma60Arr[ma60Arr.length - 1] : null;
       const isMaAlign = m20 && m60 && m20.value > m60.value;
 
       // 3. 下行趨勢線突破與回踩
@@ -578,24 +578,49 @@ function runScreener(isAutoRefresh = false) {
       let isBreak = false;
       let isPullback = false;
       if (tl && tl.value !== null) {
+        // 突破：今收站上趨勢線，且昨收在趨勢線下方
         isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
-        isPullback = price >= tl.value && price <= tl.value * 1.03 && parseFloat(candles[t - 1].close) > tl.prevValue;
+        // 回踩 (B3 修復)：今收在趨勢線上方 3% 內，且非突破當天（昨收已在趨勢線上方）
+        // 同時往前追蹤最多 5 根，找到有過突破即視為有效回踩
+        const prevAbove = parseFloat(candles[t - 1].close) > tl.prevValue;
+        const nearLine = price >= tl.value * 0.99 && price <= tl.value * 1.05;
+        if (prevAbove && nearLine && !isBreak) {
+          // 往前找 5 根內是否有突破日
+          let hadBreak = false;
+          for (let bi = Math.max(0, t - 5); bi < t; bi++) {
+            const tlPrev = calculateTrendlineAt(candles, bi);
+            if (tlPrev && tlPrev.value !== null) {
+              const biClose = parseFloat(candles[bi].close);
+              const biPrev = bi > 0 ? parseFloat(candles[bi - 1].close) : biClose;
+              if (biClose > tlPrev.value && biPrev <= tlPrev.prevValue) { hadBreak = true; break; }
+            }
+          }
+          isPullback = hadBreak;
+        }
       }
 
-      // 4. 量能比 (成交量 > 20日均量 1.5倍)
+      // 4. 量能比 (K線即時計算，標準 SMA，門檻 1.2x 均量 — B1/B2 修復)
       const vma = calculateVolumeMA(candles, 20);
       const vmaVal = vma[t];
-      const isVolLarge = vmaVal > 0 && vol > vmaVal * 1.5;
+      const liveVolRatio = vmaVal > 0 ? vol / vmaVal : 0; // 即時量能比
+      const isVolLarge = liveVolRatio >= 1.2;
 
       // 三大法人是否有買超 (投信 > 0 或是 外資 > 0 或是 自營商 > 0)
       const isInstBuy = (s.trustDays && s.trustDays > 0) || (s.foreignNetBuy && s.foreignNetBuy > 0) || (s.dealerDays && s.dealerDays > 0);
 
-      // --- 加權分數評估 ---
-      if (isStBull) score += 25;       // 趨勢方向：Supertrend 多頭 (25分)
-      if (isMaAlign) score += 15;      // 均線結構：MA20 > MA60 (15分)
-      if (isBreak) score += 25;        // 型態突破：下降趨勢線突破 (25分)
-      if (isVolLarge) score += 15;     // 量能：突破量 > 1.5 倍均量 (15分)
-      if (isAboveSt) score += 10;      // 站穩確認：收盤站上突破線/軌道上方 (10分)
+      // 5. 距 52 周高點距離 (S3 修復 — dist52W 納入評分)
+      // dist52W < 5%：接近歷史高點，已噴發嫌疑高（扣分）
+      // dist52W >= 25%：距高點夠遠，蓄勢空間充足（加分）
+      const dist52W = s.dist52W != null ? s.dist52W : 50; // 無資料預設中性值
+      if (dist52W < 5) score -= 15;         // 接近 52 周高點：負評 -15
+      else if (dist52W >= 25) score += 10;  // 距高點 25%+ 以上：蓄勢加分 +10
+
+      // --- 加權分數評估（調整後：降 ST 站穩、升趨勢線突破與量能）---
+      if (isStBull) score += 20;       // 趨勢方向：Supertrend 多頭 (20分，降權避免已漲一大段輕易過)
+      if (isMaAlign) score += 10;      // 均線結構：MA20 > MA60 (10分，降權 — 這是確認不是起漲點)
+      if (isBreak) score += 30;        // 型態突破：下降趨勢線突破 (30分，升權 — 核心型態)
+      if (isPullback) score += 10;     // 回踩確認：突破後有效回踩 (10分)
+      if (isVolLarge) score += 20;     // 量能：K線即時量 >= 1.2 倍均量 (20分，升權)
       if (isInstBuy) score += 10;      // 三大法人買超 (10分)
 
       // 使用者設定的開關條件若勾選且不符合，則標記為 failed
@@ -620,8 +645,16 @@ function runScreener(isAutoRefresh = false) {
     if (s.dealerDays != null && s.dealerDays < p.dealerNetBuyLimit) {
       failedConditions.push(`自營當日買超 (${s.dealerDays}張 < ${p.dealerNetBuyLimit}張)`);
     }
-    if (s.volRatio != null && s.volRatio < p.volRatio) {
-      failedConditions.push(`量能比 (${s.volRatio} < ${p.volRatio})`);
+    // B1 修復：量能比 gate 統一使用 K 線即時計算的 liveVolRatio（若存在），fallback 至靜態 volRatio
+    const gateVolRatio = (s.kline && s.kline.length >= 20) ? (() => {
+      const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+      const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+      const vma20 = last20sum / 20;
+      const lastVol = cv[cv.length - 1].volume;
+      return vma20 > 0 ? lastVol / vma20 : 0;
+    })() : (s.volRatio || 0);
+    if (gateVolRatio < p.volRatio) {
+      failedConditions.push(`量能比 (${gateVolRatio.toFixed(2)} < ${p.volRatio})`);
     }
     if (s.turnover != null && s.turnover < p.turnover) {
       failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);

@@ -60,8 +60,8 @@ function calculateTrendlineAt(candles, t) {
   const pt2 = pivots[idx2];
   const pt1 = pivots[idx1];
 
-  // 限制最近的確認點不能太遙遠，確保具有即時參考性 (在25天內)
-  if (t - pt2.index > 25) return null;
+  // 限制最近的確認點不能太遙遠，確保具有即時參考性 (在40天內)
+  if (t - pt2.index > 40) return null;
 
   const slope = (pt2.high - pt1.high) / (pt2.index - pt1.index);
   const valAtT = pt2.high + slope * (t - pt2.index);
@@ -69,17 +69,20 @@ function calculateTrendlineAt(candles, t) {
   return { value: valAtT, prevValue: valAtPrev, pt1, pt2, slope };
 }
 
-// 計算成交量的 20MA
+// 計算成交量的 20MA（標準滑動視窗 SMA，非 EMA）
 function calculateVolumeMA(candles, period = 20) {
   if (candles.length < period) return new Array(candles.length).fill(0);
   const vma = new Array(candles.length).fill(0);
+  // 使用真正的滑動視窗 SMA：每次加入新值、移除最舊值
   let sum = 0;
   for (let i = 0; i < period; i++) {
     sum += parseFloat(candles[i].volume || 0);
   }
   vma[period - 1] = sum / period;
   for (let i = period; i < candles.length; i++) {
-    vma[i] = (vma[i - 1] * (period - 1) + parseFloat(candles[i].volume || 0)) / period;
+    sum += parseFloat(candles[i].volume || 0);
+    sum -= parseFloat(candles[i - period].volume || 0);
+    vma[i] = sum / period;
   }
   return vma;
 }
