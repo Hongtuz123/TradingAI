@@ -3,14 +3,15 @@
     "eps_growth": 15,
     "rev_growth": 20,
     "roe": 10,
-    "trust_days": 10,
-    "daily_vol": 2000,
+    "trust_days": 0,
+    "daily_vol": 800,
     "market_cap": 50,
-    "vol_ratio": 1.5,
+    "vol_ratio": 0.6,
+    "turnover": 0.5,
     "dist_52w": 15,
     "max_score": 12
   },
   "filtering": {
-    "min_score": 6
+    "min_score": 60
   }
 }

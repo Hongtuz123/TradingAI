@@ -65,7 +65,7 @@ function startClock() {
         renderSectorFlowMap();
         renderRankings();
       } else if (currentActiveView === 'screener') {
-        runScreener();
+        runScreener(true);
       } else if (currentActiveView === 'whitelist') {
         renderWhitelistGrid();
       } else if (currentActiveView === 'portfolio') {
@@ -96,22 +96,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const sc = rulesConfig.scoring;
     if (sc) {
       const f_trust = document.getElementById('f_trust_days');
-      if (f_trust) f_trust.value = sc.trust_days || 10;
+      if (f_trust) f_trust.value = sc.trust_days !== undefined ? sc.trust_days : 0;
       const f_foreign = document.getElementById('f_foreign_net_buy_threshold');
-      if (f_foreign) f_foreign.value = 10; // 預設 10 張
+      if (f_foreign) f_foreign.value = 0; // 預設 0 張
       const f_dealer = document.getElementById('f_dealer_net_buy_threshold');
-      if (f_dealer) f_dealer.value = 10; // 預設 10 張
+      if (f_dealer) f_dealer.value = 0; // 預設 0 張
       const f_vol = document.getElementById('f_vol_ratio');
-      if (f_vol) f_vol.value = sc.vol_ratio || 1.5;
+      if (f_vol) f_vol.value = sc.vol_ratio !== undefined ? sc.vol_ratio : 1.0;
       const f_mkt = document.getElementById('f_market_cap');
-      if (f_mkt) f_mkt.value = sc.market_cap || 50;
+      if (f_mkt) f_mkt.value = sc.market_cap !== undefined ? sc.market_cap : 50;
       const f_daily = document.getElementById('f_daily_vol');
-      if (f_daily) f_daily.value = sc.daily_vol || 2000;
+      if (f_daily) f_daily.value = sc.daily_vol !== undefined ? sc.daily_vol : 1000;
+      const f_turnover = document.getElementById('f_turnover');
+      if (f_turnover) f_turnover.value = sc.turnover !== undefined ? sc.turnover : 0.5;
       const f_52w = document.getElementById('f_52w_pct');
-      if (f_52w) f_52w.value = sc.dist_52w || 15;
+      if (f_52w) f_52w.value = sc.dist_52w !== undefined ? sc.dist_52w : 15;
     }
     const fl = rulesConfig.filtering;
-    if (fl && fl.min_score) {
+    if (fl && fl.min_score !== undefined) {
       const f_min = document.getElementById('f_min_score');
       if (f_min) f_min.value = fl.min_score;
     }
@@ -490,7 +492,7 @@ window.getLiveStockData = function(s) {
 };
 
 // 執行篩選
-function runScreener() {
+function runScreener(isAutoRefresh = false) {
   // 每次執行篩選前，全面同步一次所有股票最新價格與漲跌幅
   updateAllStockPrices();
 
@@ -663,7 +665,7 @@ function runScreener() {
   });
 
   // ========== 無結果彈窗 ==========
-  if (mockStocks.length > 0 && currentWhitelist.length === 0) {
+  if (mockStocks.length > 0 && currentWhitelist.length === 0 && !isAutoRefresh) {
     showEmptyResultModal(p, currentResults.length);
   }
 
