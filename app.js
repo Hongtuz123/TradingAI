@@ -644,6 +644,18 @@ function runScreener(isAutoRefresh = false) {
       }
     }
 
+    // L1 固定基本面門檻
+    // 2. 當季 EPS > 0 (若數據為 null 視為通過，避免 API 缺失導致誤殺)
+    if (s.eps != null && s.eps <= 0) {
+      failedConditions.push(`當季 EPS 非正數 (${s.eps}元 <= 0元)`);
+    }
+    // 3 和 4 擇一通過即可 (營收 YoY > -30% OR ROE > -5%，若數據為 null 視為通過，避免 API 缺失導致誤殺)
+    const isYoYOk = s.revYoY == null || s.revYoY > -30;
+    const isRoeOk = s.roe == null || s.roe > -5;
+    if (!isYoYOk && !isRoeOk) {
+      failedConditions.push(`營收與ROE雙未達標 (YoY: ${s.revYoY}% <= -30% 且 ROE: ${s.roe}% <= -5%)`);
+    }
+
     // 籌碼門檻與量能門檻過濾
     if (s.trustDays != null && s.trustDays < p.trustDays) {
       failedConditions.push(`投信當日買超 (${s.trustDays}張 < ${p.trustDays}張)`);
