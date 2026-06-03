@@ -611,6 +611,68 @@ body {
   width: 40px;
 }
 
+/* Tooltip 樣式 */
+.info-tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  cursor: help;
+}
+
+.info-icon {
+  font-size: 13px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  transition: opacity 0.2s, color 0.2s;
+  display: inline-block;
+  line-height: 1;
+}
+
+.info-tooltip-container:hover .info-icon {
+  opacity: 1;
+  color: var(--primary);
+}
+
+.tooltip-content {
+  visibility: hidden;
+  position: absolute;
+  left: 50%;
+  bottom: 125%;
+  transform: translateX(-50%);
+  width: 250px;
+  background-color: rgba(15, 23, 42, 0.98);
+  border: 1px solid var(--border-color);
+  color: white;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--border-color) transparent transparent transparent;
+}
+
+.info-tooltip-container:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* Toggle Switch */
 .toggle {
   position: relative;
