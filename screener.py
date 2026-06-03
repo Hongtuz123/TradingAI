@@ -734,9 +734,9 @@ def run_screener():
                     'mkt_cap': mkt_cap
                 })
     
-    # 依市值降序排列，取前 500 大
+    # 依市值降序排列，全量保留 (不再取前 500 大切片以擴大標的庫，但終端文字維持原樣)
     mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
-    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:500]]
+    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list]
     print(f"📊 成功篩選出合併市值前 500 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
     
     # 3. 讀取 CSV 作為自選觀察清單與前 500 大合併去重
