@@ -446,22 +446,6 @@ function initDashboard() {
     if (tooltipWrap) tooltipWrap.style.display = 'none';
   }
 
-  // 繪製多邊形評分雷達圖
-  renderScoreRadar('twRadarSvg', [
-    { label: '加權', val: twiiScore / 1 * 100 },
-    { label: '櫃買', val: otcScore / 1 * 100 },
-    { label: '量能', val: volScore / 1 * 100 },
-    { label: '綜合', val: twTotalScore / 3 * 100 },
-    { label: '美連動', val: usTotalScore / 5 * 100 }
-  ], '#10b981');
-
-  renderScoreRadar('usRadarSvg', [
-    { label: 'S&P500', val: (usData[0]?.pct_chg > 0 ? 100 : 0) },
-    { label: '那斯達', val: (usData[1]?.pct_chg > 0 ? 100 : 0) },
-    { label: '道瓊', val: (usData[2]?.pct_chg > 0 ? 100 : 0) },
-    { label: '費半', val: (usData[3]?.pct_chg > 0 ? 100 : 0) },
-    { label: '羅素', val: (usData[4]?.pct_chg > 0 ? 100 : 0) }
-  ], '#60a5fa');
 }
 
 
@@ -3058,6 +3042,22 @@ const SECTOR_DESCRIPTIONS = {
   '光電學:光學鏡頭': '【光電學 ➔ 光學鏡頭】手機多鏡頭高階光學元件與車用 ADAS 鏡頭。大立光、玉晶光為全球蘋果供應鏈中最核心的高毛利技術霸主。'
 };
 
+// 全域泡泡圖開關狀態
+let activeBubbleFilters = { major: true, rotate: true, retreat: true };
+
+function toggleBubbleFilter(cat) {
+  activeBubbleFilters[cat] = !activeBubbleFilters[cat];
+  const btn = document.getElementById(`btn-filter-${cat}`);
+  if (btn) {
+    if (activeBubbleFilters[cat]) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+  renderSectorFlowMap();
+}
+
 // 1. 繪製產業資金輪動泡泡圖
  function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
@@ -3199,6 +3199,7 @@ const SECTOR_DESCRIPTIONS = {
   // 繪製泡泡 (大先畫小後畫，小的居上層)
   [...sectors].sort((a, b) => b.totalVol - a.totalVol).forEach(g => {
     const cat = getCategory(g);
+    if (!activeBubbleFilters[cat]) return; // 過濾開關連動
     const color = COLOR_MAP[cat];
     const x = toSvgX(g.avgVolRatio);
     const y = toSvgY(g.netFlow);

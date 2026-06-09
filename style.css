@@ -322,90 +322,101 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* ================= 多邊形評分雷達面板 ================= */
-.score-radar-panel {
-  background-color: var(--bg-panel);
+/* ================= 排行榜單獨全寬容器 ================= */
+.flow-bottom-row-full {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* ================= 迷你並排健康度橫幅 ================= */
+.market-health-banner-mini {
+  background: linear-gradient(135deg, rgba(30,41,59,0.85) 0%, rgba(15,23,42,0.85) 100%);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.health-header-mini {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.health-mini-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.score-radar-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+@media (max-width: 768px) {
+  .health-mini-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 
-.score-radar-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: 0.04em;
+.market-group-mini {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.02);
 }
 
-.score-radar-grades {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.sr-grade-badge {
-  font-size: 13px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  border: 1px solid rgba(16,185,129,0.3);
-}
-
-.sr-grade-badge.us {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border-color: rgba(59,130,246,0.3);
-}
-
-.sr-grade-badge.overall {
-  background: rgba(249, 115, 22, 0.2);
-  color: #f97316;
-  border-color: rgba(249,115,22,0.3);
-}
-
-.sr-grade-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.radar-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.radar-group-label {
+.market-group-title-mini {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  padding-left: 2px;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
 }
 
-.radar-wrap {
-  display: flex;
-  justify-content: center;
+/* ================= 泡泡過濾開關按鈕 ================= */
+.bubble-filter-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
 }
 
-.radar-svg {
-  width: 140px;
-  height: 140px;
+.bubble-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
 }
+
+.bubble-filter-btn.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.bubble-filter-btn .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #64748b;
+  transition: background 0.2s;
+}
+
+.bubble-filter-btn.active .dot.major { background: #f97316; }
+.bubble-filter-btn.active .dot.rotate { background: #eab308; }
+.bubble-filter-btn.active .dot.retreat { background: #22c55e; }
+
+.bubble-filter-btn:not(.active) {
+  opacity: 0.45;
+}
+
 
 /* ================= 警示 Tooltip ================= */
 .warning-tooltip-wrap {

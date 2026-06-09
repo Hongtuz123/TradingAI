@@ -58,19 +58,71 @@
     <!-- ======================== 儀表板視圖 ======================== -->
     <section class="view active" id="view-dashboard">
 
-      <!-- ===== 1. 泡泡圖：全寬置頂 ===== -->
+      <!-- ===== 1. 最上：市場健康度 (縮小篇幅，台美股並排) ===== -->
+      <div class="market-health-banner-mini" id="marketHealthBanner">
+        <div class="health-header-mini">
+          <h2 style="margin:0; font-size:15px; display:flex; align-items:center;">📊 市場健康度
+            <!-- 警示 tooltip icon -->
+            <span class="warning-tooltip-wrap" id="warningTooltipWrap" style="display:none; margin-left:6px;">
+              <span class="warning-tooltip-icon">⚠️</span>
+              <span class="warning-tooltip-box" id="warningTooltipBox">
+                <strong>市場警示</strong>
+                <ul id="warningList"></ul>
+              </span>
+            </span>
+          </h2>
+          <!-- 保持 JS 控制不報錯 -->
+          <div class="health-overall" id="healthOverall" style="display:none;"></div>
+          <div style="display:none;" id="twHealthGrade">--</div>
+          <div style="display:none;" id="usHealthGrade">--</div>
+          <div style="display:none;" id="healthGrade">--</div>
+        </div>
+
+        <!-- 並排的健康度指標容器 -->
+        <div class="health-mini-row">
+          <!-- 台股版塊 -->
+          <div class="market-group-mini">
+            <div class="market-group-title-mini">🇹🇼 台股</div>
+            <div class="health-indicators" id="twIndicators"><!-- JS 填充 --></div>
+            <div class="vol-indicator" id="volIndicator" style="margin-top:6px;"><!-- JS 填充 --></div>
+          </div>
+
+          <!-- 美股版塊 -->
+          <div class="market-group-mini">
+            <div class="market-group-title-mini">🇺🇸 美股</div>
+            <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
+          </div>
+        </div>
+
+        <!-- 保留舊警示 div（隱藏） -->
+        <div class="health-warning" id="healthWarning" style="display:none;">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-content">
+            <ul id="warningListLegacy"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 2. 中間：泡泡圖 (全寬置頂) ===== -->
       <div class="flow-bubble-full flow-map-panel">
         <div class="panel-header">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
             <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
-            <div style="display:flex;align-items:center;gap:10px;font-size:11px;">
-              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f97316;display:inline-block;"></span>主力</span>
-              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#eab308;display:inline-block;"></span>輪動</span>
-              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>退潮</span>
+            <!-- 開關過濾按鈕 -->
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+              <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
+                <span class="dot major"></span>主力
+              </button>
+              <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
+                <span class="dot rotate"></span>輪動
+              </button>
+              <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
+                <span class="dot retreat"></span>退潮
+              </button>
             </div>
           </div>
           <div style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
-            泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 漲跌幅 | 點擊泡泡查看成分股
+            泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 資金淨流向 (往上流入 / 往下流出) | 點擊泡泡查看成分股
           </div>
         </div>
         <div class="flow-map-container" id="sectorTreeMap">
@@ -78,10 +130,8 @@
         </div>
       </div>
 
-      <!-- ===== 2. 第二列：左側排行 + 右側多邊形評分 ===== -->
-      <div class="flow-bottom-row">
-
-        <!-- 左：五大排行 Tab -->
+      <!-- ===== 3. 最下：五大排行 Tab (寬度100%) ===== -->
+      <div class="flow-bottom-row-full">
         <div class="flow-rankings-panel">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
             <div class="rankings-tabs" style="flex:1; margin-bottom:0;">
@@ -100,64 +150,6 @@
           </div>
           <div class="rank-list-container" id="rankListContent"><!-- JS 填充 --></div>
         </div>
-
-        <!-- 右：台美股多邊形評分雷達 -->
-        <div class="score-radar-panel">
-          <div class="score-radar-header">
-            <span class="score-radar-title">📊 市場評分</span>
-            <div class="score-radar-grades">
-              <span class="sr-grade-badge" id="twHealthGrade">--</span>
-              <span class="sr-grade-label">台股</span>
-              <span class="sr-grade-badge us" id="usHealthGrade">--</span>
-              <span class="sr-grade-label">美股</span>
-              <span class="sr-grade-badge overall" id="healthGrade">--</span>
-              <span class="sr-grade-label">綜合</span>
-            </div>
-          </div>
-          <!-- 台股雷達 -->
-          <div class="radar-group">
-            <div class="radar-group-label">🇹🇼 台股</div>
-            <div class="radar-wrap">
-              <svg id="twRadarSvg" class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
-            </div>
-          </div>
-          <!-- 美股雷達 -->
-          <div class="radar-group">
-            <div class="radar-group-label">🇺🇸 美股</div>
-            <div class="radar-wrap">
-              <svg id="usRadarSvg" class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== 3. 最下：市場健康度 ===== -->
-      <div class="market-health-banner" id="marketHealthBanner">
-        <div class="health-header">
-          <h2>📊 市場健康度
-            <!-- 警示 tooltip icon -->
-            <span class="warning-tooltip-wrap" id="warningTooltipWrap" style="display:none;">
-              <span class="warning-tooltip-icon">⚠️</span>
-              <span class="warning-tooltip-box" id="warningTooltipBox">
-                <strong>市場警示</strong>
-                <ul id="warningList"></ul>
-              </span>
-            </span>
-          </h2>
-          <!-- 健康度整體評級已移到多邊形評分面板，此處隱藏保持 JS 相容 -->
-          <div class="health-overall" id="healthOverall" style="display:none;"></div>
-        </div>
-
-        <!-- 台股版塊 -->
-        <div class="market-group">
-          <div class="market-group-title">🇹🇼 台股</div>
-          <div class="health-indicators" id="twIndicators"><!-- JS 填充 --></div>
-          <div class="vol-indicator" id="volIndicator"><!-- JS 填充 --></div>
-        </div>
-
-        <!-- 美股版塊 -->
-        <div class="market-group">
-          <div class="market-group-title">🇺🇸 美股</div>
           <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
         </div>
 
