@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=38" />
+  <link rel="stylesheet" href="style.css?v=40" />
   <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -437,41 +437,18 @@
     <section class="view" id="view-chart">
       <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;overflow:hidden;">
         <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
-          <div class="chart-toolbar" style="flex-shrink:0;gap:12px;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;align-items:center;">
-            <div class="chart-stock-info" style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
-              <span class="chart-name" style="color:var(--text-muted)">💡 提示：點選白名單或篩選結果中的「回測」按鈕來載入 K 線並進行指標回測</span>
-              
+          <div class="chart-toolbar" style="flex-shrink:0;gap:12px;display:flex;justify-content:space-between;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;align-items:center;">
+            
+            <!-- 左側控制群：搜尋列 + 時框選擇 + 自選此股 -->
+            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
               <!-- 搜尋功能 -->
               <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
                 <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
                 <input type="text" id="chartSearchInput" placeholder="輸入股號 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:14px; width:130px;" onkeydown="if(event.key==='Enter') searchAndLoadChart()">
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="searchAndLoadChart()">搜尋</button>
               </div>
-            </div>
 
-            <!-- 策略控制與績效看板 -->
-            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
-              <div id="backtest-summary" style="display:none; align-items:center; gap: 12px; background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); font-size:13px; color: white;">
-                <!-- 由 JS 動態寫入回測數據 -->
-              </div>
-
-              <div style="display:flex; align-items:center; gap: 8px; background: rgba(30, 41, 59, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="font-size:13px; color:var(--text-muted);">策略圖層：</span>
-                <select id="strategy-select" onchange="changeStrategyLayer(this.value)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; cursor:pointer; font-weight:500;">
-                  <option value="none" style="background:var(--bg-panel); color:white;">無 (純K線)</option>
-                  <option value="supertrend" style="background:var(--bg-panel); color:white;">Super-Trend 策略</option>
-                  <option value="trendline" style="background:var(--bg-panel); color:white;">下行趨勢線突破策略</option>
-                </select>
-              </div>
-
-              <button class="btn-primary" style="font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
-                <span>🎯 趨勢突破選股</span>
-              </button>
-
-              <button class="btn-primary" id="btn-chart-add-portfolio" style="font-weight: 700; background: linear-gradient(135deg, #f59e0b, #eab308); border: none; box-shadow: 0 0 10px rgba(245,158,11,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleCurrentStockPortfolio()">
-                <span>⭐ 自選此股</span>
-              </button>
-
+              <!-- 時框選擇 (15分/1小時/4小時/日) -->
               <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
                 <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1h')">1小時</button>
@@ -479,15 +456,40 @@
                 <button class="btn-secondary active" style="padding: 2px 8px; font-size:12px; height: 24px; background:var(--primary-color);" onclick="changeResolution('1D')">日</button>
               </div>
 
-              <!-- 副圖表指標下拉選單 -->
-              <div style="display:flex; align-items:center; gap: 6px; background: rgba(30, 41, 59, 0.6); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="font-size:13px; color:var(--text-muted);">副圖指標：</span>
+              <!-- 自選此股按鈕 -->
+              <button class="btn-primary" id="btn-chart-add-portfolio" style="font-weight: 700; background: linear-gradient(135deg, #f59e0b, #eab308); border: none; box-shadow: 0 0 10px rgba(245,158,11,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleCurrentStockPortfolio()">
+                <span>⭐ 自選此股</span>
+              </button>
+            </div>
+
+            <!-- 右側控制群：回測績效 + 策略圖層 + 副圖指標 + 趨勢選股 -->
+            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+              <!-- 績效看板 -->
+              <div id="backtest-summary" style="display:none; align-items:center; gap: 12px; background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); font-size:13px; color: white;">
+                <!-- 由 JS 動態寫入回測數據 -->
+              </div>
+
+              <!-- 策略圖層與副圖指標放在旁邊 -->
+              <div style="display:flex; align-items:center; gap: 6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-size:13px; color:var(--text-muted);">策略：</span>
+                <select id="strategy-select" onchange="changeStrategyLayer(this.value)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; cursor:pointer; font-weight:500; padding-right:8px;">
+                  <option value="none" style="background:var(--bg-panel); color:white;">無 (純K線)</option>
+                  <option value="supertrend" style="background:var(--bg-panel); color:white;">Super-Trend 策略</option>
+                  <option value="trendline" style="background:var(--bg-panel); color:white;">下行趨勢線突破策略</option>
+                </select>
+                <span style="border-left:1px solid rgba(255,255,255,0.15); height:16px; margin:0 4px;"></span>
+                <span style="font-size:13px; color:var(--text-muted);">副圖：</span>
                 <select id="indicator-select" onchange="changeSubIndicator(this.value)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; cursor:pointer; font-weight:500;">
                   <option value="rsi" style="background:var(--bg-panel); color:white;">RSI ＋ 形態特殊標註</option>
                   <option value="macd" style="background:var(--bg-panel); color:white;">MACD ＋ 金叉/死叉標註</option>
                 </select>
               </div>
+
+              <button class="btn-primary" style="font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
+                <span>🎯 趨勢突破選股</span>
+              </button>
             </div>
+            
           </div>
           <!-- Lightweight Charts 容器：flex:1 + min-height:0 讓圖表填滿剩餘空間 -->
           <div id="tvChartContainer" style="flex:1;min-height:0;overflow:hidden;"></div>
@@ -547,7 +549,7 @@
 
   <!-- 腳本 -->
   <script src="data.js?v=36"></script>
-  <script src="app.js?v=38"></script>
-  <script src="stock-dashboard.js?v=38"></script>
+  <script src="app.js?v=40"></script>
+  <script src="stock-dashboard.js?v=40"></script>
 </body>
 </html>

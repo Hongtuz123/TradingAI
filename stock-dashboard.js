@@ -824,11 +824,25 @@ function renderLWChart(containerId, klineData, height = 260) {
     }
 
 
+    // ==== 常駐 Supertrend 指標線繪製 ====
+    const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
+    const upData = [];
+    const dnData = [];
+    for (let i = 0; i < supertrendData.length; i++) {
+      const curr = supertrendData[i];
+      if (curr.value === null) continue;
+      if (curr.trend === 1) {
+        upData.push({ time: curr.time, value: curr.value });
+      } else {
+        dnData.push({ time: curr.time, value: curr.value });
+      }
+    }
+    supertrendUpSeries.setData(upData);
+    supertrendDnSeries.setData(dnData);
+
     // ---- 策略 A: Super-Trend 策略 ----
     if (window.activeStrategy === 'supertrend') {
       trendlineSeries.setData([]);
-      
-      const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
       function runSupertrendBacktest(candles, stData) {
         let equity = 1.0;
@@ -1055,8 +1069,6 @@ function renderLWChart(containerId, klineData, height = 260) {
     }
     // ---- 策略 B: 下行趨勢線突破策略 ----
     else if (window.activeStrategy === 'trendline') {
-      supertrendUpSeries.setData([]);
-      supertrendDnSeries.setData([]);
 
       function runTrendlineBacktest(candles) {
         let equity = 1.0;
@@ -1202,8 +1214,6 @@ function renderLWChart(containerId, klineData, height = 260) {
       if (summaryEl) {
         summaryEl.style.display = 'none';
       }
-      supertrendUpSeries.setData([]);
-      supertrendDnSeries.setData([]);
       trendlineSeries.setData([]);
     }
 
