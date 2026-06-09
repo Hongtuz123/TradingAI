@@ -565,6 +565,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     title: '超級趨勢(多)',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
+    lastValueVisible: false,
+    priceLineVisible: false,
   });
 
   // 繪製 Supertrend 下降軌道（紅色實線，箱體頂邊）
@@ -575,6 +577,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     title: '超級趨勢(空)',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
+    lastValueVisible: false,
+    priceLineVisible: false,
   });
 
   // 繪製動態下行趨勢線 (亮粉紅色實線)
@@ -890,7 +894,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
 
     // 合成高時框與計算 S&R 函數
     function drawSRLinesForResolution(targetRes, multiplier, pivotLen, supSeries, resSeries) {
-      if (multiplier <= 0 || formattedCandles.length === 0) {
+      if (!multiplier || isNaN(multiplier) || multiplier <= 0 || formattedCandles.length === 0) {
         supSeries.setData([]);
         resSeries.setData([]);
         return;
@@ -1017,18 +1021,19 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     }
 
     // 依據當前選定的 timeframe (resolution) 來分流計算
+    const resStr = (typeof resolution === 'string') ? resolution : '1D';
     let dayMult = 0, fourHMult = 0, oneHMult = 0;
     let dayPivot = 15, fourHPivot = 15, oneHPivot = 15;
 
-    if (resolution === '15m') {
+    if (resStr === '15m') {
       dayMult = 96;   dayPivot = 5;  // 15m * 96 = 24H (1D)
       fourHMult = 16; fourHPivot = 8; // 15m * 16 = 4H
       oneHMult = 4;   oneHPivot = 15; // 15m * 4 = 1H
-    } else if (resolution === '1h') {
+    } else if (resStr === '1h') {
       dayMult = 24;   dayPivot = 6;  // 1H * 24 = 24H (1D)
       fourHMult = 4;  fourHPivot = 12; // 1H * 4 = 4H
       oneHMult = 1;   oneHPivot = 15;
-    } else if (resolution === '4h') {
+    } else if (resStr === '4h') {
       dayMult = 6;    dayPivot = 10; // 4H * 6 = 24H (1D)
       fourHMult = 1;  fourHPivot = 15;
       oneHMult = 0; // 4H 時框下不計算 1H 支撐壓力 (低於當前時框不予顯示)
