@@ -439,6 +439,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     close: parseFloat(d.close),
   }));
 
+  const maxPrice = formattedCandles.length > 0 ? Math.max(...formattedCandles.map(c => c.high)) : 1000;
+
   const formattedVolume = klineData.map(d => ({
     time: parseKlineTime(d.date),
     value: parseFloat(d.volume),
@@ -585,11 +587,12 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     window.activeStrategy = 'none';
   }
 
-  // 繪製 Supertrend 上升軌道（綠色實線，箱體底邊）
-  const supertrendUpSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#22c55e',
+  // 繪製 Supertrend 上升軌道（綠色實線，帶有下方透明度漸層）
+  const supertrendUpSeries = mainChart.addSeries(LightweightCharts.AreaSeries, {
+    lineColor: '#22c55e',
+    topColor: 'rgba(34, 197, 94, 0.25)',  // 靠近折線處為較深綠色
+    bottomColor: 'rgba(34, 197, 94, 0.0)', // 底部為透明
     lineWidth: 2,
-    lineStyle: 0,
     title: '',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
@@ -597,11 +600,16 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     priceLineVisible: false,
   });
 
-  // 繪製 Supertrend 下降軌道（紅色實線，箱體頂邊）
-  const supertrendDnSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#ef4444',
+  // 繪製 Supertrend 下降軌道（紅色實線，帶有上方透明度漸層）
+  const supertrendDnSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+    baseValue: { type: 'price', price: maxPrice * 1.05 }, // 動態設定為最高價的 1.05 倍
+    bottomLineColor: '#ef4444', // 折線本身為紅色
+    bottomFillColor1: 'rgba(239, 68, 68, 0.25)', // 先設為 0.25 測試
+    bottomFillColor2: 'rgba(239, 68, 68, 0.25)', // 先設為 0.25 測試
+    topLineColor: 'transparent',
+    topFillColor1: 'transparent',
+    topFillColor2: 'transparent',
     lineWidth: 2,
-    lineStyle: 0,
     title: '',
     crosshairMarkerVisible: true,
     crosshairMarkerRadius: 4,
@@ -1041,26 +1049,74 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     drawSRLinesForResolution('1h', oneHMult, oneHPivot);
 
     // ==== 常駐 Supertrend 指標線繪製 ====
-    const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
-    const upData = [];
-    const dnData = [];
-    for (let i = 0; i < supertrendData.length; i++) {
-      const curr = supertrendData[i];
-      if (curr.value === null) {
-        upData.push({ time: curr.time, value: null });
-        dnData.push({ time: curr.time, value: null });
-        continue;
+    if (window.activeStrategy !== 'supertrend') {
+      const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
+      
+      // 1. 拆分趨勢段 (Segments)
+      const stSegments = [];
+      let segStart = -1;
+      let segTrend = null;
+      for (let i = 0; i < supertrendData.length; i++) {
+        const curr = supertrendData[i];
+        if (curr.value === null) continue;
+        if (curr.trend !== segTrend) {
+          if (segTrend !== null && segStart >= 0) {
+            stSegments.push({ trend: segTrend, startIdx: segStart, endIdx: i - 1 });
+          }
+          segTrend = curr.trend;
+          segStart = i;
+        }
       }
-      if (curr.trend === 1) {
-        upData.push({ time: curr.time, value: curr.value });
-        dnData.push({ time: curr.time, value: null });
-      } else {
-        upData.push({ time: curr.time, value: null });
-        dnData.push({ time: curr.time, value: curr.value });
+      if (segTrend !== null && segStart >= 0) {
+        stSegments.push({ trend: segTrend, startIdx: segStart, endIdx: supertrendData.length - 1 });
       }
+
+      // 2. 依據趨勢段動態繪製對應之 Series
+      stSegments.forEach(seg => {
+        const segData = [];
+        let segMax = -Infinity;
+        for (let i = seg.startIdx; i <= seg.endIdx; i++) {
+          segData.push({ time: supertrendData[i].time, value: supertrendData[i].value });
+          segMax = Math.max(segMax, supertrendData[i].value);
+        }
+
+        if (seg.trend === 1) {
+          // 多頭上升軌道：AreaSeries 往下延伸漸層
+          const upSeries = mainChart.addSeries(LightweightCharts.AreaSeries, {
+            lineColor: '#22c55e',
+            topColor: 'rgba(34, 197, 94, 0.22)',
+            bottomColor: 'rgba(34, 197, 94, 0.0)',
+            lineWidth: 2,
+            title: '',
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 4,
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
+          upSeries.setData(segData);
+          highlighterSeriesList.push(upSeries);
+        } else {
+          // 空頭下降軌道：BaselineSeries 往上延伸漸層 (動態 baseValue 緊貼最高價)
+          const dnSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
+            baseValue: { type: 'price', price: segMax * 1.04 },
+            bottomLineColor: '#ef4444',
+            bottomFillColor1: 'rgba(239, 68, 68, 0.0)',
+            bottomFillColor2: 'rgba(239, 68, 68, 0.22)',
+            topLineColor: 'transparent',
+            topFillColor1: 'transparent',
+            topFillColor2: 'transparent',
+            lineWidth: 2,
+            title: '',
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 4,
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
+          dnSeries.setData(segData);
+          highlighterSeriesList.push(dnSeries);
+        }
+      });
     }
-    supertrendUpSeries.setData(upData);
-    supertrendDnSeries.setData(dnData);
 
     // ---- 策略 A: Super-Trend 策略 ----
     if (window.activeStrategy === 'supertrend') {
