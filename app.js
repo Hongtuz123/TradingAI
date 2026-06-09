@@ -3099,13 +3099,13 @@ const SECTOR_DESCRIPTIONS = {
 
   // SVG 尺寸
   const W = container.clientWidth || 560;
-  const H = 368;
+  const H = 480;
   const ML = 52, MR = 18, MT = 22, MB = 42;
   const PW = W - ML - MR, PH = H - MT - MB;
   const X_MAX = 3.0, Y_HALF = 6.0;
 
-  function toSvgX(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.02), 0.98) * PW; }
-  function toSvgY(ch) { return MT + (1 - Math.min(Math.max((ch + Y_HALF) / (Y_HALF * 2), 0.02), 0.98)) * PH; }
+  function toSvgX(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; }
+  function toSvgY(ch) { return MT + (1 - Math.min(Math.max((ch + Y_HALF) / (Y_HALF * 2), 0.08), 0.92)) * PH; }
   const centerX = toSvgX(1.0);
   const centerY = toSvgY(0);
 

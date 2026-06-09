@@ -272,7 +272,7 @@ body {
 /* 1. 泡泡圖 — 全寬置頂 */
 .flow-bubble-full {
   width: 100%;
-  min-height: 460px;
+  min-height: 580px;
   margin-bottom: 16px;
   box-sizing: border-box;
 }
@@ -280,7 +280,7 @@ body {
 /* 2. 第二列：排行 + 評分雷達 */
 .flow-bottom-row {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1.1fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
   align-items: start;
