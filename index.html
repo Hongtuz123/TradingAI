@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=36" />
+  <link rel="stylesheet" href="style.css?v=37" />
   <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -105,9 +105,16 @@
         <!-- 左半邊：熱力圖 -->
         <div class="flow-map-panel">
           <div class="panel-header">
-            <h3>🔥 荳花漲跌區塊偵測 <span style="font-size:12px;color:var(--text-muted);font-weight:normal;margin-left:8px;">TW-Stock Sector Flow Map</span></h3>
-            <div style="font-size: 11px; color: var(--text-muted);">
-              面積: 熱量比 (成交量/日均量) | 顏色: 漲跌幅
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
+              <div style="display:flex;align-items:center;gap:10px;font-size:11px;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f97316;display:inline-block;"></span>主力</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#eab308;display:inline-block;"></span>輪動</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>退潮</span>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
+              泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 漲跌幅 | 點擊泡泡查看成分股
             </div>
           </div>
           <div class="flow-map-container" id="sectorTreeMap">
@@ -124,6 +131,7 @@
               <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
               <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
               <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
+              <button class="rank-tab-btn" onclick="switchRankTab('dip')">🎯 抄底名單</button>
             </div>
             <select id="rankLimitSelect" onchange="renderRankings()" style="background:var(--bg-card); color:white; border:1px solid var(--border-color); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; height:34px; cursor:pointer;">
               <option value="5">前 5 名</option>
@@ -521,8 +529,8 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=35"></script>
-  <script src="app.js?v=35"></script>
-  <script src="stock-dashboard.js?v=35"></script>
+  <script src="data.js?v=36"></script>
+  <script src="app.js?v=36"></script>
+  <script src="stock-dashboard.js?v=36"></script>
 </body>
 </html>

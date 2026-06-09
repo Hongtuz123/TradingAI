@@ -309,15 +309,14 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* 熱力圖樹狀格柵 */
+/* 泡泡圖容器 (SVG 自適應) */
 .flow-map-container {
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(70px, auto);
-  gap: 8px;
-  margin-top: 12px;
-  align-content: start;
+  min-height: 0;
+  overflow: hidden;
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-start;
 }
 
 .treemap-node {
@@ -382,7 +381,7 @@ body {
 /* 四大排行榜樣式 */
 .rankings-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   background-color: rgba(0, 0, 0, 0.2);
   padding: 4px;
