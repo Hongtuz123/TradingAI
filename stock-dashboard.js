@@ -402,7 +402,7 @@ function showMockWarning(show, timeframe = '') {
 }
 
 // ---- Lightweight Charts 渲染函式 ----
-function renderLWChart(containerId, klineData, height = 260) {
+function renderLWChart(containerId, klineData, height = 260, resolution = '1D') {
   const container = document.getElementById(containerId);
   if (!container) return null;
   container.innerHTML = '';
@@ -589,6 +589,67 @@ function renderLWChart(containerId, klineData, height = 260) {
 
   // 保存 highlighter series 的陣列以方便後續動態添加/刪除
   const highlighterSeriesList = [];
+
+  // ─── 支撐阻力線 (日線/4H/1H) Series 宣告 ───
+  // 日線級別 (Day) - 實線，線寬 3
+  const srDaySupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#10b981',
+    lineWidth: 3,
+    lineStyle: 0,
+    title: '日線支撐',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+  const srDayResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#ef4444',
+    lineWidth: 3,
+    lineStyle: 0,
+    title: '日線阻力',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+
+  // 4H級別 (4Hour) - 實線，線寬 2
+  const sr4HSupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#059669',
+    lineWidth: 2,
+    lineStyle: 0,
+    title: '4H支撐',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+  const sr4HResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#dc2626',
+    lineWidth: 2,
+    lineStyle: 0,
+    title: '4H阻力',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+
+  // 1H級別 (1Hour) - 虛線，線寬 1.5
+  const sr1HSupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#34d399',
+    lineWidth: 1.5,
+    lineStyle: 2, // Dashed
+    title: '1H支撐',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
+  const sr1HResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
+    color: '#f87171',
+    lineWidth: 1.5,
+    lineStyle: 2, // Dashed
+    title: '1H阻力',
+    crosshairMarkerVisible: false,
+    priceLineVisible: false,
+    lastValueVisible: false,
+  });
 
   // 全域副圖指標選擇狀態
   if (window.activeIndicator === undefined) {
@@ -823,6 +884,164 @@ function renderLWChart(containerId, klineData, height = 260) {
       }));
     }
 
+
+    // ─── 支撐阻力線 (日線/4H/1H) 計算與繪製 ───
+    const allTimes = formattedCandles.map(c => c.time);
+
+    // 合成高時框與計算 S&R 函數
+    function drawSRLinesForResolution(targetRes, multiplier, pivotLen, supSeries, resSeries) {
+      if (multiplier <= 0 || formattedCandles.length === 0) {
+        supSeries.setData([]);
+        resSeries.setData([]);
+        return;
+      }
+
+      // 1. Resample K線
+      const resampled = [];
+      for (let i = 0; i < formattedCandles.length; i += multiplier) {
+        const slice = formattedCandles.slice(i, Math.min(i + multiplier, formattedCandles.length));
+        if (slice.length === 0) continue;
+        resampled.push({
+          time: slice[0].time, // 使用該區段第一根K線的時間
+          open: slice[0].open,
+          high: Math.max(...slice.map(s => s.high)),
+          low: Math.min(...slice.map(s => s.low)),
+          close: slice[slice.length - 1].close
+        });
+      }
+
+      // 2. 計算 Pivot S&R
+      const supports = [];
+      const resistances = [];
+      if (resampled.length >= pivotLen * 2 + 1) {
+        for (let i = pivotLen; i < resampled.length - pivotLen; i++) {
+          const curr = resampled[i];
+          
+          // Low Pivot (支撐)
+          let isLow = true;
+          for (let j = i - pivotLen; j <= i + pivotLen; j++) {
+            if (resampled[j].low < curr.low) { isLow = false; break; }
+          }
+          if (isLow) supports.push(curr);
+
+          // High Pivot (壓力)
+          let isHigh = true;
+          for (let j = i - pivotLen; j <= i + pivotLen; j++) {
+            if (resampled[j].high > curr.high) { isHigh = false; break; }
+          }
+          if (isHigh) resistances.push(curr);
+        }
+      }
+
+      // 3. 檢查失效 (篩選有效的線)
+      const activeSups = [];
+      const activeReses = [];
+
+      // 計算 ATR 作為過濾太近的線的基準 (太近就不重複畫)
+      let atr = 0;
+      if (formattedCandles.length > 20) {
+        let sum = 0;
+        for (let i = formattedCandles.length - 20; i < formattedCandles.length; i++) {
+          sum += (formattedCandles[i].high - formattedCandles[i].low);
+        }
+        atr = sum / 20;
+      }
+      const tooClosePrice = atr * 0.15;
+
+      // 處理支撐
+      for (const sup of supports) {
+        let endTime = formattedCandles[formattedCandles.length - 1].time;
+        let isValid = true;
+        const startIdx = formattedCandles.findIndex(c => c.time === sup.time);
+        if (startIdx !== -1) {
+          for (let j = startIdx + 1; j < formattedCandles.length; j++) {
+            if (formattedCandles[j].close < sup.low) {
+              endTime = formattedCandles[j].time;
+              isValid = false;
+              break;
+            }
+          }
+        }
+        
+        // 避開太近的重複價格
+        const isDuplicate = activeSups.some(s => Math.abs(s.price - sup.low) < tooClosePrice && s.isValid === isValid);
+        if (!isDuplicate) {
+          activeSups.push({ price: sup.low, startTime: sup.time, endTime, isValid });
+        }
+      }
+
+      // 處理阻力
+      for (const res of resistances) {
+        let endTime = formattedCandles[formattedCandles.length - 1].time;
+        let isValid = true;
+        const startIdx = formattedCandles.findIndex(c => c.time === res.time);
+        if (startIdx !== -1) {
+          for (let j = startIdx + 1; j < formattedCandles.length; j++) {
+            if (formattedCandles[j].close > res.high) {
+              endTime = formattedCandles[j].time;
+              isValid = false;
+              break;
+            }
+          }
+        }
+        const isDuplicate = activeReses.some(r => Math.abs(r.price - res.high) < tooClosePrice && r.isValid === isValid);
+        if (!isDuplicate) {
+          activeReses.push({ price: res.high, startTime: res.time, endTime, isValid });
+        }
+      }
+
+      // 4. 限制最大繪製數量 (保留最近的有效線)
+      const maxLines = 8;
+      const sortedSups = activeSups.filter(s => s.isValid).slice(-maxLines);
+      const sortedReses = activeReses.filter(r => r.isValid).slice(-maxLines);
+
+      // 5. 轉換為 Lightweight Charts 連續線段數據 (中間以 null 隔開)
+      function toSeriesData(lines) {
+        const data = [];
+        lines.sort((a, b) => a.startTime - b.startTime);
+        for (let i = 0; i < lines.length; i++) {
+          const l = lines[i];
+          data.push({ time: l.startTime, value: l.price });
+          data.push({ time: l.endTime, value: l.price });
+          
+          const endIdx = allTimes.indexOf(l.endTime);
+          if (endIdx !== -1 && endIdx + 1 < allTimes.length) {
+            data.push({ time: allTimes[endIdx + 1], value: null });
+          }
+        }
+        return data;
+      }
+
+      supSeries.setData(toSeriesData(sortedSups));
+      resSeries.setData(toSeriesData(sortedReses));
+    }
+
+    // 依據當前選定的 timeframe (resolution) 來分流計算
+    let dayMult = 0, fourHMult = 0, oneHMult = 0;
+    let dayPivot = 15, fourHPivot = 15, oneHPivot = 15;
+
+    if (resolution === '15m') {
+      dayMult = 96;   dayPivot = 5;  // 15m * 96 = 24H (1D)
+      fourHMult = 16; fourHPivot = 8; // 15m * 16 = 4H
+      oneHMult = 4;   oneHPivot = 15; // 15m * 4 = 1H
+    } else if (resolution === '1h') {
+      dayMult = 24;   dayPivot = 6;  // 1H * 24 = 24H (1D)
+      fourHMult = 4;  fourHPivot = 12; // 1H * 4 = 4H
+      oneHMult = 1;   oneHPivot = 15;
+    } else if (resolution === '4h') {
+      dayMult = 6;    dayPivot = 10; // 4H * 6 = 24H (1D)
+      fourHMult = 1;  fourHPivot = 15;
+      oneHMult = 0; // 4H 時框下不計算 1H 支撐壓力 (低於當前時框不予顯示)
+    } else { // 預設 '1D'
+      dayMult = 1;    dayPivot = 15;
+      fourHMult = 0;
+      oneHMult = 0;
+    }
+
+    // 繪製各個時框
+    drawSRLinesForResolution('1D', dayMult, dayPivot, srDaySupSeries, srDayResSeries);
+    drawSRLinesForResolution('4h', fourHMult, fourHPivot, sr4HSupSeries, sr4HResSeries);
+    drawSRLinesForResolution('1h', oneHMult, oneHPivot, sr1HSupSeries, sr1HResSeries);
 
     // ==== 常駐 Supertrend 指標線繪製 ====
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
@@ -1271,7 +1490,7 @@ function loadTVChart(s) {
     const width = rect.width > 0 ? rect.width : 800;
     const chartHeight = rect.height > 0 ? rect.height : 500;
 
-    currentLWChart = renderLWChart('tvChartContainer', s.kline, chartHeight);
+    currentLWChart = renderLWChart('tvChartContainer', s.kline, chartHeight, '1D');
     
     // 預設顯示近30日
     setTimeout(() => {
@@ -1336,7 +1555,7 @@ async function changeResolution(res) {
     const data = await r.json();
     if (data.kline && data.kline.length > 0) {
       currentKlineData = data.kline;
-      currentLWChart = renderLWChart('tvChartContainer', data.kline);
+      currentLWChart = renderLWChart('tvChartContainer', data.kline, 500, res);
       showMockWarning(false); // 成功拿到真實資料，關閉警告
     } else {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
@@ -1349,7 +1568,7 @@ async function changeResolution(res) {
       // 離線/靜態部署模式：依時框動態生成高擬真 K 線數據
       const simulatedKline = generateMockTimeframeData(stock.kline, res);
       currentKlineData = simulatedKline;
-      currentLWChart = renderLWChart('tvChartContainer', simulatedKline);
+      currentLWChart = renderLWChart('tvChartContainer', simulatedKline, 500, res);
       
       // 如果切換的是分K時框，則顯示模擬警告
       if (res === '15m' || res === '1h' || res === '4h') {
