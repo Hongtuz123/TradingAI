@@ -559,6 +559,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     lineWidth: 2,
     title: '5MA',
     crosshairMarkerVisible: false,
+    lastValueVisible: false,
+    priceLineVisible: false,
   });
 
   // 全域策略選擇狀態
@@ -1191,6 +1193,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             title: '',
             crosshairMarkerVisible: true,
             crosshairMarkerRadius: 4,
+            lastValueVisible: false,
+            priceLineVisible: false,
           });
           lineSeries.setData(segLineData);
           highlighterSeriesList.push(lineSeries);
@@ -1220,6 +1224,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             title: '',
             crosshairMarkerVisible: true,
             crosshairMarkerRadius: 4,
+            lastValueVisible: false,
+            priceLineVisible: false,
           });
           lineSeries.setData(segLineData);
           highlighterSeriesList.push(lineSeries);
