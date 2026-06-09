@@ -212,10 +212,11 @@ function calculateSMA(data, period) {
 }
 
 function calculateRSI(data, period = 14) {
+  if (!data || data.length === 0) return [];
   const rsi = [];
   let gains = 0;
   let losses = 0;
-
+  
   for (let i = 1; i <= period && i < data.length; i++) {
     const change = data[i].close - data[i - 1].close;
     if (change >= 0) gains += change;
@@ -257,6 +258,7 @@ function calculateEMA(data, period) {
 }
 
 function calculateMACD(data, shortPeriod = 12, longPeriod = 26, signalPeriod = 9) {
+  if (!data || data.length === 0) return { macdLine: [], signalLine: [], histogram: [] };
   const shortEma = calculateEMA(data, shortPeriod);
   const longEma = calculateEMA(data, longPeriod);
   const macdLine = [];
@@ -504,12 +506,19 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       },
     });
 
-    // 同步主圖與 RSI 面板的時間軸
+    // 同步主圖與 RSI 面板的時間軸 (加上 isSyncing 鎖防止雙向訂閱引發遞迴爆棧)
+    let isSyncing = false;
     mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      if (isSyncing) return;
+      isSyncing = true;
       if (range) rsiChart.timeScale().setVisibleLogicalRange(range);
+      isSyncing = false;
     });
     rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      if (isSyncing) return;
+      isSyncing = true;
       if (range) mainChart.timeScale().setVisibleLogicalRange(range);
+      isSyncing = false;
     });
 
   } else {
@@ -1476,7 +1485,7 @@ window.changeSubIndicator = function(indicatorName) {
 
 let currentKlineData = null;
 
-function loadTVChart(s) {
+window.loadTVChart = function(s) {
   currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
 

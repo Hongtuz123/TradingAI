@@ -3573,7 +3573,9 @@ function renderChartStockList() {
 
 function loadChart(stock) {
   // 直接導向 Lightweight Charts 渲染（chart-engine.js 已廢棄）
-  loadTVChart(stock);
+  if (typeof window.loadTVChart === 'function') {
+    window.loadTVChart(stock);
+  }
 }
 
 function openChart(id) {
@@ -3582,7 +3584,11 @@ function openChart(id) {
     currentChartSymbol = stock.id; // 提前設定以防止 switchView 載入預設股票 2330
     switchView('chart');
     // 300ms 讓分頁切換的 CSS display 完全生效後再渲染
-    setTimeout(() => loadTVChart(stock), 300);
+    setTimeout(() => {
+      if (typeof window.loadTVChart === 'function') {
+        window.loadTVChart(stock);
+      }
+    }, 300);
   }
 }
 
@@ -3592,7 +3598,11 @@ window.loadStockToChart = function(id) {
   if (stock) {
     currentChartSymbol = stock.id; // 提前設定
     switchView('chart');
-    setTimeout(() => loadTVChart(stock), 300);
+    setTimeout(() => {
+      if (typeof window.loadTVChart === 'function') {
+        window.loadTVChart(stock);
+      }
+    }, 300);
   }
 };
 
