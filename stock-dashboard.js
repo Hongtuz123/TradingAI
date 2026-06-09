@@ -423,7 +423,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   // 統一時間戳格式化：若是分K (包含空格或冒號) 則轉為 Unix 秒數，否則保持 YYYY-MM-DD
   const parseKlineTime = (dateStr) => {
     if (typeof dateStr === 'string' && (dateStr.includes(' ') || dateStr.includes(':'))) {
-      const parsed = Math.floor(Date.parse(dateStr) / 1000);
+      const normalized = dateStr.replace(' ', 'T');
+      const parsed = Math.floor(Date.parse(normalized) / 1000);
       return isNaN(parsed) ? dateStr : parsed;
     }
     return dateStr;
@@ -1519,7 +1520,8 @@ function setTimeframe(days) {
     if (fromData && toData) {
       const parseKlineTime = (dateStr) => {
         if (typeof dateStr === 'string' && (dateStr.includes(' ') || dateStr.includes(':'))) {
-          const parsed = Math.floor(Date.parse(dateStr) / 1000);
+          const normalized = dateStr.replace(' ', 'T');
+          const parsed = Math.floor(Date.parse(normalized) / 1000);
           return isNaN(parsed) ? dateStr : parsed;
         }
         return dateStr;
