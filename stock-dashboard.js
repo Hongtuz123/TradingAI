@@ -1517,9 +1517,17 @@ function setTimeframe(days) {
     const toData = currentKlineData[totalData - 1];
     
     if (fromData && toData) {
+      const parseKlineTime = (dateStr) => {
+        if (typeof dateStr === 'string' && (dateStr.includes(' ') || dateStr.includes(':'))) {
+          const parsed = Math.floor(Date.parse(dateStr) / 1000);
+          return isNaN(parsed) ? dateStr : parsed;
+        }
+        return dateStr;
+      };
+
       timeScale.setVisibleRange({
-        from: fromData.date,
-        to: toData.date
+        from: parseKlineTime(fromData.date),
+        to: parseKlineTime(toData.date)
       });
     }
   }
