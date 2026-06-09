@@ -405,7 +405,9 @@ function initDashboard() {
   text.innerText = `${badgeText} (台:${twTotalScore}分/美:${usTotalScore}分)`;
 
   if (!isHealthy || hasFailedStocks) {
-    document.getElementById('healthWarning').style.display = 'flex';
+    // 新：用 tooltip icon 顯示警示
+    const tooltipWrap = document.getElementById('warningTooltipWrap');
+    if (tooltipWrap) tooltipWrap.style.display = 'inline-flex';
     let warningHTML = '';
     if (hasFailedStocks) {
       const listStr = failedStocks.map(s => `${s.Code} ${s.Name}`).join(', ');
@@ -415,8 +417,6 @@ function initDashboard() {
         </li>
       `;
     }
-    
-    // 警示條件以台股為主
     if (!isTwBull) {
       warningHTML += `
         <li style="color: var(--danger); font-weight: bold;">⚠️ 台股市況偏空 (${twTotalScore}分)</li>
@@ -428,7 +428,6 @@ function initDashboard() {
         <li style="color: var(--success); font-weight: bold;">✓ 台股市況偏多 (${twTotalScore}分)</li>
       `;
     }
-    
     if (usTotalScore < 3) {
       warningHTML += `
         <li style="color: var(--danger); font-weight: bold;">⚠️ 美股趨勢偏空 (${usTotalScore}分)</li>
@@ -440,13 +439,104 @@ function initDashboard() {
         <li>密切觀察國際盤勢方向</li>
       `;
     }
-    
-    document.getElementById('warningList').innerHTML = warningHTML;
+    const warnListEl = document.getElementById('warningList');
+    if (warnListEl) warnListEl.innerHTML = warningHTML;
   } else {
-    document.getElementById('healthWarning').style.display = 'none';
+    const tooltipWrap = document.getElementById('warningTooltipWrap');
+    if (tooltipWrap) tooltipWrap.style.display = 'none';
   }
+
+  // 繪製多邊形評分雷達圖
+  renderScoreRadar('twRadarSvg', [
+    { label: '加權', val: twiiScore / 1 * 100 },
+    { label: '櫃買', val: otcScore / 1 * 100 },
+    { label: '量能', val: volScore / 1 * 100 },
+    { label: '綜合', val: twTotalScore / 3 * 100 },
+    { label: '美連動', val: usTotalScore / 5 * 100 }
+  ], '#10b981');
+
+  renderScoreRadar('usRadarSvg', [
+    { label: 'S&P500', val: (usData[0]?.pct_chg > 0 ? 100 : 0) },
+    { label: '那斯達', val: (usData[1]?.pct_chg > 0 ? 100 : 0) },
+    { label: '道瓊', val: (usData[2]?.pct_chg > 0 ? 100 : 0) },
+    { label: '費半', val: (usData[3]?.pct_chg > 0 ? 100 : 0) },
+    { label: '羅素', val: (usData[4]?.pct_chg > 0 ? 100 : 0) }
+  ], '#60a5fa');
 }
 
+
+// ── 多邊形評分雷達圖 ────────────────────────────────────
+/**
+ * @param {string} svgId  - SVG 元素的 ID
+ * @param {Array}  axes   - [{ label, val }] val 0~100
+ * @param {string} color  - 主色 (hex)
+ */
+function renderScoreRadar(svgId, axes, color) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const cx = 100, cy = 100, r = 72;
+  const n = axes.length;
+  const step = (Math.PI * 2) / n;
+
+  // 計算多邊形頂點
+  function point(i, pct) {
+    const angle = -Math.PI / 2 + step * i;
+    return {
+      x: cx + r * pct * Math.cos(angle),
+      y: cy + r * pct * Math.sin(angle)
+    };
+  }
+
+  // 背景網格（3層）
+  let gridHTML = '';
+  [0.33, 0.66, 1].forEach(pct => {
+    const pts = axes.map((_, i) => {
+      const p = point(i, pct);
+      return `${p.x},${p.y}`;
+    }).join(' ');
+    gridHTML += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+  });
+
+  // 軸線
+  let axisHTML = '';
+  axes.forEach((_, i) => {
+    const p = point(i, 1);
+    axisHTML += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+  });
+
+  // 數值多邊形
+  const valPts = axes.map((a, i) => {
+    const p = point(i, a.val / 100);
+    return `${p.x},${p.y}`;
+  }).join(' ');
+
+  // 發光外框 + 填色
+  const hexToRgba = (hex, a) => {
+    const r2 = parseInt(hex.slice(1, 3), 16);
+    const g2 = parseInt(hex.slice(3, 5), 16);
+    const b2 = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r2},${g2},${b2},${a})`;
+  };
+  const fillColor = hexToRgba(color, 0.22);
+  const strokeColor = color;
+
+  // 標籤
+  let labelHTML = '';
+  axes.forEach((a, i) => {
+    const p = point(i, 1.22);
+    labelHTML += `<text x="${p.x}" y="${p.y}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">${a.label}</text>`;
+    // 數值點
+    const dp = point(i, a.val / 100);
+    labelHTML += `<circle cx="${dp.x}" cy="${dp.y}" r="3" fill="${color}" opacity="0.9"/>`;
+  });
+
+  svg.innerHTML = `
+    ${gridHTML}
+    ${axisHTML}
+    <polygon points="${valPts}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1.5" stroke-linejoin="round" opacity="0.95"/>
+    ${labelHTML}
+  `;
+}
 
 // 判斷台股當前是否為交易時段 (盤中週一至五 09:00 - 13:30)
 function isMarketActive() {

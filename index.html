@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=37" />
+  <link rel="stylesheet" href="style.css?v=38" />
   <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
@@ -57,74 +57,32 @@
 
     <!-- ======================== 儀表板視圖 ======================== -->
     <section class="view active" id="view-dashboard">
-      <!-- 市場健康度橫幅 -->
-      <div class="market-health-banner" id="marketHealthBanner">
-        <div class="health-header">
-          <h2>🔎 第一層｜市場健康度</h2>
-          <div class="health-overall" id="healthOverall" style="gap: 15px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="health-label" style="font-size:12px; color:var(--text-muted);">台股評級</span>
-              <span class="health-grade" id="twHealthGrade" style="font-size:16px; padding: 2px 8px;">--</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="health-label" style="font-size:12px; color:var(--text-muted);">美股評級</span>
-              <span class="health-grade" id="usHealthGrade" style="font-size:16px; padding: 2px 8px;">--</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="health-label" style="font-size:12px; color:var(--text-muted);">綜合評級</span>
-              <span class="health-grade" id="healthGrade">--</span>
+
+      <!-- ===== 1. 泡泡圖：全寬置頂 ===== -->
+      <div class="flow-bubble-full flow-map-panel">
+        <div class="panel-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
+            <div style="display:flex;align-items:center;gap:10px;font-size:11px;">
+              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f97316;display:inline-block;"></span>主力</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#eab308;display:inline-block;"></span>輪動</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>退潮</span>
             </div>
           </div>
-        </div>
-
-        <!-- 台股版塊 -->
-        <div class="market-group">
-          <div class="market-group-title">🇹🇼 台股</div>
-          <div class="health-indicators" id="twIndicators"><!-- JS 填充 --></div>
-          <div class="vol-indicator" id="volIndicator"><!-- JS 填充 --></div>
-        </div>
-
-        <!-- 美股版塊 -->
-        <div class="market-group">
-          <div class="market-group-title">🇺🇸 美股</div>
-          <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
-        </div>
-
-        <div class="health-warning" id="healthWarning" style="display:none;">
-          <div class="warning-icon">⚠️</div>
-          <div class="warning-content">
-            <strong>市場警示</strong>
-            <ul id="warningList"></ul>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
+            泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 漲跌幅 | 點擊泡泡查看成分股
           </div>
+        </div>
+        <div class="flow-map-container" id="sectorTreeMap">
+          <!-- 由 JS 動態繪製泡泡圖 -->
         </div>
       </div>
 
+      <!-- ===== 2. 第二列：左側排行 + 右側多邊形評分 ===== -->
+      <div class="flow-bottom-row">
 
-      <!-- ======================== 資金族群熱力圖與排行榜區塊 ======================== -->
-      <div class="market-flow-dashboard">
-        <!-- 左半邊：熱力圖 -->
-        <div class="flow-map-panel">
-          <div class="panel-header">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-              <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
-              <div style="display:flex;align-items:center;gap:10px;font-size:11px;">
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#f97316;display:inline-block;"></span>主力</span>
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#eab308;display:inline-block;"></span>輪動</span>
-                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span>退潮</span>
-              </div>
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
-              泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 漲跌幅 | 點擊泡泡查看成分股
-            </div>
-          </div>
-          <div class="flow-map-container" id="sectorTreeMap">
-            <!-- 由 JS 動態繪製 Treemap -->
-          </div>
-        </div>
-
-        <!-- 右半邊：四大排行 -->
+        <!-- 左：五大排行 Tab -->
         <div class="flow-rankings-panel">
-          <!-- 頂部切換 Tab 與顯示個數限制 -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
             <div class="rankings-tabs" style="flex:1; margin-bottom:0;">
               <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
@@ -140,12 +98,79 @@
               <option value="20">前 20 名</option>
             </select>
           </div>
+          <div class="rank-list-container" id="rankListContent"><!-- JS 填充 --></div>
+        </div>
 
-          <div class="rank-list-container" id="rankListContent">
-            <!-- 由 JS 動態填充 -->
+        <!-- 右：台美股多邊形評分雷達 -->
+        <div class="score-radar-panel">
+          <div class="score-radar-header">
+            <span class="score-radar-title">📊 市場評分</span>
+            <div class="score-radar-grades">
+              <span class="sr-grade-badge" id="twHealthGrade">--</span>
+              <span class="sr-grade-label">台股</span>
+              <span class="sr-grade-badge us" id="usHealthGrade">--</span>
+              <span class="sr-grade-label">美股</span>
+              <span class="sr-grade-badge overall" id="healthGrade">--</span>
+              <span class="sr-grade-label">綜合</span>
+            </div>
+          </div>
+          <!-- 台股雷達 -->
+          <div class="radar-group">
+            <div class="radar-group-label">🇹🇼 台股</div>
+            <div class="radar-wrap">
+              <svg id="twRadarSvg" class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+          </div>
+          <!-- 美股雷達 -->
+          <div class="radar-group">
+            <div class="radar-group-label">🇺🇸 美股</div>
+            <div class="radar-wrap">
+              <svg id="usRadarSvg" class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- ===== 3. 最下：市場健康度 ===== -->
+      <div class="market-health-banner" id="marketHealthBanner">
+        <div class="health-header">
+          <h2>📊 市場健康度
+            <!-- 警示 tooltip icon -->
+            <span class="warning-tooltip-wrap" id="warningTooltipWrap" style="display:none;">
+              <span class="warning-tooltip-icon">⚠️</span>
+              <span class="warning-tooltip-box" id="warningTooltipBox">
+                <strong>市場警示</strong>
+                <ul id="warningList"></ul>
+              </span>
+            </span>
+          </h2>
+          <!-- 健康度整體評級已移到多邊形評分面板，此處隱藏保持 JS 相容 -->
+          <div class="health-overall" id="healthOverall" style="display:none;"></div>
+        </div>
+
+        <!-- 台股版塊 -->
+        <div class="market-group">
+          <div class="market-group-title">🇹🇼 台股</div>
+          <div class="health-indicators" id="twIndicators"><!-- JS 填充 --></div>
+          <div class="vol-indicator" id="volIndicator"><!-- JS 填充 --></div>
+        </div>
+
+        <!-- 美股版塊 -->
+        <div class="market-group">
+          <div class="market-group-title">🇺🇸 美股</div>
+          <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
+        </div>
+
+        <!-- 保留舊警示 div（已用 tooltip 取代，隱藏備用） -->
+        <div class="health-warning" id="healthWarning" style="display:none;">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-content">
+            <strong>市場警示</strong>
+            <ul id="warningListLegacy"></ul>
+          </div>
+        </div>
+      </div>
+
     </section>
 
 
@@ -530,7 +555,7 @@
 
   <!-- 腳本 -->
   <script src="data.js?v=36"></script>
-  <script src="app.js?v=36"></script>
-  <script src="stock-dashboard.js?v=36"></script>
+  <script src="app.js?v=38"></script>
+  <script src="stock-dashboard.js?v=38"></script>
 </body>
 </html>
