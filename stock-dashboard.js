@@ -960,7 +960,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
         const width = targetRes === '1D' ? 3 : targetRes === '4h' ? 2 : 1.5;
         const style = targetRes === '1h' ? 2 : 0;
         const lineSer = mainChart.addSeries(LightweightCharts.LineSeries, {
-          color: '#10b981', // 支撐綠
+          color: 'rgba(16, 185, 129, 0.3)', // 支撐綠 (透明度30%)
           lineWidth: width,
           lineStyle: style,
           title: targetRes === '1D' ? '日線支撐' : targetRes === '4h' ? '4H支撐' : '1H支撐',
@@ -979,7 +979,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
         const width = targetRes === '1D' ? 3 : targetRes === '4h' ? 2 : 1.5;
         const style = targetRes === '1h' ? 2 : 0;
         const lineSer = mainChart.addSeries(LightweightCharts.LineSeries, {
-          color: '#ef4444', // 阻力紅
+          color: 'rgba(239, 68, 68, 0.3)', // 阻力紅 (透明度30%)
           lineWidth: width,
           lineStyle: style,
           title: targetRes === '1D' ? '日線阻力' : targetRes === '4h' ? '4H阻力' : '1H阻力',
