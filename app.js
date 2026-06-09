@@ -3084,10 +3084,20 @@ const SECTOR_DESCRIPTIONS = {
       const live = getLiveStockData(s);
       return sum + (live.change || 0);
     }, 0);
-    return { ...g, avgChange: n > 0 ? sumChange / n : 0, avgVolRatio: n > 0 ? g.sumVolRatio / n : 1 };
+    const avgChange = n > 0 ? sumChange / n : 0;
+
+    // 資金流入流出物理算法：產業淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元)
+    const netFlow = g.stocks.reduce((sum, s) => {
+      const live = getLiveStockData(s);
+      const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+      const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
+      return sum + (amount * (chg / 100));
+    }, 0) / 1e8;
+
+    return { ...g, avgChange, avgVolRatio: n > 0 ? g.sumVolRatio / n : 1, netFlow };
   });
 
-  // 顏色分類：主力/輪動/退潮
+  // 顏色分類：主力/輪動/退潮（維持原邏輯配色）
   const COLOR_MAP = { major: '#f97316', rotate: '#eab308', retreat: '#22c55e' };
   function getCategory(g) {
     if (g.avgChange > 1.0 && g.avgVolRatio >= 1.3) return 'major';
@@ -3096,16 +3106,19 @@ const SECTOR_DESCRIPTIONS = {
   }
 
   const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
+  const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
 
   // SVG 尺寸
   const W = container.clientWidth || 560;
   const H = 480;
-  const ML = 52, MR = 18, MT = 22, MB = 42;
+  const ML = 58, MR = 18, MT = 22, MB = 42;
   const PW = W - ML - MR, PH = H - MT - MB;
-  const X_MAX = 3.0, Y_HALF = 6.0;
+  const X_MAX = 3.0;
+  // Y_HALF 為 Y 軸單向最大值（帶有 15% padding 的上限）
+  const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
 
   function toSvgX(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; }
-  function toSvgY(ch) { return MT + (1 - Math.min(Math.max((ch + Y_HALF) / (Y_HALF * 2), 0.08), 0.92)) * PH; }
+  function toSvgY(flow) { return MT + (1 - Math.min(Math.max((flow + Y_HALF) / (Y_HALF * 2), 0.08), 0.92)) * PH; }
   const centerX = toSvgX(1.0);
   const centerY = toSvgY(0);
 
@@ -3133,11 +3146,14 @@ const SECTOR_DESCRIPTIONS = {
     { x: centerX, y: centerY, w: ML + PW - centerX, h: MT + PH - centerY, fill: 'rgba(100,116,139,0.03)' },
   ].forEach(({ x, y, w, h, fill }) => svg.appendChild(el('rect', { x, y, width: w, height: h, fill, rx: '4' })));
 
-  // 格線
+  // 格線 (X 軸量能)
   [0, 0.5, 1.5, 2.0, 2.5, 3.0].forEach(v => {
     svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.05)', 'stroke-width': '1' }));
   });
-  [-4, -2, 2, 4].forEach(v => {
+  
+  // 格線 (Y 軸資金流)
+  const stepValue = Y_HALF / 2;
+  [-Y_HALF, -stepValue, stepValue, Y_HALF].forEach(v => {
     svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.05)', 'stroke-width': '1' }));
   });
 
@@ -3145,28 +3161,31 @@ const SECTOR_DESCRIPTIONS = {
   svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
   svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
 
-  // 軸刻度
+  // X 軸刻度
   [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0].forEach(v => {
     svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, v + 'x'));
   });
-  [-4, -2, 0, 2, 4].forEach(v => {
-    svg.appendChild(el('text', { x: ML - 4, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, (v > 0 ? '+' : '') + v + '%'));
+  
+  // Y 軸刻度
+  [-Y_HALF, -stepValue, 0, stepValue, Y_HALF].forEach(v => {
+    const labelText = v === 0 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1) + '億';
+    svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, labelText));
   });
 
   // 軸標題
   svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, '← 量能強度 (今日量/均量) →'));
   const yG = document.createElementNS(ns, 'g');
-  yG.setAttribute('transform', `translate(11,${MT + PH / 2}) rotate(-90)`);
-  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, '← 漲跌幅 (%) →'));
+  yG.setAttribute('transform', `translate(13,${MT + PH / 2}) rotate(-90)`);
+  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, '← 資金淨流向 (億元) →'));
   svg.appendChild(yG);
 
-  // 象限標簽
+  // 象限標簽 (Y 軸上為流入，下為流出，X 軸右為強量主力，左為量縮)
   [
-    { x: centerX + 6, y: MT + 13, text: '主力強攻', c: '#f97316' },
-    { x: ML + 4, y: MT + 13, text: '輪動入場', c: '#eab308' },
-    { x: ML + 4, y: MT + PH - 5, text: '退潮觀察', c: '#22c55e' },
-    { x: centerX + 6, y: MT + PH - 5, text: '量縮撤退', c: '#64748b' },
-  ].forEach(({ x, y, text, c }) => svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.52', 'font-weight': '700' }, text)));
+    { x: centerX + 6, y: MT + 13, text: '主力流入 🟢', c: '#22c55e' },
+    { x: ML + 6, y: MT + 13, text: '量縮流入 🟢', c: '#10b981' },
+    { x: ML + 6, y: MT + PH - 5, text: '量縮流出 🔴', c: '#ef4444' },
+    { x: centerX + 6, y: MT + PH - 5, text: '主力流出 🔴', c: '#ec4899' },
+  ].forEach(({ x, y, text, c }) => svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text)));
 
   // Tooltip
   let tooltip = document.getElementById('bubbleTooltip');
@@ -3182,7 +3201,7 @@ const SECTOR_DESCRIPTIONS = {
     const cat = getCategory(g);
     const color = COLOR_MAP[cat];
     const x = toSvgX(g.avgVolRatio);
-    const y = toSvgY(g.avgChange);
+    const y = toSvgY(g.netFlow);
     const r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
     const capB = (g.totalVol / 1e8).toFixed(1);
 
@@ -3208,12 +3227,15 @@ const SECTOR_DESCRIPTIONS = {
       const catLabel = cat === 'major' ? '🟠 主力' : cat === 'rotate' ? '🟡 輪動' : '🟢 退潮';
       const top3 = [...g.stocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 3);
       const stockTags = top3.map(s => `<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">${s.id} ${s.name}</span>`).join(' ');
+      const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億 (流入)` : `${g.netFlow.toFixed(2)}億 (流出)`;
+      const flowColor = g.netFlow >= 0 ? '#22c55e' : '#ef4444';
       tooltip.innerHTML = `
         <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;">${catLabel}</span></div>
         <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:7px;">
           <span style="color:#94a3b8;">漲跌幅</span><span style="color:${g.avgChange >= 0 ? '#22c55e' : '#ef4444'};font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
           <span style="color:#94a3b8;">量能強度</span><span style="color:white;font-weight:700;">${g.avgVolRatio.toFixed(2)}x</span>
-          <span style="color:#94a3b8;">估算資金</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
+          <span style="color:#94a3b8;">估算金額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
+          <span style="color:#94a3b8;">資金流向</span><span style="color:${flowColor};font-weight:700;">${flowText}</span>
           <span style="color:#94a3b8;">成分股</span><span style="color:white;">${g.stocks.length}檔</span>
         </div>
         <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
