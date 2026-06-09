@@ -460,69 +460,85 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   let mainChart, rsiChart;
 
   if (isMainChart) {
-    // ==== 主圖分區：主圖 75% + RSI 面板 25% ====
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
 
     const mainDiv = document.createElement('div');
-    mainDiv.style.cssText = 'flex:3;min-height:0;position:relative;';
     container.appendChild(mainDiv);
 
-    // RSI 面板分隔線（保留 12px 透明空格間隔）
-    const separator = document.createElement('div');
-    separator.style.cssText = 'height:12px;background:transparent;flex-shrink:0;';
-    container.appendChild(separator);
+    if (window.activeIndicator !== 'none') {
+      mainDiv.style.cssText = 'flex:3;min-height:0;position:relative;';
 
-    const rsiDiv = document.createElement('div');
-    rsiDiv.style.cssText = 'flex:1;min-height:0;position:relative;';
-    container.appendChild(rsiDiv);
+      // RSI 面板分隔線（保留 12px 透明空格間隔）
+      const separator = document.createElement('div');
+      separator.style.cssText = 'height:12px;background:transparent;flex-shrink:0;';
+      container.appendChild(separator);
 
-    // ---- 主圖表（K線 + 成交量 + 5MA + Supertrend）----
-    mainChart = LightweightCharts.createChart(mainDiv, {
-      ...chartTheme,
-      autoSize: true,
-      rightPriceScale: {
-        borderColor: 'rgba(71, 85, 105, 0.5)',
-        autoScale: true,
-        scaleMargins: { top: 0.03, bottom: 0.03 }
-      },
-      timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
-    });
+      const rsiDiv = document.createElement('div');
+      rsiDiv.style.cssText = 'flex:1;min-height:0;position:relative;';
+      container.appendChild(rsiDiv);
 
-    // ---- RSI 子圖表 ----
-    rsiChart = LightweightCharts.createChart(rsiDiv, {
-      ...chartTheme,
-      autoSize: true,
-      rightPriceScale: {
-        borderColor: 'rgba(71, 85, 105, 0.5)',
-        autoScale: true,
-        scaleMargins: { top: 0.08, bottom: 0.08 }
-      },
-      timeScale: {
-        borderColor: 'rgba(71, 85, 105, 0.5)',
-        timeVisible: true,
-        secondsVisible: false,
-        visible: false, // 隱藏 RSI 面板的獨立時間軸，由主圖控制
-      },
-    });
+      // ---- 主圖表（K線 + 成交量 + 5MA + Supertrend）----
+      mainChart = LightweightCharts.createChart(mainDiv, {
+        ...chartTheme,
+        autoSize: true,
+        rightPriceScale: {
+          borderColor: 'rgba(71, 85, 105, 0.5)',
+          autoScale: true,
+          scaleMargins: { top: 0.03, bottom: 0.03 }
+        },
+        timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
+      });
 
-    // 同步主圖與 RSI 面板的時間軸 (加上 isSyncing 鎖防止雙向訂閱引發遞迴爆棧)
-    let isSyncing = false;
-    mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      if (isSyncing) return;
-      isSyncing = true;
-      if (range) rsiChart.timeScale().setVisibleLogicalRange(range);
-      isSyncing = false;
-    });
-    rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      if (isSyncing) return;
-      isSyncing = true;
-      if (range) mainChart.timeScale().setVisibleLogicalRange(range);
-      isSyncing = false;
-    });
+      // ---- RSI 子圖表 ----
+      rsiChart = LightweightCharts.createChart(rsiDiv, {
+        ...chartTheme,
+        autoSize: true,
+        rightPriceScale: {
+          borderColor: 'rgba(71, 85, 105, 0.5)',
+          autoScale: true,
+          scaleMargins: { top: 0.08, bottom: 0.08 }
+        },
+        timeScale: {
+          borderColor: 'rgba(71, 85, 105, 0.5)',
+          timeVisible: true,
+          secondsVisible: false,
+          visible: false, // 隱藏 RSI 面板的獨立時間軸，由主圖控制
+        },
+      });
 
+      // 同步主圖與 RSI 面板的時間軸 (加上 isSyncing 鎖防止雙向訂閱引發遞迴爆棧)
+      let isSyncing = false;
+      mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        if (isSyncing) return;
+        isSyncing = true;
+        if (range) rsiChart.timeScale().setVisibleLogicalRange(range);
+        isSyncing = false;
+      });
+      rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        if (isSyncing) return;
+        isSyncing = true;
+        if (range) mainChart.timeScale().setVisibleLogicalRange(range);
+        isSyncing = false;
+      });
+    } else {
+      // 無副圖時，主圖佔滿 100%
+      mainDiv.style.cssText = 'flex:1;min-height:0;position:relative;';
+
+      mainChart = LightweightCharts.createChart(mainDiv, {
+        ...chartTheme,
+        autoSize: true,
+        rightPriceScale: {
+          borderColor: 'rgba(71, 85, 105, 0.5)',
+          autoScale: true,
+          scaleMargins: { top: 0.03, bottom: 0.03 }
+        },
+        timeScale: { borderColor: 'rgba(71, 85, 105, 0.5)', timeVisible: true, secondsVisible: false },
+      });
+    }
   } else {
     // ==== 內嵌圖表：RSI 疊在主圖上（空間有限）====
+    container.style.display = 'block';
     mainChart = LightweightCharts.createChart(container, {
       ...chartTheme,
       autoSize: true,
@@ -617,7 +633,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   }
 
   // ---- 副圖 Series 根據選擇動態加入 ----
-  const subTargetChart = isMainChart ? rsiChart : mainChart;
+  const subTargetChart = (isMainChart && window.activeIndicator !== 'none') ? rsiChart : mainChart;
   
   // 宣告副圖 Series 用於動態清理與寫入
   let rsiSeries = null;
@@ -667,7 +683,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       rsi70Series.setData(refLineData.map(d => ({ time: d.time, value: 70 })));
       rsi30Series.setData(refLineData.map(d => ({ time: d.time, value: 30 })));
     }
-  } else {
+  } else if (window.activeIndicator === 'macd') {
     // 渲染 MACD 指標 (Short 12, Long 26, Signal 9)
     const macdOptions = { lineWidth: 1.5, title: 'DIF' };
     const signalOptions = { color: '#3b82f6', lineWidth: 1.5, title: 'MACD' };
@@ -700,17 +716,17 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     const macdData = calculateMACD(formattedCandles, 12, 26, 9);
 
     if (window.activeIndicator === 'rsi') {
-      rsiSeries.setData(rsiData);
-    } else {
-      macdLineSeries.setData(macdData.macdLine);
-      macdSignalSeries.setData(macdData.signalLine);
+      if (rsiSeries) rsiSeries.setData(rsiData);
+    } else if (window.activeIndicator === 'macd') {
+      if (macdLineSeries) macdLineSeries.setData(macdData.macdLine);
+      if (macdSignalSeries) macdSignalSeries.setData(macdData.signalLine);
       
       const histFormatted = macdData.histogram.map(h => ({
         time: h.time,
         value: h.value,
         color: h.value >= 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(34, 197, 94, 0.5)' // 紅柱與綠柱
       }));
-      macdHistSeries.setData(histFormatted);
+      if (macdHistSeries) macdHistSeries.setData(histFormatted);
     }
 
     // 同步外部 Select 狀態
