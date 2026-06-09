@@ -603,67 +603,6 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   // 保存 highlighter series 的陣列以方便後續動態添加/刪除
   const highlighterSeriesList = [];
 
-  // ─── 支撐阻力線 (日線/4H/1H) Series 宣告 ───
-  // 日線級別 (Day) - 實線，線寬 3
-  const srDaySupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#10b981',
-    lineWidth: 3,
-    lineStyle: 0,
-    title: '日線支撐',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-  const srDayResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#ef4444',
-    lineWidth: 3,
-    lineStyle: 0,
-    title: '日線阻力',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-
-  // 4H級別 (4Hour) - 實線，線寬 2
-  const sr4HSupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#059669',
-    lineWidth: 2,
-    lineStyle: 0,
-    title: '4H支撐',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-  const sr4HResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#dc2626',
-    lineWidth: 2,
-    lineStyle: 0,
-    title: '4H阻力',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-
-  // 1H級別 (1Hour) - 虛線，線寬 1.5
-  const sr1HSupSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#34d399',
-    lineWidth: 1.5,
-    lineStyle: 2, // Dashed
-    title: '1H支撐',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-  const sr1HResSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-    color: '#f87171',
-    lineWidth: 1.5,
-    lineStyle: 2, // Dashed
-    title: '1H阻力',
-    crosshairMarkerVisible: false,
-    priceLineVisible: false,
-    lastValueVisible: false,
-  });
-
   // 全域副圖指標選擇狀態
   if (window.activeIndicator === undefined) {
     window.activeIndicator = 'rsi'; // 預設 RSI
@@ -910,10 +849,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     const allTimes = formattedCandles.map(c => c.time);
 
     // 合成高時框與計算 S&R 函數
-    function drawSRLinesForResolution(targetRes, multiplier, pivotLen, supSeries, resSeries) {
+    function drawSRLinesForResolution(targetRes, multiplier, pivotLen) {
       if (!multiplier || isNaN(multiplier) || multiplier <= 0 || formattedCandles.length === 0) {
-        supSeries.setData([]);
-        resSeries.setData([]);
         return;
       }
 
@@ -1016,25 +953,44 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       const sortedSups = activeSups.filter(s => s.isValid).slice(-maxLines);
       const sortedReses = activeReses.filter(r => r.isValid).slice(-maxLines);
 
-      // 5. 轉換為 Lightweight Charts 連續線段數據 (中間以 null 隔開)
-      function toSeriesData(lines) {
-        const data = [];
-        lines.sort((a, b) => a.startTime - b.startTime);
-        for (let i = 0; i < lines.length; i++) {
-          const l = lines[i];
-          data.push({ time: l.startTime, value: l.price });
-          data.push({ time: l.endTime, value: l.price });
-          
-          const endIdx = allTimes.indexOf(l.endTime);
-          if (endIdx !== -1 && endIdx + 1 < allTimes.length) {
-            data.push({ time: allTimes[endIdx + 1], value: null });
-          }
-        }
-        return data;
-      }
+      // 5. 動態為每一條線段創建單獨的 LineSeries (避免使用 value: null 的 bug)
+      sortedSups.forEach(l => {
+        const width = targetRes === '1D' ? 3 : targetRes === '4h' ? 2 : 1.5;
+        const style = targetRes === '1h' ? 2 : 0;
+        const lineSer = mainChart.addSeries(LightweightCharts.LineSeries, {
+          color: '#10b981', // 支撐綠
+          lineWidth: width,
+          lineStyle: style,
+          title: targetRes === '1D' ? '日線支撐' : targetRes === '4h' ? '4H支撐' : '1H支撐',
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+        lineSer.setData([
+          { time: l.startTime, value: l.price },
+          { time: l.endTime, value: l.price }
+        ]);
+        highlighterSeriesList.push(lineSer);
+      });
 
-      supSeries.setData(toSeriesData(sortedSups));
-      resSeries.setData(toSeriesData(sortedReses));
+      sortedReses.forEach(l => {
+        const width = targetRes === '1D' ? 3 : targetRes === '4h' ? 2 : 1.5;
+        const style = targetRes === '1h' ? 2 : 0;
+        const lineSer = mainChart.addSeries(LightweightCharts.LineSeries, {
+          color: '#ef4444', // 阻力紅
+          lineWidth: width,
+          lineStyle: style,
+          title: targetRes === '1D' ? '日線阻力' : targetRes === '4h' ? '4H阻力' : '1H阻力',
+          lastValueVisible: false,
+          priceLineVisible: false,
+          crosshairMarkerVisible: false,
+        });
+        lineSer.setData([
+          { time: l.startTime, value: l.price },
+          { time: l.endTime, value: l.price }
+        ]);
+        highlighterSeriesList.push(lineSer);
+      });
     }
 
     // 依據當前選定的 timeframe (resolution) 來分流計算
@@ -1061,9 +1017,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     }
 
     // 繪製各個時框
-    drawSRLinesForResolution('1D', dayMult, dayPivot, srDaySupSeries, srDayResSeries);
-    drawSRLinesForResolution('4h', fourHMult, fourHPivot, sr4HSupSeries, sr4HResSeries);
-    drawSRLinesForResolution('1h', oneHMult, oneHPivot, sr1HSupSeries, sr1HResSeries);
+    drawSRLinesForResolution('1D', dayMult, dayPivot);
+    drawSRLinesForResolution('4h', fourHMult, fourHPivot);
+    drawSRLinesForResolution('1h', oneHMult, oneHPivot);
 
     // ==== 常駐 Supertrend 指標線繪製 ====
     const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
