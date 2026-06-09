@@ -9,7 +9,7 @@ let currentLWDashChart = null;
 if (window.chartLayers === undefined) {
   window.chartLayers = {
     ma5: true,
-    supertrend: true,
+    supertrend: false,
     srLines: true,
     strategySupertrend: false,
     strategyTrendline: false,

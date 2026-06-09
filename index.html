@@ -472,13 +472,12 @@
               <!-- 策略與指標多圖層控制面板 -->
               <div style="display:flex; align-items:center; gap: 10px; flex-wrap:wrap;">
                 <!-- 主圖疊加圖層 -->
-                <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                 <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
                   <span style="font-size:12px; color:var(--text-muted); padding: 0 4px; font-weight: 600;">主圖疊加:</span>
                   <button class="layer-pill active" onclick="toggleChartLayer('ma5')" id="pill-ma5">5MA</button>
-                  <button class="layer-pill active" onclick="toggleChartLayer('supertrend')" id="pill-supertrend">超級趨勢</button>
                   <button class="layer-pill active" onclick="toggleChartLayer('srLines')" id="pill-srLines">支撐壓力</button>
-                  <button class="layer-pill" onclick="toggleChartLayer('strategySupertrend')" id="pill-strategySupertrend">超級趨勢策略</button>
-                  <button class="layer-pill" onclick="toggleChartLayer('strategyTrendline')" id="pill-strategyTrendline">下行趨勢策略</button>
+                  <button class="layer-pill" onclick="toggleChartLayer('strategySupertrend')" id="pill-strategySupertrend">超級趨勢</button>
+                  <button class="layer-pill" onclick="toggleChartLayer('strategyTrendline')" id="pill-strategyTrendline">突破下降</button>
                 </div>
 
                 <!-- 副圖切換圖層 -->
