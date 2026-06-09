@@ -893,7 +893,15 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             wickColor: colObj.color
           };
         }
-        return c;
+        // 未自訂著色的 K 棒，手動補回漲紅跌綠的預設顏色，防止被 Lightweight Charts 渲染成黑色隱形
+        const isUp = c.close >= c.open;
+        const defaultColor = isUp ? '#ef4444' : '#22c55e';
+        return {
+          ...c,
+          color: defaultColor,
+          borderColor: defaultColor,
+          wickColor: defaultColor
+        };
       }));
     }
 
