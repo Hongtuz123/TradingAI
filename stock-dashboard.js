@@ -1046,10 +1046,16 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     const dnData = [];
     for (let i = 0; i < supertrendData.length; i++) {
       const curr = supertrendData[i];
-      if (curr.value === null) continue;
+      if (curr.value === null) {
+        upData.push({ time: curr.time, value: null });
+        dnData.push({ time: curr.time, value: null });
+        continue;
+      }
       if (curr.trend === 1) {
         upData.push({ time: curr.time, value: curr.value });
+        dnData.push({ time: curr.time, value: null });
       } else {
+        upData.push({ time: curr.time, value: null });
         dnData.push({ time: curr.time, value: curr.value });
       }
     }
