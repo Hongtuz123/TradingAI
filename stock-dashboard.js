@@ -5,10 +5,41 @@ let currentChartSymbol = null;
 let currentLWChart = null;
 let currentLWDashChart = null;
 
-// 全域策略選擇狀態：'none' | 'supertrend' | 'trendline'
-if (window.activeStrategy === undefined) {
-  window.activeStrategy = 'none';
+// 全域同步圖層疊加狀態物件 ( ma5, supertrend, srLines 預設開啟 )
+if (window.chartLayers === undefined) {
+  window.chartLayers = {
+    ma5: true,
+    supertrend: true,
+    srLines: true,
+    strategySupertrend: false,
+    strategyTrendline: false,
+    subIndicator: 'rsi'
+  };
 }
+
+// 橋接原有的單選全域變數，確保相容性
+Object.defineProperty(window, 'activeStrategy', {
+  get() {
+    if (window.chartLayers.strategySupertrend) return 'supertrend';
+    if (window.chartLayers.strategyTrendline) return 'trendline';
+    return 'none';
+  },
+  set(val) {
+    window.chartLayers.strategySupertrend = (val === 'supertrend');
+    window.chartLayers.strategyTrendline = (val === 'trendline');
+  },
+  configurable: true
+});
+
+Object.defineProperty(window, 'activeIndicator', {
+  get() {
+    return window.chartLayers.subIndicator;
+  },
+  set(val) {
+    window.chartLayers.subIndicator = val;
+  },
+  configurable: true
+});
 
 // ---- 下行趨勢線突破策略技術函式 ----
 
@@ -718,7 +749,11 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   try {
     candleSeries.setData(formattedCandles);
     volumeSeries.setData(formattedVolume);
-    smaSeries.setData(calculateSMA(formattedCandles, 5));
+    if (window.chartLayers.ma5) {
+      smaSeries.setData(calculateSMA(formattedCandles, 5));
+    } else {
+      smaSeries.setData([]);
+    }
 
     // 動態計算並載入指標數據
     const rsiData = calculateRSI(formattedCandles, 14);
@@ -1044,13 +1079,17 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     }
 
     // 繪製各個時框
-    drawSRLinesForResolution('1D', dayMult, dayPivot);
-    drawSRLinesForResolution('4h', fourHMult, fourHPivot);
-    drawSRLinesForResolution('1h', oneHMult, oneHPivot);
+    if (window.chartLayers.srLines) {
+      drawSRLinesForResolution('1D', dayMult, dayPivot);
+      drawSRLinesForResolution('4h', fourHMult, fourHPivot);
+      drawSRLinesForResolution('1h', oneHMult, oneHPivot);
+    }
+
+    // 計算 Supertrend 基礎數據 (以供常駐指標與回測策略共用)
+    const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
 
     // ==== 常駐 Supertrend 指標線繪製 ====
-    if (window.activeStrategy !== 'supertrend') {
-      const supertrendData = calculateSupertrend(formattedCandles, 10, 3);
+    if (window.chartLayers.supertrend && !window.chartLayers.strategySupertrend) {
       
       // 1. 拆分趨勢段 (Segments)
       const stSegments = [];
@@ -1510,9 +1549,24 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
   return mainChart;
 }
 
-// 動態圖層策略切換函式
-window.changeStrategyLayer = function(strategyName) {
-  window.activeStrategy = strategyName;
+// 多圖層控制切換
+window.toggleChartLayer = function(layerName) {
+  if (layerName === 'strategySupertrend') {
+    window.chartLayers.strategySupertrend = !window.chartLayers.strategySupertrend;
+    if (window.chartLayers.strategySupertrend) {
+      window.chartLayers.strategyTrendline = false; // 策略互斥
+    }
+  } else if (layerName === 'strategyTrendline') {
+    window.chartLayers.strategyTrendline = !window.chartLayers.strategyTrendline;
+    if (window.chartLayers.strategyTrendline) {
+      window.chartLayers.strategySupertrend = false; // 策略互斥
+    }
+  } else {
+    window.chartLayers[layerName] = !window.chartLayers[layerName];
+  }
+
+  updatePillButtonsUI();
+
   if (currentChartSymbol) {
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
     if (stock) {
@@ -1521,20 +1575,68 @@ window.changeStrategyLayer = function(strategyName) {
   }
 };
 
-// 動態副圖指標切換函式
-window.changeSubIndicator = function(indicatorName) {
-  window.activeIndicator = indicatorName;
+// 副圖單選切換
+window.selectSubIndicator = function(indicatorName) {
+  window.chartLayers.subIndicator = indicatorName;
+  updatePillButtonsUI();
+
   if (currentChartSymbol) {
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
     if (stock) {
       loadTVChart(stock);
     }
+  }
+};
+
+// 同步 UI 按鈕狀態
+function updatePillButtonsUI() {
+  const layers = ['ma5', 'supertrend', 'srLines', 'strategySupertrend', 'strategyTrendline'];
+  layers.forEach(layer => {
+    const el = document.getElementById(`pill-${layer}`);
+    if (el) {
+      if (window.chartLayers[layer]) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    }
+  });
+
+  const subIndicators = ['rsi', 'macd', 'none'];
+  subIndicators.forEach(ind => {
+    const el = document.getElementById(`pill-sub-${ind}`);
+    if (el) {
+      if (window.chartLayers.subIndicator === ind) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    }
+  });
+}
+
+// 相容層：供外部舊程式碼呼叫
+window.changeStrategyLayer = function(strategyName) {
+  window.activeStrategy = strategyName;
+  updatePillButtonsUI();
+  if (currentChartSymbol) {
+    const stock = mockStocks.find(s => s.id === currentChartSymbol);
+    if (stock) loadTVChart(stock);
+  }
+};
+window.changeSubIndicator = function(indicatorName) {
+  window.activeIndicator = indicatorName;
+  updatePillButtonsUI();
+  if (currentChartSymbol) {
+    const stock = mockStocks.find(s => s.id === currentChartSymbol);
+    if (stock) loadTVChart(stock);
   }
 };
 
 let currentKlineData = null;
 
 window.loadTVChart = function(s) {
+  updatePillButtonsUI();
   currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
 

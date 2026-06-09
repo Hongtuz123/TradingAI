@@ -2184,5 +2184,64 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   }
 }
 
+/* ================= 策略與指標多圖層控制 Pill 按鈕 ================= */
+.layer-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  white-space: nowrap;
+}
 
+.layer-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
 
+.layer-pill:active {
+  transform: scale(0.96);
+}
+
+/* 指標類 (.active) - 翡翠綠發光漸層 */
+#pill-ma5.active,
+#pill-supertrend.active,
+#pill-srLines.active {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 策略類 (.active) - 極光紫/玫紅發光漸層 */
+#pill-strategySupertrend.active,
+#pill-strategyTrendline.active {
+  background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 副圖類 (.active) - 陽光橙發光漸層 */
+#pill-sub-rsi.active,
+#pill-sub-macd.active,
+#pill-sub-none.active {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
