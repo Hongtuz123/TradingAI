@@ -218,6 +218,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* 美股卡片等比例放大對齊 */
+.health-indicators.us-grid .health-indicator-card {
+  min-height: 184px;
+  padding: 14px 16px;
 }
 
 /* 舊版 flex-row 保留（大盤量） */
@@ -226,6 +234,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
+  min-height: 52px;
 }
 
 .idx-name {
