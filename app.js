@@ -139,6 +139,12 @@ function switchView(viewId) {
         setTimeout(() => loadTVChart(defaultStock), 100);
       }
     }
+  } else if (viewId === 'screener') {
+    // 切換到篩選器時，若結果清單是空的，自動執行一次篩選
+    const resultEl = document.getElementById('screenerResults');
+    if (resultEl && (!currentResults || currentResults.length === 0)) {
+      runScreener();
+    }
   } else if (viewId === 'portfolio') {
     renderPortfolioGrid();
   } else if (viewId === 'cmoney') {
@@ -3100,8 +3106,8 @@ function toggleBubbleFilter(cat) {
   const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
 
   // SVG 尺寸
-  const W = container.clientWidth || 560;
-  const H = 480;
+  const W = container.clientWidth || 800;
+  const H = 620;
   const ML = 58, MR = 18, MT = 22, MB = 42;
   const PW = W - ML - MR, PH = H - MT - MB;
   const X_MAX = 3.0;
