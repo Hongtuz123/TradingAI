@@ -82,14 +82,20 @@
         <div class="health-mini-row">
           <!-- 台股版塊 -->
           <div class="market-group-mini">
-            <div class="market-group-title-mini">🇹🇼 台股</div>
+            <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>🇹🇼 台股</span>
+              <span id="twMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
+            </div>
             <div class="health-indicators us-grid" id="twIndicators"><!-- JS 填充 --></div>
             <div class="vol-indicator" id="volIndicator" style="display:none;"><!-- JS 填充 --></div>
           </div>
 
           <!-- 美股版塊 -->
           <div class="market-group-mini">
-            <div class="market-group-title-mini">🇺🇸 美股</div>
+            <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>🇺🇸 美股</span>
+              <span id="usMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
+            </div>
             <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
           </div>
         </div>
