@@ -214,30 +214,11 @@ function initDashboard() {
   `).join('');
   document.getElementById('twIndicators').innerHTML = twHTML;
 
-  // 大盤量
-  const volVal = marketData.vol_above_20ma;
-  const volLevel = marketData.vol_level || '普通';
-  const latestVolNum = marketData.latest_vol_num;
-  document.getElementById('volIndicator').innerHTML = volVal !== null && volVal !== undefined
-    ? `<div class="health-indicator-card vol-card" style="position: relative; padding-bottom: 18px;">
-         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-           <div style="display: flex; align-items: center; gap: 4px;">
-             <span style="font-size:12px; font-weight: 600;">大盤成交量</span>
-             <button onclick="openIndexIntroModal('大盤成交量')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; padding: 1px 4px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.1)'" onmouseout="this.style.background='none'">❓</button>
-           </div>
-           <div>
-             <span class="badge ${volVal ? 'success' : 'danger'}">${volVal ? '> 20MA' : '< 20MA'}</span>
-             ${getVolLevelBadge(volLevel)}
-           </div>
-         </div>
-         <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
-           日成交量: <span style="color: var(--text-main); font-weight: 600;">${formatVolNum(latestVolNum)}</span>
-         </div>
-         <div style="font-size: 8px; color: var(--text-muted); position: absolute; bottom: 2px; right: 8px;">
-           ${updateTime}
-         </div>
-       </div>`
-    : '';
+  // 隱藏舊有的大盤成交量卡片，因已整合為台指夜盤
+  const volIndEl = document.getElementById('volIndicator');
+  if (volIndEl) {
+    volIndEl.style.display = 'none';
+  }
 
   // ── 美股版塊 ──────────────────────────────────────────
   const usData = marketData.us_indices || [];
@@ -307,20 +288,9 @@ function initDashboard() {
 
   // ── 評分與評級系統 ────────────────────────────────────
   
-  // 1. 台股評分系統 (總分 3 分)
-  // 指標一：台灣指數 (加權) 漲跌幅 > 0%
-  const twiiPct = twData[0]?.pct_chg || 0;
-  const twiiScore = twiiPct > 0 ? 1 : 0;
-  
-  // 指標二：櫃買指數 漲跌幅 > 0%
-  const otcPct = twData[1]?.pct_chg || 0;
-  const otcScore = otcPct > 0 ? 1 : 0;
-  
-  // 指標三：成交量大於 20MA
-  const volScore = marketData.vol_above_20ma ? 1 : 0;
-  
-  const twTotalScore = twiiScore + otcScore + volScore;
-  const isTwBull = twTotalScore >= 2; // 達 2 分多，未達 2 分空
+  // 1. 台股評分系統 (直接對接後端 0 - 100 分)
+  const twTotalScore = marketData.tw_health_score !== undefined ? marketData.tw_health_score : 0;
+  const isTwBull = twTotalScore >= 50; // 達 50 分多，未達 50 分空
   
   // 更新台股評級 UI
   const twGradeEl = document.getElementById('twHealthGrade');
@@ -329,25 +299,18 @@ function initDashboard() {
     twGradeEl.style.color = isTwBull ? 'var(--success)' : 'var(--danger)';
     twGradeEl.style.background = isTwBull ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
   }
-
-  // 2. 美股評分系統 (總分 5 分)
-  // 5 個指標：費半、那斯達克100、羅素2000、道瓊、S&P 500 (篩除 VIX)
-  let usTotalScore = 0;
-  usData.filter(idx => !idx.label.includes('VIX')).forEach(idx => {
-    if (idx.pct_chg && idx.pct_chg > 0) {
-      usTotalScore += 1;
-    }
-  });
+ 
+  // 2. 美股評分系統 (直接對接後端 0 - 100 分)
+  const usTotalScore = marketData.us_health_score !== undefined ? marketData.us_health_score : 0;
   
-  // 3分以下看空 (0, 1, 2)；3分普通；3分以上多 (4, 5)
   let usRating = '普通';
   let usColor = 'var(--warning)';
   let usBg = 'rgba(245, 158, 11, 0.2)';
-  if (usTotalScore < 3) {
+  if (usTotalScore < 40) {
     usRating = '空';
     usColor = 'var(--danger)';
     usBg = 'rgba(239, 68, 68, 0.2)';
-  } else if (usTotalScore > 3) {
+  } else if (usTotalScore >= 50) {
     usRating = '多';
     usColor = 'var(--success)';
     usBg = 'rgba(16, 185, 129, 0.2)';
@@ -360,9 +323,9 @@ function initDashboard() {
     usGradeEl.style.color = usColor;
     usGradeEl.style.background = usBg;
   }
-
+ 
   // 3. 綜合評級 (雙強則多，雙空則空，其餘安全偏向防守)
-  const isHealthy = isTwBull && (usTotalScore > 3);
+  const isHealthy = isTwBull && (usTotalScore >= 50);
   
   const failedStocks = marketData.price_failed_stocks || [];
   const hasFailedStocks = failedStocks.length > 0;
@@ -3842,10 +3805,10 @@ function openIndexIntroModal(label) {
       desc: '代表台灣證券櫃檯買賣中心（上櫃市場）的整體股價指數。上櫃公司多為「中小型企業」或「新創高科技公司」，股性通常比上市公司活潑、波動較劇烈。',
       influence: '中小型半導體、IC設計（如信驊、力旺）、生技類股（如藥華藥）等。櫃買指數通常被視為「內資與主力散戶」的信心指標，當它強於加權指數時，中小型股會百花齊放。'
     },
-    '大盤成交量': {
-      title: '大盤成交量 📊',
-      desc: '指當天加權市場成交的總股數與成交金額。成交量代表市場的資金動能，是價格能否持續上漲的「油門」。',
-      influence: '<b>量增價揚</b>是健康多頭，當量大於 20MA（20日平均量）時，代表資金進場，強勢股容易續漲；若出現<b>量縮價跌</b>通常是高檔整理，但如果是<b>價漲量縮</b>則要提防虛胖無量拉回。'
+    '台指夜盤': {
+      title: '台指夜盤 (WTXP&) 🇹🇼',
+      desc: '指台灣期貨交易所的台股期貨「盤後交易時段」報價與量能。夜盤交易跨越美股交易時間，是國際資金與外資對大盤夜間多空態度的最直接溫度計。',
+      influence: '台股隔日開盤走勢。當夜盤成交量放大（如大於均量 1.2 倍）且大漲時，通常代表美股走強或外資大舉避險/做多，隔日台股現貨有極高機率跳空大漲。'
     },
     '費半 SOX': {
       title: '費城半導體指數 (SOX) 🇺🇸',

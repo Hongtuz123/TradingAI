@@ -222,7 +222,8 @@ body {
   box-sizing: border-box;
 }
 
-/* 美股卡片等比例放大對齊 */
+/* 美股與台股卡片等比例放大對齊 */
+.health-indicators .health-indicator-card,
 .health-indicators.us-grid .health-indicator-card {
   min-height: 184px;
   padding: 14px 16px;

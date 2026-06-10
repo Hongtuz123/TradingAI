@@ -270,8 +270,8 @@ def fetch_openapi_fundamentals():
 def calc_market_health():
     """
     計算市場健康度：
-    - 台股（TWII、TWOII）：漲跌幅、是否>20MA、是否>60MA
-    - 美股五大指數（SOX、NDX、RUT、DJI、SPX）：漲跌幅
+    - 台股（TWII、TWOII、WTXP&）：漲跌幅、成交量相較20MA均量
+    - 美股五大指數（SOX、NDX、RUT、DJI、SPX）：漲跌幅、成交量相較20MA均量
     """
     def _safe_pct(hist):
         """計算前一日漲跌幅（%），最少需要 2 筆資料"""
@@ -304,7 +304,7 @@ def calc_market_health():
             return '普通'
 
     def _tw_index(symbol, label):
-        """回傳台股指數所需欄位（加入成交量防禦 0 值過濾）"""
+        """回傳台股指數所需欄位（加入成交量比率與 MA）"""
         item = {
             'label': label,
             'pct_chg': None,
@@ -312,7 +312,8 @@ def calc_market_health():
             'above_20ma': None,
             'above_60ma': None,
             'volume': None,
-            'vol_level': '普通'
+            'vol_level': '普通',
+            'vol_ratio': 1.0
         }
         try:
             hist = yf.Ticker(symbol).history(period='130d', interval='1d')
@@ -321,13 +322,17 @@ def calc_market_health():
             item['close'] = round(float(hist['Close'].iloc[-1]), 2)
             item['pct_chg'] = _safe_pct(hist)
             
-            # 成交量防禦 0 值過濾：若最後一天的 Volume 為 0 (例如 yfinance 還沒更新好該欄位)，使用最近一筆 > 0 的成交量
+            # 成交量防禦 0 值過濾
             vols_series = hist['Volume']
             valid_vols = vols_series[vols_series > 0]
             latest_vol = int(valid_vols.iloc[-1]) if not valid_vols.empty else 0
             
             item['volume'] = latest_vol
             item['vol_level'] = _calc_vol_level(latest_vol, hist)
+
+            # 計算 20MA 均量比率
+            avg_vol = valid_vols.rolling(20).mean().iloc[-1] if len(valid_vols) >= 20 else 0
+            item['vol_ratio'] = round(latest_vol / avg_vol, 3) if avg_vol > 0 else 1.0
 
             if len(hist) >= 20:
                 ma20 = float(hist['Close'].rolling(20).mean().iloc[-1])
@@ -340,13 +345,14 @@ def calc_market_health():
         return item
 
     def _us_index(symbol, label):
-        """回傳美股指數所需欄位（加入成交量防禦 0 值過濾）"""
+        """回傳美股指數所需欄位（加入成交量比率）"""
         item = {
             'label': label,
             'pct_chg': None,
             'close': None,
             'volume': None,
-            'vol_level': '普通'
+            'vol_level': '普通',
+            'vol_ratio': 1.0
         }
         try:
             hist = yf.Ticker(symbol).history(period='35d', interval='1d')
@@ -362,17 +368,130 @@ def calc_market_health():
             
             item['volume'] = latest_vol
             item['vol_level'] = _calc_vol_level(latest_vol, hist)
+
+            # 計算 20MA 均量比率
+            avg_vol = valid_vols.rolling(20).mean().iloc[-1] if len(valid_vols) >= 20 else 0
+            item['vol_ratio'] = round(latest_vol / avg_vol, 3) if avg_vol > 0 else 1.0
         except Exception as e:
             print(f'  美股指數 {symbol} 計算失敗: {e}')
         return item
 
-    # --- 台股 ---
-    twii_data  = _tw_index('^TWII',  '加權指數')
-    twoii_data = _tw_index('^TWOII', '櫃買指數')
+    # 1. 抓取台指期盤後 (夜盤) 資料，並維護本地歷史累積量
+    def _wtx_night_index():
+        item = {
+            'label': '台指夜盤',
+            'pct_chg': None,
+            'close': None,
+            'above_20ma': True,
+            'above_60ma': True,
+            'volume': None,
+            'vol_level': '普通',
+            'vol_ratio': 1.0
+        }
+        url = "https://openapi.taifex.com.tw/v1/DailyMarketReportFut"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        try:
+            res = _req.get(url, headers=headers, timeout=10)
+            if res.status_code != 200:
+                print(f"  期交所 API 請求失敗: {res.status_code}")
+                return item
+            
+            data = res.json()
+            tx_night = [d for d in data if d.get("Contract") == "TX" and d.get("TradingSession") == "盤後"]
+            if not tx_night:
+                print("  期交所 API 未找到 TX 盤後合約")
+                return item
+            
+            # 排序取近月合約
+            tx_night.sort(key=lambda x: x.get("ContractMonth(Week)", "999999"))
+            target = tx_night[0]
+            
+            date_str = target.get("Date")  # 格式 YYYYMMDD
+            formatted_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}" if len(date_str) == 8 else date_str
+            
+            close_val = float(target.get("Last", "0").replace(",", ""))
+            pct_str = target.get("%", "0%").replace("%", "").replace(",", "")
+            pct_chg = float(pct_str)
+            vol_val = int(target.get("Volume", "0").replace(",", ""))
+            
+            item['close'] = close_val
+            item['pct_chg'] = pct_chg
+            item['volume'] = vol_val
+            
+            # 維護本地歷史 JSON
+            history_path = "scratch/wtx_history.json"
+            history = []
+            if os.path.exists(history_path):
+                try:
+                    with open(history_path, "r", encoding="utf-8") as rf:
+                        history = json.load(rf)
+                except Exception as je:
+                    print(f"  讀取 wtx_history.json 失敗: {je}")
+            
+            # 檢查並更新或寫入當日
+            existing = [h for h in history if h.get("date") == formatted_date]
+            if not existing:
+                history.append({
+                    "date": formatted_date,
+                    "close": close_val,
+                    "volume": vol_val,
+                    "pct_chg": pct_chg
+                })
+                history.sort(key=lambda x: x.get("date", ""))
+                history = history[-60:]
+            else:
+                for h in history:
+                    if h["date"] == formatted_date:
+                        h["close"] = close_val
+                        h["volume"] = vol_val
+                        h["pct_chg"] = pct_chg
+            
+            try:
+                os.makedirs(os.path.dirname(history_path), exist_ok=True)
+                with open(history_path, "w", encoding="utf-8") as wf:
+                    json.dump(history, wf, ensure_ascii=False, indent=2)
+            except Exception as we:
+                print(f"  寫入 wtx_history.json 失敗: {we}")
+            
+            # 計算 20MA 均量與 Close 均線
+            valid_hist = [h for h in history if h.get("volume", 0) > 0]
+            if len(valid_hist) >= 20:
+                last_20_vol = valid_hist[-20:]
+                vol_ma20 = sum(h["volume"] for h in last_20_vol) / 20.0
+            else:
+                vol_ma20 = 50000.0  # 預設 20MA 均量基準值
+            
+            item['vol_ratio'] = round(vol_val / vol_ma20, 3) if vol_ma20 > 0 else 1.0
+            
+            # 決定量能級別 vol_level
+            if item['vol_ratio'] < 0.85:
+                item['vol_level'] = '少'
+            elif item['vol_ratio'] > 1.15:
+                item['vol_level'] = '多'
+            else:
+                item['vol_level'] = '普通'
+            
+            # 均線判定
+            if history:
+                avg_close_20 = sum(h["close"] for h in history[-20:]) / len(history[-20:])
+                item['above_20ma'] = close_val > avg_close_20
+                avg_close_60 = sum(h["close"] for h in history[-60:]) / len(history[-60:])
+                item['above_60ma'] = close_val > avg_close_60
+                
+        except Exception as e:
+            print(f"  台指夜盤計算失敗: {e}")
+        return item
 
     # 🚀 TWSE/TPEx 官方 API 大盤補償防禦機制，解決 yfinance 指數數據滯後問題
     import requests as _req
     
+    # --- 執行台股與美股資料抓取 ---
+    twii_data  = _tw_index('^TWII',  '加權指數')
+    twoii_data = _tw_index('^TWOII', '櫃買指數')
+    wtx_data   = _wtx_night_index()
+
     # 1. 補償加權指數 (^TWII)
     try:
         print("🔍 正在透過 TWSE 官方 API 驗證加權指數精準度...")
@@ -381,21 +500,17 @@ def calc_market_health():
             f_data = res.json()
             if 'data' in f_data and len(f_data['data']) > 0:
                 last_row = f_data['data'][-1]
-                # last_row: ['115/05/28', '19,686,100,251', '1,670,718,874,089', '9,346,566', '43,636.44', '-620.36']
                 raw_close = float(last_row[4].replace(',', ''))
                 raw_diff = float(last_row[5].replace(',', ''))
                 prev_close = raw_close - raw_diff
                 pct_chg = round((raw_diff / prev_close) * 100, 2)
                 
-                print(f"  TWSE 官方最新加權指數: {raw_close} (漲跌: {raw_diff}, 幅度: {pct_chg}%)")
-                
-                # 如果 yfinance 滯後（yfinance 的 close 與官方不同），使用官方最新精準數據覆蓋
                 if twii_data['close'] != raw_close:
-                    print(f"  ⚠️ 偵測到 yfinance 加權數據滯後 (yf: {twii_data['close']} vs 官方: {raw_close})，已自動採用官方最新盤後數據進行精準覆蓋！")
+                    print(f"  ⚠️ 偵測到 yfinance 加權數據滯後，已採用官方最新盤後數據覆蓋！")
                     twii_data['close'] = raw_close
                     twii_data['pct_chg'] = pct_chg
     except Exception as e_twii:
-        print(f"  ⚠️ TWSE 官方加權指數補償失敗 (將維持 yfinance 預設值): {e_twii}")
+        print(f"  ⚠️ TWSE 官方加權指數補償失敗: {e_twii}")
 
     # 2. 補償櫃買指數 (^TWOII)
     try:
@@ -408,21 +523,17 @@ def calc_market_health():
                 if 'data' in t0 and len(t0['data']) > 0:
                     for row in t0['data']:
                         if row[0] == '櫃買指數':
-                            # row: ['櫃買指數', '432.48', '-7.71', '-1.75', ...]
                             raw_close = float(row[1].replace(',', ''))
                             pct_chg = float(row[3].replace(',', ''))
-                            print(f"  TPEx 官方最新櫃買指數: {raw_close} (幅度: {pct_chg}%)")
-                            
                             if twoii_data['close'] != raw_close:
-                                print(f"  ⚠️ 偵測到 yfinance 櫃買數據滯後 (yf: {twoii_data['close']} vs 官方: {raw_close})，已自動採用官方最新數據進行覆蓋！")
+                                print(f"  ⚠️ 偵測到 yfinance 櫃買數據滯後，已採用官方最新數據覆蓋！")
                                 twoii_data['close'] = raw_close
                                 twoii_data['pct_chg'] = pct_chg
                             break
     except Exception as e_otc:
-        print(f"  ⚠️ TPEx 官方櫃買指數補償失敗 (將維持 yfinance 預設值): {e_otc}")
+        print(f"  ⚠️ TPEx 官方櫃買指數補償失敗: {e_otc}")
 
-
-    # 大盤量 > 20MA（用加權指數量，過濾 0 值）
+    # 3. 取得加權歷史量 (供向下相容舊大盤成交量欄位)
     vol_above_20ma = None
     vol_level = '普通'
     latest_vol_num = None
@@ -431,10 +542,7 @@ def calc_market_health():
         if len(hist_vol) >= 20:
             valid_vols = hist_vol['Volume'][hist_vol['Volume'] > 0]
             vol_ma20 = float(valid_vols.rolling(20).mean().iloc[-1]) if len(valid_vols) >= 20 else 0
-            
-            # 最新有效量
             latest_vol_num = float(valid_vols.iloc[-1]) if not valid_vols.empty else 0
-            
             if vol_ma20 > 0:
                 vol_above_20ma = latest_vol_num > vol_ma20
                 ratio = latest_vol_num / vol_ma20
@@ -445,7 +553,7 @@ def calc_market_health():
                 else:
                     vol_level = '普通'
     except Exception as e:
-        print(f'  大盤量計算失敗: {e}')
+        print(f'  加權大盤量計算失敗: {e}')
 
     # --- 美股 ---
     us_indices = [
@@ -457,12 +565,43 @@ def calc_market_health():
         _us_index('^VIX',  'VIX 恐慌指數'),
     ]
 
+    # ============================================
+    # 計算新版市場健康度評分 (0 - 100 分)
+    # ============================================
+    
+    # (A) 台股評分邏輯 (滿分 100)
+    tw_score = 0
+    for idx_data in [twii_data, twoii_data, wtx_data]:
+        # 項目 1：漲跌超過 0.5% (+15分)
+        if idx_data.get('pct_chg') is not None and abs(idx_data['pct_chg']) > 0.5:
+            tw_score += 15
+        # 項目 2：成交量大於均量 1.2 倍 (+15分)
+        if idx_data.get('vol_ratio') is not None and idx_data['vol_ratio'] > 1.2:
+            tw_score += 15
+            
+    # 項目 3：VIX 恐慌指數低於 20 (+10分)
+    vix_data = next((x for x in us_indices if 'VIX' in x['label']), None)
+    if vix_data and vix_data.get('close') is not None and vix_data['close'] < 20:
+        tw_score += 10
+        
+    # (B) 美股評分邏輯 (滿分 100)
+    us_score = 0
+    for idx_data in [x for x in us_indices if 'VIX' not in x['label']]:
+        # 項目 1：漲跌超過 0.5% (+10分)
+        if idx_data.get('pct_chg') is not None and abs(idx_data['pct_chg']) > 0.5:
+            us_score += 10
+        # 項目 2：成交量大於均量 1.2 倍 (+10分)
+        if idx_data.get('vol_ratio') is not None and idx_data['vol_ratio'] > 1.2:
+            us_score += 10
+
     return {
-        'tw': [twii_data, twoii_data],
+        'tw': [twii_data, twoii_data, wtx_data],
         'vol_above_20ma': vol_above_20ma,
         'vol_level': vol_level,
         'latest_vol_num': latest_vol_num,
         'us': us_indices,
+        'tw_health_score': tw_score,
+        'us_health_score': us_score,
         # 向下相容舊欄位
         'twii': twii_data.get('above_60ma', True),
         'otc':  twoii_data.get('above_60ma', True),
