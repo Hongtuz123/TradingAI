@@ -1654,7 +1654,7 @@ window.loadTVChart = function(s) {
   // 更新頂部提示列的名稱
   const nameEl = document.querySelector('.chart-name');
   if (nameEl) {
-    nameEl.innerHTML = `<span style="color:white;font-size:16px;font-weight:bold;">${s.id} ${s.name}</span> <span style="color:var(--text-muted);font-size:12px;">(${window.currentChartMarket})</span>`;
+    nameEl.innerHTML = `<span style="color:white;font-size:14px;font-weight:bold;">${s.id} ${s.name}</span> <span style="color:var(--text-muted);font-size:11px;">(${window.currentChartMarket})</span>`;
   }
 
   const container = document.getElementById('tvChartContainer');

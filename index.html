@@ -445,8 +445,13 @@
         <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
           <div class="chart-toolbar" style="flex-shrink:0;gap:12px;display:flex;justify-content:space-between;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;align-items:center;">
             
-            <!-- 左側控制群：搜尋列 + 時框選擇 + 自選此股 -->
+            <!-- 左側控制群：標的名稱 + 搜尋列 + 時框選擇 + 自選此股 -->
             <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+              <!-- 目前標的名稱 -->
+              <div class="chart-stock-info" style="display:flex; align-items:center; background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); padding: 4px 12px; border-radius: 6px; height: 28px;">
+                <span class="chart-name" style="font-size: 14px; font-weight: 700; color: white;">--</span>
+              </div>
+
               <!-- 搜尋功能 -->
               <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
                 <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
