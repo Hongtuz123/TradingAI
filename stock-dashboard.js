@@ -1637,6 +1637,17 @@ let currentKlineData = null;
 
 window.loadTVChart = function(s) {
   updatePillButtonsUI();
+  
+  // 記錄舊圖表的 visible range (如果是同個 Symbol)
+  let lastVisibleRange = null;
+  if (currentLWChart && currentChartSymbol === s.id) {
+    try {
+      lastVisibleRange = currentLWChart.timeScale().getVisibleRange();
+    } catch (e) {
+      console.warn('Failed to get visible range', e);
+    }
+  }
+
   currentChartSymbol = s.id;
   window.currentChartMarket = s.market || 'TWSE';
 
@@ -1657,9 +1668,18 @@ window.loadTVChart = function(s) {
 
     currentLWChart = renderLWChart('tvChartContainer', s.kline, chartHeight, '1D');
     
-    // 預設顯示近30日
+    // 如果有之前的 range 且為同一個個股，則套用；否則套用預設的 30 日
     setTimeout(() => {
-      setTimeframe(30);
+      if (lastVisibleRange && lastVisibleRange.from && lastVisibleRange.to) {
+        try {
+          currentLWChart.timeScale().setVisibleRange(lastVisibleRange);
+        } catch (err) {
+          console.warn('Failed to restore visible range', err);
+          setTimeframe(30);
+        }
+      } else {
+        setTimeframe(30);
+      }
     }, 50);
   } else {
     currentKlineData = null;

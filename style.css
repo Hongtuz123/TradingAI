@@ -74,6 +74,8 @@ body {
 .topbar-nav {
   display: flex;
   gap: 10px;
+  margin-left: 24px;
+  margin-right: auto;
 }
 
 .nav-btn {
