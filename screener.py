@@ -1160,6 +1160,9 @@ def run_screener():
         "vol_above_20ma": market_health['vol_above_20ma'],
         "vol_level": market_health['vol_level'],
         "latest_vol_num": market_health['latest_vol_num'],
+        # 新增健康度分數
+        "tw_health_score": market_health['tw_health_score'],
+        "us_health_score": market_health['us_health_score'],
         # 向下相容舊欄位（避免 JS 舊引用爆炸）
         "twii_above_60ma": bool(market_health['twii']),
         "otc_above_60ma":  bool(market_health['otc']),
