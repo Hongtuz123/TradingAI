@@ -414,25 +414,37 @@ function initDashboard() {
         </li>
       `;
     }
-    if (!isTwBull) {
+    // 台股警告顯示
+    if (twTotalScore < 60) {
       warningHTML += `
         <li style="color: var(--danger); font-weight: bold;">⚠️ 台股市況偏空 (${twTotalScore}分)</li>
         <li>降低台股持股水位</li>
         <li>提高停損標準</li>
       `;
-    } else {
+    } else if (twTotalScore >= 80) {
       warningHTML += `
         <li style="color: var(--success); font-weight: bold;">✓ 台股市況偏多 (${twTotalScore}分)</li>
       `;
-    }
-    if (usTotalScore < 3) {
+    } else {
       warningHTML += `
-        <li style="color: var(--danger); font-weight: bold;">⚠️ 美股趨勢偏空 (${usTotalScore}分)</li>
+        <li style="color: var(--warning); font-weight: bold;">⚡ 台股市況普通 (${twTotalScore}分)</li>
+        <li>密切觀察大盤方向</li>
+      `;
+    }
+
+    // 美股警告顯示
+    if (usTotalScore < 60) {
+      warningHTML += `
+        <li style="color: var(--danger); font-weight: bold;">⚠️ 美股市況偏空 (${usTotalScore}分)</li>
         <li>警惕外部連動下跌風險</li>
       `;
-    } else if (usTotalScore === 3) {
+    } else if (usTotalScore >= 80) {
       warningHTML += `
-        <li style="color: var(--warning); font-weight: bold;">⚡ 美股市況普通 (3分)</li>
+        <li style="color: var(--success); font-weight: bold;">✓ 美股市況偏多 (${usTotalScore}分)</li>
+      `;
+    } else {
+      warningHTML += `
+        <li style="color: var(--warning); font-weight: bold;">⚡ 美股市況普通 (${usTotalScore}分)</li>
         <li>密切觀察國際盤勢方向</li>
       `;
     }
