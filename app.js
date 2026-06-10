@@ -2909,7 +2909,12 @@ function getStockSector(s) {
   if (SECTOR_COMPENSATION[s.id]) {
     return SECTOR_COMPENSATION[s.id];
   }
-  
+
+  // 若 screener.py 已提供 "大類:小類" 格式的 industry 欄位，直接使用
+  if (s.industry && s.industry.includes(':')) {
+    return s.industry;
+  }
+
   // 透過 OpenAPI 基本資料與名稱特徵動態精準對齊 CMoney 類股，第一層總分類限制為 6 大類
   let a = '傳產'; // 預設總分類為 傳產
   let b = '其他傳產'; // 預設細細分類

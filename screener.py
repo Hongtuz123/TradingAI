@@ -848,6 +848,24 @@ def fetch_institutional_data():
 def run_screener():
     print("載入 TWSE/TPEX OpenAPI 全市場資訊以計算合併市值前 500 大標的...")
     all_market_info = load_all_market_info()
+
+    # 載入個股產業分類對照表 CSV（產業,分類,股票代碼,股票名稱）
+    industry_map = {}  # code -> "產業:分類"
+    try:
+        import csv
+        base_dir_ind = os.path.dirname(os.path.abspath(__file__))
+        ind_csv_path = os.path.join(base_dir_ind, '個股產業分類對照表.csv')
+        with open(ind_csv_path, encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = str(row.get('股票代碼', '')).strip().zfill(4)
+                cat1 = row.get('產業', '').strip()
+                cat2 = row.get('分類', '').strip()
+                if code:
+                    industry_map[code] = f"{cat1}:{cat2}"
+        print(f"✅ 載入產業對照表完成，共 {len(industry_map)} 筆分類")
+    except Exception as e:
+        print(f"⚠️ 產業對照表載入失敗: {e}")
     
     # 1. 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比、股本)
     openapi_fund = fetch_openapi_fundamentals()
@@ -1055,6 +1073,7 @@ def run_screener():
 
             results.append({
                 "id": symbol, "name": name, "market": market,
+                "industry": industry_map.get(str(symbol).zfill(4), ''),
                 "price": round(close, 2), "change": round(change_num, 2),
                 "epsYoY": None,  # 將在最後精選 Top 40 中局部下載
                 "eps": eps_val,  # 批量單季 EPS
