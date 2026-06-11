@@ -3132,7 +3132,16 @@ function toggleBubbleFilter(cat) {
   const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
 
   function toSvgX(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; }
-  function toSvgY(flow) { return MT + (1 - Math.min(Math.max((flow + Y_HALF) / (Y_HALF * 2), 0.08), 0.92)) * PH; }
+  
+  // 引入開根號（平方根）縮放縮放，避免權值板塊極端值把中小板塊壓平在中心線
+  function toSvgY(flow) {
+    const sign = Math.sign(flow);
+    const absFlow = Math.abs(flow);
+    const flow_scaled = sign * Math.sqrt(absFlow);
+    const half_scaled = Math.sqrt(maxNetFlowAbs) * 1.15;
+    const ratio = (flow_scaled + half_scaled) / (half_scaled * 2);
+    return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+  }
   const centerX = toSvgX(1.0);
   const centerY = toSvgY(0);
 
