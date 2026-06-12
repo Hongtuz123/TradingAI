@@ -27,9 +27,6 @@
       <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
         <span class="nav-icon">⊞</span> 儀表板
       </button>
-      <button class="nav-btn" data-view="whitelist" onclick="switchView('whitelist')">
-        <span class="nav-icon">★</span> 基本面推薦清單
-      </button>
       <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
         <span class="nav-icon">⚡</span> 篩選器
       </button>
@@ -356,30 +353,7 @@
       </div>
     </section>
 
-    <!-- ======================== 基本面推薦清單視圖 ======================== -->
-    <section class="view" id="view-whitelist">
-      <div class="whitelist-page">
-        <div class="whitelist-header">
-          <div>
-            <h2>⭐ 基本面推薦清單儀表板</h2>
-            <p class="subtitle">技術與籌碼綜合評分，滿分 100 分｜最低門檻 <span id="scoreThresholdDisplay2">60</span> 分</p>
-          </div>
-          <div class="whitelist-actions"></div>
-        </div>
 
-        <!-- 評分圖例 -->
-        <div class="score-legend">
-          <div class="score-criteria-grid" id="scoreCriteriaGrid">
-            <!-- JS 填充 -->
-          </div>
-        </div>
-
-        <!-- 白名單卡片格 -->
-        <div class="whitelist-grid" id="whitelistGrid">
-          <!-- JS 填充 -->
-        </div>
-      </div>
-    </section>
 
     <!-- ======================== 自選清單視圖 ======================== -->
     <section class="view" id="view-portfolio">

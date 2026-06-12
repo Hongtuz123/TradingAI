@@ -64,8 +64,6 @@ function startClock() {
       if (currentActiveView === 'dashboard') {
         renderSectorFlowMap();
         renderRankings();
-      } else if (currentActiveView === 'whitelist') {
-        renderWhitelistGrid();
       } else if (currentActiveView === 'portfolio') {
         renderPortfolioGrid();
       }
@@ -849,7 +847,6 @@ function runScreener(isAutoRefresh = false) {
 
   // 更新預覽區與清單
   renderScreenerTable(slicedScreenerResults);
-  renderWhitelistGrid();
   
   // 動態繪製熱力圖與強弱排行榜（現在使用 mockStocks 全體標的進行計算）
   renderSectorFlowMap();
@@ -3582,48 +3579,6 @@ function renderRankings() {
 
 
 
-function renderWhitelistGrid() {
-  const grid = document.getElementById('whitelistGrid');
-  grid.innerHTML = '';
-  currentWhitelist.sort((a,b)=>b.dynamicScore - a.dynamicScore).forEach(s => {
-    const isPerfect = s.failedConditions.length === 0;
-    const msg = isPerfect 
-      ? `【${s.id} ${s.name}】\n\n🎉 控制門檻與篩選條件全數達標！\n荳荳評分：${s.dynamicScore} 分 (滿分100)`
-      : `【${s.id} ${s.name}】未達標項目 (${s.failedConditions.length}項)：\n\n- ${s.failedConditions.join('\n- ')}`;
-      
-    grid.innerHTML += `
-      <div class="wl-card" style="cursor:pointer;" title="點擊查看未達標項目" onclick="if (event.target.tagName !== 'BUTTON') { alert(decodeURIComponent('${encodeURIComponent(msg)}')); }">
-        <div class="wl-card-header">
-          <div>
-            <h3>${s.id} ${s.name}</h3>
-            ${getTechBadgesHTML(s.type)}
-          </div>
-          <div class="wl-score" style="color:var(--warning)">${s.dynamicScore} <span style="font-size:12px;color:var(--text-muted)">/ 100</span></div>
-        </div>
-        <div class="wl-card-body">
-          <div>收盤：${s.price} (${s.change}%)</div>
-          <div>EPS：${s.eps != null ? s.eps + '元' : '--'} (YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'})</div>
-          <div>營收 YoY：${s.revYoY != null ? s.revYoY + '%' : '--'}</div>
-          <div>投信當日：${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</div>
-          <div>外資當日：${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</div>
-          <div>自營商當日：${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</div>
-          <div>均量比：${s.volRatio}x</div>
-          <div>距52W高：${s.dist52W}%</div>
-          <div>20MA走升：${s.ma20Rising ? '✔ 是' : '✘ 否'}</div>
-          <div>RSI(14)：${s.rsi14 ?? '--'}</div>
-          <div>ATR(14)：${s.atr14 ?? '--'}</div>
-        </div>
-        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <button class="btn-secondary" style="font-size:12px;padding:4px 8px; flex:1;" onclick="openChart('${s.id}')">策略回測 →</button>
-          <button class="btn-primary" style="font-size:12px;padding:4px 8px; flex:1; background:${isStockInPortfolio(s.id)?'#10b981':'var(--warning)'}; font-weight:bold;" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')">
-            ${isStockInPortfolio(s.id) ? '★ 已自選' : '☆ 自選'}
-          </button>
-        </div>
-      </div>
-    `;
-  });
-}
-
 // Chart 相關
 function renderChartStockList() {
   const list = document.getElementById('chartStockList');
@@ -4005,7 +3960,6 @@ window.toggleStockPortfolio = function(symbolId) {
   // 即時更新各視圖的自選按鈕狀態
   if (typeof currentResults !== 'undefined') renderScreenerTable(currentResults);
   renderPortfolioGrid();
-  renderWhitelistGrid(); // 連動重繪推薦清單的自選按鈕狀態
   updateChartPortfolioButton();
 };
 
