@@ -235,24 +235,24 @@
               技術指標 (加權 100分)
             </div>
             <div class="filter-item">
+              <label>股價 &gt; 200MA (20分)</label>
+              <label class="toggle"><input type="checkbox" id="f_above_200ma" /><span></span></label>
+            </div>
+            <div class="filter-item">
               <label>Supertrend = 多頭 (20分)</label>
               <label class="toggle"><input type="checkbox" id="f_st_bull" checked /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>MA20 &gt; MA60 均線多頭 (10分)</label>
-              <label class="toggle"><input type="checkbox" id="f_price_above_st" /><span></span></label>
+              <label>ADX &gt; 20 且 +DI &gt; -DI (20分)</label>
+              <label class="toggle"><input type="checkbox" id="f_dmi_bull" /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>MA20上穿 MA60 (10分)</label>
-              <label class="toggle"><input type="checkbox" id="f_ma_alignment" /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>下行趨勢線突破 (30分)</label>
+              <label>突破下降趨勢 (20分)</label>
               <label class="toggle"><input type="checkbox" id="f_trendline_break" /><span></span></label>
             </div>
             <div class="filter-item">
-              <label>突破後回踩確認 (10分)</label>
-              <label class="toggle"><input type="checkbox" id="f_trendline_pullback" /><span></span></label>
+              <label>今日量 &gt; 均量倍數 (20分)</label>
+              <label class="toggle"><input type="checkbox" id="f_vol_above_ma" /><span></span></label>
             </div>
           </div>
 
@@ -312,34 +312,6 @@
               </div>
             </div>
           </div>
-
-          <!-- L4：技術輔助分類 -->
-          <div class="filter-group">
-            <div class="filter-group-title">
-              <span class="layer-badge layer-4">L4</span>
-              技術形態輔助分類
-            </div>
-            <div class="filter-item">
-              <label>類型A：突破型</label>
-              <label class="toggle"><input type="checkbox" id="f_type_a" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>類型B：均線多頭</label>
-              <label class="toggle"><input type="checkbox" id="f_type_b" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>類型C：剛轉強</label>
-              <label class="toggle"><input type="checkbox" id="f_type_c" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>類型D：強勢回檔</label>
-              <label class="toggle"><input type="checkbox" id="f_type_d" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>類型E：趨勢多頭</label>
-              <label class="toggle"><input type="checkbox" id="f_type_e" checked /><span></span></label>
-            </div>
-          </div>
          </aside>
 
         <!-- 右側：結果列表 -->
@@ -361,7 +333,6 @@
               <thead>
                 <tr>
                   <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
-                  <th onclick="toggleSort('techType')" style="cursor:pointer; user-select:none;" title="點擊按技術類型排序">技術類型 <span class="sort-icon" id="sort-techType">↕</span></th>
                   <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
                   <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按評分排序">荳荳評分 <span class="sort-icon" id="sort-score">↕</span></th>
                   <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>

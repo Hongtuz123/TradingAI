@@ -570,6 +570,90 @@ window.getLiveStockData = function(s) {
   return { price: livePrice, change: liveChange };
 };
 
+// 計算 DMI (Wilder's DMI & ADX)
+function calculateDMI(data, period = 14) {
+  const len = data.length;
+  if (len < period * 2) return { plusDI: [], minusDI: [], adx: [] };
+  const plusDM = new Array(len).fill(0);
+  const minusDM = new Array(len).fill(0);
+  const tr = new Array(len).fill(0);
+  
+  for (let i = 0; i < len; i++) {
+    const high = parseFloat(data[i].high);
+    const low = parseFloat(data[i].low);
+    if (i === 0) {
+      tr[i] = high - low;
+    } else {
+      const prevHigh = parseFloat(data[i - 1].high);
+      const prevLow = parseFloat(data[i - 1].low);
+      const prevClose = parseFloat(data[i - 1].close);
+      
+      tr[i] = Math.max(
+        high - low,
+        Math.abs(high - prevClose),
+        Math.abs(low - prevClose)
+      );
+      
+      const upMove = high - prevHigh;
+      const downMove = prevLow - low;
+      
+      plusDM[i] = (upMove > 0 && upMove > downMove) ? upMove : 0;
+      minusDM[i] = (downMove > 0 && downMove > upMove) ? downMove : 0;
+    }
+  }
+  
+  const trSmooth = new Array(len).fill(0);
+  const plusDMSmooth = new Array(len).fill(0);
+  const minusDMSmooth = new Array(len).fill(0);
+  
+  let trSum = 0, plusSum = 0, minusSum = 0;
+  for (let i = 0; i < period; i++) {
+    trSum += tr[i];
+    plusSum += plusDM[i];
+    minusSum += minusDM[i];
+  }
+  trSmooth[period - 1] = trSum;
+  plusDMSmooth[period - 1] = plusSum;
+  minusDMSmooth[period - 1] = minusSum;
+  
+  for (let i = period; i < len; i++) {
+    trSmooth[i] = trSmooth[i - 1] - (trSmooth[i - 1] / period) + tr[i];
+    plusDMSmooth[i] = plusDMSmooth[i - 1] - (plusDMSmooth[i - 1] / period) + plusDM[i];
+    minusDMSmooth[i] = minusDMSmooth[i - 1] - (minusDMSmooth[i - 1] / period) + minusDM[i];
+  }
+  
+  const plusDI = new Array(len).fill(null);
+  const minusDI = new Array(len).fill(null);
+  const dx = new Array(len).fill(null);
+  
+  for (let i = period - 1; i < len; i++) {
+    const ts = trSmooth[i];
+    if (ts > 0) {
+      plusDI[i] = (plusDMSmooth[i] / ts) * 100;
+      minusDI[i] = (minusDMSmooth[i] / ts) * 100;
+    } else {
+      plusDI[i] = 0;
+      minusDI[i] = 0;
+    }
+    const diff = Math.abs(plusDI[i] - minusDI[i]);
+    const sum = plusDI[i] + minusDI[i];
+    dx[i] = sum > 0 ? (diff / sum) * 100 : 0;
+  }
+  
+  const adx = new Array(len).fill(null);
+  let dxSum = 0;
+  for (let i = period - 1; i < period * 2 - 1; i++) {
+    dxSum += dx[i] || 0;
+  }
+  adx[period * 2 - 2] = dxSum / period;
+  
+  for (let i = period * 2 - 1; i < len; i++) {
+    adx[i] = ((adx[i - 1] * (period - 1)) + dx[i]) / period;
+  }
+  
+  return { plusDI, minusDI, adx };
+}
+
 // 執行篩選
 function runScreener(isAutoRefresh = false) {
   // 每次執行篩選前，全面同步一次所有股票最新價格與漲跌幅
@@ -577,11 +661,11 @@ function runScreener(isAutoRefresh = false) {
 
   // 取得篩選參數
   const p = {
+    above200ma: document.getElementById('f_above_200ma').checked,
     stBull: document.getElementById('f_st_bull').checked,
-    priceAboveSt: document.getElementById('f_price_above_st').checked,
-    maAlignment: document.getElementById('f_ma_alignment').checked,
+    dmiBull: document.getElementById('f_dmi_bull').checked,
     trendlineBreak: document.getElementById('f_trendline_break').checked,
-    trendlinePullback: document.getElementById('f_trendline_pullback').checked,
+    volAboveMa: document.getElementById('f_vol_above_ma').checked,
     trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
     foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold').value) || 0,
     dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold').value) || 0,
@@ -589,11 +673,6 @@ function runScreener(isAutoRefresh = false) {
     turnover: parseFloat(document.getElementById('f_turnover').value) || 0,
     mktCap: parseFloat(document.getElementById('f_market_cap').value) || 0,
     dailyVol: parseFloat(document.getElementById('f_daily_vol').value) || 0,
-    typeA: document.getElementById('f_type_a').checked,
-    typeB: document.getElementById('f_type_b').checked,
-    typeC: document.getElementById('f_type_c').checked,
-    typeD: document.getElementById('f_type_d').checked,
-    typeE: document.getElementById('f_type_e').checked,
     minScore: parseInt(document.getElementById('f_min_score').value) || 60
   };
 
@@ -603,22 +682,13 @@ function runScreener(isAutoRefresh = false) {
   currentResults = [];
   currentWhitelist = [];
   
-  let stats = { A:0, B:0, C:0, D:0, E:0, totalScore: 0 };
+  let stats = { totalScore: 0 };
 
   // 全數標的走訪：即時盤中運算動態套用
   mockStocks.forEach(s => {
     // 同步相容屬性以供舊程式碼安全讀取
     s.livePrice = s.price;
     s.liveChange = s.change;
-
-    // 支援多型態判定
-    const stockTypes = s.type ? s.type.split(',') : [];
-    const typeMatch = (!p.typeA && !p.typeB && !p.typeC && !p.typeD && !p.typeE) || 
-                      (p.typeA && stockTypes.includes('A')) || 
-                      (p.typeB && stockTypes.includes('B')) || 
-                      (p.typeC && stockTypes.includes('C')) || 
-                      (p.typeD && stockTypes.includes('D')) || 
-                      (p.typeE && stockTypes.includes('E'));
 
     let failedConditions = [];
     let score = 0;
@@ -639,7 +709,12 @@ function runScreener(isAutoRefresh = false) {
       const price = curr.close;
       const vol = curr.volume;
 
-      // 1. Supertrend 運算
+      // 1. 200MA 運算
+      const ma200Arr = calculateSMA(candles, 200);
+      const m200 = ma200Arr.length > 0 ? ma200Arr[ma200Arr.length - 1] : null;
+      const isAbove200MA = m200 && price > m200.value;
+
+      // 2. Supertrend 運算
       const stData = calculateSupertrend(candles, 10, 3);
       let isStBull = false;
       let isAboveSt = false;
@@ -649,90 +724,62 @@ function runScreener(isAutoRefresh = false) {
         isAboveSt = currSt && price > currSt.value;
       }
 
-      // 2. MA 上穿 (MA20 上穿 MA60)，即今 MA20 > MA60 且 昨 MA20 <= MA60 (S1/crossover)
-      const ma20Arr = calculateSMA(candles, 20);
-      const ma60Arr = calculateSMA(candles, 60);
-      const m20 = ma20Arr.length > 0 ? ma20Arr[ma20Arr.length - 1] : null;
-      const m60 = ma60Arr.length > 0 ? ma60Arr[ma60Arr.length - 1] : null;
-      const prev_m20 = ma20Arr.length > 1 ? ma20Arr[ma20Arr.length - 2] : null;
-      const prev_m60 = ma60Arr.length > 1 ? ma60Arr[ma60Arr.length - 2] : null;
-      
-      const isMaAlign = m20 && m60 && m20.value > m60.value && prev_m20 && prev_m60 && prev_m20.value <= prev_m60.value;
-
-      // 3. 下行趨勢線突破與回踩
-      const tl = calculateTrendlineAt(candles, t);
-      let isBreak = false;
-      let isPullback = false;
-      if (tl && tl.value !== null) {
-        // 突破：今收站上趨勢線，且昨收在趨勢線下方
-        isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
-        // 回踩 (B3 修復)：今收在趨勢線上方 3% 內，且非突破當天（昨收已在趨勢線上方）
-        // 同時往前追蹤最多 5 根，找到有過突破即視為有效回踩
-        const prevAbove = parseFloat(candles[t - 1].close) > tl.prevValue;
-        const nearLine = price >= tl.value * 0.99 && price <= tl.value * 1.05;
-        if (prevAbove && nearLine && !isBreak) {
-          // 往前找 5 根內是否有突破日
-          let hadBreak = false;
-          for (let bi = Math.max(0, t - 5); bi < t; bi++) {
-            const tlPrev = calculateTrendlineAt(candles, bi);
-            if (tlPrev && tlPrev.value !== null) {
-              const biClose = parseFloat(candles[bi].close);
-              const biPrev = bi > 0 ? parseFloat(candles[bi - 1].close) : biClose;
-              if (biClose > tlPrev.value && biPrev <= tlPrev.prevValue) { hadBreak = true; break; }
-            }
-          }
-          isPullback = hadBreak;
-        }
+      // 3. DMI 運算
+      const dmiData = calculateDMI(candles, 14);
+      let isDmiBull = false;
+      if (dmiData.adx && dmiData.adx.length > 0) {
+        const adxVal = dmiData.adx[dmiData.adx.length - 1];
+        const plusDIVal = dmiData.plusDI[dmiData.plusDI.length - 1];
+        const minusDIVal = dmiData.minusDI[dmiData.minusDI.length - 1];
+        isDmiBull = adxVal !== null && adxVal > 20 && plusDIVal !== null && minusDIVal !== null && plusDIVal > minusDIVal;
       }
 
-      // 4. 量能比 (K線即時計算，標準 SMA，門檻 1.2x 均量 — B1/B2 修復)
-      const vma = calculateVolumeMA(candles, 20);
-      const vmaVal = vma[t];
-      const liveVolRatio = vmaVal > 0 ? vol / vmaVal : 0; // 即時量能比
-      const isVolLarge = liveVolRatio >= 1.2;
+      // 4. 下行趨勢線突破與回踩
+      const tl = calculateTrendlineAt(candles, t);
+      let isBreak = false;
+      if (tl && tl.value !== null) {
+        isBreak = price > tl.value && parseFloat(candles[t - 1].close) <= tl.prevValue;
+      }
 
-      // 三大法人是否有買超 (投信 > 0 或是 外資 > 0 或是 自營商 > 0)
-      const isInstBuy = (s.trustDays && s.trustDays > 0) || (s.foreignNetBuy && s.foreignNetBuy > 0) || (s.dealerDays && s.dealerDays > 0);
+      // 5. 量能比 (K線即時計算，標準 SMA)
+      const gateVolRatio = (() => {
+        if (s.kline && s.kline.length >= 20) {
+          const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+          const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+          const vma20 = last20sum / 20;
+          const lastVol = cv[cv.length - 1].volume;
+          return vma20 > 0 ? lastVol / vma20 : 0;
+        }
+        return s.volRatio || 0;
+      })();
+      const isVolAboveMa = gateVolRatio >= p.volRatio;
 
-      // 5. 距 52 周高點距離 (S3 修復 — dist52W 納入評分)
-      // dist52W < 5%：接近歷史高點，已噴發嫌疑高（扣分）
-      // dist52W >= 25%：距高點夠遠，蓄勢空間充足（加分）
-      const dist52W = s.dist52W != null ? s.dist52W : 50; // 無資料預設中性值
-      if (dist52W < 5) score -= 15;         // 接近 52 周高點：負評 -15
-      else if (dist52W >= 25) score += 10;  // 距高點 25%+ 以上：蓄勢加分 +10
-
-      // --- 加權分數評估（調整後：降 ST 站穩、升趨勢線突破與量能）---
+      // --- 加權分數評估 (5 大規則，每條 20 分) ---
       let passedIndicators = [];
+      if (isAbove200MA) { score += 20; passedIndicators.push('股價 > 200MA (+20分)'); }
       if (isStBull) { score += 20; passedIndicators.push('Supertrend 多頭 (+20分)'); }
-      if (isMaAlign) { score += 10; passedIndicators.push('MA20上穿 MA60 (+10分)'); }
-      if (isBreak) { score += 30; passedIndicators.push('下降趨勢線突破 (+30分)'); }
-      if (isPullback) { score += 10; passedIndicators.push('突破後有效回踩 (+10分)'); }
-      if (isVolLarge) { score += 20; passedIndicators.push('量爆發 >= 1.2倍均量 (+20分)'); }
-      if (isInstBuy) { score += 10; passedIndicators.push('三大法人買超 (+10分)'); }
+      if (isDmiBull) { score += 20; passedIndicators.push('DMI 多頭 (ADX>20且+DI>-DI) (+20分)'); }
+      if (isBreak) { score += 20; passedIndicators.push('突破下降壓力線 (+20分)'); }
+      if (isVolAboveMa) { score += 20; passedIndicators.push('今日量 > 均量倍數 (+20分)'); }
       
-      if (dist52W < 5) passedIndicators.push('距52週高點太近 (-15分)');
-      else if (dist52W >= 25) passedIndicators.push('距52週高點夠遠 (+10分)');
-
       s.passedIndicators = passedIndicators;
 
       // 使用者設定的開關條件若勾選且不符合，則標記為 failed
+      if (p.above200ma && !isAbove200MA) failedConditions.push('股價未在200MA上方');
       if (p.stBull && !isStBull) failedConditions.push('Supertrend非多頭');
-      if (p.priceAboveSt && !isAboveSt) failedConditions.push('價格未在Supertrend上方');
-      if (p.maAlignment && !isMaAlign) failedConditions.push('MA20未上穿MA60');
+      if (p.dmiBull && !isDmiBull) failedConditions.push('DMI非多頭 (ADX<=20或+DI<=-DI)');
       if (p.trendlineBreak && !isBreak) failedConditions.push('下行趨勢線未突破');
-      if (p.trendlinePullback && !isPullback) failedConditions.push('未完成突破回踩');
+      if (p.volAboveMa && !isVolAboveMa) failedConditions.push('量能比低於設定門檻');
     } else {
-      if (p.stBull || p.priceAboveSt || p.maAlignment || p.trendlineBreak || p.trendlinePullback) {
+      if (p.above200ma || p.stBull || p.dmiBull || p.trendlineBreak || p.volAboveMa) {
         failedConditions.push('K線長度不足');
       }
     }
 
     // L1 固定基本面門檻
-    // 2. 當季 EPS > 0 (若數據為 null 視為通過，避免 API 缺失導致誤殺)
     if (s.eps != null && s.eps <= 0) {
       failedConditions.push(`當季 EPS 非正數 (${s.eps}元 <= 0元)`);
     }
-    // 3 和 4 擇一通過即可 (營收 YoY > -30% OR ROE > -5%，若數據為 null 視為通過，避免 API 缺失導致誤殺)
     const isYoYOk = s.revYoY == null || s.revYoY > -30;
     const isRoeOk = s.roe == null || s.roe > -5;
     if (!isYoYOk && !isRoeOk) {
@@ -749,16 +796,19 @@ function runScreener(isAutoRefresh = false) {
     if (s.dealerDays != null && s.dealerDays < p.dealerNetBuyLimit) {
       failedConditions.push(`自營當日買超 (${s.dealerDays}張 < ${p.dealerNetBuyLimit}張)`);
     }
-    // B1 修復：量能比 gate 統一使用 K 線即時計算的 liveVolRatio（若存在），fallback 至靜態 volRatio
-    const gateVolRatio = (s.kline && s.kline.length >= 20) ? (() => {
-      const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
-      const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
-      const vma20 = last20sum / 20;
-      const lastVol = cv[cv.length - 1].volume;
-      return vma20 > 0 ? lastVol / vma20 : 0;
-    })() : (s.volRatio || 0);
-    if (gateVolRatio < p.volRatio) {
-      failedConditions.push(`量能比 (${gateVolRatio.toFixed(2)} < ${p.volRatio})`);
+    
+    const gateVolRatioVal = (() => {
+      if (s.kline && s.kline.length >= 20) {
+        const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+        const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+        const vma20 = last20sum / 20;
+        const lastVol = cv[cv.length - 1].volume;
+        return vma20 > 0 ? lastVol / vma20 : 0;
+      }
+      return s.volRatio || 0;
+    })();
+    if (gateVolRatioVal < p.volRatio) {
+      failedConditions.push(`量能比 (${gateVolRatioVal.toFixed(2)} < ${p.volRatio})`);
     }
     if (s.turnover != null && s.turnover < p.turnover) {
       failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
@@ -774,7 +824,7 @@ function runScreener(isAutoRefresh = false) {
     s.failedConditions = failedConditions;
 
     // 篩選與匹配：評分 >= 最低符合評分 && 低於 60 分一律不納入 (安全防線)
-    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0 && typeMatch) {
+    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0) {
       currentResults.push(s);
     }
   });
@@ -785,12 +835,6 @@ function runScreener(isAutoRefresh = false) {
   currentResults.forEach(s => {
     if (s.dynamicScore >= p.minScore) {
       currentWhitelist.push(s);
-      const stockTypes = s.type ? s.type.split(',') : [];
-      stockTypes.forEach(t => {
-        if (t !== 'none') {
-          stats[t] = (stats[t] || 0) + 1;
-        }
-      });
       stats.totalScore += s.dynamicScore;
     }
   });
@@ -879,7 +923,7 @@ function renderScreenerTable(data) {
   tbody.innerHTML = '';
 
   if(data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">無符合條件的標的</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">無符合條件的標的</td></tr>';
     return;
   }
 
@@ -889,7 +933,6 @@ function renderScreenerTable(data) {
     tr.title = '點擊查看通過的技術指標與規則';
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}</td>
-      <td>${getTechBadgesHTML(s.type)}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore}分</strong></td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
