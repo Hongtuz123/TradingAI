@@ -780,7 +780,7 @@ function runScreener(isAutoRefresh = false) {
         }
         return s.volRatio || 0;
       })();
-      const isVolAboveMa = gateVolRatio >= p.volRatio;
+      const isVolAboveMa = gateVolRatio >= 1.0;
 
       // 記錄 L2 狀態旗標
       s.passedL2Flags = {
@@ -797,7 +797,7 @@ function runScreener(isAutoRefresh = false) {
       if (!isStBull) failedL2Indicators.push('Supertrend 非多頭');
       if (!isDmiBull) failedL2Indicators.push('DMI 非多頭 (ADX <= 20 或 +DI <= -DI)');
       if (!isBreak) failedL2Indicators.push('下降壓力線未突破');
-      if (!isVolAboveMa) failedL2Indicators.push('今日量未大於均量設定倍數');
+      if (!isVolAboveMa) failedL2Indicators.push('今日量未大於 20日均量');
       s.failedL2Indicators = failedL2Indicators;
 
       // --- 加權分數評估 (5 大規則，每條 20 分) ---
@@ -806,7 +806,7 @@ function runScreener(isAutoRefresh = false) {
       if (isStBull) { score += 20; passedIndicators.push('Supertrend 多頭 (+20分)'); }
       if (isDmiBull) { score += 20; passedIndicators.push('DMI 多頭 (ADX>20且+DI>-DI) (+20分)'); }
       if (isBreak) { score += 20; passedIndicators.push('突破下降壓力線 (+20分)'); }
-      if (isVolAboveMa) { score += 20; passedIndicators.push('今日量 > 均量倍數 (+20分)'); }
+      if (isVolAboveMa) { score += 20; passedIndicators.push('今日量 > 20日均量 (+20分)'); }
       
       s.passedIndicators = passedIndicators;
     } else {
@@ -854,15 +854,23 @@ function runScreener(isAutoRefresh = false) {
     if (s.marketCap != null && s.marketCap < p.mktCap) {
       failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
     }
-    if (s.dailyVol != null && s.dailyVol < p.dailyVol) {
-      failedConditions.push(`日均量 (${s.dailyVol}張 < ${p.dailyVol}張)`);
+    const avgDailyVolVal = (() => {
+      if (s.kline && s.kline.length >= 20) {
+        const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+        const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+        return Math.round((last20sum / 20) / 1000);
+      }
+      return s.dailyVol || 0;
+    })();
+    if (avgDailyVolVal < p.dailyVol) {
+      failedConditions.push(`日均量 (${avgDailyVolVal}張 < ${p.dailyVol}張)`);
     }
 
     s.dynamicScore = score; // 分數轉為百分制評分
     s.failedConditions = failedConditions;
 
-    // 篩選與匹配：評分 >= 最低符合評分 && 低於 60 分一律不納入 (安全防線)
-    if (s.dynamicScore >= Math.max(60, p.minScore) && failedConditions.length === 0) {
+    // 篩選與匹配：評分 >= 最低符合評分（完全尊重滑桿設定，不再強制鎖定 60 分限制）
+    if (s.dynamicScore >= p.minScore && failedConditions.length === 0) {
       currentResults.push(s);
     }
   });
@@ -3719,7 +3727,11 @@ function applyCurrentSort() {
   // 更新所有標頭的 UI 排序圖示
   updateSortIcons();
 
-  renderScreenerTable(sorted);
+  // 更新全域篩選結果順序，以便保留篩選狀態
+  currentResults = sorted;
+
+  // 重新過濾並渲染篩選表格
+  applyTechFiltersAndRender();
 }
 
 // 根據 key 抓取對應屬性值
