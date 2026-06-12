@@ -1,6 +1,7 @@
 // 全域狀態
 let currentResults = [];
 let currentWhitelist = [];
+window.activeTechFilters = [];
 
 // 技術面微型標籤產生器
 function getTechBadgesHTML(typeStr) {
@@ -652,18 +653,47 @@ function calculateDMI(data, period = 14) {
   return { plusDI, minusDI, adx };
 }
 
+// 快速複選按鈕與過濾邏輯
+window.toggleTechFilter = function(filterKey) {
+  const btn = document.getElementById(`btn_f_${filterKey}`);
+  if (!btn) return;
+  
+  const idx = activeTechFilters.indexOf(filterKey);
+  if (idx > -1) {
+    activeTechFilters.splice(idx, 1);
+    btn.classList.remove('active');
+  } else {
+    activeTechFilters.push(filterKey);
+    btn.classList.add('active');
+  }
+  
+  // 重新過濾並渲染篩選表格
+  applyTechFiltersAndRender();
+};
+
+window.applyTechFiltersAndRender = function() {
+  let filtered = [...currentResults];
+  
+  // 如果有啟用任何技術指標快速過濾按鈕，則進行 AND 複選過濾
+  if (activeTechFilters.length > 0) {
+    filtered = filtered.filter(s => {
+      return activeTechFilters.every(filterKey => {
+        return s.passedL2Flags && s.passedL2Flags[filterKey];
+      });
+    });
+  }
+  
+  const sliced = filtered.slice(0, 40);
+  renderScreenerTable(sliced);
+};
+
 // 執行篩選
 function runScreener(isAutoRefresh = false) {
   // 每次執行篩選前，全面同步一次所有股票最新價格與漲跌幅
   updateAllStockPrices();
 
-  // 取得篩選參數
+  // 取得篩選參數 (L2 僅留分數門檻)
   const p = {
-    above200ma: document.getElementById('f_above_200ma').checked,
-    stBull: document.getElementById('f_st_bull').checked,
-    dmiBull: document.getElementById('f_dmi_bull').checked,
-    trendlineBreak: document.getElementById('f_trendline_break').checked,
-    volAboveMa: document.getElementById('f_vol_above_ma').checked,
     trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
     foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold').value) || 0,
     dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold').value) || 0,
@@ -752,6 +782,24 @@ function runScreener(isAutoRefresh = false) {
       })();
       const isVolAboveMa = gateVolRatio >= p.volRatio;
 
+      // 記錄 L2 狀態旗標
+      s.passedL2Flags = {
+        above200ma: isAbove200MA,
+        stBull: isStBull,
+        dmiBull: isDmiBull,
+        trendlineBreak: isBreak,
+        volAboveMa: isVolAboveMa
+      };
+
+      // 收集不符合的 L2 指標以供彈窗詳細展示
+      let failedL2Indicators = [];
+      if (!isAbove200MA) failedL2Indicators.push('股價未高於 200MA');
+      if (!isStBull) failedL2Indicators.push('Supertrend 非多頭');
+      if (!isDmiBull) failedL2Indicators.push('DMI 非多頭 (ADX <= 20 或 +DI <= -DI)');
+      if (!isBreak) failedL2Indicators.push('下降壓力線未突破');
+      if (!isVolAboveMa) failedL2Indicators.push('今日量未大於均量設定倍數');
+      s.failedL2Indicators = failedL2Indicators;
+
       // --- 加權分數評估 (5 大規則，每條 20 分) ---
       let passedIndicators = [];
       if (isAbove200MA) { score += 20; passedIndicators.push('股價 > 200MA (+20分)'); }
@@ -761,17 +809,9 @@ function runScreener(isAutoRefresh = false) {
       if (isVolAboveMa) { score += 20; passedIndicators.push('今日量 > 均量倍數 (+20分)'); }
       
       s.passedIndicators = passedIndicators;
-
-      // 使用者設定的開關條件若勾選且不符合，則標記為 failed
-      if (p.above200ma && !isAbove200MA) failedConditions.push('股價未在200MA上方');
-      if (p.stBull && !isStBull) failedConditions.push('Supertrend非多頭');
-      if (p.dmiBull && !isDmiBull) failedConditions.push('DMI非多頭 (ADX<=20或+DI<=-DI)');
-      if (p.trendlineBreak && !isBreak) failedConditions.push('下行趨勢線未突破');
-      if (p.volAboveMa && !isVolAboveMa) failedConditions.push('量能比低於設定門檻');
     } else {
-      if (p.above200ma || p.stBull || p.dmiBull || p.trendlineBreak || p.volAboveMa) {
-        failedConditions.push('K線長度不足');
-      }
+      s.passedL2Flags = { above200ma: false, stBull: false, dmiBull: false, trendlineBreak: false, volAboveMa: false };
+      s.failedL2Indicators = ['K線長度不足，無法評估技術面'];
     }
 
     // L1 固定基本面門檻
@@ -842,11 +882,8 @@ function runScreener(isAutoRefresh = false) {
     showEmptyResultModal(p, currentResults.length);
   }
 
-  // 只有在【篩選器表格結果】時，才進行前 40 檔切片限制渲染！
-  const slicedScreenerResults = currentResults.slice(0, 40);
-
-  // 更新預覽區與清單
-  renderScreenerTable(slicedScreenerResults);
+  // 依據當前複選按鈕狀態過濾並更新篩選器表格
+  applyTechFiltersAndRender();
   
   // 動態繪製熱力圖與強弱排行榜（現在使用 mockStocks 全體標的進行計算）
   renderSectorFlowMap();
@@ -964,7 +1001,11 @@ function renderScreenerTable(data) {
         ? s.failedConditions.map(i => `- ${i}`).join('\n') 
         : '無符合過濾條件的未達標項目';
 
-      alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🟢 通過的技術指標與加分項：\n${passedStr}\n\n🔴 未符合的過濾/資金門檻：\n${failedStr}\n\n${advice}`);
+      const failedL2Str = s.failedL2Indicators && s.failedL2Indicators.length > 0 
+        ? s.failedL2Indicators.map(i => `✗ ${i}`).join('\n') 
+        : '無（完全符合所有 L2 技術指標）';
+
+      alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🟢 通過的技術指標與加分項：\n${passedStr}\n\n⚠️ 未符合的 L2 技術指標：\n${failedL2Str}\n\n🔴 未符合的過濾/資金門檻：\n${failedStr}\n\n${advice}`);
     };
     
     tbody.appendChild(tr);

@@ -231,25 +231,12 @@
               <span class="layer-badge layer-2">L2</span>
               技術指標 (加權 100分)
             </div>
-            <div class="filter-item">
-              <label>股價 &gt; 200MA (20分)</label>
-              <label class="toggle"><input type="checkbox" id="f_above_200ma" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>Supertrend = 多頭 (20分)</label>
-              <label class="toggle"><input type="checkbox" id="f_st_bull" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>ADX &gt; 20 且 +DI &gt; -DI (20分)</label>
-              <label class="toggle"><input type="checkbox" id="f_dmi_bull" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>突破下降趨勢 (20分)</label>
-              <label class="toggle"><input type="checkbox" id="f_trendline_break" checked /><span></span></label>
-            </div>
-            <div class="filter-item">
-              <label>今日量 &gt; 均量倍數 (20分)</label>
-              <label class="toggle"><input type="checkbox" id="f_vol_above_ma" checked /><span></span></label>
+            <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+              <button type="button" class="tech-filter-btn" id="btn_f_above200ma" onclick="toggleTechFilter('above200ma')">股價 &gt; 200MA (20分)</button>
+              <button type="button" class="tech-filter-btn" id="btn_f_stBull" onclick="toggleTechFilter('stBull')">Supertrend = 多頭 (20分)</button>
+              <button type="button" class="tech-filter-btn" id="btn_f_dmiBull" onclick="toggleTechFilter('dmiBull')">DMI 多頭 (20分)</button>
+              <button type="button" class="tech-filter-btn" id="btn_f_trendlineBreak" onclick="toggleTechFilter('trendlineBreak')">突破下降趨勢 (20分)</button>
+              <button type="button" class="tech-filter-btn" id="btn_f_volAboveMa" onclick="toggleTechFilter('volAboveMa')">今日量 &gt; 均量倍數 (20分)</button>
             </div>
           </div>
 
