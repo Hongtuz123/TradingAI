@@ -491,14 +491,15 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
   };
 
-  let mainChart, rsiChart;
+  let mainChart, rsiChart, mainDiv = null;
 
   if (isMainChart) {
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
 
-    const mainDiv = document.createElement('div');
+    mainDiv = document.createElement('div');
     container.appendChild(mainDiv);
+
 
     if (window.activeIndicator !== 'none') {
       mainDiv.style.cssText = 'flex:3;min-height:0;position:relative;';
@@ -1541,6 +1542,11 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     mainChart.timeScale().fitContent();
     if (rsiChart) rsiChart.timeScale().fitContent();
     console.log(`[LWC] ${containerId}: ${klineData.length} candles rendered with Strategy [${window.activeStrategy}]`);
+    
+    if (isMainChart && mainDiv && typeof window.setupDrawingEvents === 'function') {
+      window.setupDrawingEvents(mainDiv, mainChart, candleSeries);
+    }
+
   } catch (err) {
     console.error('[LWC Error]', err);
     container.innerHTML = `<div style="color:var(--danger);padding:20px;">LWC Render Error: ${err.message}</div>`;
@@ -2575,4 +2581,656 @@ if (document.readyState === 'loading') {
 } else {
   window.initShibaMascotInteractions();
 }
+
+
+// ============================================================================
+// 🎨 荳荳 AI 智能選股圖表 — 互動式繪圖引擎實作 (Canvas Overlay Engine)
+// ============================================================================
+
+window.userDrawings = JSON.parse(localStorage.getItem('trading_ai_drawings')) || {};
+window.currentDrawingTool = 'cursor';
+window.currentDrawingColor = '#f97316';
+window.selectedDrawingId = null;
+
+let activeChartInstance = null;
+let activeCandleSeries = null;
+let activeCanvasElement = null;
+let activeOverlayElement = null;
+
+function saveDrawings() {
+  localStorage.setItem('trading_ai_drawings', JSON.stringify(window.userDrawings));
+}
+
+// 點到線段的投影距離計算 (向量投射法)
+function getPointToLineDistance(x, y, x1, y1, x2, y2) {
+  const A = x - x1;
+  const B = y - y1;
+  const C = x2 - x1;
+  const D = y2 - y1;
+
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  let param = -1;
+  if (lenSq !== 0) {
+    param = dot / lenSq;
+  }
+
+  let xx, yy;
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  } else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  } else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  const dx = x - xx;
+  const dy = y - yy;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// 偵測滑鼠是否靠近任何已有之繪圖物件 (Hit Test)
+function findDrawingAt(x, y, chart, series, symbol) {
+  const drawings = window.userDrawings[symbol];
+  if (!drawings || drawings.length === 0) return null;
+
+  for (let i = drawings.length - 1; i >= 0; i--) {
+    const dr = drawings[i];
+    if (dr.type === 'trendline') {
+      const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+      const y1 = series.priceToCoordinate(dr.price1);
+      const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+      const y2 = series.priceToCoordinate(dr.price2);
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        const dist = getPointToLineDistance(x, y, x1, y1, x2, y2);
+        if (dist < 8) return dr;
+      }
+    } else if (dr.type === 'horizline') {
+      const yLvl = series.priceToCoordinate(dr.price);
+      if (yLvl !== null && Math.abs(y - yLvl) < 8) {
+        return dr;
+      }
+    } else if (dr.type === 'fib') {
+      const y1 = series.priceToCoordinate(dr.price1);
+      const y2 = series.priceToCoordinate(dr.price2);
+      if (y1 !== null && y2 !== null) {
+        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0];
+        for (const lvl of levels) {
+          const yLvl = y1 + (y2 - y1) * lvl;
+          if (Math.abs(y - yLvl) < 8) return dr;
+        }
+      }
+    } else if (dr.type === 'measure') {
+      const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+      const y1 = series.priceToCoordinate(dr.price1);
+      const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+      const y2 = series.priceToCoordinate(dr.price2);
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        const nearLeft = Math.abs(x - x1) < 8 && y >= Math.min(y1, y2) && y <= Math.max(y1, y2);
+        const nearRight = Math.abs(x - x2) < 8 && y >= Math.min(y1, y2) && y <= Math.max(y1, y2);
+        const nearTop = Math.abs(y - y1) < 8 && x >= Math.min(x1, x2) && x <= Math.max(x1, x2);
+        const nearBottom = Math.abs(y - y2) < 8 && x >= Math.min(x1, x2) && x <= Math.max(x1, x2);
+        if (nearLeft || nearRight || nearTop || nearBottom) return dr;
+      }
+    }
+  }
+  return null;
+}
+
+// 選取與反選
+function selectDrawing(id) {
+  window.selectedDrawingId = id;
+  const delBtn = document.getElementById('btn-delete-selected');
+  if (delBtn) {
+    if (id) {
+      delBtn.style.opacity = '1';
+      delBtn.style.cursor = 'pointer';
+    } else {
+      delBtn.style.opacity = '0.4';
+      delBtn.style.cursor = 'not-allowed';
+    }
+  }
+  redrawCanvas();
+}
+
+// 刪除選取圖形 (確保畫在圖表上可以被移除)
+window.deleteSelectedDrawing = function() {
+  const symbol = currentChartSymbol;
+  if (!symbol || !window.selectedDrawingId) return;
+  
+  if (window.userDrawings[symbol]) {
+    window.userDrawings[symbol] = window.userDrawings[symbol].filter(d => d.id !== window.selectedDrawingId);
+    saveDrawings();
+    selectDrawing(null);
+  }
+};
+
+// 一鍵清除全部
+window.clearAllCurrentDrawings = function() {
+  const symbol = currentChartSymbol;
+  if (!symbol) return;
+  
+  if (confirm('確定要清除此標的之所有自訂繪圖線條嗎？🐾')) {
+    window.userDrawings[symbol] = [];
+    saveDrawings();
+    selectDrawing(null);
+  }
+};
+
+// 切換至選取指針工具
+function switchToolToCursor() {
+  const toolbar = document.getElementById('drawingToolbar');
+  if (toolbar) {
+    toolbar.querySelectorAll('.draw-btn[data-tool]').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-tool') === 'cursor') {
+        btn.classList.add('active');
+      }
+    });
+  }
+  window.currentDrawingTool = 'cursor';
+  updateOverlayPointerEvents();
+}
+
+// 更新 Overlay 滑鼠事件穿透設定
+function updateOverlayPointerEvents() {
+  if (!activeOverlayElement) return;
+  if (window.currentDrawingTool !== 'cursor') {
+    activeOverlayElement.style.pointerEvents = 'auto';
+    activeOverlayElement.style.cursor = 'crosshair';
+  } else {
+    activeOverlayElement.style.pointerEvents = 'none';
+    activeOverlayElement.style.cursor = 'default';
+  }
+}
+
+// 更新快捷色盤狀態
+function updateColorPaletteUI(color) {
+  const toolbar = document.getElementById('drawingToolbar');
+  if (!toolbar) return;
+  toolbar.querySelectorAll('.color-dot-btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.borderColor = 'transparent';
+    if (btn.getAttribute('data-color') === color) {
+      btn.classList.add('active');
+      btn.style.borderColor = 'white';
+    }
+  });
+  window.currentDrawingColor = color;
+}
+
+// 設置並初始化 Canvas 與事件 (renderLWChart 中調用)
+window.setupDrawingEvents = function(mainDiv, chart, series) {
+  let canvas = mainDiv.querySelector('#drawingCanvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'drawingCanvas';
+    canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;';
+    mainDiv.appendChild(canvas);
+  }
+
+  let overlay = mainDiv.querySelector('#drawingOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'drawingOverlay';
+    overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;';
+    mainDiv.appendChild(overlay);
+  }
+
+  activeChartInstance = chart;
+  activeCandleSeries = series;
+  activeCanvasElement = canvas;
+  activeOverlayElement = overlay;
+
+  function resize() {
+    const rect = mainDiv.getBoundingClientRect();
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    
+    overlay.style.width = rect.width + 'px';
+    overlay.style.height = rect.height + 'px';
+    
+    const ctx = canvas.getContext('2d');
+    ctx.restore();
+    ctx.save();
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+
+  resize();
+
+  // 監聽圖表縮放/滾動
+  chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+    redrawCanvas();
+  });
+  
+  chart.timeScale().subscribeSizeChange(() => {
+    resize();
+    redrawCanvas();
+  });
+
+  let isDrawing = false;
+  let dragStartPercentX = 0;
+  let dragStartPercentY = 0;
+  let tempDrawing = null;
+
+  overlay.addEventListener('mousedown', (e) => {
+    const rect = overlay.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const time = chart.timeScale().coordinateToTime(x);
+    const price = series.coordinateToPrice(y);
+
+    if (time === null || price === null) return;
+    const symbol = currentChartSymbol;
+    if (!symbol) return;
+
+    if (window.currentDrawingTool === 'cursor') {
+      const clickedDrawing = findDrawingAt(x, y, chart, series, symbol);
+      if (clickedDrawing) {
+        selectDrawing(clickedDrawing.id);
+        updateColorPaletteUI(clickedDrawing.color);
+      } else {
+        selectDrawing(null);
+      }
+    } else {
+      isDrawing = true;
+      const drawingId = Date.now() + Math.round(Math.random() * 1000);
+      
+      if (window.currentDrawingTool === 'trendline') {
+        tempDrawing = {
+          id: drawingId,
+          type: 'trendline',
+          time1: time,
+          price1: price,
+          time2: time,
+          price2: price,
+          color: window.currentDrawingColor
+        };
+      } else if (window.currentDrawingTool === 'horizline') {
+        const newDrawing = {
+          id: drawingId,
+          type: 'horizline',
+          price: price,
+          color: window.currentDrawingColor
+        };
+        if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
+        window.userDrawings[symbol].push(newDrawing);
+        saveDrawings();
+        isDrawing = false;
+        tempDrawing = null;
+        
+        switchToolToCursor();
+        selectDrawing(newDrawing.id);
+      } else if (window.currentDrawingTool === 'fib') {
+        tempDrawing = {
+          id: drawingId,
+          type: 'fib',
+          time1: time,
+          price1: price,
+          time2: time,
+          price2: price,
+          color: window.currentDrawingColor
+        };
+      } else if (window.currentDrawingTool === 'measure') {
+        tempDrawing = {
+          id: drawingId,
+          type: 'measure',
+          time1: time,
+          price1: price,
+          time2: time,
+          price2: price,
+          color: window.currentDrawingColor
+        };
+      }
+      redrawCanvas();
+    }
+  });
+
+  overlay.addEventListener('mousemove', (e) => {
+    const rect = overlay.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const time = chart.timeScale().coordinateToTime(x);
+    const price = series.coordinateToPrice(y);
+    const symbol = currentChartSymbol;
+
+    if (isDrawing && tempDrawing && time !== null && price !== null) {
+      if (tempDrawing.type === 'trendline' || tempDrawing.type === 'fib' || tempDrawing.type === 'measure') {
+        tempDrawing.time2 = time;
+        tempDrawing.price2 = price;
+      }
+      redrawCanvas();
+    } else if (window.currentDrawingTool === 'cursor' && symbol) {
+      const hoveredDrawing = findDrawingAt(x, y, chart, series, symbol);
+      if (hoveredDrawing) {
+        overlay.style.pointerEvents = 'auto';
+        overlay.style.cursor = 'pointer';
+      } else {
+        overlay.style.pointerEvents = 'none';
+        overlay.style.cursor = 'default';
+      }
+    }
+  });
+
+  overlay.addEventListener('mouseup', (e) => {
+    const symbol = currentChartSymbol;
+    if (isDrawing && tempDrawing && symbol) {
+      if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
+      const isTooSmall = tempDrawing.time1 === tempDrawing.time2 && Math.abs(tempDrawing.price1 - tempDrawing.price2) < 0.001;
+      
+      if (!isTooSmall) {
+        window.userDrawings[symbol].push(tempDrawing);
+        saveDrawings();
+        selectDrawing(tempDrawing.id);
+      }
+      
+      isDrawing = false;
+      tempDrawing = null;
+      switchToolToCursor();
+    }
+  });
+
+  mainDiv.addEventListener('mousemove', (e) => {
+    if (isDrawing || window.currentDrawingTool !== 'cursor') return;
+    
+    const rect = overlay.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const chartWidth = chart.timeScale().width();
+    const chartHeight = rect.height - 26;
+    
+    if (x < 0 || x > chartWidth || y < 0 || y > chartHeight) {
+      overlay.style.pointerEvents = 'none';
+      overlay.style.cursor = 'default';
+      return;
+    }
+
+    const symbol = currentChartSymbol;
+    if (symbol) {
+      const hoveredDrawing = findDrawingAt(x, y, chart, series, symbol);
+      if (hoveredDrawing) {
+        overlay.style.pointerEvents = 'auto';
+        overlay.style.cursor = 'pointer';
+      } else {
+        overlay.style.pointerEvents = 'none';
+        overlay.style.cursor = 'default';
+      }
+    }
+  });
+
+  window.getTempDrawing = function() {
+    return tempDrawing;
+  };
+  
+  redrawCanvas();
+};
+
+// 重繪 Canvas 畫布
+window.redrawCanvas = function() {
+  const canvas = activeCanvasElement;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const chart = activeChartInstance;
+  const series = activeCandleSeries;
+  const symbol = currentChartSymbol;
+
+  ctx.clearRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio);
+  if (!chart || !series || !symbol) return;
+
+  const drawings = window.userDrawings[symbol] || [];
+  const temp = window.getTempDrawing ? window.getTempDrawing() : null;
+
+  const listToDraw = [...drawings];
+  if (temp) listToDraw.push(temp);
+
+  const chartWidth = chart.timeScale().width();
+  const rect = canvas.getBoundingClientRect();
+  const chartHeight = rect.height - 26;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, chartWidth, chartHeight);
+  ctx.clip();
+
+  listToDraw.forEach(dr => {
+    const isSelected = dr.id === window.selectedDrawingId;
+    ctx.strokeStyle = dr.color;
+    ctx.fillStyle = dr.color;
+    ctx.lineWidth = isSelected ? 2.5 : 1.5;
+
+    if (dr.type === 'trendline') {
+      const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+      const y1 = series.priceToCoordinate(dr.price1);
+      const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+      const y2 = series.priceToCoordinate(dr.price2);
+
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        if (isSelected) {
+          ctx.fillStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+    } else if (dr.type === 'horizline') {
+      const yLvl = series.priceToCoordinate(dr.price);
+      if (yLvl !== null) {
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(0, yLvl);
+        ctx.lineTo(chartWidth, yLvl);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (isSelected) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(chartWidth / 2, yLvl, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+    } else if (dr.type === 'fib') {
+      const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+      const y1 = series.priceToCoordinate(dr.price1);
+      const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+      const y2 = series.priceToCoordinate(dr.price2);
+
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.setLineDash([3, 3]);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const levels = [
+          { lvl: 0.0, label: '0.0%' },
+          { lvl: 0.236, label: '23.6%' },
+          { lvl: 0.382, label: '38.2%' },
+          { lvl: 0.5, label: '50.0%' },
+          { lvl: 0.618, label: '61.8%' },
+          { lvl: 0.786, label: '78.6%' },
+          { lvl: 1.0, label: '100.0%' }
+        ];
+
+        levels.forEach(item => {
+          const yLvl = y1 + (y2 - y1) * item.lvl;
+          const priceLvl = dr.price1 + (dr.price2 - dr.price1) * item.lvl;
+          
+          ctx.strokeStyle = dr.color;
+          ctx.beginPath();
+          ctx.moveTo(Math.min(x1, x2), yLvl);
+          ctx.lineTo(Math.max(x1, x2), yLvl);
+          ctx.stroke();
+
+          ctx.fillStyle = dr.color;
+          ctx.font = '10px Inter';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${item.label} (${priceLvl.toFixed(1)})`, Math.min(x1, x2) + 6, yLvl - 4);
+        });
+
+        if (isSelected) {
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = dr.color;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+    } else if (dr.type === 'measure') {
+      const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+      const y1 = series.priceToCoordinate(dr.price1);
+      const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+      const y2 = series.priceToCoordinate(dr.price2);
+
+      if (x1 !== null && y1 !== null && x2 !== null && y2 !== null) {
+        ctx.fillStyle = dr.color === '#ffffff' ? 'rgba(255, 255, 255, 0.08)' : dr.color + '15';
+        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+
+        ctx.strokeStyle = dr.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+        const pct = ((dr.price2 - dr.price1) / dr.price1 * 100).toFixed(2);
+        const diffPrice = (dr.price2 - dr.price1).toFixed(1);
+        
+        let kCountText = '';
+        if (currentKlineData) {
+          const idx1 = currentKlineData.findIndex(c => c.date === dr.time1 || c.time === dr.time1);
+          const idx2 = currentKlineData.findIndex(c => c.date === dr.time2 || c.time === dr.time2);
+          if (idx1 !== -1 && idx2 !== -1) {
+            const count = Math.abs(idx2 - idx1) + 1;
+            kCountText = ` | ${count} 根 K棒`;
+          }
+        }
+
+        const text = `${pct >= 0 ? '+' : ''}${pct}% (${diffPrice}元)${kCountText}`;
+        ctx.font = '11px Noto Sans TC';
+        const textWidth = ctx.measureText(text).width;
+        const boxX = x1 + (x2 - x1) / 2 - textWidth / 2 - 8;
+        const boxY = y1 + (y2 - y1) / 2 - 10;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillRect(boxX, boxY, textWidth + 16, 20);
+        ctx.strokeStyle = dr.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(boxX, boxY, textWidth + 16, 20);
+
+        ctx.fillStyle = pct >= 0 ? '#ef4444' : '#22c55e';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, x1 + (x2 - x1) / 2, y1 + (y2 - y1) / 2 + 4);
+
+        if (isSelected) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(x1, y1, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(x2, y2, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+    }
+  });
+
+  ctx.restore();
+};
+
+// 綁定工具列 UI 事件
+document.addEventListener('DOMContentLoaded', () => {
+  const toolbar = document.getElementById('drawingToolbar');
+  if (toolbar) {
+    toolbar.querySelectorAll('.draw-btn[data-tool]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toolbar.querySelectorAll('.draw-btn[data-tool]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.currentDrawingTool = btn.getAttribute('data-tool');
+        
+        if (window.currentDrawingTool !== 'cursor') {
+          selectDrawing(null);
+        }
+        updateOverlayPointerEvents();
+      });
+    });
+
+    toolbar.querySelectorAll('.color-dot-btn').forEach(btn => {
+      const color = btn.getAttribute('data-color');
+      if (color === window.currentDrawingColor) {
+        btn.classList.add('active');
+        btn.style.borderColor = 'white';
+      }
+      
+      btn.addEventListener('click', () => {
+        toolbar.querySelectorAll('.color-dot-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.borderColor = 'transparent';
+        });
+        btn.classList.add('active');
+        btn.style.borderColor = 'white';
+        window.currentDrawingColor = color;
+
+        if (window.selectedDrawingId) {
+          const symbol = currentChartSymbol;
+          if (symbol && window.userDrawings[symbol]) {
+            const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
+            if (dr) {
+              dr.color = color;
+              saveDrawings();
+              redrawCanvas();
+            }
+          }
+        }
+      });
+    });
+    
+    const delBtn = document.getElementById('btn-delete-selected');
+    if (delBtn) {
+      delBtn.addEventListener('click', () => {
+        deleteSelectedDrawing();
+      });
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+        return;
+      }
+      deleteSelectedDrawing();
+    }
+  });
+});
+
 

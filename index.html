@@ -438,8 +438,39 @@
             </div>
             
           </div>
-          <!-- Lightweight Charts 容器：flex:1 + min-height:0 讓圖表填滿剩餘空間 -->
-          <div id="tvChartContainer" style="flex:1;min-height:0;overflow:hidden;"></div>
+          <!-- 繪圖工具欄與 Lightweight Charts 雙層容器 -->
+          <div class="chart-container-wrapper" id="chartContainerWrapper" style="display:flex; flex:1; min-height:0; position:relative; width:100%;">
+            <!-- 左側垂直繪圖工具列 (Premium 玻璃帷幕設計) -->
+            <div class="drawing-toolbar" id="drawingToolbar" style="width:45px; display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 0; background:rgba(15,23,42,0.75); border-right:1.5px solid rgba(255,255,255,0.08); backdrop-filter:blur(8px); z-index:10; flex-shrink:0;">
+              <button class="draw-btn active" data-tool="cursor" title="游標選取 (選取後可點色塊換色，按Delete鍵刪除)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🖱️</button>
+              <button class="draw-btn" data-tool="trendline" title="繪製趨勢線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">╱</button>
+              <button class="draw-btn" data-tool="horizline" title="繪製水平支撐阻力線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">──</button>
+              <button class="draw-btn" data-tool="fib" title="繪製斐波那契回撤線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">☰</button>
+              <button class="draw-btn" data-tool="measure" title="測量工具 (價格/時間)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">📏</button>
+              
+              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
+              
+              <!-- 快捷調色盤，選取物件時可點擊換色 -->
+              <button class="color-dot-btn" data-color="#f97316" style="background:#f97316; width:18px; height:18px; border-radius:50%; border:2px solid white; cursor:pointer; padding:0;" title="橘色"></button>
+              <button class="color-dot-btn" data-color="#ef4444" style="background:#ef4444; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="紅色"></button>
+              <button class="color-dot-btn" data-color="#22c55e" style="background:#22c55e; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="綠色"></button>
+              <button class="color-dot-btn" data-color="#3b82f6" style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="藍色"></button>
+              <button class="color-dot-btn" data-color="#ffffff" style="background:#ffffff; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="白色"></button>
+              
+              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
+              
+              <button class="draw-btn" id="btn-delete-selected" title="刪除選取圖形 (Delete)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:not-allowed; display:flex; align-items:center; justify-content:center; opacity:0.4; transition:all 0.2s;">🗑️</button>
+              <button class="draw-btn" onclick="clearAllCurrentDrawings()" title="清空全部圖形" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🧹</button>
+            </div>
+            
+            <!-- 圖表畫布與滑鼠事件疊加層 -->
+            <div id="chartCanvasWrapper" style="flex:1; position:relative; min-height:0; overflow:hidden;">
+              <div id="tvChartContainer" style="width:100%; height:100%;"></div>
+              <canvas id="drawingCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;"></canvas>
+              <div id="drawingOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

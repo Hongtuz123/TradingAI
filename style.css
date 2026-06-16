@@ -2277,3 +2277,45 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   border-color: transparent;
   box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
 }
+
+/* ================= 🎨 互動式繪圖工具欄樣式 🎨 ================= */
+.drawing-toolbar .draw-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.drawing-toolbar .draw-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.drawing-toolbar .draw-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+  opacity: 1 !important;
+}
+
+.color-dot-btn {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color-dot-btn:hover {
+  transform: scale(1.15);
+}
+
+.color-dot-btn.active {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
