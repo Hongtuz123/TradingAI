@@ -901,10 +901,10 @@ def run_screener():
                     'mkt_cap': mkt_cap
                 })
     
-    # 依市值降序排列，全量保留 (不再取前 500 大切片以擴大標的庫，但終端文字維持原樣)
+    # 依市值降序排列，取前 1000 大切片以解決 Vercel 100MB 部署限制，但自選股依然會加入
     mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
-    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list]
-    print(f"📊 成功篩選出合併市值前 500 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
+    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:1000]]
+    print(f"📊 成功篩選出合併市值前 1000 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
     
     # 3. 讀取 CSV 作為自選觀察清單與前 500 大合併去重
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1036,9 +1036,17 @@ def run_screener():
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 漲跌幅：改用昨收價計算（台股標準）
+            # 漲跌幅：智慧判定昨收基底（解決盤中延遲與假日問題）
             try:
-                prev_close = float(prev['close'])
+                latest_date_str = latest['date']
+                today_str = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
+                
+                # 若最新一筆 K 線就是今天，代表已收盤，昨收應為倒數第二筆；否則最新一筆 K 線就是昨收
+                if latest_date_str == today_str:
+                    prev_close = float(prev['close'])
+                else:
+                    prev_close = float(latest['close'])
+                
                 if prev_close > 0:
                     change_num = round(((close - prev_close) / prev_close) * 100, 2)
                 else:
