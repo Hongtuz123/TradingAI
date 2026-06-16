@@ -135,8 +135,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     runScreener();
     
     // 渲染最近查詢歷史
-    if (typeof renderRecentSearchesUI === 'function') {
-      renderRecentSearchesUI();
+    if (typeof window.renderRecentSearchesUI === 'function') {
+      window.renderRecentSearchesUI();
     }
   } catch (err) {
     console.error('[App Init Error] Failed to load data.json:', err);
@@ -4112,19 +4112,21 @@ function updateChartPortfolioButton() {
   }
 }
 
-// 監聽原載入 K 線方法 loadTVChart，在載入時同步刷新自選按鈕狀態
-const originalLoadTVChart = window.loadTVChart;
-window.loadTVChart = function(s) {
-  if (typeof originalLoadTVChart === 'function') {
-    originalLoadTVChart(s);
-  }
-  updateChartPortfolioButton();
-  if (s && s.id) {
-    updateRecentSearches(s.id, s.name);
-  }
-};
+// 在完全載入後，攔截原載入 K 線方法 loadTVChart，在載入時同步刷新自選按鈕狀態與最近查詢
+window.addEventListener('load', () => {
+  const originalLoadTVChart = window.loadTVChart;
+  window.loadTVChart = function(s) {
+    if (typeof originalLoadTVChart === 'function') {
+      originalLoadTVChart(s);
+    }
+    updateChartPortfolioButton();
+    if (s && s.id) {
+      window.updateRecentSearches(s.id, s.name);
+    }
+  };
+});
 
-function updateRecentSearches(id, name) {
+window.updateRecentSearches = function(id, name) {
   let list = [];
   try {
     const raw = localStorage.getItem('trading_ai_recent_searches');
@@ -4140,10 +4142,10 @@ function updateRecentSearches(id, name) {
   }
   
   localStorage.setItem('trading_ai_recent_searches', JSON.stringify(list));
-  renderRecentSearchesUI();
+  window.renderRecentSearchesUI();
 }
 
-function renderRecentSearchesUI() {
+window.renderRecentSearchesUI = function() {
   const container = document.getElementById('recentSearchList');
   if (!container) return;
   
