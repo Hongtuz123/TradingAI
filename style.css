@@ -2319,3 +2319,9 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
+.recent-stock-item:hover {
+  background: rgba(249, 115, 22, 0.12) !important;
+  border-color: rgba(249, 115, 22, 0.3) !important;
+  color: white !important;
+}
+

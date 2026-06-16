@@ -440,6 +440,14 @@
           </div>
           <!-- 繪圖工具欄與 Lightweight Charts 雙層容器 -->
           <div class="chart-container-wrapper" id="chartContainerWrapper" style="display:flex; flex:1; min-height:0; position:relative; width:100%;">
+            <!-- 最近查詢側邊欄 -->
+            <div id="recentSearchPanel" style="width: 100px; display: flex; flex-direction: column; background: rgba(15, 23, 42, 0.65); border-right: 1.5px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); z-index: 10; flex-shrink: 0; padding: 8px 4px; gap: 8px; box-sizing: border-box; overflow: hidden;">
+              <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 4px; text-align: center; white-space: nowrap;">最近查詢</div>
+              <div id="recentSearchList" style="display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1;">
+                <!-- Dynamically populated via JS -->
+              </div>
+            </div>
+
             <!-- 左側垂直繪圖工具列 (Premium 玻璃帷幕設計) -->
             <div class="drawing-toolbar" id="drawingToolbar" style="width:45px; display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 0; background:rgba(15,23,42,0.75); border-right:1.5px solid rgba(255,255,255,0.08); backdrop-filter:blur(8px); z-index:10; flex-shrink:0;">
               <button class="draw-btn active" data-tool="cursor" title="游標選取 (選取後可點色塊換色，按Delete鍵刪除)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🖱️</button>

@@ -4091,7 +4091,63 @@ window.loadTVChart = function(s) {
     originalLoadTVChart(s);
   }
   updateChartPortfolioButton();
+  if (s && s.id) {
+    updateRecentSearches(s.id, s.name);
+  }
 };
+
+function updateRecentSearches(id, name) {
+  let list = [];
+  try {
+    const raw = localStorage.getItem('trading_ai_recent_searches');
+    if (raw) list = JSON.parse(raw);
+  } catch (e) {
+    console.error('Failed to parse recent searches', e);
+  }
+  
+  list = list.filter(item => item.id !== id);
+  list.unshift({ id, name });
+  if (list.length > 10) {
+    list = list.slice(0, 10);
+  }
+  
+  localStorage.setItem('trading_ai_recent_searches', JSON.stringify(list));
+  renderRecentSearchesUI();
+}
+
+function renderRecentSearchesUI() {
+  const container = document.getElementById('recentSearchList');
+  if (!container) return;
+  
+  let list = [];
+  try {
+    const raw = localStorage.getItem('trading_ai_recent_searches');
+    if (raw) list = JSON.parse(raw);
+  } catch (e) {
+    console.error('Failed to parse recent searches', e);
+  }
+  
+  container.innerHTML = '';
+  list.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'recent-stock-item';
+    div.style.cssText = 'cursor:pointer; padding:6px 4px; border-radius:4px; font-size:11px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.03); display:flex; flex-direction:column; gap:1px; transition:all 0.15s; border:1px solid transparent; text-align:center; margin-bottom:4px;';
+    div.innerHTML = `
+      <span style="font-weight:700; color:#f97316;">${s.id}</span>
+      <span style="font-size:10px; color:rgba(255,255,255,0.6); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${s.name}</span>
+    `;
+    div.onclick = () => {
+      if (typeof window.loadStockToChart === 'function') {
+        window.loadStockToChart(s.id);
+      }
+    };
+    container.appendChild(div);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecentSearchesUI();
+});
 
 // 繪製自選清單卡片格 ( portfolio-grid )
 window.renderPortfolioGrid = function() {
