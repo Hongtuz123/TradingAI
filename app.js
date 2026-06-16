@@ -1,4 +1,7 @@
-// 全域狀態
+// 全域狀態與資料庫
+let marketData = {};
+let rulesConfig = {};
+let mockStocks = [];
 let currentResults = [];
 let currentWhitelist = [];
 window.activeTechFilters = [];
@@ -83,40 +86,65 @@ window.updateAllStockPrices = function() {
   }
 };
 
-// 初始化
-document.addEventListener('DOMContentLoaded', () => {
-  // 優先同步所有股票之最新價格與漲跌幅
-  updateAllStockPrices();
+// 初始化 (非同步 Fetch data.json 繞過快取)
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    console.log('[App] Fetching market data (data.json) asynchronously...');
+    const response = await fetch('data.json?t=' + Date.now());
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    
+    // 注入變數值
+    marketData = data.marketData || {};
+    rulesConfig = data.rulesConfig || {};
+    mockStocks = data.mockStocks || [];
+    
+    console.log('[App] Data successfully loaded! Stock count:', mockStocks.length);
+    
+    // 優先同步所有股票之最新價格與漲跌幅
+    updateAllStockPrices();
 
-  // 從 data.js 中的 rulesConfig 載入預設篩選規則
-  if (typeof rulesConfig !== 'undefined') {
-    const sc = rulesConfig.scoring;
-    if (sc) {
-      const f_trust = document.getElementById('f_trust_days');
-      if (f_trust) f_trust.value = sc.trust_days !== undefined ? sc.trust_days : 0;
-      const f_foreign = document.getElementById('f_foreign_net_buy_threshold');
-      if (f_foreign) f_foreign.value = 0; // 預設 0 張
-      const f_dealer = document.getElementById('f_dealer_net_buy_threshold');
-      if (f_dealer) f_dealer.value = 0; // 預設 0 張
-      const f_vol = document.getElementById('f_vol_ratio');
-      if (f_vol) f_vol.value = sc.vol_ratio !== undefined ? sc.vol_ratio : 1.0;
-      const f_mkt = document.getElementById('f_market_cap');
-      if (f_mkt) f_mkt.value = sc.market_cap !== undefined ? sc.market_cap : 50;
-      const f_daily = document.getElementById('f_daily_vol');
-      if (f_daily) f_daily.value = sc.daily_vol !== undefined ? sc.daily_vol : 1000;
-      const f_turnover = document.getElementById('f_turnover');
-      if (f_turnover) f_turnover.value = sc.turnover !== undefined ? sc.turnover : 0.5;
+    // 載入預設篩選規則
+    if (rulesConfig) {
+      const sc = rulesConfig.scoring;
+      if (sc) {
+        const f_trust = document.getElementById('f_trust_days');
+        if (f_trust) f_trust.value = sc.trust_days !== undefined ? sc.trust_days : 0;
+        const f_foreign = document.getElementById('f_foreign_net_buy_threshold');
+        if (f_foreign) f_foreign.value = 0; // 預設 0 張
+        const f_dealer = document.getElementById('f_dealer_net_buy_threshold');
+        if (f_dealer) f_dealer.value = 0; // 預設 0 張
+        const f_vol = document.getElementById('f_vol_ratio');
+        if (f_vol) f_vol.value = sc.vol_ratio !== undefined ? sc.vol_ratio : 1.0;
+        const f_mkt = document.getElementById('f_market_cap');
+        if (f_mkt) f_mkt.value = sc.market_cap !== undefined ? sc.market_cap : 50;
+        const f_daily = document.getElementById('f_daily_vol');
+        if (f_daily) f_daily.value = sc.daily_vol !== undefined ? sc.daily_vol : 1000;
+        const f_turnover = document.getElementById('f_turnover');
+        if (f_turnover) f_turnover.value = sc.turnover !== undefined ? sc.turnover : 0.5;
+      }
+      const fl = rulesConfig.filtering;
+      if (fl && fl.min_score !== undefined) {
+        const f_min = document.getElementById('f_min_score');
+        if (f_min) f_min.value = fl.min_score;
+      }
     }
-    const fl = rulesConfig.filtering;
-    if (fl && fl.min_score !== undefined) {
-      const f_min = document.getElementById('f_min_score');
-      if (f_min) f_min.value = fl.min_score;
+
+    initDashboard();
+    startClock();
+    runScreener();
+    
+    // 渲染最近查詢歷史
+    if (typeof renderRecentSearchesUI === 'function') {
+      renderRecentSearchesUI();
+    }
+  } catch (err) {
+    console.error('[App Init Error] Failed to load data.json:', err);
+    const badge = document.getElementById('marketStatusText');
+    if (badge) {
+      badge.innerHTML = '<span style="color:var(--danger);">⚠️ 資料載入失敗，請強制重整網頁 (Ctrl+F5)</span>';
     }
   }
-
-  initDashboard();
-  startClock();
-  runScreener();
 });
 
 // 切換視圖
@@ -4144,11 +4172,7 @@ function renderRecentSearchesUI() {
     container.appendChild(div);
   });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderRecentSearchesUI();
-});
-
+// 最近查詢初始化已整合至前方的 data.json 非同步下載主流程中
 // 繪製自選清單卡片格 ( portfolio-grid )
 window.renderPortfolioGrid = function() {
   updateAllStockPrices(); // 確保重繪自選清單時同步最新即時價格

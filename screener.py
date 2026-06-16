@@ -1208,37 +1208,35 @@ def run_screener():
         "price_failed_stocks": price_failed_stocks
     }
 
-    js_content = f"""// 由 yfinance 產生之真實資料 — {now_str}
-const marketData = {json.dumps(market_data_dict, ensure_ascii=False, indent=2)};
+    json_data = {
+        "marketData": market_data_dict,
+        "rulesConfig": rules,
+        "mockStocks": results
+    }
 
-const rulesConfig = {rules_json_str};
-
-const mockStocks = {json.dumps(results, ensure_ascii=False, indent=2)};
-"""
-
-    with open('data.js', 'w', encoding='utf-8') as f:
-        f.write(js_content)
+    with open('data.json', 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
 
     print(f"\n==========================================")
     print(f"🎉 執行完畢！")
     print(f"👉 成功產出 {len(results)} 檔。")
     if price_failed_stocks:
         print(f"\033[93m⚠️  警告：共有 {len(price_failed_stocks)} 檔股票無法讀取價格！\033[0m")
-        print(f"已覆寫 data.js 並記錄失敗標的。")
+        print(f"已覆寫 data.json 並記錄失敗標的。")
     print(f"==========================================\n")
 
     # 自動 git commit + push，讓 Vercel 同步更新雲端網站
     try:
         import subprocess as _sp
-        _sp.run(['git', 'add', 'data.js'], check=True)
+        _sp.run(['git', 'add', 'data.json'], check=True)
         _sp.run(['git', 'commit', '-m', f'data: 自動更新選股數據 {now_str}'], check=True)
         
-        # 🚀 防禦機制：推送前先做 pull --rebase，並在衝突時優先使用我們本地新產出的 data.js，避免 rejected
+        # 🚀 防禦機制：推送前先做 pull --rebase，並在衝突時優先使用我們本地新產出的 data.json，避免 rejected
         print("🔄 正在拉取遠端最新狀態以防止 Git 衝突...")
         _sp.run(['git', 'pull', '--rebase', '-X', 'ours', 'origin', 'main'], check=True)
         
         _sp.run(['git', 'push', 'origin', 'main'], check=True)
-        print("✅ data.js 已自動推送至 GitHub，Vercel 雲端網站將在約 30 秒內同步更新！")
+        print("✅ data.json 已自動推送至 GitHub，Vercel 雲端網站將在約 30 秒內同步更新！")
     except Exception as git_err:
         print(f"⚠️  自動 git push 失敗（不影響本機使用）：{git_err}")
 

@@ -2764,21 +2764,25 @@ function updateColorPaletteUI(color) {
 
 // 設置並初始化 Canvas 與事件 (renderLWChart 中調用)
 window.setupDrawingEvents = function(mainDiv, chart, series) {
-  let canvas = mainDiv.querySelector('#drawingCanvas');
-  if (!canvas) {
-    canvas = document.createElement('canvas');
-    canvas.id = 'drawingCanvas';
-    canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;';
-    mainDiv.appendChild(canvas);
+  // 🚀 防禦機制 1：清除舊 DOM 與解綁舊視窗縮放監聽器，防止事件重複綁定與記憶體洩漏
+  const oldCanvas = mainDiv.querySelector('#drawingCanvas');
+  const oldOverlay = mainDiv.querySelector('#drawingOverlay');
+  if (oldCanvas) oldCanvas.remove();
+  if (oldOverlay) oldOverlay.remove();
+  
+  if (window.canvasResizeHandler) {
+    window.removeEventListener('resize', window.canvasResizeHandler);
   }
 
-  let overlay = mainDiv.querySelector('#drawingOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'drawingOverlay';
-    overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;';
-    mainDiv.appendChild(overlay);
-  }
+  const canvas = document.createElement('canvas');
+  canvas.id = 'drawingCanvas';
+  canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;';
+  mainDiv.appendChild(canvas);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'drawingOverlay';
+  overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;';
+  mainDiv.appendChild(overlay);
 
   activeChartInstance = chart;
   activeCandleSeries = series;
@@ -2802,6 +2806,13 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
   }
 
   resize();
+
+  // 🚀 修復 Bug 1：註冊視窗縮放事件，動態更新 Canvas 幾何大小與即時重繪
+  window.canvasResizeHandler = () => {
+    resize();
+    redrawCanvas();
+  };
+  window.addEventListener('resize', window.canvasResizeHandler);
 
   chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
     redrawCanvas();
@@ -3087,6 +3098,31 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
       draggedDrawing = null;
       saveDrawings();
     }
+  });
+
+  // 🚀 修復 Bug 2：支援觸控手勢，將觸控座標與行為轉發至現有滑鼠事件處理器中 (100% 行動裝置支援)
+  function convertTouchEvent(e, mouseEventName) {
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent(mouseEventName, {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      bubbles: true,
+      cancelable: true
+    });
+    e.target.dispatchEvent(mouseEvent);
+    e.preventDefault();
+  }
+
+  overlay.addEventListener('touchstart', (e) => convertTouchEvent(e, 'mousedown'));
+  overlay.addEventListener('touchmove', (e) => convertTouchEvent(e, 'mousemove'));
+  overlay.addEventListener('touchend', (e) => {
+    const mouseEvent = new MouseEvent('mouseup', {
+      bubbles: true,
+      cancelable: true
+    });
+    e.target.dispatchEvent(mouseEvent);
+    e.preventDefault();
   });
 
   window.getTempDrawing = function() {
