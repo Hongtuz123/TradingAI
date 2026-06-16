@@ -2803,165 +2803,222 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
 
   resize();
 
-  // 監聽圖表縮放/滾動
   chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
-    redrawCanvas();
-  });
-  
-  chart.timeScale().subscribeSizeChange(() => {
-    resize();
     redrawCanvas();
   });
 
   let isDrawing = false;
-  let dragStartPercentX = 0;
-  let dragStartPercentY = 0;
   let tempDrawing = null;
+  let isDraggingPoint = null;
+  let draggedDrawing = null;
 
-  overlay.addEventListener('mousedown', (e) => {
+  function getMousePos(e) {
     const rect = overlay.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    return { x, y };
+  }
 
-    const time = chart.timeScale().coordinateToTime(x);
+  function getChartTimeAndPrice(x, y) {
+    if (!currentKlineData || currentKlineData.length === 0) return { time: null, price: null };
+    const logical = chart.timeScale().coordinateToLogical(x);
+    if (logical === null) return { time: null, price: null };
+    const idx = Math.max(0, Math.min(currentKlineData.length - 1, Math.round(logical)));
+    const kline = currentKlineData[idx];
+    const time = kline.date || kline.time;
     const price = series.coordinateToPrice(y);
+    return { time, price };
+  }
 
-    if (time === null || price === null) return;
+  overlay.addEventListener('mousedown', (e) => {
+    const pos = getMousePos(e);
+    const chartWidth = chart.timeScale().width();
+    const rect = overlay.getBoundingClientRect();
+    const chartHeight = rect.height - 26;
+    if (pos.x < 0 || pos.x > chartWidth || pos.y < 0 || pos.y > chartHeight) return;
+
     const symbol = currentChartSymbol;
     if (!symbol) return;
 
+    const { time, price } = getChartTimeAndPrice(pos.x, pos.y);
+    if (!time || !price) return;
+
     if (window.currentDrawingTool === 'cursor') {
-      const clickedDrawing = findDrawingAt(x, y, chart, series, symbol);
-      if (clickedDrawing) {
-        selectDrawing(clickedDrawing.id);
-        updateColorPaletteUI(clickedDrawing.color);
+      if (window.selectedDrawingId && window.userDrawings[symbol]) {
+        const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
+        if (dr) {
+          if (dr.type === 'trendline' || dr.type === 'fib' || dr.type === 'measure') {
+            const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+            const y1 = series.priceToCoordinate(dr.price1);
+            const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+            const y2 = series.priceToCoordinate(dr.price2);
+
+            if (x1 !== null && y1 !== null && Math.hypot(pos.x - x1, pos.y - y1) < 8) {
+              isDraggingPoint = 1;
+              draggedDrawing = dr;
+              return;
+            }
+            if (x2 !== null && y2 !== null && Math.hypot(pos.x - x2, pos.y - y2) < 8) {
+              isDraggingPoint = 2;
+              draggedDrawing = dr;
+              return;
+            }
+          } else if (dr.type === 'horizline') {
+            const yLvl = series.priceToCoordinate(dr.price);
+            if (yLvl !== null && Math.hypot(pos.x - chartWidth / 2, pos.y - yLvl) < 8) {
+              isDraggingPoint = 'horiz';
+              draggedDrawing = dr;
+              return;
+            }
+          }
+        }
+      }
+
+      const hovered = findDrawingAt(pos.x, pos.y, chart, series, symbol);
+      if (hovered) {
+        selectDrawing(hovered.id);
+        const colorPalette = document.getElementById('drawingToolbar');
+        if (colorPalette) {
+          updateColorPaletteUI(hovered.color);
+        }
       } else {
         selectDrawing(null);
       }
     } else {
-      isDrawing = true;
-      const drawingId = Date.now() + Math.round(Math.random() * 1000);
-      
-      if (window.currentDrawingTool === 'trendline') {
-        tempDrawing = {
-          id: drawingId,
-          type: 'trendline',
-          time1: time,
-          price1: price,
-          time2: time,
-          price2: price,
-          color: window.currentDrawingColor
-        };
-      } else if (window.currentDrawingTool === 'horizline') {
-        const newDrawing = {
-          id: drawingId,
-          type: 'horizline',
-          price: price,
-          color: window.currentDrawingColor
-        };
-        if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
-        window.userDrawings[symbol].push(newDrawing);
-        saveDrawings();
-        isDrawing = false;
-        tempDrawing = null;
-        
-        switchToolToCursor();
-        selectDrawing(newDrawing.id);
-      } else if (window.currentDrawingTool === 'fib') {
-        tempDrawing = {
-          id: drawingId,
-          type: 'fib',
-          time1: time,
-          price1: price,
-          time2: time,
-          price2: price,
-          color: window.currentDrawingColor
-        };
-      } else if (window.currentDrawingTool === 'measure') {
-        tempDrawing = {
-          id: drawingId,
-          type: 'measure',
-          time1: time,
-          price1: price,
-          time2: time,
-          price2: price,
-          color: window.currentDrawingColor
-        };
+      if (!isDrawing) {
+        if (window.currentDrawingTool === 'horizline') {
+          if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
+          const newDrawing = {
+            id: 'draw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            type: 'horizline',
+            price: price,
+            color: window.currentDrawingColor || '#f97316'
+          };
+          window.userDrawings[symbol].push(newDrawing);
+          saveDrawings();
+          switchToolToCursor();
+          selectDrawing(newDrawing.id);
+        } else {
+          isDrawing = true;
+          tempDrawing = {
+            id: 'temp_' + Date.now(),
+            type: window.currentDrawingTool,
+            time1: time,
+            price1: price,
+            time2: time,
+            price2: price,
+            color: window.currentDrawingColor || '#f97316'
+          };
+          redrawCanvas();
+        }
+      } else {
+        if (tempDrawing) {
+          tempDrawing.time2 = time;
+          tempDrawing.price2 = price;
+          tempDrawing.id = 'draw_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
+          window.userDrawings[symbol].push(tempDrawing);
+          const finishedId = tempDrawing.id;
+          isDrawing = false;
+          tempDrawing = null;
+          saveDrawings();
+          switchToolToCursor();
+          selectDrawing(finishedId);
+        }
       }
-      redrawCanvas();
     }
   });
 
   overlay.addEventListener('mousemove', (e) => {
+    const pos = getMousePos(e);
+    const chartWidth = chart.timeScale().width();
     const rect = overlay.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const chartHeight = rect.height - 26;
 
-    const time = chart.timeScale().coordinateToTime(x);
-    const price = series.coordinateToPrice(y);
-    const symbol = currentChartSymbol;
+    if (isDraggingPoint !== null && draggedDrawing) {
+      const { time, price } = getChartTimeAndPrice(pos.x, pos.y);
+      if (time !== null && price !== null) {
+        if (isDraggingPoint === 1) {
+          draggedDrawing.time1 = time;
+          draggedDrawing.price1 = price;
+        } else if (isDraggingPoint === 2) {
+          draggedDrawing.time2 = time;
+          draggedDrawing.price2 = price;
+        } else if (isDraggingPoint === 'horiz') {
+          draggedDrawing.price = price;
+        }
+        redrawCanvas();
+      }
+      overlay.style.cursor = 'move';
+      return;
+    }
 
-    if (isDrawing && tempDrawing && time !== null && price !== null) {
-      if (tempDrawing.type === 'trendline' || tempDrawing.type === 'fib' || tempDrawing.type === 'measure') {
+    if (isDrawing && tempDrawing) {
+      const { time, price } = getChartTimeAndPrice(pos.x, pos.y);
+      if (time !== null && price !== null) {
         tempDrawing.time2 = time;
         tempDrawing.price2 = price;
+        redrawCanvas();
       }
-      redrawCanvas();
-    } else if (window.currentDrawingTool === 'cursor' && symbol) {
-      const hoveredDrawing = findDrawingAt(x, y, chart, series, symbol);
-      if (hoveredDrawing) {
-        overlay.style.pointerEvents = 'auto';
-        overlay.style.cursor = 'pointer';
-      } else {
+      return;
+    }
+
+    if (pos.x < 0 || pos.x > chartWidth || pos.y < 0 || pos.y > chartHeight) {
+      if (window.currentDrawingTool === 'cursor') {
         overlay.style.pointerEvents = 'none';
         overlay.style.cursor = 'default';
       }
-    }
-  });
-
-  overlay.addEventListener('mouseup', (e) => {
-    const symbol = currentChartSymbol;
-    if (isDrawing && tempDrawing && symbol) {
-      if (!window.userDrawings[symbol]) window.userDrawings[symbol] = [];
-      const isTooSmall = tempDrawing.time1 === tempDrawing.time2 && Math.abs(tempDrawing.price1 - tempDrawing.price2) < 0.001;
-      
-      if (!isTooSmall) {
-        window.userDrawings[symbol].push(tempDrawing);
-        saveDrawings();
-        selectDrawing(tempDrawing.id);
-      }
-      
-      isDrawing = false;
-      tempDrawing = null;
-      switchToolToCursor();
-    }
-  });
-
-  mainDiv.addEventListener('mousemove', (e) => {
-    if (isDrawing || window.currentDrawingTool !== 'cursor') return;
-    
-    const rect = overlay.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const chartWidth = chart.timeScale().width();
-    const chartHeight = rect.height - 26;
-    
-    if (x < 0 || x > chartWidth || y < 0 || y > chartHeight) {
-      overlay.style.pointerEvents = 'none';
-      overlay.style.cursor = 'default';
       return;
     }
 
     const symbol = currentChartSymbol;
-    if (symbol) {
-      const hoveredDrawing = findDrawingAt(x, y, chart, series, symbol);
-      if (hoveredDrawing) {
+    if (window.currentDrawingTool === 'cursor' && symbol) {
+      if (window.selectedDrawingId && window.userDrawings[symbol]) {
+        const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
+        if (dr) {
+          if (dr.type === 'trendline' || dr.type === 'fib' || dr.type === 'measure') {
+            const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+            const y1 = series.priceToCoordinate(dr.price1);
+            const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+            const y2 = series.priceToCoordinate(dr.price2);
+
+            if (x1 !== null && y1 !== null && Math.hypot(pos.x - x1, pos.y - y1) < 8) {
+              overlay.style.pointerEvents = 'auto';
+              overlay.style.cursor = 'move';
+              return;
+            }
+            if (x2 !== null && y2 !== null && Math.hypot(pos.x - x2, pos.y - y2) < 8) {
+              overlay.style.pointerEvents = 'auto';
+              overlay.style.cursor = 'move';
+              return;
+            }
+          } else if (dr.type === 'horizline') {
+            const yLvl = series.priceToCoordinate(dr.price);
+            if (yLvl !== null && Math.hypot(pos.x - chartWidth / 2, pos.y - yLvl) < 8) {
+              overlay.style.pointerEvents = 'auto';
+              overlay.style.cursor = 'move';
+              return;
+            }
+          }
+        }
+      }
+
+      const hovered = findDrawingAt(pos.x, pos.y, chart, series, symbol);
+      if (hovered) {
         overlay.style.pointerEvents = 'auto';
         overlay.style.cursor = 'pointer';
       } else {
         overlay.style.pointerEvents = 'none';
         overlay.style.cursor = 'default';
       }
+    }
+  });
+
+  overlay.addEventListener('mouseup', () => {
+    if (isDraggingPoint !== null) {
+      isDraggingPoint = null;
+      draggedDrawing = null;
+      saveDrawings();
     }
   });
 
