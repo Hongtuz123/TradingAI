@@ -106,6 +106,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 載入預設篩選規則
     if (rulesConfig) {
+      const sc = rulesConfig.scoring;
+      if (sc) {
+        const f_trust = document.getElementById('f_trust_days');
+        if (f_trust) f_trust.value = sc.trust_days !== undefined ? sc.trust_days : 0;
+        const f_foreign = document.getElementById('f_foreign_net_buy_threshold');
+        if (f_foreign) f_foreign.value = 0; // 預設 0 張
+        const f_dealer = document.getElementById('f_dealer_net_buy_threshold');
+        if (f_dealer) f_dealer.value = 0; // 預設 0 張
+        const f_vol = document.getElementById('f_vol_ratio');
+        if (f_vol) f_vol.value = sc.vol_ratio !== undefined ? sc.vol_ratio : 1.0;
+        const f_mkt = document.getElementById('f_market_cap');
+        if (f_mkt) f_mkt.value = sc.market_cap !== undefined ? sc.market_cap : 50;
+        const f_daily = document.getElementById('f_daily_vol');
+        if (f_daily) f_daily.value = sc.daily_vol !== undefined ? sc.daily_vol : 1000;
+        const f_turnover = document.getElementById('f_turnover');
+        if (f_turnover) f_turnover.value = sc.turnover !== undefined ? sc.turnover : 0.5;
+      }
       const fl = rulesConfig.filtering;
       if (fl && fl.min_score !== undefined) {
         const f_min = document.getElementById('f_min_score');
@@ -705,6 +722,13 @@ function runScreener(isAutoRefresh = false) {
 
   // 取得篩選參數 (L2 僅留分數門檻)
   const p = {
+    trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
+    foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold').value) || 0,
+    dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold').value) || 0,
+    volRatio: parseFloat(document.getElementById('f_vol_ratio').value) || 1,
+    turnover: parseFloat(document.getElementById('f_turnover').value) || 0,
+    mktCap: parseFloat(document.getElementById('f_market_cap').value) || 0,
+    dailyVol: parseFloat(document.getElementById('f_daily_vol').value) || 0,
     minScore: parseInt(document.getElementById('f_min_score').value) || 60
   };
 
@@ -722,6 +746,7 @@ function runScreener(isAutoRefresh = false) {
     s.livePrice = s.price;
     s.liveChange = s.change;
 
+    let failedConditions = [];
     let score = 0;
     
     // 技術指標即時運算 與 加權評分計算
@@ -815,14 +840,65 @@ function runScreener(isAutoRefresh = false) {
     } else {
       s.passedL2Flags = { above200ma: false, stBull: false, dmiBull: false, trendlineBreak: false, volAboveMa: false };
       s.failedL2Indicators = ['K線長度不足，無法評估技術面'];
-      s.passedIndicators = ['無明顯技術加分項目'];
+    }
+
+    // L1 固定基本面門檻
+    if (s.eps != null && s.eps <= 0) {
+      failedConditions.push(`當季 EPS 非正數 (${s.eps}元 <= 0元)`);
+    }
+    const isYoYOk = s.revYoY == null || s.revYoY > -30;
+    const isRoeOk = s.roe == null || s.roe > -5;
+    if (!isYoYOk && !isRoeOk) {
+      failedConditions.push(`營收與ROE雙未達標 (YoY: ${s.revYoY}% <= -30% 且 ROE: ${s.roe}% <= -5%)`);
+    }
+
+    // 籌碼門檻與量能門檻過濾
+    if (s.trustDays != null && s.trustDays < p.trustDays) {
+      failedConditions.push(`投信當日買超 (${s.trustDays}張 < ${p.trustDays}張)`);
+    }
+    if (s.foreignNetBuy != null && s.foreignNetBuy < p.foreignNetBuyLimit) {
+      failedConditions.push(`外資當日買超 (${s.foreignNetBuy}張 < ${p.foreignNetBuyLimit}張)`);
+    }
+    if (s.dealerDays != null && s.dealerDays < p.dealerNetBuyLimit) {
+      failedConditions.push(`自營當日買超 (${s.dealerDays}張 < ${p.dealerNetBuyLimit}張)`);
+    }
+    
+    const gateVolRatioVal = (() => {
+      if (s.kline && s.kline.length >= 20) {
+        const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+        const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+        const vma20 = last20sum / 20;
+        const lastVol = cv[cv.length - 1].volume;
+        return vma20 > 0 ? lastVol / vma20 : 0;
+      }
+      return s.volRatio || 0;
+    })();
+    if (gateVolRatioVal < p.volRatio) {
+      failedConditions.push(`量能比 (${gateVolRatioVal.toFixed(2)} < ${p.volRatio})`);
+    }
+    if (s.turnover != null && s.turnover < p.turnover) {
+      failedConditions.push(`週轉率 (${s.turnover}% < ${p.turnover}%)`);
+    }
+    if (s.marketCap != null && s.marketCap < p.mktCap) {
+      failedConditions.push(`市值 (${s.marketCap}億 < ${p.mktCap}億)`);
+    }
+    const avgDailyVolVal = (() => {
+      if (s.kline && s.kline.length >= 20) {
+        const cv = s.kline.map(d => ({ volume: parseFloat(d.volume || 0) }));
+        const last20sum = cv.slice(-20).reduce((a, c) => a + c.volume, 0);
+        return Math.round((last20sum / 20) / 1000);
+      }
+      return s.dailyVol || 0;
+    })();
+    if (avgDailyVolVal < p.dailyVol) {
+      failedConditions.push(`日均量 (${avgDailyVolVal}張 < ${p.dailyVol}張)`);
     }
 
     s.dynamicScore = score; // 分數轉為百分制評分
-    s.failedConditions = []; // 移除非 L2 條件後此欄位恆空
+    s.failedConditions = failedConditions;
 
     // 篩選與匹配：評分 >= 最低符合評分（完全尊重滑桿設定，不再強制鎖定 60 分限制）
-    if (s.dynamicScore >= p.minScore) {
+    if (s.dynamicScore >= p.minScore && failedConditions.length === 0) {
       currentResults.push(s);
     }
   });
@@ -881,7 +957,7 @@ window.evaluateManualStock = function() {
   // 為了精準，如果已經有 dynamicScore 則直接用，否則做基本回防
   const score = s.dynamicScore !== undefined ? s.dynamicScore : 60;
   const passed = s.passedIndicators && s.passedIndicators.length > 0 ? s.passedIndicators : ['無明顯技術加分項目'];
-  const failed = s.failedL2Indicators && s.failedL2Indicators.length > 0 ? s.failedL2Indicators : [];
+  const failed = s.failedConditions && s.failedConditions.length > 0 ? s.failedConditions : [];
 
   let advice = '';
   if (score >= 80) advice = '<span style="color: var(--success);">🟢 多頭強勢</span>';
@@ -901,7 +977,7 @@ window.evaluateManualStock = function() {
         ${passed.map(p => `<li>${p}</li>`).join('')}
       </ul>
       ${failed.length > 0 ? `
-        <div style="color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 6px; margin-bottom: 4px;">✗ 未達指標：</div>
+        <div style="color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 6px; margin-bottom: 4px;">✗ 未達門檻：</div>
         <ul style="margin: 0; padding-left: 12px; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
           ${failed.map(f => `<li>${f}</li>`).join('')}
         </ul>
