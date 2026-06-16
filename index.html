@@ -193,22 +193,11 @@
             
             <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
           </div>
-
-          <!-- L1：基本面（綁定） -->
+          <!-- L2：技術指標最低符合評分 -->
           <div class="filter-group">
             <div class="filter-group-title" style="color: var(--primary);">
-              <span class="layer-badge layer-1">L1</span>
-              基本面門檻 (已綁定)
-              <span class="info-tooltip-container">
-                <span class="info-icon">ⓘ</span>
-                <span class="tooltip-content">
-                  <strong>🐾 L1 基本面固定門檻值：</strong><br>
-                  • <strong>市值前 500 大</strong>個股過濾<br>
-                  • 當季 <strong>EPS &gt; 0</strong> 元 (非虧損)<br>
-                  • 當月 <strong>營收年增率 (YoY) &gt; -30%</strong><br>
-                  • 當季 <strong>ROE &gt; -5%</strong> (股東權益報酬率)
-                </span>
-              </span>
+              <span class="layer-badge layer-2">L2</span>
+              技術指標最低符合評分
             </div>
             <div class="filter-item">
               <label>最低符合評分 (滿分100)</label>
@@ -217,19 +206,13 @@
                 <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
               </div>
             </div>
-            <div class="filter-item" style="opacity: 0.85;">
-              <span style="font-size: 12px; color: var(--text-muted);">• 財務指標前 500 大個股過濾</span>
-            </div>
-            <div class="filter-item" style="opacity: 0.85;">
-              <span style="font-size: 12px; color: var(--text-muted);">• EPS / 營收 / ROE 多頭篩選</span>
-            </div>
           </div>
 
           <!-- L2：技術面（可調） -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-2">L2</span>
-              技術指標 (加權 100分)
+              技術指標項目 (加權 100分)
             </div>
             <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
               <button type="button" class="tech-filter-btn" id="btn_f_above200ma" onclick="toggleTechFilter('above200ma')">股價 &gt; 200MA (20分)</button>
@@ -239,64 +222,7 @@
               <button type="button" class="tech-filter-btn" id="btn_f_volAboveMa" onclick="toggleTechFilter('volAboveMa')">今日量 &gt; 20日均量 (20分)</button>
             </div>
           </div>
-
-          <!-- L3：籌碼面與資金面 -->
-          <div class="filter-group">
-            <div class="filter-group-title">
-              <span class="layer-badge layer-3">L3</span>
-              籌碼資金與量能門檻
-            </div>
-            <div class="filter-item">
-              <label>投信當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_trust_days" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>外資當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_foreign_net_buy_threshold" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>自營商當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_dealer_net_buy_threshold" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>今日量 > 均量倍數</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_vol_ratio" value="0.6" min="0" max="10" step="0.1" />
-                <span class="unit">倍</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>週轉率 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_turnover" value="0.5" min="0" max="50" step="0.1" />
-                <span class="unit">%以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>市值 (億)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_market_cap" value="50" min="0" max="10000" />
-                <span class="unit">億以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>日均量 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_daily_vol" value="800" min="0" max="100000" step="100" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-          </div>
-         </aside>
+        </aside>
 
         <!-- 右側：結果列表 -->
         <div class="screener-results">
