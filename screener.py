@@ -1214,8 +1214,23 @@ def run_screener():
         "mockStocks": results
     }
 
+    # 🚀 深度清理 NaN 與 Infinity，保證輸出符合標準 JSON 規範 (防範瀏覽器 JSON.parse 崩潰)
+    import math
+    def clean_nan(obj):
+        if isinstance(obj, dict):
+            return {k: clean_nan(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_nan(x) for x in obj]
+        elif isinstance(obj, float):
+            if math.isnan(obj) or math.isinf(obj):
+                return None
+            return obj
+        return obj
+
+    cleaned_json_data = clean_nan(json_data)
+
     with open('data.json', 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, ensure_ascii=False, indent=2)
+        json.dump(cleaned_json_data, f, ensure_ascii=False, indent=2)
 
     print(f"\n==========================================")
     print(f"🎉 執行完畢！")
