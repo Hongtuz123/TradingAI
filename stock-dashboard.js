@@ -2830,6 +2830,65 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
     return { time, price };
   }
 
+  function checkHoverState(x, y) {
+    const symbol = currentChartSymbol;
+    if (!symbol) return { hovered: null, nearControl: false, controlIdx: null };
+
+    let nearControl = false;
+    let controlIdx = null;
+
+    if (window.selectedDrawingId && window.userDrawings[symbol]) {
+      const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
+      if (dr) {
+        const chartWidth = chart.timeScale().width();
+        if (dr.type === 'trendline' || dr.type === 'fib' || dr.type === 'measure') {
+          const x1 = chart.timeScale().timeToCoordinate(dr.time1);
+          const y1 = series.priceToCoordinate(dr.price1);
+          const x2 = chart.timeScale().timeToCoordinate(dr.time2);
+          const y2 = series.priceToCoordinate(dr.price2);
+
+          if (x1 !== null && y1 !== null && Math.hypot(x - x1, y - y1) < 8) {
+            nearControl = true;
+            controlIdx = 1;
+          } else if (x2 !== null && y2 !== null && Math.hypot(x - x2, y - y2) < 8) {
+            nearControl = true;
+            controlIdx = 2;
+          }
+        } else if (dr.type === 'horizline') {
+          const yLvl = series.priceToCoordinate(dr.price);
+          if (yLvl !== null && Math.hypot(x - chartWidth / 2, y - yLvl) < 8) {
+            nearControl = true;
+            controlIdx = 'horiz';
+          }
+        }
+      }
+    }
+
+    const hovered = findDrawingAt(x, y, chart, series, symbol);
+    return { hovered, nearControl, controlIdx };
+  }
+
+  chart.subscribeCrosshairMove(param => {
+    if (window.currentDrawingTool !== 'cursor') return;
+    if (isDraggingPoint !== null) return;
+
+    if (param.point) {
+      const { hovered, nearControl } = checkHoverState(param.point.x, param.point.y);
+      if (hovered || nearControl) {
+        overlay.style.pointerEvents = 'auto';
+        overlay.style.cursor = nearControl ? 'move' : 'pointer';
+      } else {
+        if (window.selectedDrawingId) {
+          overlay.style.pointerEvents = 'auto';
+          overlay.style.cursor = 'default';
+        } else {
+          overlay.style.pointerEvents = 'none';
+          overlay.style.cursor = 'default';
+        }
+      }
+    }
+  });
+
   overlay.addEventListener('mousedown', (e) => {
     const pos = getMousePos(e);
     const chartWidth = chart.timeScale().width();
@@ -2844,37 +2903,16 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
     if (!time || !price) return;
 
     if (window.currentDrawingTool === 'cursor') {
-      if (window.selectedDrawingId && window.userDrawings[symbol]) {
+      const { hovered, nearControl, controlIdx } = checkHoverState(pos.x, pos.y);
+      if (nearControl && window.selectedDrawingId) {
         const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
         if (dr) {
-          if (dr.type === 'trendline' || dr.type === 'fib' || dr.type === 'measure') {
-            const x1 = chart.timeScale().timeToCoordinate(dr.time1);
-            const y1 = series.priceToCoordinate(dr.price1);
-            const x2 = chart.timeScale().timeToCoordinate(dr.time2);
-            const y2 = series.priceToCoordinate(dr.price2);
-
-            if (x1 !== null && y1 !== null && Math.hypot(pos.x - x1, pos.y - y1) < 8) {
-              isDraggingPoint = 1;
-              draggedDrawing = dr;
-              return;
-            }
-            if (x2 !== null && y2 !== null && Math.hypot(pos.x - x2, pos.y - y2) < 8) {
-              isDraggingPoint = 2;
-              draggedDrawing = dr;
-              return;
-            }
-          } else if (dr.type === 'horizline') {
-            const yLvl = series.priceToCoordinate(dr.price);
-            if (yLvl !== null && Math.hypot(pos.x - chartWidth / 2, pos.y - yLvl) < 8) {
-              isDraggingPoint = 'horiz';
-              draggedDrawing = dr;
-              return;
-            }
-          }
+          isDraggingPoint = controlIdx;
+          draggedDrawing = dr;
+          return;
         }
       }
 
-      const hovered = findDrawingAt(pos.x, pos.y, chart, series, symbol);
       if (hovered) {
         selectDrawing(hovered.id);
         const colorPalette = document.getElementById('drawingToolbar');
@@ -2883,6 +2921,8 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
         }
       } else {
         selectDrawing(null);
+        overlay.style.pointerEvents = 'none';
+        overlay.style.cursor = 'default';
       }
     } else {
       if (!isDrawing) {
@@ -2973,43 +3013,18 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
 
     const symbol = currentChartSymbol;
     if (window.currentDrawingTool === 'cursor' && symbol) {
-      if (window.selectedDrawingId && window.userDrawings[symbol]) {
-        const dr = window.userDrawings[symbol].find(d => d.id === window.selectedDrawingId);
-        if (dr) {
-          if (dr.type === 'trendline' || dr.type === 'fib' || dr.type === 'measure') {
-            const x1 = chart.timeScale().timeToCoordinate(dr.time1);
-            const y1 = series.priceToCoordinate(dr.price1);
-            const x2 = chart.timeScale().timeToCoordinate(dr.time2);
-            const y2 = series.priceToCoordinate(dr.price2);
-
-            if (x1 !== null && y1 !== null && Math.hypot(pos.x - x1, pos.y - y1) < 8) {
-              overlay.style.pointerEvents = 'auto';
-              overlay.style.cursor = 'move';
-              return;
-            }
-            if (x2 !== null && y2 !== null && Math.hypot(pos.x - x2, pos.y - y2) < 8) {
-              overlay.style.pointerEvents = 'auto';
-              overlay.style.cursor = 'move';
-              return;
-            }
-          } else if (dr.type === 'horizline') {
-            const yLvl = series.priceToCoordinate(dr.price);
-            if (yLvl !== null && Math.hypot(pos.x - chartWidth / 2, pos.y - yLvl) < 8) {
-              overlay.style.pointerEvents = 'auto';
-              overlay.style.cursor = 'move';
-              return;
-            }
-          }
-        }
-      }
-
-      const hovered = findDrawingAt(pos.x, pos.y, chart, series, symbol);
-      if (hovered) {
+      const { hovered, nearControl } = checkHoverState(pos.x, pos.y);
+      if (hovered || nearControl) {
         overlay.style.pointerEvents = 'auto';
-        overlay.style.cursor = 'pointer';
+        overlay.style.cursor = nearControl ? 'move' : 'pointer';
       } else {
-        overlay.style.pointerEvents = 'none';
-        overlay.style.cursor = 'default';
+        if (window.selectedDrawingId) {
+          overlay.style.pointerEvents = 'auto';
+          overlay.style.cursor = 'default';
+        } else {
+          overlay.style.pointerEvents = 'none';
+          overlay.style.cursor = 'default';
+        }
       }
     }
   });
@@ -3025,7 +3040,7 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
   window.getTempDrawing = function() {
     return tempDrawing;
   };
-  
+
   redrawCanvas();
 };
 
