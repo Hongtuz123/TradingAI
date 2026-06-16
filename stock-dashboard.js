@@ -2810,7 +2810,17 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
   let isDrawing = false;
   let tempDrawing = null;
   let isDraggingPoint = null;
+  let isDraggingEntire = false;
   let draggedDrawing = null;
+
+  let startPrice = null;
+  let startTime = null;
+  let startKlineIdx = -1;
+  let origPrice1 = null;
+  let origPrice2 = null;
+  let origTime1Idx = -1;
+  let origTime2Idx = -1;
+  let origPrice = null;
 
   function getMousePos(e) {
     const rect = overlay.getBoundingClientRect();
@@ -2870,13 +2880,13 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
 
   chart.subscribeCrosshairMove(param => {
     if (window.currentDrawingTool !== 'cursor') return;
-    if (isDraggingPoint !== null) return;
+    if (isDraggingPoint !== null || isDraggingEntire) return;
 
     if (param.point) {
       const { hovered, nearControl } = checkHoverState(param.point.x, param.point.y);
       if (hovered || nearControl) {
         overlay.style.pointerEvents = 'auto';
-        overlay.style.cursor = nearControl ? 'move' : 'pointer';
+        overlay.style.cursor = nearControl ? 'move' : 'grab';
       } else {
         if (window.selectedDrawingId) {
           overlay.style.pointerEvents = 'auto';
@@ -2918,6 +2928,21 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
         const colorPalette = document.getElementById('drawingToolbar');
         if (colorPalette) {
           updateColorPaletteUI(hovered.color);
+        }
+        
+        isDraggingEntire = true;
+        draggedDrawing = hovered;
+        startPrice = price;
+        startTime = time;
+        startKlineIdx = currentKlineData.findIndex(c => c.date === time || c.time === time);
+
+        if (hovered.type === 'trendline' || hovered.type === 'fib' || hovered.type === 'measure') {
+          origPrice1 = hovered.price1;
+          origPrice2 = hovered.price2;
+          origTime1Idx = currentKlineData.findIndex(c => c.date === hovered.time1 || c.time === hovered.time1);
+          origTime2Idx = currentKlineData.findIndex(c => c.date === hovered.time2 || c.time === hovered.time2);
+        } else if (hovered.type === 'horizline') {
+          origPrice = hovered.price;
         }
       } else {
         selectDrawing(null);
@@ -2975,6 +3000,32 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
     const rect = overlay.getBoundingClientRect();
     const chartHeight = rect.height - 26;
 
+    if (isDraggingEntire && draggedDrawing) {
+      const { time, price } = getChartTimeAndPrice(pos.x, pos.y);
+      const currKlineIdx = currentKlineData.findIndex(c => c.date === time || c.time === time);
+
+      if (price !== null && currKlineIdx !== -1 && startKlineIdx !== -1) {
+        const deltaPrice = price - startPrice;
+        const deltaIndex = currKlineIdx - startKlineIdx;
+
+        if (draggedDrawing.type === 'trendline' || draggedDrawing.type === 'fib' || draggedDrawing.type === 'measure') {
+          draggedDrawing.price1 = origPrice1 + deltaPrice;
+          draggedDrawing.price2 = origPrice2 + deltaPrice;
+
+          const newIdx1 = Math.max(0, Math.min(currentKlineData.length - 1, origTime1Idx + deltaIndex));
+          draggedDrawing.time1 = currentKlineData[newIdx1].date || currentKlineData[newIdx1].time;
+
+          const newIdx2 = Math.max(0, Math.min(currentKlineData.length - 1, origTime2Idx + deltaIndex));
+          draggedDrawing.time2 = currentKlineData[newIdx2].date || currentKlineData[newIdx2].time;
+        } else if (draggedDrawing.type === 'horizline') {
+          draggedDrawing.price = origPrice + deltaPrice;
+        }
+        redrawCanvas();
+      }
+      overlay.style.cursor = 'grabbing';
+      return;
+    }
+
     if (isDraggingPoint !== null && draggedDrawing) {
       const { time, price } = getChartTimeAndPrice(pos.x, pos.y);
       if (time !== null && price !== null) {
@@ -3016,7 +3067,7 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
       const { hovered, nearControl } = checkHoverState(pos.x, pos.y);
       if (hovered || nearControl) {
         overlay.style.pointerEvents = 'auto';
-        overlay.style.cursor = nearControl ? 'move' : 'pointer';
+        overlay.style.cursor = nearControl ? 'move' : 'grab';
       } else {
         if (window.selectedDrawingId) {
           overlay.style.pointerEvents = 'auto';
@@ -3030,8 +3081,9 @@ window.setupDrawingEvents = function(mainDiv, chart, series) {
   });
 
   overlay.addEventListener('mouseup', () => {
-    if (isDraggingPoint !== null) {
+    if (isDraggingPoint !== null || isDraggingEntire) {
       isDraggingPoint = null;
+      isDraggingEntire = false;
       draggedDrawing = null;
       saveDrawings();
     }
