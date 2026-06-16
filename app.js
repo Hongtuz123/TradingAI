@@ -674,7 +674,7 @@ window.toggleTechFilter = function(filterKey) {
 window.applyTechFiltersAndRender = function() {
   let filtered = [...currentResults];
   
-  // 如果有啟用任何技術指標快速過濾按鈕，則進行 AND 複選過濾
+  // 如果有啟用 any 技術指標快速過濾按鈕，則進行 AND 複選過濾
   if (activeTechFilters.length > 0) {
     filtered = filtered.filter(s => {
       return activeTechFilters.every(filterKey => {
@@ -683,9 +683,9 @@ window.applyTechFiltersAndRender = function() {
     });
   }
   
-  const sliced = filtered.slice(0, 40);
-  renderScreenerTable(sliced);
+  renderScreenerTable(filtered);
 };
+
 
 // 執行篩選
 function runScreener(isAutoRefresh = false) {
@@ -3993,7 +3993,20 @@ function openIndexIntroModal(label) {
 // ======================== ⭐ 自選清單管理與卡片繪製邏輯 ========================
 
 // 初始化自選清單 (從 localStorage 讀取以永久保存)
-let userPortfolio = JSON.parse(localStorage.getItem('trading_ai_portfolio')) || ['2330', '2317', '2382']; // 預設提供熱門股範例以防空白
+let userPortfolio = JSON.parse(localStorage.getItem('trading_ai_portfolio')) || ['1342', '2472', '3008', '3034', '3406', '4958', '4961', '5228', '6525'];
+
+// 一次性將 9 檔 L2 高評分標的合併入自選清單 (超前部署)
+const initialHighScoresL2 = ['1342', '2472', '3008', '3034', '3406', '4958', '4961', '5228', '6525'];
+if (!localStorage.getItem('added_l2_high_scores_v1')) {
+  initialHighScoresL2.forEach(id => {
+    if (!userPortfolio.includes(id)) {
+      userPortfolio.push(id);
+    }
+  });
+  localStorage.setItem('trading_ai_portfolio', JSON.stringify(userPortfolio));
+  localStorage.setItem('added_l2_high_scores_v1', 'true');
+}
+
 
 // 判斷股票是否已加入自選
 window.isStockInPortfolio = function(symbolId) {

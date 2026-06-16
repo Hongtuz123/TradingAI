@@ -18,7 +18,17 @@ WATCHLIST = [
     {'Code': '3231', 'Name': '緯創',   'market': 'TSE'},
     {'Code': '3017', 'Name': '奇鋐',   'market': 'TSE'},
     {'Code': '2382', 'Name': '廣達',   'market': 'TSE'},
+    {'Code': '1342', 'Name': '八貫',   'market': 'TSE'},
+    {'Code': '2472', 'Name': '立隆電', 'market': 'TSE'},
+    {'Code': '3008', 'Name': '大立光', 'market': 'TSE'},
+    {'Code': '3034', 'Name': '聯詠',   'market': 'TSE'},
+    {'Code': '3406', 'Name': '玉晶光', 'market': 'TSE'},
+    {'Code': '4958', 'Name': '臻鼎-KY', 'market': 'TSE'},
+    {'Code': '4961', 'Name': '天鈺',   'market': 'TSE'},
+    {'Code': '5228', 'Name': '鈺鎧',   'market': 'OTC'},
+    {'Code': '6525', 'Name': '捷敏-KY', 'market': 'TSE'},
 ]
+
 
 def format_stock_code(code_str):
     """
