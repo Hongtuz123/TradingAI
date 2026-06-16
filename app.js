@@ -4236,12 +4236,15 @@ window.renderPortfolioGrid = function() {
     const cardNum = String(index + 1).padStart(2, '0');
 
     grid.innerHTML += `
-      <div class="portfolio-card" style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px; border-left: 4px solid var(--primary); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="portfolio-card" draggable="true" data-index="${index}" style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px; border-left: 4px solid var(--primary); transition: all 0.2s; cursor: grab;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
         
         <!-- 卡片頭部：股號、股名、產業 -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
           <div style="display:flex; align-items:center; gap:10px;">
-            <div style="background:var(--primary); color:white; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">${cardNum}</div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span style="color:var(--text-muted); font-size:14px; cursor:move; user-select:none;" title="按住拖曳以排序">⋮⋮</span>
+              <div style="background:var(--primary); color:white; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">${cardNum}</div>
+            </div>
             <div>
               <span style="font-size:18px; font-weight:800; color:white;">${s.id} ${s.name}</span>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">上市 • ${mainSector} ➔ ${subSector}</div>
@@ -4304,6 +4307,47 @@ window.renderPortfolioGrid = function() {
         </div>
       </div>
     `;
+  });
+
+  // 綁定拖曳事件以支援拖曳排序
+  const cards = grid.querySelectorAll('.portfolio-card');
+  cards.forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-index'));
+      card.style.opacity = '0.4';
+      card.style.cursor = 'grabbing';
+    });
+
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.style.border = '1.5px dashed var(--primary)';
+      card.style.background = 'rgba(249, 115, 22, 0.08)';
+    });
+
+    card.addEventListener('dragleave', () => {
+      card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+      card.style.background = 'rgba(30, 41, 59, 0.45)';
+    });
+
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIndex = parseInt(card.getAttribute('data-index'));
+      if (!isNaN(fromIndex) && !isNaN(toIndex) && fromIndex !== toIndex) {
+        const moved = userPortfolio.splice(fromIndex, 1)[0];
+        userPortfolio.splice(toIndex, 0, moved);
+        localStorage.setItem('trading_ai_portfolio', JSON.stringify(userPortfolio));
+        window.renderPortfolioGrid();
+      }
+    });
+
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '1';
+      card.style.cursor = 'grab';
+      window.renderPortfolioGrid();
+    });
   });
 };
 
