@@ -9,7 +9,7 @@
         <Interval>PT1H</Interval>
         <StopAtDurationEnd>false</StopAtDurationEnd>
       </Repetition>
-      <StartBoundary>2026-05-28T08:00:00</StartBoundary>
+      <StartBoundary>2026-05-28T08:05:00</StartBoundary>
       <Enabled>true</Enabled>
       <ScheduleByWeek>
         <DaysOfWeek>
