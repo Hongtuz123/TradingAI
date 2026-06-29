@@ -3766,7 +3766,7 @@ function renderRankings() {
     const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
       const streak = getSectorStreakDays(g.name, 'weak');
-      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#3b82f6; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#10b981; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
       const displayTitle = g.name; 
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
@@ -3889,7 +3889,7 @@ function renderRankings() {
           <div class="rank-item-row" onclick="openChart('${s.id}')">
             <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
             <div class="rank-info" style="flex:1;">
-              <div class="rank-title">${s.id} ${s.name} <span class="badge" style="background:#10b981; color:white; font-size:9px; padding:1px 3px;">Supertrend 轉多</span></div>
+              <div class="rank-title">${s.id} ${s.name} <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 3px;">Supertrend 轉多</span></div>
               <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
                 <span>${sector} | 量比 ${(s.volRatio||0).toFixed(1)}x | ADX: ${(s.adx||0).toFixed(1)}</span>
                 <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:var(--success);">

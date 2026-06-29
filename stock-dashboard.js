@@ -1123,9 +1123,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
         if (seg.trend === 1) {
           // 多頭上升軌道：AreaSeries 往下延伸漸層
           const upSeries = mainChart.addSeries(LightweightCharts.AreaSeries, {
-            lineColor: '#22c55e',
-            topColor: 'rgba(34, 197, 94, 0.22)',
-            bottomColor: 'rgba(34, 197, 94, 0.0)',
+            lineColor: '#ef4444',
+            topColor: 'rgba(239, 68, 68, 0.22)',
+            bottomColor: 'rgba(239, 68, 68, 0.0)',
             lineWidth: 2,
             title: '',
             crosshairMarkerVisible: true,
@@ -1139,9 +1139,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
           // 空頭下降軌道：BaselineSeries 往上延伸漸層 (動態 baseValue 緊貼最高價)
           const dnSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segMax * 1.04 },
-            bottomLineColor: '#ef4444',
-            bottomFillColor1: 'rgba(239, 68, 68, 0.0)',
-            bottomFillColor2: 'rgba(239, 68, 68, 0.22)',
+            bottomLineColor: '#22c55e',
+            bottomFillColor1: 'rgba(16, 185, 129, 0.0)',
+            bottomFillColor2: 'rgba(16, 185, 129, 0.22)',
             topLineColor: 'transparent',
             topFillColor1: 'transparent',
             topFillColor2: 'transparent',
@@ -1290,8 +1290,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
           const hlSeries = mainChart.addSeries(LightweightCharts.BaselineSeries, {
             baseValue: { type: 'price', price: segStMin },
             topLineColor: 'transparent',
-            topFillColor1: 'rgba(34, 197, 94, 0.35)',
-            topFillColor2: 'rgba(34, 197, 94, 0.08)',
+            topFillColor1: 'rgba(239, 68, 68, 0.28)',
+            topFillColor2: 'rgba(239, 68, 68, 0.08)',
             bottomLineColor: 'transparent',
             bottomFillColor1: 'transparent',
             bottomFillColor2: 'transparent',
@@ -1304,9 +1304,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
           hlSeries.setData(segCloseData);
           highlighterSeriesList.push(hlSeries);
 
-          // 繪製該段綠色軌道實線 (獨立 Series，轉換趨勢時不連起來)
+          // 繪製該段紅色軌道實線 (獨立 Series，轉換趨勢時不連起來)
           const lineSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-            color: '#22c55e',
+            color: '#ef4444',
             lineWidth: 2,
             lineStyle: 0,
             title: '',
@@ -1324,8 +1324,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             topFillColor1: 'transparent',
             topFillColor2: 'transparent',
             bottomLineColor: 'transparent',
-            bottomFillColor1: 'rgba(239, 68, 68, 0.28)',
-            bottomFillColor2: 'rgba(239, 68, 68, 0.45)',
+            bottomFillColor1: 'rgba(16, 185, 129, 0.28)',
+            bottomFillColor2: 'rgba(16, 185, 129, 0.45)',
             lineWidth: 0,
             title: '',
             crosshairMarkerVisible: false,
@@ -1335,9 +1335,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
           hlSeries.setData(segCloseData);
           highlighterSeriesList.push(hlSeries);
 
-          // 繪製該段紅色軌道實線 (獨立 Series，轉換趨勢時不連起來)
+          // 繪製該段綠色軌道實線 (獨立 Series，轉換趨勢時不連起來)
           const lineSeries = mainChart.addSeries(LightweightCharts.LineSeries, {
-            color: '#ef4444',
+            color: '#22c55e',
             lineWidth: 2,
             lineStyle: 0,
             title: '',
@@ -1361,7 +1361,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             buyMarkers.push({
               time: curr.time,
               position: 'belowBar',
-              color: '#22c55e',
+              color: '#ef4444',
               shape: 'arrowUp',
               text: ' [ BUY ] ',
               size: 2.4,
@@ -1370,7 +1370,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
             sellMarkers.push({
               time: curr.time,
               position: 'aboveBar',
-              color: '#ef4444',
+              color: '#22c55e',
               shape: 'arrowDown',
               text: ' [ SELL ] ',
               size: 2.4,
