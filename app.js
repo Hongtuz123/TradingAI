@@ -20,10 +20,43 @@ function getTechBadgesHTML(typeStr) {
   }).join('');
 }
 
+// 重新載入數據
+window.reloadDataJson = async function() {
+  try {
+    console.log('[App] Refreshing market data (data.json) asynchronously...');
+    const response = await fetch('data.json?t=' + Date.now());
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    
+    marketData = data.marketData || {};
+    rulesConfig = data.rulesConfig || {};
+    mockStocks = data.mockStocks || [];
+    
+    console.log('[App] Data successfully reloaded! Stock count:', mockStocks.length);
+    updateAllStockPrices();
+    
+    // 重新渲染當前畫面
+    if (currentActiveView === 'dashboard') {
+      if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
+      if (typeof renderRankings === 'function') renderRankings();
+    } else if (currentActiveView === 'portfolio') {
+      if (typeof renderPortfolioGrid === 'function') renderPortfolioGrid();
+    }
+    
+    // 更新最後更新時間
+    const updateTime = marketData.lastUpdate ? marketData.lastUpdate.replace(/-/g, '/') : '----/--/-- --:--:--';
+    const lastUpdateEl = document.getElementById('lastUpdateTime');
+    if (lastUpdateEl) lastUpdateEl.innerText = updateTime;
+  } catch (err) {
+    console.error('[App Reload Error] Failed to reload data.json:', err);
+  }
+};
+
 // 即時時鐘與開盤倒數
 function startClock() {
   const clockEl = document.getElementById('currentTime');
   const marketStatusText = document.getElementById('marketStatusText');
+  let lastJsonLoadTime = Date.now();
   
   setInterval(() => {
     const now = new Date();
@@ -71,6 +104,12 @@ function startClock() {
       } else if (currentActiveView === 'portfolio') {
         renderPortfolioGrid();
       }
+    }
+
+    // 每小時（3600秒）自動更新一次 data.json
+    if (Date.now() - lastJsonLoadTime >= 3600000) {
+      window.reloadDataJson();
+      lastJsonLoadTime = Date.now();
     }
   }, 1000);
 }
@@ -3033,6 +3072,70 @@ const SECTOR_COMPENSATION = {
   '9962': '傳產:鋼鐵'
 };
 
+// 彈出法人對比 Modal
+window.showInstCompare = function(event, sectorName, today, avg) {
+  event.stopPropagation();
+  const diffPct = avg !== 0 ? (((today - avg) / Math.abs(avg)) * 100).toFixed(1) : '--';
+  const compareText = diffPct !== '--' ? (diffPct >= 0 ? `多 ${diffPct}%` : `少 ${Math.abs(diffPct)}%`) : '無 7 日平均數據';
+  
+  const modal = document.getElementById('stockModal');
+  const content = document.getElementById('modalContent');
+  if (modal && content) {
+    content.innerHTML = `
+      <div style="padding: 10px;">
+        <h3 style="color:var(--primary); margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">🐾 族群三大法人籌碼分析</h3>
+        <p style="font-size:14px; margin: 8px 0;"><strong>族群名稱：</strong> ${sectorName}</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>今日買賣超合計：</strong> <span style="color:${today >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${today >= 0 ? '+' : ''}${today.toLocaleString()} 張</span></p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日日均合計：</strong> ${avg >= 0 ? '+' : ''}${avg.toFixed(1)} 張</p>
+        <p style="font-size:16px; margin: 12px 0 0 0; font-weight:bold; border-top:1px dashed rgba(255,255,255,0.1); padding-top:8px;">
+          比較結果：<span style="color:var(--primary);">${compareText}</span>
+        </p>
+      </div>
+    `;
+    modal.classList.add('active');
+  }
+};
+
+window.showStockInstCompare = function(event, symbol, name, today, avg, sum5d, detail5d) {
+  event.stopPropagation();
+  const diffPct = avg !== 0 ? (((today - avg) / Math.abs(avg)) * 100).toFixed(1) : '--';
+  const compareText = diffPct !== '--' ? (diffPct >= 0 ? `多 ${diffPct}%` : `少 ${Math.abs(diffPct)}%`) : '無 7 日平均數據';
+  
+  let detailHTML = '';
+  if (detail5d && Array.isArray(detail5d)) {
+    detailHTML = `
+      <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <strong style="font-size:13px; color:var(--primary);">📅 近 5 日法人合計買賣超明細：</strong>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text-muted);">
+          ${detail5d.map((val, idx) => `
+            <div style="text-align:center;">
+              <div>D-${idx}</div>
+              <div style="color:${val >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${val >= 0 ? '+' : ''}${val}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  const modal = document.getElementById('stockModal');
+  const content = document.getElementById('modalContent');
+  if (modal && content) {
+    content.innerHTML = `
+      <div style="padding: 10px;">
+        <h3 style="color:var(--primary); margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">🐾 個股三大法人籌碼分析</h3>
+        <p style="font-size:14px; margin: 8px 0;"><strong>標的：</strong> ${symbol} ${name}</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>今日買賣超合計：</strong> <span style="color:${today >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${today >= 0 ? '+' : ''}${today.toLocaleString()} 張</span></p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日日均合計：</strong> ${avg >= 0 ? '+' : ''}${avg.toFixed(1)} 張</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日比較：</strong> 比平均 <span style="color:var(--primary); font-weight:bold;">${compareText}</span></p>
+        <p style="font-size:14px; margin: 8px 0; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;"><strong>近 5 日累計買賣超：</strong> <span style="color:${sum5d >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${sum5d >= 0 ? '+' : ''}${sum5d.toLocaleString()} 張</span></p>
+        ${detailHTML}
+      </div>
+    `;
+    modal.classList.add('active');
+  }
+};
+
 // 智慧取得股票所屬的 [大產業] 與 [細分族群]
 function getStockSector(s) {
   if (SECTOR_COMPENSATION[s.id]) {
@@ -3510,6 +3613,88 @@ function switchRankTab(tabId) {
   renderRankings();
 }
 
+// 計算族群連續強/弱勢天數的函數
+function getSectorStreakDays(sectorName, type) {
+  if (!marketData.sectorHistory || !Array.isArray(marketData.sectorHistory)) {
+    return 1;
+  }
+  let streak = 0;
+  for (let i = 0; i < marketData.sectorHistory.length; i++) {
+    const hist = marketData.sectorHistory[i];
+    const list = hist[type] || [];
+    if (list.includes(sectorName)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak > 0 ? streak : 1;
+}
+
+// 彈出法人對比 Modal
+window.showInstCompare = function(event, sectorName, today, avg) {
+  event.stopPropagation();
+  const diffPct = avg !== 0 ? (((today - avg) / Math.abs(avg)) * 100).toFixed(1) : '--';
+  const compareText = diffPct !== '--' ? (diffPct >= 0 ? `多 ${diffPct}%` : `少 ${Math.abs(diffPct)}%`) : '無 7 日平均數據';
+  
+  const modal = document.getElementById('stockModal');
+  const content = document.getElementById('modalContent');
+  if (modal && content) {
+    content.innerHTML = `
+      <div style="padding: 10px;">
+        <h3 style="color:var(--primary); margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">🐾 族群三大法人籌碼分析</h3>
+        <p style="font-size:14px; margin: 8px 0;"><strong>族群名稱：</strong> ${sectorName}</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>今日買賣超合計：</strong> <span style="color:${today >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${today >= 0 ? '+' : ''}${today.toLocaleString()} 張</span></p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日日均合計：</strong> ${avg >= 0 ? '+' : ''}${avg.toFixed(1)} 張</p>
+        <p style="font-size:16px; margin: 12px 0 0 0; font-weight:bold; border-top:1px dashed rgba(255,255,255,0.1); padding-top:8px;">
+          比較結果：<span style="color:var(--primary);">${compareText}</span>
+        </p>
+      </div>
+    `;
+    modal.classList.add('active');
+  }
+};
+
+window.showStockInstCompare = function(event, symbol, name, today, avg, sum5d, detail5d) {
+  event.stopPropagation();
+  const diffPct = avg !== 0 ? (((today - avg) / Math.abs(avg)) * 100).toFixed(1) : '--';
+  const compareText = diffPct !== '--' ? (diffPct >= 0 ? `多 ${diffPct}%` : `少 ${Math.abs(diffPct)}%`) : '無 7 日平均數據';
+  
+  let detailHTML = '';
+  if (detail5d && Array.isArray(detail5d)) {
+    detailHTML = `
+      <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <strong style="font-size:13px; color:var(--primary);">📅 近 5 日法人合計買賣超明細：</strong>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text-muted);">
+          ${detail5d.map((val, idx) => `
+            <div style="text-align:center;">
+              <div>D-${idx}</div>
+              <div style="color:${val >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${val >= 0 ? '+' : ''}${val}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  const modal = document.getElementById('stockModal');
+  const content = document.getElementById('modalContent');
+  if (modal && content) {
+    content.innerHTML = `
+      <div style="padding: 10px;">
+        <h3 style="color:var(--primary); margin-top:0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">🐾 個股三大法人籌碼分析</h3>
+        <p style="font-size:14px; margin: 8px 0;"><strong>標的：</strong> ${symbol} ${name}</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>今日買賣超合計：</strong> <span style="color:${today >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${today >= 0 ? '+' : ''}${today.toLocaleString()} 張</span></p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日日均合計：</strong> ${avg >= 0 ? '+' : ''}${avg.toFixed(1)} 張</p>
+        <p style="font-size:14px; margin: 8px 0;"><strong>近 7 日比較：</strong> 比平均 <span style="color:var(--primary); font-weight:bold;">${compareText}</span></p>
+        <p style="font-size:14px; margin: 8px 0; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;"><strong>近 5 日累計買賣超：</strong> <span style="color:${sum5d >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">${sum5d >= 0 ? '+' : ''}${sum5d.toLocaleString()} 張</span></p>
+        ${detailHTML}
+      </div>
+    `;
+    modal.classList.add('active');
+  }
+};
+
 // 3. 渲染排行榜
 function renderRankings() {
   const container = document.getElementById('rankListContent');
@@ -3522,10 +3707,15 @@ function renderRankings() {
     const sectorStr = getStockSector(s);
     const sector = sectorStr.split(':')[1] || sectorStr; // 直接使用細分類作為分組主鍵，例如 水泥、食品、IC設計
     if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0 };
+      sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0, totalInst: 0, totalAvgInst7D: 0 };
     }
     sectorGroups[sector].stocks.push(s);
     sectorGroups[sector].totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0); // 估算成交金額（張×1000股×元）
+    
+    // 三大法人今日買賣超合計 = 外資 + 投信 + 自營商
+    const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+    sectorGroups[sector].totalInst += instToday;
+    sectorGroups[sector].totalAvgInst7D += (s.instAvg7D || 0);
   });
   
   const sectorsArray = Object.values(sectorGroups);
@@ -3550,14 +3740,21 @@ function renderRankings() {
     // 強勢族群排行榜 (漲幅前 N 名)
     const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
-      const displayTitle = g.name; // 直接顯示細細分類，如 水泥、食品、IC設計
+      const streak = getSectorStreakDays(g.name, 'strong');
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#ef4444; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">強勢 day${streak}</span>` : '';
+      const displayTitle = g.name; 
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info">
-            <div class="rank-title">${displayTitle}</div>
-            <div class="rank-desc">成分股: ${g.stocks.length}檔 | 估算資金: ${val}億</div>
+            <div class="rank-title" style="display:flex; align-items:center;">${displayTitle}${streakBadge}</div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
+              <span>成分股: ${g.stocks.length}檔 | 估計資金: ${val}億</span>
+              <span class="inst-badge" onclick="showInstCompare(event, '${g.name}', ${g.totalInst}, ${g.totalAvgInst7D})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                法人: ${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張
+              </span>
+            </div>
           </div>
           <div class="rank-value text-up">+${g.avgChange.toFixed(2)}%</div>
         </div>
@@ -3568,14 +3765,21 @@ function renderRankings() {
     // 弱勢族群排行榜 (跌幅前 N 名)
     const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
-      const displayTitle = g.name; // 直接顯示細細分類
+      const streak = getSectorStreakDays(g.name, 'weak');
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#3b82f6; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
+      const displayTitle = g.name; 
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info">
-            <div class="rank-title">${displayTitle}</div>
-            <div class="rank-desc">成分股: ${g.stocks.length}檔 | 估算資金: ${val}億</div>
+            <div class="rank-title" style="display:flex; align-items:center;">${displayTitle}${streakBadge}</div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
+              <span>成分股: ${g.stocks.length}檔 | 估計資金: ${val}億</span>
+              <span class="inst-badge" onclick="showInstCompare(event, '${g.name}', ${g.totalInst}, ${g.totalAvgInst7D})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                法人: ${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張
+              </span>
+            </div>
           </div>
           <div class="rank-value text-down">${g.avgChange.toFixed(2)}%</div>
         </div>
@@ -3583,16 +3787,32 @@ function renderRankings() {
     }).join('');
 
   } else if (currentRankTab === 'hot') {
-    // 熱門標的排行榜 (量能比 volRatio 排序前 N 名)
+    // 熱門標的排行榜 (量能比 volRatio 排序前 N 名，只看量)
     const sorted = [...mockStocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, limit);
     listHTML = sorted.map((s, idx) => {
       const sector = getStockSector(s).split(':')[1] || '一般';
+      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+      const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+      
+      let anomalyBadge = '';
+      if ((s.volRatio || 0) >= 10.0) {
+        const status = change >= 0 ? '買量過多' : '賣量過多';
+        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:10px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
+      }
+      
       return `
         <div class="rank-item-row" onclick="openChart('${s.id}')">
           <div class="rank-number top${idx+1}">${idx+1}</div>
-          <div class="rank-info">
-            <div class="rank-title">${s.id} ${s.name}</div>
-            <div class="rank-desc">${sector} | 成交量: ${s.dailyVol?.toLocaleString() || '--'}張</div>
+          <div class="rank-info" style="flex:1;">
+            <div class="rank-title" style="display:flex; align-items:center;">
+              ${anomalyBadge}<span>${s.id} ${s.name}</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
+              <span>${sector} | 成交量: ${s.dailyVol?.toLocaleString() || '--'}張</span>
+              <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                法人: ${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張
+              </span>
+            </div>
           </div>
           <div class="rank-value text-up" style="color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
         </div>
@@ -3600,49 +3820,82 @@ function renderRankings() {
     }).join('');
 
   } else if (currentRankTab === 'inst') {
-    // 法人買超排行榜 (投信+外資買超張數加總排序前 N 名)
-    const sorted = [...mockStocks].sort((a, b) => {
-      const sumA = (a.trustDays || 0) + (a.foreignNetBuy || 0);
-      const sumB = (b.trustDays || 0) + (b.foreignNetBuy || 0);
-      return sumB - sumA;
-    }).slice(0, limit);
+    // 法人買超排行榜 (只看三大法人合計買超 > 0，並改依量能比 volRatio 由高到低排序)
+    const sorted = [...mockStocks]
+      .filter(s => {
+        const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+        return instToday > 0;
+      })
+      .sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0))
+      .slice(0, limit);
     
     listHTML = sorted.map((s, idx) => {
-      const sumBuy = (s.trustDays || 0) + (s.foreignNetBuy || 0);
+      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+      const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+      
+      let anomalyBadge = '';
+      if ((s.volRatio || 0) >= 10.0) {
+        const status = change >= 0 ? '買量過多' : '賣量過多';
+        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:10px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
+      }
+      
       return `
         <div class="rank-item-row" onclick="openChart('${s.id}')">
           <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
-          <div class="rank-info">
-            <div class="rank-title">${s.id} ${s.name}</div>
-            <div class="rank-desc">外資: ${s.foreignNetBuy || 0}張 | 投信: ${s.trustDays || 0}張</div>
+          <div class="rank-info" style="flex:1;">
+            <div class="rank-title" style="display:flex; align-items:center;">
+              ${anomalyBadge}<span>${s.id} ${s.name}</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
+              <span>外資: ${s.foreignNetBuy || 0}張 | 投信: ${s.trustDays || 0}張 | 自營: ${s.dealerDays || 0}張</span>
+              <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:var(--success);">
+                法人: +${instToday.toLocaleString()}張
+              </span>
+            </div>
           </div>
-          <div class="rank-value text-up">+${sumBuy.toLocaleString()}張</div>
+          <div class="rank-value text-up" style="color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
         </div>
       `;
     }).join('');
 
   } else if (currentRankTab === 'dip') {
-    // 抄底名單：放量未明顯漲的個股 (筌碼信號)
-    // 條件：量比 ≥ 1.5x 且 漲跌幅 -3% ~ +1.5%之間 (有人在承接但尚未引爆)
+    // 抄底名單（更新門檻與新技術指標）
     const dipStocks = [...mockStocks].filter(s => {
       const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-      return (s.volRatio || 0) >= 1.5 && change >= -3 && change <= 1.5;
+      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+      
+      // 1. 量能比門檻 1.25x
+      const condVol = (s.volRatio || 0) >= 1.25;
+      // 2. 主力買超 (三大法人買賣超合計 > 0，且跌幅 >= -5.0%，防流出)
+      const condInst = instToday > 0 && change >= -5.0;
+      // 3. 當日漲跌幅介於 -5% 至 +1.5% 之間
+      const condPrice = change >= -5.0 && change <= 1.5;
+      // 4. Supertrend 由空頭轉多頭 (昨為 -1 且今為 1)
+      const condST = s.prev_supertrend === -1 && s.supertrend === 1;
+      // 5. +DI > -DI 且 ADX > 25
+      const condDMI = (s.plus_di || 0) > (s.minus_di || 0) && (s.adx || 0) > 25;
+      
+      return condVol && condInst && condPrice && condST && condDMI;
     }).sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, limit);
 
     if (dipStocks.length === 0) {
-      listHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">今日無符合條件的抄底標的<br><span style="font-size:11px;opacity:.6;">條件：量比≥1.5x 且 漲跌幅在-3%~+1.5%</span></p>';
+      listHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">今日無符合條件的抄底標的<br><span style="font-size:11px;opacity:.6;">條件：量比≥1.25x 且 漲跌幅在-5%~+1.5% 且 主力買超 且 Supertrend空轉多 且 +DI>-DI 且 ADX>25</span></p>';
     } else {
       listHTML = dipStocks.map((s, idx) => {
         const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
         const sector = getStockSector(s).split(':')[1] || '一般';
-        const instTotal = (s.trustDays || 0) + (s.foreignNetBuy || 0);
-        const instStr = instTotal > 0 ? `<span style="color:#22c55e;">+${instTotal}</span>` : instTotal < 0 ? `<span style="color:#ef4444;">${instTotal}</span>` : '0';
+        const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
         return `
           <div class="rank-item-row" onclick="openChart('${s.id}')">
             <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
-            <div class="rank-info">
-              <div class="rank-title">${s.id} ${s.name}</div>
-              <div class="rank-desc">${sector} | 量比 ${(s.volRatio||0).toFixed(1)}x | 法人 ${instStr}張</div>
+            <div class="rank-info" style="flex:1;">
+              <div class="rank-title">${s.id} ${s.name} <span class="badge" style="background:#10b981; color:white; font-size:9px; padding:1px 3px;">Supertrend 轉多</span></div>
+              <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
+                <span>${sector} | 量比 ${(s.volRatio||0).toFixed(1)}x | ADX: ${(s.adx||0).toFixed(1)}</span>
+                <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:var(--success);">
+                  法人: +${instToday.toLocaleString()}張
+                </span>
+              </div>
             </div>
             <div class="rank-value ${change >= 0 ? 'text-up' : 'text-down'}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
           </div>

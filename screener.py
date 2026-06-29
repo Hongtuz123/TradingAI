@@ -694,6 +694,84 @@ def calc_indicators(df):
     # 52週高點
     df['high_52w'] = df['close'].rolling(250, min_periods=1).max()
 
+    # =====================================================
+    # 新增：Supertrend (10, 3.0) 與 DMI (14) 計算
+    # =====================================================
+    # 1. Supertrend (10, 3.0)
+    tr10 = df['tr']
+    atr10 = pd.Series(index=tr10.index, dtype=float)
+    if len(tr10) >= 10:
+        atr10.iloc[9] = tr10.iloc[:10].mean()
+        for i in range(10, len(tr10)):
+            atr10.iloc[i] = (tr10.iloc[i] + 9 * atr10.iloc[i-1]) / 10.0
+    else:
+        atr10 = tr10.rolling(window=10, min_periods=1).mean()
+
+    src = (df['high'] + df['low']) / 2
+    up = src - (3.0 * atr10)
+    dn = src + (3.0 * atr10)
+
+    supertrend = pd.Series(1, index=df.index)
+    final_up = pd.Series(up.fillna(0.0), index=df.index)
+    final_dn = pd.Series(dn.fillna(0.0), index=df.index)
+
+    start_idx = 10 if len(df) > 10 else 1
+    for i in range(start_idx, len(df)):
+        close_prev = df['close'].iloc[i-1]
+        
+        # Up
+        up_curr = up.iloc[i]
+        up_prev = final_up.iloc[i-1]
+        final_up.iloc[i] = max(up_curr, up_prev) if close_prev > up_prev else up_curr
+            
+        # Dn
+        dn_curr = dn.iloc[i]
+        dn_prev = final_dn.iloc[i-1]
+        final_dn.iloc[i] = min(dn_curr, dn_prev) if close_prev < dn_prev else dn_curr
+            
+        # Trend
+        trend_prev = supertrend.iloc[i-1]
+        if trend_prev == -1 and df['close'].iloc[i] > final_dn.iloc[i-1]:
+            supertrend.iloc[i] = 1
+        elif trend_prev == 1 and df['close'].iloc[i] < final_up.iloc[i-1]:
+            supertrend.iloc[i] = -1
+        else:
+            supertrend.iloc[i] = trend_prev
+
+    df['supertrend'] = supertrend
+
+    # 2. DMI (14) 計算
+    up_move = df['high'].diff()
+    down_move = df['low'].shift(1) - df['low']
+    
+    plus_dm = pd.Series(0.0, index=df.index)
+    minus_dm = pd.Series(0.0, index=df.index)
+    
+    mask_plus = (up_move > down_move) & (up_move > 0)
+    plus_dm[mask_plus] = up_move[mask_plus]
+    
+    mask_minus = (down_move > up_move) & (down_move > 0)
+    minus_dm[mask_minus] = down_move[mask_minus]
+
+    def wilder_smooth(series, period=14):
+        smoothed = pd.Series(index=series.index, dtype=float)
+        if len(series) >= period:
+            smoothed.iloc[period-1] = series.iloc[:period].mean()
+            for idx in range(period, len(series)):
+                smoothed.iloc[idx] = (series.iloc[idx] + (period - 1) * smoothed.iloc[idx-1]) / period
+        else:
+            smoothed = series.rolling(window=period, min_periods=1).mean()
+        return smoothed
+
+    tr_smoothed = wilder_smooth(df['tr'], 14)
+    plus_dm_smoothed = wilder_smooth(plus_dm, 14)
+    minus_dm_smoothed = wilder_smooth(minus_dm, 14)
+    
+    df['plus_di'] = 100 * (plus_dm_smoothed / (tr_smoothed + 1e-9))
+    df['minus_di'] = 100 * (minus_dm_smoothed / (tr_smoothed + 1e-9))
+    dx = 100 * ((df['plus_di'] - df['minus_di']).abs() / (df['plus_di'] + df['minus_di'] + 1e-9))
+    df['adx'] = wilder_smooth(dx, 14)
+
     return df
 
 
@@ -729,95 +807,77 @@ def classify_tech_type(latest, prev, close, vol):
     return ",".join(types) if types else 'none'
 
 
-def fetch_institutional_data():
+def fetch_institutional_data_for_date(date_str):
     """
-    從 TWSE 和 TPEx 抓取最新有資料交易日的三大法人數據
-    回傳一個 dict: { '股票代碼': { 'trust': 投信買賣超張數, 'foreign': 外資買賣超張數 } }
+    抓取指定日期 (YYYYMMDD) 的上市與上櫃三大法人買賣超數據。
+    若該日無交易或抓取失敗，回傳 None。
     """
     import datetime
     import time
     
-    # 產生最近 10 天的日期候選名單，用來自動回溯
-    now = datetime.datetime.now()
-    twse_dates = []
-    tpex_dates = []
-    for i in range(10):
-        d = now - datetime.timedelta(days=i)
-        # 上市：YYYYMMDD
-        twse_dates.append(d.strftime("%Y%m%d"))
-        # 上櫃：民國年/MM/DD
-        roc_year = d.year - 1911
-        tpex_dates.append(f"{roc_year}/{d.strftime('%m/%d')}")
-        
     inst_data = {}
-    valid_idx = -1
     
-    print("  正在探測最新的上市三大法人交易日資料...")
-    # 1. 探測 TWSE 資料
-    for idx, date_str in enumerate(twse_dates):
-        url = f"https://www.twse.com.tw/rwd/zh/fund/T86?date={date_str}&selectType=ALLBUT0999&response=json"
-        try:
-            res = requests.get(url, timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                if data.get("stat") == "OK" and "data" in data:
-                    print(f"  ✅ 成功取得 {date_str} 上市三大法人資料！共 {len(data['data'])} 筆。")
-                    valid_idx = idx
+    # 1. 抓取上市 (TWSE)
+    url = f"https://www.twse.com.tw/rwd/zh/fund/T86?date={date_str}&selectType=ALLBUT0999&response=json"
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            if data.get("stat") != "OK" or "data" not in data:
+                return None
+            
+            fields = data.get("fields", [])
+            foreign_idx = -1
+            trust_idx = -1
+            dealer_idx = -1
+            for f_idx, field in enumerate(fields):
+                if "外陸資" in field and "買賣超" in field and "不含外資自營商" in field:
+                    foreign_idx = f_idx
+                elif "投信" in field and "買賣超" in field:
+                    trust_idx = f_idx
+                elif "自營商" in field and "買賣超" in field and "自行買賣" not in field and "避險" not in field:
+                    dealer_idx = f_idx
                     
-                    # 解析 fields 尋找外資、投信與自營商索引
-                    fields = data.get("fields", [])
-                    foreign_idx = -1
-                    trust_idx = -1
-                    dealer_idx = -1
-                    for f_idx, field in enumerate(fields):
-                        if "外陸資" in field and "買賣超" in field and "不含外資自營商" in field:
-                            foreign_idx = f_idx
-                        elif "投信" in field and "買賣超" in field:
-                            trust_idx = f_idx
-                        elif "自營商" in field and "買賣超" in field and "自行買賣" not in field and "避險" not in field:
-                            dealer_idx = f_idx
-                            
-                    # fallback 至預設索引
-                    if foreign_idx == -1: foreign_idx = 4
-                    if trust_idx == -1: trust_idx = 10
-                    if dealer_idx == -1: dealer_idx = 11
-                    
-                    for row in data["data"]:
-                        code = row[0].strip()
-                        # 去除逗號並轉為股數，再除以 1000 得到張數
-                        try:
-                            foreign_val = int(row[foreign_idx].replace(",", "")) // 1000
-                        except Exception:
-                            foreign_val = 0
-                        try:
-                            trust_val = int(row[trust_idx].replace(",", "")) // 1000
-                        except Exception:
-                            trust_val = 0
-                        try:
-                            dealer_val = int(row[dealer_idx].replace(",", "")) // 1000
-                        except Exception:
-                            dealer_val = 0
-                        
-                        inst_data[code] = {
-                            "foreign": foreign_val,
-                            "trust": trust_val,
-                            "dealer": dealer_val
-                        }
-                    break
-                else:
-                    # 資料尚未公布或假日無交易
-                    pass
-        except Exception as e:
-            print(f"  探測上市日期 {date_str} 出錯: {e}")
-        time.sleep(0.1) # 遵守 100ms 間隔限制
+            if foreign_idx == -1: foreign_idx = 4
+            if trust_idx == -1: trust_idx = 10
+            if dealer_idx == -1: dealer_idx = 11
+            
+            for row in data["data"]:
+                code = row[0].strip()
+                try:
+                    foreign_val = int(row[foreign_idx].replace(",", "")) // 1000
+                except:
+                    foreign_val = 0
+                try:
+                    trust_val = int(row[trust_idx].replace(",", "")) // 1000
+                except:
+                    trust_val = 0
+                try:
+                    dealer_val = int(row[dealer_idx].replace(",", "")) // 1000
+                except:
+                    dealer_val = 0
+                
+                inst_data[code] = {
+                    "foreign": foreign_val,
+                    "trust": trust_val,
+                    "dealer": dealer_val
+                }
+        else:
+            return None
+    except Exception as e:
+        print(f"  抓取上市日期 {date_str} 出錯: {e}")
+        return None
         
-    if valid_idx == -1:
-        print("  ⚠️ 無法抓取到 any 最近的上市三大法人資料！")
-        return {}
+    time.sleep(0.5) # 遵守 API 頻率限制
+    
+    # 2. 既然上市有資料，對應去抓上櫃 (TPEx)
+    try:
+        dt_obj = datetime.datetime.strptime(date_str, "%Y%m%d")
+        roc_year = dt_obj.year - 1911
+        tpex_date_str = f"{roc_year}/{dt_obj.strftime('%m/%d')}"
+    except Exception:
+        return inst_data
         
-    # 2. 既然抓到了有效交易日，用對應的日期去抓 TPEx (上櫃)
-    tpex_date_str = tpex_dates[valid_idx]
-    print(f"  正在同步抓取上櫃三大法人資料，日期: {tpex_date_str}...")
     tpex_url = f"https://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&o=json&t=D&d={tpex_date_str}&s=0,asc"
     try:
         res = requests.get(tpex_url, timeout=10)
@@ -826,33 +886,158 @@ def fetch_institutional_data():
             if "tables" in data and len(data["tables"]) > 0:
                 table = data["tables"][0]
                 if "data" in table:
-                    print(f"  ✅ 成功取得 {tpex_date_str} 上櫃三大法人資料！共 {len(table['data'])} 筆。")
                     for row in table["data"]:
                         if len(row) >= 23:
                             code = row[0].strip()
                             try:
                                 foreign_val = int(row[4].replace(",", "")) // 1000
-                            except Exception:
+                            except:
                                 foreign_val = 0
                             try:
                                 trust_val = int(row[13].replace(",", "")) // 1000
-                            except Exception:
+                            except:
                                 trust_val = 0
                             try:
                                 dealer_val = int(row[22].replace(",", "")) // 1000
-                            except Exception:
+                            except:
                                 dealer_val = 0
                             
-                            # 合併或寫入
-                            inst_data[code] = {
-                                "foreign": foreign_val,
-                                "trust": trust_val,
-                                "dealer": dealer_val
-                            }
+                            if code in inst_data:
+                                inst_data[code]["foreign"] = foreign_val
+                                inst_data[code]["trust"] = trust_val
+                                inst_data[code]["dealer"] = dealer_val
+                            else:
+                                inst_data[code] = {
+                                    "foreign": foreign_val,
+                                    "trust": trust_val,
+                                    "dealer": dealer_val
+                                }
     except Exception as e:
-        print(f"  抓取上櫃三大法人出錯: {e}")
+        print(f"  抓取上櫃日期 {tpex_date_str} 出錯: {e}")
         
+    time.sleep(0.5)
     return inst_data
+
+
+def fetch_institutional_data():
+    """
+    探測最新有資料的交易日，抓取其三大法人數據並回傳。
+    回傳：(today_date_str, inst_data)
+    """
+    import datetime
+    now = datetime.datetime.now()
+    for i in range(10):
+        d = now - datetime.timedelta(days=i)
+        date_str = d.strftime("%Y%m%d")
+        print(f"  正在探測最新的三大法人交易日資料 (上市/上櫃): {date_str}...")
+        data = fetch_institutional_data_for_date(date_str)
+        if data:
+            print(f"  ✅ 成功取得 {date_str} 三大法人資料！共 {len(data)} 筆。")
+            return date_str, data
+    return None, {}
+
+
+def update_institutional_history_and_calc_stats(today_date, today_data):
+    """
+    載入/維護本機歷史法人檔案，若天數不足 8 天則回溯補齊，
+    最後計算出每檔股票：
+    - instSum5D: 近 5 日（含今日）買超加總
+    - instAvg7D: 近 7 日（不含今日）日均買超
+    - instDetail5D: 近 5 日（含今日，由新到舊）每日法人合計買超明細
+    """
+    import datetime
+    import os
+    import json
+    
+    history_path = "scratch/institutional_history.json"
+    history = {}
+    if os.path.exists(history_path):
+        try:
+            with open(history_path, "r", encoding="utf-8") as rf:
+                history = json.load(rf)
+        except Exception as je:
+            print(f"  讀取 institutional_history.json 失敗: {je}")
+            
+    # 更新今日數據
+    if today_date and today_data:
+        history[today_date] = today_data
+        
+    # 冷啟動防禦：若歷史天數少於 8 天，回溯抓取
+    sorted_dates = sorted(list(history.keys()), reverse=True)
+    if len(sorted_dates) < 8:
+        print(f"  ⚠️ 檢測到三大法人歷史資料不足 8 天 (目前僅有 {len(sorted_dates)} 天)，啟動冷啟動歷史補齊機制...")
+        now = datetime.datetime.now()
+        for i in range(15):
+            d = now - datetime.timedelta(days=i)
+            date_str = d.strftime("%Y%m%d")
+            if date_str not in history:
+                print(f"  正在補抓歷史日期: {date_str}...")
+                data = fetch_institutional_data_for_date(date_str)
+                if data:
+                    history[date_str] = data
+                    print(f"  ✅ 成功補齊歷史 {date_str}，共 {len(data)} 筆")
+                if len(history) >= 8:
+                    break
+        # 重新排序
+        sorted_dates = sorted(list(history.keys()), reverse=True)
+        
+    # 保留最近 30 天，寫回檔案
+    sorted_dates = sorted_dates[:30]
+    history = {k: history[k] for k in sorted_dates}
+    try:
+        os.makedirs(os.path.dirname(history_path), exist_ok=True)
+        with open(history_path, "w", encoding="utf-8") as wf:
+            json.dump(history, wf, ensure_ascii=False, indent=2)
+    except Exception as we:
+        print(f"  寫入 institutional_history.json 失敗: {we}")
+        
+    today_key = sorted_dates[0] if sorted_dates else None
+    dates_5d = sorted_dates[:5]
+    dates_7d = sorted_dates[1:8] # 前 7 天，不含今天
+    
+    print(f"  📊 法人統計基準日：今日 = {today_key}，近5日 = {dates_5d}，近7日平均基底 = {dates_7d}")
+    
+    stats = {}
+    all_codes = set()
+    for d in sorted_dates:
+        all_codes.update(history[d].keys())
+        
+    for code in all_codes:
+        # 今日合計
+        today_net = 0
+        if today_key and code in history[today_key]:
+            ti = history[today_key][code]
+            today_net = (ti.get("foreign", 0) or 0) + (ti.get("trust", 0) or 0) + (ti.get("dealer", 0) or 0)
+            
+        # 近 5 日明細 (含今日)
+        detail_5d = []
+        for d in dates_5d:
+            net = 0
+            if code in history[d]:
+                item = history[d][code]
+                net = (item.get("foreign", 0) or 0) + (item.get("trust", 0) or 0) + (item.get("dealer", 0) or 0)
+            detail_5d.append(net)
+        sum_5d = sum(detail_5d)
+        
+        # 近 7 日平均 (不含今日)
+        nets_7d = []
+        for d in dates_7d:
+            if code in history[d]:
+                item = history[d][code]
+                net = (item.get("foreign", 0) or 0) + (item.get("trust", 0) or 0) + (item.get("dealer", 0) or 0)
+                nets_7d.append(net)
+            else:
+                nets_7d.append(0)
+                
+        avg_7d = round(sum(nets_7d) / 7.0, 1) if nets_7d else 0.0
+        
+        stats[code] = {
+            "instSum5D": sum_5d,
+            "instAvg7D": avg_7d,
+            "instDetail5D": detail_5d
+        }
+        
+    return stats
 
 
 def run_screener():
@@ -924,7 +1109,11 @@ def run_screener():
     print(f"🔗 合併完成！前 500 大股票加上 CSV 專屬自選股，共計分析 {len(csv_stocks)} 檔標的 (額外疊加自選: {added_count} 檔)！")
         
     print("下載三大法人當日買賣超資料...")
-    inst_data = fetch_institutional_data()
+    today_date, inst_today = fetch_institutional_data()
+    inst_stats = update_institutional_history_and_calc_stats(today_date, inst_today)
+    
+    # 為了與舊代碼相容，建立 inst_data 變數
+    inst_data = inst_today
     
     # 批量抓取官方 OpenAPI 基本面數據 (如果上面沒抓過的話)
     if 'openapi_fund' not in locals():
@@ -971,7 +1160,7 @@ def run_screener():
     print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天)...")
     if tickers:
         try:
-            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=True)
+            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=20, timeout=15)
         except Exception as e:
             print(f"❌ 批次下載失敗: {e}")
             df_all = pd.DataFrame()
@@ -1089,6 +1278,19 @@ def run_screener():
                 # 市值 (億) = 收盤價 * (股本(千元) * 100) / 100,000,000 = close * 股本 / 1,000,000
                 market_cap_val = round((close * capital_val) / 1000000, 2)
 
+            # 三大法人統計數據
+            code_stats = inst_stats.get(symbol, {"instSum5D": 0, "instAvg7D": 0.0, "instDetail5D": [0, 0, 0, 0, 0]})
+            inst_sum_5d = code_stats["instSum5D"]
+            inst_avg_7d = code_stats["instAvg7D"]
+            inst_detail_5d = code_stats["instDetail5D"]
+
+            # 新增技術指標 Supertrend 與 DMI
+            supertrend_val = int(latest['supertrend']) if 'supertrend' in latest else 1
+            prev_supertrend_val = int(prev['supertrend']) if 'supertrend' in prev else 1
+            plus_di_val = round(float(latest['plus_di']), 2) if 'plus_di' in latest else 0.0
+            minus_di_val = round(float(latest['minus_di']), 2) if 'minus_di' in latest else 0.0
+            adx_val = round(float(latest['adx']), 2) if 'adx' in latest else 0.0
+
             results.append({
                 "id": symbol, "name": name, "market": market,
                 "industry": industry_map.get(str(symbol).zfill(4), ''),
@@ -1103,6 +1305,14 @@ def run_screener():
                 "foreignBuy": foreign_buy_bool,
                 "foreignNetBuy": foreign_net_buy,
                 "dealerDays": dealer_net_buy,
+                "instSum5D": inst_sum_5d,
+                "instAvg7D": inst_avg_7d,
+                "instDetail5D": inst_detail_5d,
+                "supertrend": supertrend_val,
+                "prev_supertrend": prev_supertrend_val,
+                "plus_di": plus_di_val,
+                "minus_di": minus_di_val,
+                "adx": adx_val,
                 "volRatio": vol_ratio, "turnover": turnover_val,
                 "marketCap": market_cap_val, "dailyVol": vol // 1000,
                 "type": tech_type,
@@ -1187,6 +1397,62 @@ def run_screener():
 
     rules_json_str = json.dumps(rules, ensure_ascii=False, indent=2)
 
+    # === 新增：計算族群強弱排行歷史 ===
+    sector_groups = {}
+    for s in results:
+        ind_str = s.get("industry", "")
+        sector = ind_str.split(":")[1] if ":" in ind_str else ind_str
+        if not sector:
+            sector = "一般"
+        if sector not in sector_groups:
+            sector_groups[sector] = []
+        sector_groups[sector].append(s.get("change", 0.0) or 0.0)
+        
+    sector_avg = []
+    for sector, changes in sector_groups.items():
+        avg_chg = sum(changes) / len(changes) if changes else 0.0
+        sector_avg.append({"name": sector, "avgChange": avg_chg})
+        
+    # 強勢族群 (降序)
+    sector_avg.sort(key=lambda x: x["avgChange"], reverse=True)
+    strong_sectors = [x["name"] for x in sector_avg[:15]]
+    # 弱勢族群 (升序)
+    sector_avg.sort(key=lambda x: x["avgChange"])
+    weak_sectors = [x["name"] for x in sector_avg[:15]]
+
+    sec_history_path = "scratch/sector_history.json"
+    sec_history = []
+    if os.path.exists(sec_history_path):
+        try:
+            with open(sec_history_path, "r", encoding="utf-8") as rf:
+                sec_history = json.load(rf)
+        except Exception:
+            pass
+            
+    today_str = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
+    existing_today = [x for x in sec_history if x.get("date") == today_str]
+    if not existing_today:
+        sec_history.append({
+            "date": today_str,
+            "strong": strong_sectors,
+            "weak": weak_sectors
+        })
+    else:
+        for x in sec_history:
+            if x["date"] == today_str:
+                x["strong"] = strong_sectors
+                x["weak"] = weak_sectors
+                
+    sec_history.sort(key=lambda x: x.get("date", ""), reverse=True)
+    sec_history = sec_history[:30] # 保留最近 30 天
+    
+    try:
+        os.makedirs(os.path.dirname(sec_history_path), exist_ok=True)
+        with open(sec_history_path, "w", encoding="utf-8") as wf:
+            json.dump(sec_history, wf, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"寫入 sector_history.json 失敗: {e}")
+
     # 包含失敗股票清單在 marketData 中
     market_data_dict = {
         # 新結構：台股指數（含漲跌幅、20MA、60MA、量與量能級別）
@@ -1197,7 +1463,6 @@ def run_screener():
         "vol_above_20ma": market_health['vol_above_20ma'],
         "vol_level": market_health['vol_level'],
         "latest_vol_num": market_health['latest_vol_num'],
-        # 新增健康度分數
         "tw_health_score": market_health['tw_health_score'],
         "us_health_score": market_health['us_health_score'],
         # 向下相容舊欄位（避免 JS 舊引用爆炸）
@@ -1205,7 +1470,8 @@ def run_screener():
         "otc_above_60ma":  bool(market_health['otc']),
         "vol_above_20ma_bool": bool(market_health['vol']),
         "lastUpdate": now_str,
-        "price_failed_stocks": price_failed_stocks
+        "price_failed_stocks": price_failed_stocks,
+        "sectorHistory": sec_history
     }
 
     json_data = {
