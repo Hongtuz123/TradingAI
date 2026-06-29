@@ -2325,3 +2325,109 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
   color: white !important;
 }
 
+/* ================= 📊 盤後籌碼小結與籌碼防禦標籤樣式 ================= */
+.postmarket-summary-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.postmarket-summary-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.postmarket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .postmarket-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.postmarket-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.postmarket-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.postmarket-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.postmarket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.postmarket-row:last-child {
+  border-bottom: none;
+}
+
+/* 籌碼防禦膠囊標籤 */
+.quadrant-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  letter-spacing: 0.5px;
+}
+
+.quadrant-badge.major {
+  background-color: var(--success); /* 紅色：主力加碼 */
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+}
+
+.quadrant-badge.rotate {
+  background-color: #eab308; /* 橘黃：買盤放緩 */
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.3);
+}
+
+.quadrant-badge.bottom {
+  background-color: #3b82f6; /* 藍色：低檔築底 */
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+}
+
+.quadrant-badge.retreat {
+  background-color: var(--danger); /* 綠色：主力減碼 */
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+}
+
+

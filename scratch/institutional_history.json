@@ -6605,7 +6605,7 @@
     "00712": {
       "foreign": 21948,
       "trust": 0,
-      "dealer": 0
+      "dealer": 4254
     },
     "00680L": {
       "foreign": -7880,
@@ -7250,7 +7250,7 @@
     "00635U": {
       "foreign": -334,
       "trust": 0,
-      "dealer": 1
+      "dealer": 861
     },
     "4977": {
       "foreign": 566,
@@ -8887,20 +8887,20 @@
       "trust": 0,
       "dealer": 1
     },
-    "6771": {
-      "foreign": -8,
+    "4581": {
+      "foreign": -3,
       "trust": 0,
-      "dealer": 5
+      "dealer": 0
     },
-    "2705": {
-      "foreign": -5,
+    "3021": {
+      "foreign": -3,
       "trust": 0,
-      "dealer": 2
+      "dealer": 0
     },
-    "1443": {
-      "foreign": -7,
+    "2945": {
+      "foreign": -1,
       "trust": 0,
-      "dealer": 4
+      "dealer": -2
     },
     "8940": {
       "foreign": 0,
@@ -8922,20 +8922,20 @@
       "trust": 0,
       "dealer": 0
     },
-    "4581": {
-      "foreign": -3,
+    "1443": {
+      "foreign": -7,
       "trust": 0,
-      "dealer": 0
+      "dealer": 4
     },
-    "3021": {
-      "foreign": -3,
+    "6771": {
+      "foreign": -8,
       "trust": 0,
-      "dealer": 0
+      "dealer": 5
     },
-    "2945": {
-      "foreign": -1,
+    "2705": {
+      "foreign": -5,
       "trust": 0,
-      "dealer": -2
+      "dealer": 2
     },
     "00703": {
       "foreign": 0,
@@ -9172,6 +9172,11 @@
       "trust": 0,
       "dealer": -1
     },
+    "1470": {
+      "foreign": -8,
+      "trust": 0,
+      "dealer": 0
+    },
     "7705": {
       "foreign": -8,
       "trust": 0,
@@ -9192,11 +9197,6 @@
       "trust": 0,
       "dealer": 0
     },
-    "1470": {
-      "foreign": -8,
-      "trust": 0,
-      "dealer": 0
-    },
     "1614": {
       "foreign": -6,
       "trust": 0,
@@ -9207,22 +9207,22 @@
       "trust": 0,
       "dealer": -17
     },
-    "6201": {
-      "foreign": -11,
-      "trust": 0,
-      "dealer": 2
-    },
-    "4994": {
-      "foreign": -9,
-      "trust": 0,
-      "dealer": 0
-    },
     "8429": {
       "foreign": -8,
       "trust": 0,
       "dealer": -1
     },
     "1521": {
+      "foreign": -9,
+      "trust": 0,
+      "dealer": 0
+    },
+    "6201": {
+      "foreign": -11,
+      "trust": 0,
+      "dealer": 2
+    },
+    "4994": {
       "foreign": -9,
       "trust": 0,
       "dealer": 0
@@ -9272,15 +9272,15 @@
       "trust": 0,
       "dealer": -2
     },
-    "3266": {
-      "foreign": -11,
-      "trust": 0,
-      "dealer": 1
-    },
     "1413": {
       "foreign": -9,
       "trust": 0,
       "dealer": -1
+    },
+    "3266": {
+      "foreign": -11,
+      "trust": 0,
+      "dealer": 1
     },
     "2462": {
       "foreign": -12,
@@ -9452,6 +9452,11 @@
       "trust": 0,
       "dealer": -2
     },
+    "1446": {
+      "foreign": -15,
+      "trust": 0,
+      "dealer": -1
+    },
     "2904": {
       "foreign": -16,
       "trust": 0,
@@ -9481,11 +9486,6 @@
       "foreign": 0,
       "trust": 0,
       "dealer": -16
-    },
-    "1446": {
-      "foreign": -15,
-      "trust": 0,
-      "dealer": -1
     },
     "6936": {
       "foreign": -17,
@@ -10152,15 +10152,15 @@
       "trust": 0,
       "dealer": -38
     },
-    "2459": {
-      "foreign": -45,
-      "trust": 0,
-      "dealer": -1
-    },
     "1323": {
       "foreign": -52,
       "trust": 0,
       "dealer": 6
+    },
+    "2459": {
+      "foreign": -45,
+      "trust": 0,
+      "dealer": -1
     },
     "6152": {
       "foreign": -48,
@@ -10857,17 +10857,17 @@
       "trust": 0,
       "dealer": -46
     },
+    "5531": {
+      "foreign": -109,
+      "trust": 0,
+      "dealer": -2
+    },
     "9955": {
       "foreign": -110,
       "trust": 0,
       "dealer": -1
     },
     "6885": {
-      "foreign": -109,
-      "trust": 0,
-      "dealer": -2
-    },
-    "5531": {
       "foreign": -109,
       "trust": 0,
       "dealer": -2
@@ -11182,15 +11182,15 @@
       "trust": 0,
       "dealer": -156
     },
-    "6142": {
-      "foreign": -155,
-      "trust": 0,
-      "dealer": -2
-    },
     "4178": {
       "foreign": -156,
       "trust": 0,
       "dealer": -1
+    },
+    "6142": {
+      "foreign": -155,
+      "trust": 0,
+      "dealer": -2
     },
     "1471": {
       "foreign": -159,
@@ -11469,7 +11469,7 @@
     },
     "3038": {
       "foreign": -226,
-      "trust": 1,
+      "trust": -5,
       "dealer": -1
     },
     "2440": {
@@ -11784,8 +11784,8 @@
     },
     "2731": {
       "foreign": -393,
-      "trust": 16,
-      "dealer": -1
+      "trust": 0,
+      "dealer": -3
     },
     "2612": {
       "foreign": -393,
@@ -12164,8 +12164,8 @@
     },
     "2617": {
       "foreign": -777,
-      "trust": 43,
-      "dealer": -40
+      "trust": 0,
+      "dealer": -42
     },
     "6120": {
       "foreign": -660,
@@ -12274,8 +12274,8 @@
     },
     "00646": {
       "foreign": -327,
-      "trust": 0,
-      "dealer": 0
+      "trust": 120,
+      "dealer": -844
     },
     "6412": {
       "foreign": -854,
@@ -12999,8 +12999,8 @@
     },
     "2344": {
       "foreign": -18446,
-      "trust": 4230,
-      "dealer": -1207
+      "trust": 8023,
+      "dealer": -994
     },
     "2301": {
       "foreign": -8737,
@@ -13159,8 +13159,8 @@
     },
     "2303": {
       "foreign": -16702,
-      "trust": 8873,
-      "dealer": -3923
+      "trust": -24162,
+      "dealer": -2532
     },
     "00988A": {
       "foreign": -46085,
@@ -13195,7 +13195,7 @@
     "009824": {
       "foreign": 32,
       "trust": 0,
-      "dealer": 0
+      "dealer": -137186
     },
     "00981A": {
       "foreign": -85692,

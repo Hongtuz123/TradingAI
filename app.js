@@ -3695,6 +3695,156 @@ window.showStockInstCompare = function(event, symbol, name, today, avg, sum5d, d
   }
 };
 
+// 方案 B：盤後籌碼風向與防禦避風港卡片渲染
+function renderPostmarketSummary() {
+  const panel = document.getElementById('postmarketSummaryPanel');
+  if (!panel) return;
+
+  if (!mockStocks || mockStocks.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  // 1. 計算避風港族群 (今日三大法人合計買超最大，且平均漲跌幅抗跌之族群)
+  const sectorGroups = {};
+  mockStocks.forEach(s => {
+    const sector = getStockSector(s).split(':')[1] || getStockSector(s);
+    if (!sectorGroups[sector]) {
+      sectorGroups[sector] = { name: sector, stocks: [], totalInstToday: 0 };
+    }
+    const g = sectorGroups[sector];
+    g.stocks.push(s);
+
+    let instToday = 0;
+    if (s.instDetail5D && s.instDetail5D[0]) {
+      const td = s.instDetail5D[0];
+      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
+    } else {
+      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+    }
+    g.totalInstToday += instToday;
+  });
+
+  const sectors = Object.values(sectorGroups).map(g => {
+    const n = g.stocks.length;
+    const sumChange = g.stocks.reduce((sum, s) => {
+      const live = getLiveStockData(s);
+      return sum + (s.liveChange !== undefined ? s.liveChange : (live.change || 0));
+    }, 0);
+    const avgChange = n > 0 ? sumChange / n : 0;
+    return { ...g, avgChange };
+  });
+
+  // 篩選：今日法人合計買超為正，且今日抗跌 (avgChange >= -1.0%)
+  const safeSectors = sectors
+    .filter(g => g.totalInstToday > 0 && g.avgChange >= -1.0)
+    .sort((a, b) => b.totalInstToday - a.totalInstToday)
+    .slice(0, 3);
+
+  // 2. 計算籌碼異常爆買股 (量比 >= 1.5x, 法人買超張數占當日成交量比例最高者)
+  const anomalyStocks = mockStocks
+    .map(s => {
+      let instToday = 0;
+      if (s.instDetail5D && s.instDetail5D[0]) {
+        const td = s.instDetail5D[0];
+        instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
+      } else {
+        instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+      }
+      const volRatio = s.volRatio || 1.0;
+      const dailyVol = s.dailyVol || 1;
+      const ratio = dailyVol > 0 ? (instToday / dailyVol) : 0;
+      return { s, instToday, volRatio, ratio };
+    })
+    .filter(item => item.volRatio >= 1.5 && item.instToday > 0)
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 3);
+
+  if (safeSectors.length === 0 && anomalyStocks.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  let html = `
+    <div class="postmarket-summary-card">
+      <div class="postmarket-summary-title">
+        <span>🐾 荳荳盤後籌碼風向與防禦指南</span>
+      </div>
+      <div class="postmarket-grid">
+  `;
+
+  html += `
+        <div class="postmarket-section">
+          <div class="postmarket-section-title">
+            <span>🛡️ 法人逆勢加碼避風港</span>
+          </div>
+          <div class="postmarket-item-list">
+  `;
+  if (safeSectors.length > 0) {
+    safeSectors.forEach(g => {
+      const sign = g.avgChange >= 0 ? '+' : '';
+      const color = g.avgChange >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+      html += `
+            <div class="postmarket-row">
+              <strong style="color: white; font-size:12px;">${g.name}</strong>
+              <div style="text-align: right;">
+                <span style="color: var(--primary); font-weight:700; margin-right:8px;">+${g.totalInstToday.toLocaleString()} 張</span>
+                <span style="color: ${color}; font-weight:bold;">${sign}${g.avgChange.toFixed(2)}%</span>
+              </div>
+            </div>
+      `;
+    });
+  } else {
+    html += `<div style="font-size:11px; color:var(--text-muted); padding:4px 0;">今日市場暫無法人逆勢防禦板塊。</div>`;
+  }
+  html += `
+          </div>
+        </div>
+  `;
+
+  html += `
+        <div class="postmarket-section">
+          <div class="postmarket-section-title">
+            <span>🚨 三大法人籌碼異常偏多股</span>
+          </div>
+          <div class="postmarket-item-list">
+  `;
+  if (anomalyStocks.length > 0) {
+    anomalyStocks.forEach(item => {
+      const pct = (item.ratio * 100).toFixed(1);
+      const chg = item.s.liveChange !== undefined ? item.s.liveChange : (getLiveStockData(item.s).change || 0);
+      const sign = chg >= 0 ? '+' : '';
+      const color = chg >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+      html += `
+            <div class="postmarket-row" style="cursor:pointer;" onclick="openChart('${item.s.id}')">
+              <div>
+                <strong style="color: white; font-size:12px;">${item.s.id} ${item.s.name}</strong>
+                <span class="badge" style="font-size:9px; padding:1px 3px; margin-left:4px; background:rgba(255,255,255,0.08);">量比 ${item.volRatio.toFixed(1)}x</span>
+              </div>
+              <div style="text-align: right;">
+                <span style="color: var(--primary); font-weight:700; margin-right:8px;">買超比 ${pct}%</span>
+                <span style="color: ${color}; font-weight:bold;">${sign}${chg.toFixed(2)}%</span>
+              </div>
+            </div>
+      `;
+    });
+  } else {
+    html += `<div style="font-size:11px; color:var(--text-muted); padding:4px 0;">今日市場暫無爆量籌碼異常偏多股。</div>`;
+  }
+  html += `
+          </div>
+        </div>
+  `;
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+}
+
 // 3. 渲染排行榜
 function renderRankings() {
   const container = document.getElementById('rankListContent');
@@ -3905,6 +4055,7 @@ function renderRankings() {
   }
 
   container.innerHTML = listHTML || '<p style="color:var(--text-muted);padding:10px;">查無排行資料</p>';
+  if (typeof renderPostmarketSummary === 'function') renderPostmarketSummary();
 }
 
 
@@ -4488,6 +4639,36 @@ window.renderPortfolioGrid = function() {
     // 卡片卡號 (01, 02...)
     const cardNum = String(index + 1).padStart(2, '0');
 
+    // 方案 C：籌碼資金象限防禦標籤計算
+    let instToday = 0;
+    if (s.instDetail5D && s.instDetail5D[0]) {
+      const td = s.instDetail5D[0];
+      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
+    } else {
+      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+    }
+    const inst5D_real = s.instSum5D !== undefined ? s.instSum5D : inst5D;
+
+    let quadrantClass = '';
+    let quadrantText = '';
+    if (inst5D_real > 0) {
+      if (instToday >= 0) {
+        quadrantClass = 'major';
+        quadrantText = '🔥 主力加碼區';
+      } else {
+        quadrantClass = 'rotate';
+        quadrantText = '🌀 買盤放緩區';
+      }
+    } else {
+      if (instToday >= 0) {
+        quadrantClass = 'bottom';
+        quadrantText = '🌱 低檔築底區';
+      } else {
+        quadrantClass = 'retreat';
+        quadrantText = '📉 主力減碼區';
+      }
+    }
+
     grid.innerHTML += `
       <div class="portfolio-card" draggable="true" data-index="${index}" style="background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 12px; border-left: 4px solid var(--primary); transition: all 0.2s; cursor: grab;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
         
@@ -4499,7 +4680,10 @@ window.renderPortfolioGrid = function() {
               <div style="background:var(--primary); color:white; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">${cardNum}</div>
             </div>
             <div>
-              <span style="font-size:18px; font-weight:800; color:white;">${s.id} ${s.name}</span>
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="font-size:18px; font-weight:800; color:white;">${s.id} ${s.name}</span>
+                <span class="quadrant-badge ${quadrantClass}">${quadrantText}</span>
+              </div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">上市 • ${mainSector} ➔ ${subSector}</div>
             </div>
           </div>
