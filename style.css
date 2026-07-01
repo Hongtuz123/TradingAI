@@ -2381,6 +2381,7 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 .postmarket-item-list {
   display: flex;
   flex-direction: column;
+}
 /* ================= 策略與指標多圖層控制 Pill 按鈕 ================= */
 .layer-pill {
   background: rgba(255, 255, 255, 0.05);
