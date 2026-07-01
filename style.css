@@ -2381,6 +2381,200 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 .postmarket-item-list {
   display: flex;
   flex-direction: column;
+/* ================= 策略與指標多圖層控制 Pill 按鈕 ================= */
+.layer-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.layer-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.layer-pill:active {
+  transform: scale(0.96);
+}
+
+/* 指標類 (.active) - 翡翠綠發光漸層 */
+#pill-ma5.active,
+#pill-supertrend.active,
+#pill-srLines.active {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 策略類 (.active) - 極光紫/玫紅發光漸層 */
+#pill-strategySupertrend.active,
+#pill-strategyTrendline.active {
+  background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 副圖類 (.active) - 陽光橙發光漸層 */
+#pill-sub-rsi.active,
+#pill-sub-macd.active,
+#pill-sub-none.active {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 技術指標快速過濾按鈕 */
+.tech-filter-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+  outline: none;
+}
+
+.tech-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tech-filter-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+}
+
+/* ================= 🎨 互動式繪圖工具欄樣式 🎨 ================= */
+.drawing-toolbar .draw-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.drawing-toolbar .draw-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.drawing-toolbar .draw-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+  opacity: 1 !important;
+}
+
+.color-dot-btn {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color-dot-btn:hover {
+  transform: scale(1.15);
+}
+
+.color-dot-btn.active {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.recent-stock-item:hover {
+  background: rgba(249, 115, 22, 0.12) !important;
+  border-color: rgba(249, 115, 22, 0.3) !important;
+  color: white !important;
+}
+
+/* ================= 📊 盤後籌碼小結與籌碼防禦標籤樣式 ================= */
+.postmarket-summary-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.postmarket-summary-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.postmarket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .postmarket-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.postmarket-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.postmarket-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.postmarket-item-list {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
@@ -2492,4 +2686,52 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 /* 為了讓主內容區不被固定底欄遮擋，給 body 加 padding-bottom */
 body {
   padding-bottom: 45px;
+}
+
+/* 🐾 荳荳儀表板新版 Grid 佈局 🐾 */
+.dashboard-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.dashboard-grid-layout .market-health-banner-mini {
+  grid-column: 1 / 2;
+  margin-bottom: 0 !important;
+  box-sizing: border-box;
+}
+
+.dashboard-grid-layout .flow-bottom-row-full {
+  grid-column: 2 / 3;
+  margin-bottom: 0 !important;
+  box-sizing: border-box;
+}
+
+.dashboard-grid-layout .flow-bubble-full.flow-map-panel {
+  grid-column: 1 / 3;
+}
+
+/* 當大螢幕雙欄時，市場健康度內部改為單欄上下排列 */
+@media (min-width: 1025px) {
+  .dashboard-grid-layout .market-health-banner-mini .health-mini-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* 行動裝置響應式排版，當螢幕小於 1024px 時切換回單欄 */
+@media (max-width: 1024px) {
+  .dashboard-grid-layout {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-grid-layout .market-health-banner-mini {
+    grid-column: 1 / 2;
+  }
+  .dashboard-grid-layout .flow-bottom-row-full {
+    grid-column: 1 / 2;
+  }
+  .dashboard-grid-layout .flow-bubble-full.flow-map-panel {
+    grid-column: 1 / 2;
+  }
 }
