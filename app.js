@@ -4055,13 +4055,74 @@ function renderRankings() {
   if (!container) return;
   container.innerHTML = '';
 
+  // 🐾 輔助函數：計算個股法人連續買賣超天數
+  function getStockInstStreak(s, instToday) {
+    const detail = s.instDetail5D || [instToday, instToday, instToday, instToday, instToday];
+    if (detail.length === 0) return '';
+    const todayVal = detail[0] !== undefined ? detail[0] : instToday;
+    if (todayVal > 0) {
+      let streak = 1;
+      for (let i = 1; i < detail.length; i++) {
+        if (detail[i] > 0) streak++;
+        else break;
+      }
+      return `連買 ${streak}D`;
+    } else if (todayVal < 0) {
+      let streak = 1;
+      for (let i = 1; i < detail.length; i++) {
+        if (detail[i] < 0) streak++;
+        else break;
+      }
+      return `連賣 ${streak}D`;
+    }
+    return '';
+  }
+
+  // 🐾 輔助函數：計算產業法人連續買賣超天數
+  function getSectorInstStreak(g) {
+    const daily = [0, 0, 0, 0, 0];
+    g.stocks.forEach(s => {
+      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+      const detail = s.instDetail5D || [instToday, instToday, instToday, instToday, instToday];
+      for (let i = 0; i < 5; i++) {
+        daily[i] += detail[i] !== undefined ? detail[i] : 0;
+      }
+    });
+    const todayVal = daily[0];
+    if (todayVal > 0) {
+      let streak = 1;
+      for (let i = 1; i < daily.length; i++) {
+        if (daily[i] > 0) streak++;
+        else break;
+      }
+      return `連買 ${streak}D`;
+    } else if (todayVal < 0) {
+      let streak = 1;
+      for (let i = 1; i < daily.length; i++) {
+        if (daily[i] < 0) streak++;
+        else break;
+      }
+      return `連賣 ${streak}D`;
+    }
+    return '';
+  }
+
   // 預先對 mockStocks 進行產業分組，提供族群強弱排行使用 (直接以細分類分組)
   const sectorGroups = {};
   mockStocks.forEach(s => {
     const sectorStr = getStockSector(s);
     const sector = sectorStr.split(':')[1] || sectorStr; // 直接使用細分類作為分組主鍵，例如 水泥、食品、IC設計
     if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { name: sector, stocks: [], avgChange: 0, totalVol: 0, totalInst: 0, totalAvgInst7D: 0 };
+      sectorGroups[sector] = { 
+        name: sector, 
+        stocks: [], 
+        avgChange: 0, 
+        totalVol: 0, 
+        totalInst: 0, 
+        totalAvgInst7D: 0,
+        totalChange5D: 0,
+        totalInst5D: 0
+      };
     }
     sectorGroups[sector].stocks.push(s);
     sectorGroups[sector].totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0); // 估算成交金額（張×1000股×元）
@@ -4070,8 +4131,25 @@ function renderRankings() {
     const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
     sectorGroups[sector].totalInst += instToday;
     sectorGroups[sector].totalAvgInst7D += (s.instAvg7D || 0);
+
+    // 5日累計漲幅計算
+    let stockChange5D = 0;
+    const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    if (s.kline && s.kline.length >= 6) {
+      const len = s.kline.length;
+      const todayClose = s.price || s.kline[len - 1].close;
+      const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
+      stockChange5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
+    } else {
+      stockChange5D = change * 5;
+    }
+    sectorGroups[sector].totalChange5D += stockChange5D;
+    
+    // 5日法人買賣超加總
+    const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+    sectorGroups[sector].totalInst5D += inst5D;
   });
-  
+
   const sectorsArray = Object.values(sectorGroups);
   sectorsArray.forEach(g => {
     const sumChange = g.stocks.reduce((sum, s) => {
@@ -4082,6 +4160,7 @@ function renderRankings() {
       return sum + (live.change || 0);
     }, 0);
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
+    g.avgChange5D = g.stocks.length > 0 ? (g.totalChange5D / g.stocks.length) : 0;
   });
 
   // 讀取前台設定的限制個數，預設為 6
@@ -4095,22 +4174,33 @@ function renderRankings() {
     const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
       const streak = getSectorStreakDays(g.name, 'strong');
-      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#ef4444; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">強勢 day${streak}</span>` : '';
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">強勢 day${streak}</span>` : '';
+      
+      const instStreak = getSectorInstStreak(g);
+      const isBuy = instStreak.includes('買');
+      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+      
       const displayTitle = g.name; 
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
-          <div class="rank-info">
-            <div class="rank-title" style="display:flex; align-items:center;">${displayTitle}${streakBadge}</div>
+          <div class="rank-info" style="flex:1;">
+            <div class="rank-title" style="display:flex; align-items:center;">
+              <strong>${displayTitle}</strong>
+              ${streakBadge}
+              ${instStreakBadge}
+            </div>
             <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>成分股: ${g.stocks.length}檔 | 估計資金: ${val}億</span>
-              <span class="inst-badge" onclick="showInstCompare(event, '${g.name}', ${g.totalInst}, ${g.totalAvgInst7D})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                法人: ${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張
-              </span>
+              <span>當日: <span class="text-up" style="font-weight:700;">+${g.avgChange.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+              <span style="opacity:0.7;">資金: ${val}億</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>近5日: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+              <span>法人5D: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
             </div>
           </div>
-          <div class="rank-value text-up">+${g.avgChange.toFixed(2)}%</div>
+          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px;">+${g.avgChange.toFixed(2)}%</div>
         </div>
       `;
     }).join('');
@@ -4120,22 +4210,33 @@ function renderRankings() {
     const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
       const streak = getSectorStreakDays(g.name, 'weak');
-      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#10b981; color:white; font-size:10px; padding:2px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#10b981; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
+      
+      const instStreak = getSectorInstStreak(g);
+      const isBuy = instStreak.includes('買');
+      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+      
       const displayTitle = g.name; 
       const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
-          <div class="rank-info">
-            <div class="rank-title" style="display:flex; align-items:center;">${displayTitle}${streakBadge}</div>
+          <div class="rank-info" style="flex:1;">
+            <div class="rank-title" style="display:flex; align-items:center;">
+              <strong>${displayTitle}</strong>
+              ${streakBadge}
+              ${instStreakBadge}
+            </div>
             <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>成分股: ${g.stocks.length}檔 | 估計資金: ${val}億</span>
-              <span class="inst-badge" onclick="showInstCompare(event, '${g.name}', ${g.totalInst}, ${g.totalAvgInst7D})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                法人: ${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張
-              </span>
+              <span>當日: <span class="text-down" style="font-weight:700;">${g.avgChange.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+              <span style="opacity:0.7;">資金: ${val}億</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>近5日: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+              <span>法人5D: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
             </div>
           </div>
-          <div class="rank-value text-down">${g.avgChange.toFixed(2)}%</div>
+          <div class="rank-value text-down" style="display: flex; align-items: center; font-size: 14px;">${g.avgChange.toFixed(2)}%</div>
         </div>
       `;
     }).join('');
@@ -4148,10 +4249,35 @@ function renderRankings() {
       const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
       const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
       
+      let pct5D = 0;
+      if (s.kline && s.kline.length >= 6) {
+        const len = s.kline.length;
+        const todayClose = s.price || s.kline[len - 1].close;
+        const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
+        pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
+      } else {
+        pct5D = change * 5;
+      }
+      
+      const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+      
+      const instStreak = getStockInstStreak(s, instToday);
+      const isBuy = instStreak.includes('買');
+      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+
+      const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
+      const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
+      let streakBadge = '';
+      if (sectorStreakStrong >= 2) {
+        streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
+      } else if (sectorStreakWeak >= 2) {
+        streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
+      }
+
       let anomalyBadge = '';
       if ((s.volRatio || 0) >= 10.0) {
         const status = change >= 0 ? '買量過多' : '賣量過多';
-        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:10px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
+        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:9px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
       }
       
       return `
@@ -4159,16 +4285,20 @@ function renderRankings() {
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info" style="flex:1;">
             <div class="rank-title" style="display:flex; align-items:center;">
-              ${anomalyBadge}<span>${s.id} ${s.name}</span>
+              ${anomalyBadge}<strong>${s.id} ${s.name}</strong>
+              ${streakBadge}
+              ${instStreakBadge}
             </div>
             <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>${sector} | 成交量: ${s.dailyVol?.toLocaleString() || '--'}張</span>
-              <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                法人: ${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張
-              </span>
+              <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'};">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
+              <span style="opacity:0.7;">量: ${s.dailyVol?.toLocaleString() || '--'}張</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
+              <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
             </div>
           </div>
-          <div class="rank-value text-up" style="color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
+          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px; color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
         </div>
       `;
     }).join('');
@@ -4184,13 +4314,39 @@ function renderRankings() {
       .slice(0, limit);
     
     listHTML = sorted.map((s, idx) => {
+      const sector = getStockSector(s).split(':')[1] || '一般';
       const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
       const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
       
+      let pct5D = 0;
+      if (s.kline && s.kline.length >= 6) {
+        const len = s.kline.length;
+        const todayClose = s.price || s.kline[len - 1].close;
+        const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
+        pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
+      } else {
+        pct5D = change * 5;
+      }
+      
+      const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+      
+      const instStreak = getStockInstStreak(s, instToday);
+      const isBuy = instStreak.includes('買');
+      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+
+      const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
+      const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
+      let streakBadge = '';
+      if (sectorStreakStrong >= 2) {
+        streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
+      } else if (sectorStreakWeak >= 2) {
+        streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
+      }
+
       let anomalyBadge = '';
       if ((s.volRatio || 0) >= 10.0) {
         const status = change >= 0 ? '買量過多' : '賣量過多';
-        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:10px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
+        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:9px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
       }
       
       return `
@@ -4198,16 +4354,20 @@ function renderRankings() {
           <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
           <div class="rank-info" style="flex:1;">
             <div class="rank-title" style="display:flex; align-items:center;">
-              ${anomalyBadge}<span>${s.id} ${s.name}</span>
+              ${anomalyBadge}<strong>${s.id} ${s.name}</strong>
+              ${streakBadge}
+              ${instStreakBadge}
             </div>
             <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>外資: ${s.foreignNetBuy || 0}張 | 投信: ${s.trustDays || 0}張 | 自營: ${s.dealerDays || 0}張</span>
-              <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:var(--success);">
-                法人: +${instToday.toLocaleString()}張
-              </span>
+              <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+              <span style="opacity:0.7; font-size:10px;">外:${s.foreignNetBuy || 0} 投:${s.trustDays || 0} 自:${s.dealerDays || 0}</span>
+            </div>
+            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
+              <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
             </div>
           </div>
-          <div class="rank-value text-up" style="color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
+          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px; color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
         </div>
       `;
     }).join('');
@@ -4218,15 +4378,10 @@ function renderRankings() {
       const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
       const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
       
-      // 1. 量能比門檻 1.25x
       const condVol = (s.volRatio || 0) >= 1.25;
-      // 2. 主力買超 (三大法人買賣超合計 > 0，且跌幅 >= -5.0%，防流出)
       const condInst = instToday > 0 && change >= -5.0;
-      // 3. 當日漲跌幅介於 -5% 至 +1.5% 之間
       const condPrice = change >= -5.0 && change <= 1.5;
-      // 4. Supertrend 由空頭轉多頭 (昨為 -1 且今為 1)
       const condST = s.prev_supertrend === -1 && s.supertrend === 1;
-      // 5. +DI > -DI 且 ADX > 25
       const condDMI = (s.plus_di || 0) > (s.minus_di || 0) && (s.adx || 0) > 25;
       
       return condVol && condInst && condPrice && condST && condDMI;
@@ -4239,19 +4394,52 @@ function renderRankings() {
         const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
         const sector = getStockSector(s).split(':')[1] || '一般';
         const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+        
+        let pct5D = 0;
+        if (s.kline && s.kline.length >= 6) {
+          const len = s.kline.length;
+          const todayClose = s.price || s.kline[len - 1].close;
+          const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
+          pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
+        } else {
+          pct5D = change * 5;
+        }
+        
+        const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+        
+        const instStreak = getStockInstStreak(s, instToday);
+        const isBuy = instStreak.includes('買');
+        const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+
+        const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
+        const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
+        let streakBadge = '';
+        if (sectorStreakStrong >= 2) {
+          streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
+        } else if (sectorStreakWeak >= 2) {
+          streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
+        }
+
         return `
           <div class="rank-item-row" onclick="openChart('${s.id}')">
             <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
             <div class="rank-info" style="flex:1;">
-              <div class="rank-title">${s.id} ${s.name} <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 3px;">Supertrend 轉多</span></div>
+              <div class="rank-title" style="display:flex; align-items:center;">
+                <strong>${s.id} ${s.name}</strong>
+                <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 3px;">ST轉多</span>
+                ${streakBadge}
+                ${instStreakBadge}
+              </div>
               <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-                <span>${sector} | 量比 ${(s.volRatio||0).toFixed(1)}x | ADX: ${(s.adx||0).toFixed(1)}</span>
-                <span class="inst-badge" onclick="showStockInstCompare(event, '${s.id}', '${s.name}', ${instToday}, ${s.instAvg7D || 0}, ${s.instSum5D || 0}, ${JSON.stringify(s.instDetail5D)})" style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; cursor:pointer; font-weight:bold; color:var(--success);">
-                  法人: +${instToday.toLocaleString()}張
-                </span>
+                <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+                <span style="opacity:0.7;">量比: ${(s.volRatio||0).toFixed(1)}x</span>
+              </div>
+              <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+                <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
+                <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
               </div>
             </div>
-            <div class="rank-value ${change >= 0 ? 'text-up' : 'text-down'}">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
+            <div class="rank-value ${change >= 0 ? 'text-up' : 'text-down'}" style="display: flex; align-items: center; font-size: 14px;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
           </div>
         `;
       }).join('');
