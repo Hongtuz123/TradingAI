@@ -127,6 +127,7 @@ window.updateAllStockPrices = function() {
 
 // 初始化 (非同步 Fetch data.json 繞過快取)
 document.addEventListener('DOMContentLoaded', async () => {
+  sessionStorage.removeItem('trading_ai_session_remind');
   try {
     console.log('[App] Fetching market data (data.json) asynchronously...');
     const response = await fetch('data.json?t=' + Date.now());
@@ -3450,7 +3451,12 @@ function renderSectorFlowMap() {
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('width', W);
   svg.setAttribute('height', H);
-  svg.style.cssText = 'display:block;overflow:visible;';
+  svg.style.cssText = 'display:block;overflow:hidden;border-radius:8px;background:rgba(15,23,42,0.3);';
+
+  // 設置縮放與拖曳的初始資料屬性
+  svg.setAttribute('data-zoom', '1.0');
+  svg.setAttribute('data-pan-x', '0');
+  svg.setAttribute('data-pan-y', '0');
 
   function el(tag, attrs, text) {
     const e = document.createElementNS(ns, tag);
@@ -3459,42 +3465,33 @@ function renderSectorFlowMap() {
     return e;
   }
 
-  // 背景
+  // 坐標軸、格線與刻度（留在最外層固定不動）
+  // 1. 背景
   svg.appendChild(el('rect', { x: ML, y: MT, width: PW, height: PH, fill: 'rgba(15,23,42,0.5)', rx: '8' }));
 
-  // 象限背景色
-  svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 第一象限
-  svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 第二象限
-  svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 第三象限
-  svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 第四象限
-
-  // 繪製背景格線 (X 軸)
+  // 2. 繪製背景格線 (X 軸)
   xLabels.forEach(v => {
     svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
   });
   
-  // 繪製背景格線 (Y 軸)
+  // 3. 繪製背景格線 (Y 軸)
   yLabels.forEach(v => {
     svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
   });
 
-  // 中心線 (虛線)
-  svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
-  svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
-
-  // X 軸刻度文字
+  // 4. X 軸刻度文字
   xLabels.forEach(v => {
     const text = (v > 0 ? '+' : '') + v + '億';
     svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, text));
   });
   
-  // Y 軸刻度文字
+  // 5. Y 軸刻度文字
   yLabels.forEach(v => {
     const text = (v > 0 ? '+' : '') + v + '億';
     svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, text));
   });
 
-  // 軸標題
+  // 6. 軸標題
   svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, X_AXIS_LABEL));
   
   const yG = document.createElementNS(ns, 'g');
@@ -3502,12 +3499,28 @@ function renderSectorFlowMap() {
   yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, Y_AXIS_LABEL));
   svg.appendChild(yG);
 
-  // 象限標籤
+  // -------------------------------------------------------------
+  // 建立縮放與平移容器 mainG
+  // -------------------------------------------------------------
+  const mainG = el('g', { id: 'bubble-transform-group' });
+  svg.appendChild(mainG);
+
+  // 象限背景色 (放入 mainG 中)
+  mainG.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 第一象限
+  mainG.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 第二象限
+  mainG.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 第三象限
+  mainG.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 第四象限
+
+  // 中心線虛線 (放入 mainG 中)
+  mainG.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
+  mainG.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
+
+  // 象限標籤 (放入 mainG 中)
   quadrantLabels.forEach(({ x, y, text, c }) => {
-    svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text));
+    mainG.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text));
   });
 
-  // Tooltip
+  // Tooltip (留在 document 中)
   let tooltip = document.getElementById('bubbleTooltip');
   if (!tooltip) {
     tooltip = document.createElement('div');
@@ -3518,7 +3531,7 @@ function renderSectorFlowMap() {
 
   const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
 
-  // 繪製泡泡
+  // 繪製泡泡 (放入 mainG 中)
   sectors.forEach(g => {
     const cat = getCategory(g);
     if (!activeBubbleFilters[cat]) return; // 連動過濾開關
@@ -3528,12 +3541,16 @@ function renderSectorFlowMap() {
     const y = toSvgY(g.netFlow || 0);
     const r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
 
+    // 氣泡包裝 group 以方便滑鼠 Hover 時提升 z-index
+    const bubbleGroup = el('g', { class: 'bubble-item-group', style: 'cursor:pointer;' });
+
     // glow
     const glow = el('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.25' });
-    svg.appendChild(glow);
+    bubbleGroup.appendChild(glow);
 
     // 泡泡
-    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.82', style: 'cursor:pointer;transition:opacity 0.15s;' });
+    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.82', style: 'transition:opacity 0.15s, r 0.15s;' });
+    bubbleGroup.appendChild(circle);
 
     // 標籤
     const shortName = g.name.length > 5 ? g.name.slice(0, 4) + '…' : g.name;
@@ -3542,10 +3559,15 @@ function renderSectorFlowMap() {
       fill: 'rgba(0,0,0,0.85)', 'font-size': r >= 24 ? '10' : '8',
       'font-weight': '700', style: 'pointer-events:none;user-select:none;'
     }, shortName);
+    bubbleGroup.appendChild(label);
 
     // hover
-    circle.addEventListener('mouseenter', () => {
+    bubbleGroup.addEventListener('mouseenter', () => {
+      // 提昇當前氣泡至最上層
+      mainG.appendChild(bubbleGroup);
+
       circle.setAttribute('opacity', '1');
+      circle.setAttribute('r', (r + 3).toString()); // 微微放大
       glow.setAttribute('opacity', '0.55');
 
       const catLabel = cat === 'major' ? '🔴 主力爆買' : cat === 'bottom' ? '🔵 資金入場' : cat === 'retreat' ? '🟢 量縮流出' : '🟡 買力下降';
@@ -3576,25 +3598,141 @@ function renderSectorFlowMap() {
       tooltip.style.display = 'block';
     });
 
-    circle.addEventListener('mousemove', e => {
+    bubbleGroup.addEventListener('mousemove', e => {
       tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
       tooltip.style.top = (e.clientY - 10) + 'px';
     });
 
-    circle.addEventListener('mouseleave', () => {
+    bubbleGroup.addEventListener('mouseleave', () => {
       circle.setAttribute('opacity', '0.82');
+      circle.setAttribute('r', r.toString());
       glow.setAttribute('opacity', '0.25');
       tooltip.style.display = 'none';
     });
 
-    circle.addEventListener('click', () => openSectorDetailModal(g.name, g.stocks, g.avgChange));
+    bubbleGroup.addEventListener('click', () => openSectorDetailModal(g.name, g.stocks, g.avgChange));
 
-    svg.appendChild(circle);
-    if (r >= 14) svg.appendChild(label);
+    mainG.appendChild(bubbleGroup);
+  });
+
+  // -------------------------------------------------------------
+  // Zoom & Pan 手勢事件綁定
+  // -------------------------------------------------------------
+  let zoom = 1.0;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  function updateTransform() {
+    mainG.setAttribute('transform', `translate(${panX}, ${panY}) scale(${zoom})`);
+    svg.setAttribute('data-zoom', zoom.toString());
+    svg.setAttribute('data-pan-x', panX.toString());
+    svg.setAttribute('data-pan-y', panY.toString());
+  }
+
+  // 滾輪縮放 (限制 0.5x 至 5.0x)
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const zoomFactor = 0.08;
+    const prevZoom = zoom;
+    
+    // 自 svg 屬性讀取最新，以防被全域控制按鈕改過
+    zoom = parseFloat(svg.getAttribute('data-zoom') || '1.0');
+    panX = parseFloat(svg.getAttribute('data-pan-x') || '0');
+    panY = parseFloat(svg.getAttribute('data-pan-y') || '0');
+
+    if (e.deltaY < 0) {
+      zoom = Math.min(5.0, zoom * (1 + zoomFactor));
+    } else {
+      zoom = Math.max(0.5, zoom * (1 - zoomFactor));
+    }
+
+    const rect = svg.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    panX = mouseX - (mouseX - panX) * (zoom / prevZoom);
+    panY = mouseY - (mouseY - panY) * (zoom / prevZoom);
+
+    updateTransform();
+  }, { passive: false });
+
+  // 拖曳平移
+  svg.addEventListener('mousedown', e => {
+    // 點擊事件，記錄初始位置
+    isDragging = true;
+    svg.style.cursor = 'grabbing';
+    
+    // 同步當前的 pan
+    panX = parseFloat(svg.getAttribute('data-pan-x') || '0');
+    panY = parseFloat(svg.getAttribute('data-pan-y') || '0');
+    
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    
+    // 同步讀取 data-zoom
+    zoom = parseFloat(svg.getAttribute('data-zoom') || '1.0');
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      svg.style.cursor = 'default';
+    }
   });
 
   container.appendChild(svg);
 }
+
+// -------------------------------------------------------------
+// 全域縮放平移控制函數
+// -------------------------------------------------------------
+window.zoomSectorBubble = function(factor) {
+  const mainG = document.getElementById('bubble-transform-group');
+  const svg = mainG ? mainG.ownerSVGElement : null;
+  if (!mainG || !svg) return;
+  
+  let zoom = parseFloat(svg.getAttribute('data-zoom') || '1.0');
+  let panX = parseFloat(svg.getAttribute('data-pan-x') || '0');
+  let panY = parseFloat(svg.getAttribute('data-pan-y') || '0');
+  
+  const prevZoom = zoom;
+  zoom = Math.max(0.5, Math.min(5.0, zoom * factor));
+  
+  const W = svg.clientWidth || 800;
+  const H = 620;
+  const cX = W / 2;
+  const cY = H / 2;
+  
+  panX = cX - (cX - panX) * (zoom / prevZoom);
+  panY = cY - (cY - panY) * (zoom / prevZoom);
+  
+  svg.setAttribute('data-zoom', zoom.toString());
+  svg.setAttribute('data-pan-x', panX.toString());
+  svg.setAttribute('data-pan-y', panY.toString());
+  mainG.setAttribute('transform', `translate(${panX}, ${panY}) scale(${zoom})`);
+};
+
+window.resetSectorBubble = function() {
+  const mainG = document.getElementById('bubble-transform-group');
+  const svg = mainG ? mainG.ownerSVGElement : null;
+  if (!mainG || !svg) return;
+  
+  svg.setAttribute('data-zoom', '1.0');
+  svg.setAttribute('data-pan-x', '0');
+  svg.setAttribute('data-pan-y', '0');
+  mainG.setAttribute('transform', 'translate(0, 0) scale(1.0)');
+};
+
 
 // 彈出產業詳細成分股及產業簡介之 Modal
 function openSectorDetailModal(sectorName, stocks, avgChange) {

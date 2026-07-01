@@ -139,6 +139,13 @@
               </div>
               <!-- 開關過濾按鈕 -->
               <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+                <!-- 縮放控制 -->
+                <div style="display:flex;align-items:center;gap:4px;margin-right:8px;border-right:1px solid rgba(255,255,255,0.1);padding-right:12px;">
+                  <button onclick="zoomSectorBubble(1.2)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="放大氣泡圖">➕ 放大</button>
+                  <button onclick="zoomSectorBubble(0.8)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="縮小氣泡圖">➖ 縮小</button>
+                  <button onclick="resetSectorBubble()" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="重置視角">🔄 重置</button>
+                </div>
+                
                 <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
                   <span class="dot major" style="background:#ef4444;"></span>主力爆買
                 </button>
@@ -548,7 +555,7 @@
   </footer>
 
   <!-- 腳本 -->
-  <script src="app.js?v=49"></script>
-  <script src="stock-dashboard.js?v=49"></script>
+  <script src="app.js?v=50"></script>
+  <script src="stock-dashboard.js?v=50"></script>
 </body>
 </html>
