@@ -2688,32 +2688,32 @@ body {
   padding-bottom: 45px;
 }
 
-/* 🐾 荳荳儀表板新版 Grid 佈局 🐾 */
-.dashboard-grid-layout {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 16px;
-  align-items: start;
-}
+/* 🐾 荳荳儀表板新版 Grid 佈局（寬度大於 768px 時一律雙欄並列） 🐾 */
+@media (min-width: 769px) {
+  .dashboard-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 16px;
+    align-items: start;
+  }
 
-.dashboard-grid-layout .market-health-banner-mini {
-  grid-column: 1 / 2;
-  margin-bottom: 0 !important;
-  box-sizing: border-box;
-}
+  .dashboard-grid-layout .market-health-banner-mini {
+    grid-column: 1 / 2;
+    margin-bottom: 0 !important;
+    box-sizing: border-box;
+  }
 
-.dashboard-grid-layout .flow-bottom-row-full {
-  grid-column: 2 / 3;
-  margin-bottom: 0 !important;
-  box-sizing: border-box;
-}
+  .dashboard-grid-layout .flow-bottom-row-full {
+    grid-column: 2 / 3;
+    margin-bottom: 0 !important;
+    box-sizing: border-box;
+  }
 
-.dashboard-grid-layout .flow-bubble-full.flow-map-panel {
-  grid-column: 1 / 3;
-}
+  .dashboard-grid-layout .flow-bubble-full.flow-map-panel {
+    grid-column: 1 / 3;
+  }
 
-/* 當大螢幕雙欄時，市場健康度內部改為單欄上下排列 */
-@media (min-width: 1025px) {
+  /* 當雙欄時，市場健康度內部台美股改為單欄上下排列 */
   .dashboard-grid-layout .market-health-banner-mini .health-mini-row {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -2760,8 +2760,8 @@ body {
   }
 }
 
-/* 行動裝置響應式排版，當螢幕小於 1024px 時切換回單欄 */
-@media (max-width: 1024px) {
+/* 行動裝置響應式排版，當螢幕小於等於 768px 時切換回單欄 */
+@media (max-width: 768px) {
   .dashboard-grid-layout {
     grid-template-columns: 1fr;
   }
