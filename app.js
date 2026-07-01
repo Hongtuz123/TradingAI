@@ -4084,9 +4084,9 @@ function renderRankings() {
     g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
   });
 
-  // 讀取前台設定的限制個數，預設為 10
+  // 讀取前台設定的限制個數，預設為 6
   const limitSelect = document.getElementById('rankLimitSelect');
-  const limit = limitSelect ? parseInt(limitSelect.value) : 10;
+  const limit = limitSelect ? parseInt(limitSelect.value) : 6;
 
   let listHTML = '';
 
