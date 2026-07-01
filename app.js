@@ -3281,7 +3281,7 @@ const SECTOR_DESCRIPTIONS = {
 };
 
 // 全域泡泡圖開關狀態
-let activeBubbleFilters = { major: true, rotate: true, retreat: true };
+let activeBubbleFilters = { major: true, bottom: true, rotate: true, retreat: true };
 
 function toggleBubbleFilter(cat) {
   activeBubbleFilters[cat] = !activeBubbleFilters[cat];
@@ -3571,7 +3571,7 @@ function renderSectorFlowMap() {
     bubbleGroup.appendChild(label);
 
     // hover
-    bubbleGroup.addEventListener('mouseenter', () => {
+    bubbleGroup.addEventListener('mouseenter', (e) => {
       // 提昇當前氣泡至最上層
       mainG.appendChild(bubbleGroup);
 
@@ -3604,6 +3604,9 @@ function renderSectorFlowMap() {
         <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
         <div style="display:flex;flex-wrap:wrap;gap:3px;">${stockTags}</div>
       `;
+      // 先用 mouseenter 的座標設定初始位置，避免 tooltip 閃在左上角
+      tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
+      tooltip.style.top = Math.max(10, e.clientY - 10) + 'px';
       tooltip.style.display = 'block';
     });
 
