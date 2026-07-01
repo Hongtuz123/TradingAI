@@ -3979,6 +3979,63 @@ window.giveDoudouCan = function() {
 };
 
 // 方案 B：盤後籌碼風向與防禦避風港卡片渲染 (每日狗狗彈窗提醒版)
+// 全域即時計算所有產業均價與法人指標，供排行榜與大盤氣象彈窗同步使用
+function getCurrentSectorsData() {
+  const sectorGroups = {};
+  mockStocks.forEach(s => {
+    const sectorStr = getStockSector(s);
+    const sector = sectorStr.split(':')[1] || sectorStr;
+    if (!sectorGroups[sector]) {
+      sectorGroups[sector] = { 
+        name: sector, 
+        stocks: [], 
+        avgChange: 0, 
+        totalVol: 0, 
+        totalInst: 0, 
+        totalAvgInst7D: 0,
+        totalChange5D: 0,
+        totalInst5D: 0
+      };
+    }
+    sectorGroups[sector].stocks.push(s);
+    sectorGroups[sector].totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
+    
+    // 三大法人今日買賣超合計 = 外資 + 投信 + 自營商
+    const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+    sectorGroups[sector].totalInst += instToday;
+    sectorGroups[sector].totalAvgInst7D += (s.instAvg7D || 0);
+
+    // 5日累計漲幅計算
+    let stockChange5D = 0;
+    const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    if (s.kline && s.kline.length >= 6) {
+      const len = s.kline.length;
+      const todayClose = s.price || s.kline[len - 1].close;
+      const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
+      stockChange5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
+    } else {
+      stockChange5D = change * 5;
+    }
+    sectorGroups[sector].totalChange5D += stockChange5D;
+    
+    // 5日法人買賣超加總
+    const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+    sectorGroups[sector].totalInst5D += inst5D;
+  });
+
+  const sectorsArray = Object.values(sectorGroups);
+  sectorsArray.forEach(g => {
+    const sumChange = g.stocks.reduce((sum, s) => {
+      if (s.liveChange !== undefined) return sum + s.liveChange;
+      const live = getLiveStockData(s);
+      return sum + (live.change || 0);
+    }, 0);
+    g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
+    g.avgChange5D = g.stocks.length > 0 ? (g.totalChange5D / g.stocks.length) : 0;
+  });
+  return sectorsArray;
+}
+
 function renderPostmarketSummary() {
   // 1. 檢查 sessionStorage，避免同一次 session 內重複彈出打擾
   const sessionRemind = sessionStorage.getItem('trading_ai_session_remind');
@@ -4008,37 +4065,42 @@ function renderPostmarketSummary() {
     usTrend = '<span style="color:var(--warning); font-weight:bold;">中性盤整 ➡️</span>';
   }
 
-  // 運算強勢產業與強勢天數
-  const history = marketData.sectorHistory || [];
+  // 運算今日即時強勢產業 (取得今日即時最熱的前 3 名)
+  const sectorsArray = getCurrentSectorsData();
+  const sortedStrong = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange);
+  const sortedWeak = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange);
+
+  const topStrong = sortedStrong.slice(0, 3);
   let strongSectorsText = '';
-  if (history.length > 0 && history[0].strong) {
-    const topStrong = history[0].strong.slice(0, 3); // 取最強的前 3 個
-    strongSectorsText = topStrong.map(s => {
-      const days = getSectorStreakDays(s, 'strong');
-      return `🔥 <strong style="color:white;">${s}</strong> (已強勢 ${days} 天)`;
+  if (topStrong.length > 0) {
+    strongSectorsText = topStrong.map(g => {
+      const days = getSectorStreakDays(g.name, 'strong');
+      return `🔥 <strong style="color:white;">${g.name}</strong> (已強勢 ${days} 天)`;
     }).join('、');
   } else {
     strongSectorsText = '<span style="color:var(--text-muted);">今日無明顯強勢產業汪。</span>';
   }
 
-  // 運算弱轉強與轉弱要注意產業
+  // 運算由弱轉強與轉弱要注意產業 (今日強/弱前 5 名比對昨日盤後歷史)
   let turnStrongText = '<span style="color:var(--text-muted);">無明顯由弱轉強產業汪。</span>';
   let turnWeakText = '<span style="color:var(--text-muted);">大盤穩健，無轉弱產業要注意汪。</span>';
 
+  const history = marketData.sectorHistory || [];
   if (history.length >= 2) {
-    const todayStrong = history[0].strong || [];
     const yesterdayStrong = history[1].strong || [];
-    const todayWeak = history[0].weak || [];
     const yesterdayWeak = history[1].weak || [];
 
-    // 由弱轉強：今天在 strong 且前一天不在 strong
-    const turnStrongSectors = todayStrong.filter(s => !yesterdayStrong.includes(s));
+    const todayTop5Strong = sortedStrong.slice(0, 5).map(g => g.name);
+    const todayTop5Weak = sortedWeak.slice(0, 5).map(g => g.name);
+
+    // 由弱轉強：今日排名前 5 強，但昨天的歷史在 weak 中
+    const turnStrongSectors = todayTop5Strong.filter(s => yesterdayWeak.includes(s));
     if (turnStrongSectors.length > 0) {
       turnStrongText = turnStrongSectors.map(s => `<span style="color:var(--success); font-weight:bold;">✨ ${s}</span>`).join('、');
     }
 
-    // 轉弱要注意：今天在 weak 且前一天不在 weak
-    const turnWeakSectors = todayWeak.filter(s => !yesterdayWeak.includes(s));
+    // 轉弱要注意：今日排名最弱前 5 名，但昨天的歷史在 strong 中
+    const turnWeakSectors = todayTop5Weak.filter(s => yesterdayStrong.includes(s));
     if (turnWeakSectors.length > 0) {
       turnWeakText = turnWeakSectors.map(s => `<span style="color:var(--danger); font-weight:bold;">⚠️ ${s}</span>`).join('、');
     }
@@ -4061,21 +4123,21 @@ function renderPostmarketSummary() {
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid var(--primary); padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:var(--primary); font-size:14px;">📈 大盤風向播報：</span><br>
         <span style="display:inline-block; margin-top:4px;">
-          台股大盤目前：${twTrend} (市場健康度: <strong style="color:white;">${twTotalScore}</strong> 分)<br>
-          美股大盤目前：${usTrend} (市場健康度: <strong style="color:white;">${usTotalScore}</strong> 分)
+          台股大盤目前：\${twTrend} (市場健康度: <strong style="color:white;">\${twTotalScore}</strong> 分)<br>
+          美股大盤目前：\${usTrend} (市場健康度: <strong style="color:white;">\${usTotalScore}</strong> 分)
         </span>
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #10b981; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:#10b981; font-size:14px;">🔥 目前最強產業趨勢：</span><br>
-        <span style="display:inline-block; margin-top:4px;">${strongSectorsText}</span>
+        <span style="display:inline-block; margin-top:4px;">\${strongSectorsText}</span>
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #f59e0b; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:#f59e0b; font-size:14px;">🔄 產業轉折警示：</span><br>
         <span style="display:inline-block; margin-top:4px;">
-          由弱轉強產業：${turnStrongText}<br>
-          轉弱要注意產業：${turnWeakText}
+          由弱轉強產業：\${turnStrongText}<br>
+          轉弱要注意產業：\${turnWeakText}
         </span>
       </div>
     </div>
@@ -4155,61 +4217,8 @@ function renderRankings() {
     return '';
   }
 
-  // 預先對 mockStocks 進行產業分組，提供族群強弱排行使用 (直接以細分類分組)
-  const sectorGroups = {};
-  mockStocks.forEach(s => {
-    const sectorStr = getStockSector(s);
-    const sector = sectorStr.split(':')[1] || sectorStr; // 直接使用細分類作為分組主鍵，例如 水泥、食品、IC設計
-    if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { 
-        name: sector, 
-        stocks: [], 
-        avgChange: 0, 
-        totalVol: 0, 
-        totalInst: 0, 
-        totalAvgInst7D: 0,
-        totalChange5D: 0,
-        totalInst5D: 0
-      };
-    }
-    sectorGroups[sector].stocks.push(s);
-    sectorGroups[sector].totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0); // 估算成交金額（張×1000股×元）
-    
-    // 三大法人今日買賣超合計 = 外資 + 投信 + 自營商
-    const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-    sectorGroups[sector].totalInst += instToday;
-    sectorGroups[sector].totalAvgInst7D += (s.instAvg7D || 0);
-
-    // 5日累計漲幅計算
-    let stockChange5D = 0;
-    const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-    if (s.kline && s.kline.length >= 6) {
-      const len = s.kline.length;
-      const todayClose = s.price || s.kline[len - 1].close;
-      const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
-      stockChange5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
-    } else {
-      stockChange5D = change * 5;
-    }
-    sectorGroups[sector].totalChange5D += stockChange5D;
-    
-    // 5日法人買賣超加總
-    const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
-    sectorGroups[sector].totalInst5D += inst5D;
-  });
-
-  const sectorsArray = Object.values(sectorGroups);
-  sectorsArray.forEach(g => {
-    const sumChange = g.stocks.reduce((sum, s) => {
-      // 優先使用已計算的 liveChange，再 fallback 到靜態 change
-      if (s.liveChange !== undefined) return sum + s.liveChange;
-      // 若 liveChange 尚未初始化（runScreener 未執行過），動態計算
-      const live = getLiveStockData(s);
-      return sum + (live.change || 0);
-    }, 0);
-    g.avgChange = g.stocks.length > 0 ? (sumChange / g.stocks.length) : 0;
-    g.avgChange5D = g.stocks.length > 0 ? (g.totalChange5D / g.stocks.length) : 0;
-  });
+  // 動態即時計算產業數據並排序，供強弱勢排行使用
+  const sectorsArray = getCurrentSectorsData();
 
   // 讀取前台設定的限制個數，預設為 5
   const limitSelect = document.getElementById('rankLimitSelect');
