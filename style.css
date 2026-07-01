@@ -2716,7 +2716,47 @@ body {
 @media (min-width: 1025px) {
   .dashboard-grid-layout .market-health-banner-mini .health-mini-row {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  /* 🇹🇼 台股指標強制為 3 欄並排，🇺🇸 美股指標強制為 3 欄並排 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicators {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* 縮短卡片高度與間距以達成高度濃縮並列 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card {
+    min-height: 98px !important;
+    padding: 8px 10px !important;
+    gap: 2px !important;
+  }
+
+  /* 隱藏個別卡片的更新時間以省去空間 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card div:last-child {
+    display: none !important;
+  }
+
+  /* 縮小卡片標題字體與成交量字體 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card .idx-name {
+    font-size: 10px !important;
+  }
+
+  /* 縮減價格數值字體 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card .idx-close {
+    font-size: 13.5px !important;
+    margin: 1px 0 !important;
+  }
+
+  /* VIX 指數卡片的高度防禦 */
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card.us-card[style*="background"] {
+    min-height: 98px !important;
+    padding: 8px 10px !important;
+  }
+
+  .dashboard-grid-layout .market-health-banner-mini .health-indicator-card.us-card[style*="background"] .idx-close {
+    font-size: 18px !important;
+    margin: 1px 0 !important;
   }
 }
 
