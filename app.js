@@ -3337,11 +3337,12 @@ function renderSectorFlowMap() {
     g.stocks.push(s);
     g.totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
 
-    // 計算個股近 5 日累計資金淨流量 (億元)
+    // 計算個股近 5 日累計資金淨流量 (億元) (加強 isNaN 與 parseFloat 防禦)
     let stockFlow5D = 0;
     const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
-    const live = getLiveStockData(s);
-    const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+    const live = getLiveStockData(s) || {};
+    let chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+    if (isNaN(chg)) chg = 0;
     const todayFlow = (amount * (chg / 100)) / 1e8;
 
     if (s.kline && s.kline.length >= 6) {
@@ -3349,18 +3350,22 @@ function renderSectorFlowMap() {
       // 統計近 5 日 (含今日共 5 天的歷史 K 線累計)
       for (let i = len - 5; i < len; i++) {
         if (s.kline[i] && s.kline[i-1]) {
-          const close = s.kline[i].close;
-          const prevClose = s.kline[i-1].close;
-          const volume = s.kline[i].volume;
+          const close = parseFloat(s.kline[i].close) || 0;
+          const prevClose = parseFloat(s.kline[i-1].close) || 0;
+          const volume = parseFloat(s.kline[i].volume) || 0;
           const c_chg = prevClose > 0 ? ((close - prevClose) / prevClose) : 0;
           const c_amount = volume * close;
-          stockFlow5D += (c_amount * c_chg);
+          const dailyFlow = c_amount * c_chg;
+          if (!isNaN(dailyFlow)) {
+            stockFlow5D += dailyFlow;
+          }
         }
       }
       stockFlow5D = stockFlow5D / 1e8;
     } else {
-      stockFlow5D = todayFlow * 5;
+      stockFlow5D = isNaN(todayFlow) ? 0 : (todayFlow * 5);
     }
+    if (isNaN(stockFlow5D)) stockFlow5D = 0;
     g.netFlow5D += stockFlow5D;
   });
 
@@ -3373,13 +3378,15 @@ function renderSectorFlowMap() {
     }, 0);
     const avgChange = n > 0 ? sumChange / n : 0;
 
-    // 當日資金淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元)
+    // 當日資金淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元) (加強 isNaN 防禦)
     const netFlow = g.stocks.reduce((sum, s) => {
-      const live = getLiveStockData(s);
-      const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+      const live = getLiveStockData(s) || {};
+      let chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+      if (isNaN(chg)) chg = 0;
       const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
-      return sum + (amount * (chg / 100));
-    }, 0) / 1e8;
+      const flow = (amount * (chg / 100)) / 1e8;
+      return sum + (isNaN(flow) ? 0 : flow);
+    }, 0);
 
     return { 
       ...g, 
@@ -3415,9 +3422,11 @@ function renderSectorFlowMap() {
   let X_AXIS_LABEL = '← 近 5 日累計資金淨流量 (億元) →';
   let Y_AXIS_LABEL = '← 當日資金淨流量 (億元) →';
 
-  // 尋找最大絕對值以進行對稱對齊中軸 0
-  const maxX = Math.max(...sectors.map(g => Math.abs(g.netFlow5D || 0)), 1);
-  const maxY = Math.max(...sectors.map(g => Math.abs(g.netFlow || 0)), 1);
+  // 尋找最大絕對值以進行對稱對齊中軸 0 (防禦 NaN 與 Infinity)
+  let maxX = Math.max(...sectors.map(g => Math.abs(g.netFlow5D || 0)).filter(v => !isNaN(v)), 1);
+  let maxY = Math.max(...sectors.map(g => Math.abs(g.netFlow || 0)).filter(v => !isNaN(v)), 1);
+  if (isNaN(maxX) || !isFinite(maxX)) maxX = 1;
+  if (isNaN(maxY) || !isFinite(maxY)) maxY = 1;
 
   const X_LIMIT = Math.max(1, Math.ceil(maxX * 1.15));
   const Y_LIMIT = Math.max(1, Math.ceil(maxY * 1.15));
@@ -4123,21 +4132,21 @@ function renderPostmarketSummary() {
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid var(--primary); padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:var(--primary); font-size:14px;">📈 大盤風向播報：</span><br>
         <span style="display:inline-block; margin-top:4px;">
-          台股大盤目前：\${twTrend} (市場健康度: <strong style="color:white;">\${twTotalScore}</strong> 分)<br>
-          美股大盤目前：\${usTrend} (市場健康度: <strong style="color:white;">\${usTotalScore}</strong> 分)
+          台股大盤目前：${twTrend} (市場健康度: <strong style="color:white;">${twTotalScore}</strong> 分)<br>
+          美股大盤目前：${usTrend} (市場健康度: <strong style="color:white;">${usTotalScore}</strong> 分)
         </span>
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #10b981; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:#10b981; font-size:14px;">🔥 目前最強產業趨勢：</span><br>
-        <span style="display:inline-block; margin-top:4px;">\${strongSectorsText}</span>
+        <span style="display:inline-block; margin-top:4px;">${strongSectorsText}</span>
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #f59e0b; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
         <span style="font-weight:700; color:#f59e0b; font-size:14px;">🔄 產業轉折警示：</span><br>
         <span style="display:inline-block; margin-top:4px;">
-          由弱轉強產業：\${turnStrongText}<br>
-          轉弱要注意產業：\${turnWeakText}
+          由弱轉強產業：${turnStrongText}<br>
+          轉弱要注意產業：${turnWeakText}
         </span>
       </div>
     </div>
