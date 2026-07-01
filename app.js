@@ -3320,8 +3320,6 @@ function renderSectorFlowMap() {
   if (!container) return;
   container.innerHTML = '';
 
-  const isInstMode = (window.bubbleAxisMode === 'inst');
-
   // 分組計算
   const sectorGroups = {};
   mockStocks.forEach(s => {
@@ -3331,35 +3329,38 @@ function renderSectorFlowMap() {
         name: sector, 
         stocks: [], 
         totalVol: 0, 
-        sumVolRatio: 0,
-        sumInst5D: 0,
-        sumInstToday: 0,
-        sumInstAvg7D: 0,
-        sumInst20D: 0
+        netFlow5D: 0
       };
     }
     const g = sectorGroups[sector];
     g.stocks.push(s);
-    g.sumVolRatio += (s.volRatio || 1);
     g.totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
 
-    // 三大法人今日買超 (張)
-    let instToday = 0;
-    if (s.instDetail5D && s.instDetail5D[0]) {
-      const td = s.instDetail5D[0];
-      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
+    // 計算個股近 5 日累計資金淨流量 (億元)
+    let stockFlow5D = 0;
+    const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
+    const live = getLiveStockData(s);
+    const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
+    const todayFlow = (amount * (chg / 100)) / 1e8;
+
+    if (s.kline && s.kline.length >= 6) {
+      const len = s.kline.length;
+      // 統計近 5 日 (含今日共 5 天的歷史 K 線累計)
+      for (let i = len - 5; i < len; i++) {
+        if (s.kline[i] && s.kline[i-1]) {
+          const close = s.kline[i].close;
+          const prevClose = s.kline[i-1].close;
+          const volume = s.kline[i].volume;
+          const c_chg = prevClose > 0 ? ((close - prevClose) / prevClose) : 0;
+          const c_amount = volume * close;
+          stockFlow5D += (c_amount * c_chg);
+        }
+      }
+      stockFlow5D = stockFlow5D / 1e8;
     } else {
-      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+      stockFlow5D = todayFlow * 5;
     }
-    g.sumInstToday += instToday;
-
-    // 法人 5D 與 7D 日均
-    const inst5D_real = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
-    g.sumInst5D += inst5D_real;
-    g.sumInstAvg7D += (s.instAvg7D || (inst5D_real / 5));
-
-    // 法人 20D 估算
-    g.sumInst20D += (inst5D_real * 4);
+    g.netFlow5D += stockFlow5D;
   });
 
   const sectors = Object.values(sectorGroups).map(g => {
@@ -3371,7 +3372,7 @@ function renderSectorFlowMap() {
     }, 0);
     const avgChange = n > 0 ? sumChange / n : 0;
 
-    // 資金流入流出物理算法：產業淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元)
+    // 當日資金淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元)
     const netFlow = g.stocks.reduce((sum, s) => {
       const live = getLiveStockData(s);
       const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
@@ -3379,45 +3380,28 @@ function renderSectorFlowMap() {
       return sum + (amount * (chg / 100));
     }, 0) / 1e8;
 
-    // 法人平均指標
-    const avgInst5D = n > 0 ? g.sumInst5D / n : 0;
-    const avgInstToday = n > 0 ? g.sumInstToday / n : 0;
-    const avgInstAvg7D = n > 0 ? g.sumInstAvg7D / n : 0;
-    const avgInst20D = n > 0 ? g.sumInst20D / n : 0;
-    const avgInstAccel = avgInstToday - avgInstAvg7D; // 當日法人買超加速度
-
     return { 
       ...g, 
       avgChange, 
-      avgVolRatio: n > 0 ? g.sumVolRatio / n : 1, 
-      netFlow,
-      avgInst5D,
-      avgInstToday,
-      avgInstAccel,
-      avgInst20D
+      netFlow
     };
   });
 
-  // 顏色分類映射：主力加碼/買盤放緩/低檔築底/主力減碼
+  // 顏色分類映射：主力爆買(紅)/資金入場(藍)/量縮流出(綠)/買力下降(黃)
   const COLOR_MAP = { 
-    major: '#ef4444',   // 紅：主力加碼
-    rotate: '#eab308',  // 黃：買盤放緩
-    bottom: '#3b82f6',  // 藍：低檔築底
-    retreat: '#10b981'  // 綠：主力減碼
+    major: '#ef4444',   // 第一象限 (右上)：主力爆買
+    bottom: '#3b82f6',  // 第二象限 (左上)：資金入場
+    retreat: '#10b981', // 第三象限 (左下)：量縮流出
+    rotate: '#eab308'   // 第四象限 (右下)：買力下降
   };
 
   function getCategory(g) {
-    if (isInstMode) {
-      if (g.avgInst5D > 0) {
-        return g.avgInstAccel >= 0 ? 'major' : 'rotate';
-      } else {
-        return g.avgInstAccel >= 0 ? 'bottom' : 'retreat';
-      }
-    } else {
-      if (g.avgChange > 1.0 && g.avgVolRatio >= 1.3) return 'major';
-      if (g.avgChange > 0) return 'rotate';
-      return 'retreat';
-    }
+    const x = g.netFlow5D || 0;
+    const y = g.netFlow || 0;
+    if (x >= 0 && y >= 0) return 'major';    // 第一象限：主力爆買
+    if (x < 0 && y >= 0) return 'bottom';    // 第二象限：資金入場
+    if (x < 0 && y < 0) return 'retreat';    // 第三象限：量縮流出
+    return 'rotate';                         // 第四象限 (x >= 0 && y < 0)：買力下降
   }
 
   // 幾何範圍與變換函數
@@ -3427,82 +3411,40 @@ function renderSectorFlowMap() {
   const PW = W - ML - MR, PH = H - MT - MB;
 
   let toSvgX, toSvgY, centerX, centerY;
-  let X_AXIS_LABEL = '';
-  let Y_AXIS_LABEL = '';
-  let xLabels = [];
-  let yLabels = [];
-  let quadrantLabels = [];
+  let X_AXIS_LABEL = '← 近 5 日累計資金淨流量 (億元) →';
+  let Y_AXIS_LABEL = '← 當日資金淨流量 (億元) →';
 
-  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
-  const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
+  // 尋找最大絕對值以進行對稱對齊中軸 0
+  const maxX = Math.max(...sectors.map(g => Math.abs(g.netFlow5D || 0)), 1);
+  const maxY = Math.max(...sectors.map(g => Math.abs(g.netFlow || 0)), 1);
 
-  if (isInstMode) {
-    // 法人籌碼分析幾何
-    const max5DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst5D)), 1);
-    const maxAccelAbs = Math.max(...sectors.map(g => Math.abs(g.avgInstAccel)), 1);
+  const X_LIMIT = Math.max(1, Math.ceil(maxX * 1.15));
+  const Y_LIMIT = Math.max(1, Math.ceil(maxY * 1.15));
 
-    const X_MAX_INST = Math.max(800, Math.ceil(max5DAbs * 1.15));
-    const Y_HALF_INST = Math.max(400, Math.ceil(maxAccelAbs * 1.15));
+  toSvgX = function(v) {
+    const ratio = (v + X_LIMIT) / (X_LIMIT * 2);
+    return ML + Math.min(Math.max(ratio, 0.08), 0.92) * PW;
+  };
+  toSvgY = function(v) {
+    const ratio = (v + Y_LIMIT) / (Y_LIMIT * 2);
+    return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+  };
 
-    toSvgX = function(v) {
-      const ratio = (v + X_MAX_INST) / (X_MAX_INST * 2);
-      return ML + Math.min(Math.max(ratio, 0.08), 0.92) * PW;
-    };
-    toSvgY = function(v) {
-      const ratio = (v + Y_HALF_INST) / (Y_HALF_INST * 2);
-      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
-    };
+  centerX = toSvgX(0);
+  centerY = toSvgY(0);
 
-    centerX = toSvgX(0);
-    centerY = toSvgY(0);
+  const xStep = Math.round(X_LIMIT / 2);
+  const xLabels = [-X_LIMIT, -xStep, 0, xStep, X_LIMIT];
+  
+  const yStep = Math.round(Y_LIMIT / 2);
+  const yLabels = [-Y_LIMIT, -yStep, 0, yStep, Y_LIMIT];
 
-    X_AXIS_LABEL = '← 法人近 5 日累計買賣超 (張) →';
-    Y_AXIS_LABEL = '← 當日法人買超加速度 (張) →';
-
-    const xStep = X_MAX_INST / 2;
-    xLabels = [-X_MAX_INST, -xStep, 0, xStep, X_MAX_INST];
-    const yStep = Y_HALF_INST / 2;
-    yLabels = [-Y_HALF_INST, -yStep, 0, yStep, Y_HALF_INST];
-
-    quadrantLabels = [
-      { x: centerX + 6, y: MT + 13, text: '🔥 主力加碼區', c: '#ef4444' },
-      { x: ML + 6, y: MT + 13, text: '🌱 低檔築底區', c: '#3b82f6' },
-      { x: ML + 6, y: MT + PH - 5, text: '📉 主力減碼區', c: '#10b981' },
-      { x: centerX + 6, y: MT + PH - 5, text: '🌀 買盤放緩區', c: '#eab308' }
-    ];
-
-  } else {
-    // 原有的量能與資金流向幾何
-    const X_MAX = 3.0;
-    const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
-
-    toSvgX = function(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; };
-    toSvgY = function(flow) {
-      const sign = Math.sign(flow);
-      const absFlow = Math.abs(flow);
-      const flow_scaled = sign * Math.sqrt(absFlow);
-      const half_scaled = Math.sqrt(maxNetFlowAbs) * 1.15;
-      const ratio = (flow_scaled + half_scaled) / (half_scaled * 2);
-      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
-    };
-
-    centerX = toSvgX(1.0);
-    centerY = toSvgY(0);
-
-    X_AXIS_LABEL = '← 量能強度 (今日量/均量) →';
-    Y_AXIS_LABEL = '← 資金淨流向 (億元) →';
-
-    xLabels = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
-    const stepValue = Y_HALF / 2;
-    yLabels = [-Y_HALF, -stepValue, 0, stepValue, Y_HALF];
-
-    quadrantLabels = [
-      { x: centerX + 6, y: MT + 13, text: '主力流入 🟢', c: '#ef4444' },
-      { x: ML + 6, y: MT + 13, text: '量縮流入 🟢', c: '#3b82f6' },
-      { x: ML + 6, y: MT + PH - 5, text: '量縮流出 🔴', c: '#10b981' },
-      { x: centerX + 6, y: MT + PH - 5, text: '主力流出 🔴', c: '#eab308' }
-    ];
-  }
+  const quadrantLabels = [
+    { x: centerX + 10, y: MT + 18, text: '🔥 主力爆買區 (Q1)', c: '#ef4444' },
+    { x: ML + 10, y: MT + 18, text: '📊 資金入場區 (Q2)', c: '#3b82f6' },
+    { x: ML + 10, y: MT + PH - 8, text: '📉 量縮流出區 (Q3)', c: '#10b981' },
+    { x: centerX + 10, y: MT + PH - 8, text: '⚠️ 買力下降區 (Q4)', c: '#eab308' }
+  ];
 
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -3521,17 +3463,10 @@ function renderSectorFlowMap() {
   svg.appendChild(el('rect', { x: ML, y: MT, width: PW, height: PH, fill: 'rgba(15,23,42,0.5)', rx: '8' }));
 
   // 象限背景色
-  if (isInstMode) {
-    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 加碼 (紅)
-    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 築底 (藍)
-    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 減碼 (綠)
-    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 放緩 (黃)
-  } else {
-    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' }));
-    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' }));
-    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' }));
-    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' }));
-  }
+  svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 第一象限
+  svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 第二象限
+  svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 第三象限
+  svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 第四象限
 
   // 繪製背景格線 (X 軸)
   xLabels.forEach(v => {
@@ -3549,18 +3484,13 @@ function renderSectorFlowMap() {
 
   // X 軸刻度文字
   xLabels.forEach(v => {
-    const text = isInstMode ? (v > 0 ? '+' : '') + v.toLocaleString() : v + 'x';
+    const text = (v > 0 ? '+' : '') + v + '億';
     svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, text));
   });
   
   // Y 軸刻度文字
   yLabels.forEach(v => {
-    let text = '';
-    if (isInstMode) {
-      text = (v > 0 ? '+' : '') + Math.round(v).toLocaleString() + '張';
-    } else {
-      text = v === 0 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1) + '億';
-    }
+    const text = (v > 0 ? '+' : '') + v + '億';
     svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, text));
   });
 
@@ -3586,7 +3516,7 @@ function renderSectorFlowMap() {
     document.body.appendChild(tooltip);
   }
 
-  const maxInst20DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst20D)), 1);
+  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
 
   // 繪製泡泡
   sectors.forEach(g => {
@@ -3594,16 +3524,9 @@ function renderSectorFlowMap() {
     if (!activeBubbleFilters[cat]) return; // 連動過濾開關
     const color = COLOR_MAP[cat];
 
-    let x, y, r;
-    if (isInstMode) {
-      x = toSvgX(g.avgInst5D);
-      y = toSvgY(g.avgInstAccel);
-      r = Math.max(10, Math.min(50, 10 + Math.sqrt(Math.abs(g.avgInst20D) / maxInst20DAbs) * 40));
-    } else {
-      x = toSvgX(g.avgVolRatio);
-      y = toSvgY(g.netFlow);
-      r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
-    }
+    const x = toSvgX(g.netFlow5D || 0);
+    const y = toSvgY(g.netFlow || 0);
+    const r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
 
     // glow
     const glow = el('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.25' });
@@ -3625,33 +3548,20 @@ function renderSectorFlowMap() {
       circle.setAttribute('opacity', '1');
       glow.setAttribute('opacity', '0.55');
 
-      let catLabel = '';
-      if (isInstMode) {
-        catLabel = cat === 'major' ? '🔴 主力加碼' : cat === 'rotate' ? '🟡 買盤放緩' : cat === 'bottom' ? '🔵 低檔築底' : '🟢 主力減碼';
-      } else {
-        catLabel = cat === 'major' ? '🔴 主力' : cat === 'rotate' ? '🟡 輪動' : '🟢 退潮';
-      }
+      const catLabel = cat === 'major' ? '🔴 主力爆買' : cat === 'bottom' ? '🔵 資金入場' : cat === 'retreat' ? '🟢 量縮流出' : '🟡 買力下降';
 
       const top3 = [...g.stocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 3);
       const stockTags = top3.map(s => '<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">' + s.id + ' ' + s.name + '</span>').join(' ');
 
-      let detailHTML = '';
-      if (isInstMode) {
-        detailHTML = `
-          <span style="color:#94a3b8;">法人5D買超</span><span style="color:${g.avgInst5D >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInst5D >= 0 ? '+' : ''}${Math.round(g.avgInst5D).toLocaleString()}張</span>
-          <span style="color:#94a3b8;">法人20D累計</span><span style="color:white;font-weight:700;">${Math.round(g.avgInst20D).toLocaleString()}張</span>
-          <span style="color:#94a3b8;">籌碼加速度</span><span style="color:${g.avgInstAccel >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInstAccel >= 0 ? '+' : ''}${Math.round(g.avgInstAccel).toLocaleString()}張</span>
-        `;
-      } else {
-        const capB = (g.totalVol / 1e8).toFixed(1);
-        const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億 (流入)` : `${g.netFlow.toFixed(2)}億 (流出)`;
-        const flowColor = g.netFlow >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-        detailHTML = `
-          <span style="color:#94a3b8;">量能強度</span><span style="color:white;font-weight:700;">${g.avgVolRatio.toFixed(2)}x</span>
-          <span style="color:#94a3b8;">估算金額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
-          <span style="color:#94a3b8;">資金流向</span><span style="color:${flowColor};font-weight:700;">${flowText}</span>
-        `;
-      }
+      const capB = (g.totalVol / 1e8).toFixed(1);
+      const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億` : `${g.netFlow.toFixed(2)}億`;
+      const flow5DText = g.netFlow5D >= 0 ? `+${g.netFlow5D.toFixed(2)}億` : `${g.netFlow5D.toFixed(2)}億`;
+
+      const detailHTML = `
+        <span style="color:#94a3b8;">當日資金淨流入</span><span style="color:${g.netFlow >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${flowText}</span>
+        <span style="color:#94a3b8;">5日累計淨流入</span><span style="color:${g.netFlow5D >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${flow5DText}</span>
+        <span style="color:#94a3b8;">估算當日成交額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
+      `;
 
       tooltip.innerHTML = `
         <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;color:#94a3b8;">(${catLabel})</span></div>

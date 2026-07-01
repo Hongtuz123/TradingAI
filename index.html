@@ -136,26 +136,25 @@
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
               <div style="display:flex;align-items:center;gap:12px;">
                 <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
-                <select id="bubble-axis-mode" onchange="changeBubbleAxisMode()" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:700;">
-                  <option value="flow">📊 量能與資金流向</option>
-                  <option value="inst">💼 三大法人籌碼分析</option>
-                </select>
               </div>
               <!-- 開關過濾按鈕 -->
               <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
                 <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
-                  <span class="dot major"></span>主力
+                  <span class="dot major" style="background:#ef4444;"></span>主力爆買
                 </button>
-                <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
-                  <span class="dot rotate"></span>輪動
+                <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
+                  <span class="dot bottom" style="background:#3b82f6;"></span>資金入場
                 </button>
                 <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
-                  <span class="dot retreat"></span>退潮
+                  <span class="dot retreat" style="background:#10b981;"></span>量縮流出
+                </button>
+                <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
+                  <span class="dot rotate" style="background:#eab308;"></span>買力下降
                 </button>
               </div>
             </div>
             <div id="bubble-legend-text" style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
-              泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 資金淨流向 (往上流入 / 往下流出) | 點擊泡泡查看成分股
+              泡泡大小: 估算成交額 | X軸: 近5日累計資金淨流量 (億元) | Y軸: 當日資金淨流量 (億元) (中心點為 0) | 點擊泡泡查看成分股
             </div>
           </div>
           <div class="flow-map-container" id="sectorTreeMap">
@@ -549,7 +548,7 @@
   </footer>
 
   <!-- 腳本 -->
-  <script src="app.js?v=48"></script>
-  <script src="stock-dashboard.js?v=48"></script>
+  <script src="app.js?v=49"></script>
+  <script src="stock-dashboard.js?v=49"></script>
 </body>
 </html>
