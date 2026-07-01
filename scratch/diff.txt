@@ -1,0 +1,1096 @@
+﻿diff --git a/app.js b/app.js
+index 573d137..f22d603 100644
+--- a/app.js
++++ b/app.js
+@@ -2592,301 +2592,397 @@ const SECTOR_COMPENSATION = {
+   '6589': '傳產:生技',
+   '6590': '軟體:系統整合',
+   '6591': '電子中游:散熱零組件',
+-  '6592': '傳產:其他',
+-  '6593': '軟體:系統整合',
+-  '6596': '傳產:文創娛樂',
+-  '6597': '電子上游:LED及光元件',
+-  '6598': '傳產:生技',
+-  '6603': '傳產:電機',
+-  '6605': '傳產:汽車零組件',
+-  '6606': '傳產:電機',
+-  '6609': '傳產:電機',
+-  '6612': '傳產:生技',
+-  '6613': '電子中游:儀器設備工程',
+-  '6614': '軟體:系統整合',
+-  '6615': '傳產:生技',
+-  '6616': '傳產:其他',
+-  '6617': '傳產:生技',
+-  '6620': '傳產:生技',
+-  '6624': '傳產:綠能環保',
+-  '6625': '傳產:文創娛樂',
+-  '6629': '傳產:其他',
+-  '6637': '傳產:生技',
+-  '6640': '電子上游:IC-半導體設備',
+-  '6641': '傳產:綠能環保',
+-  '6642': '電子上游:被動元件',
+-  '6643': '電子上游:IP/ASIC',
+-  '6645': '傳產:生技',
+-  '6649': '傳產:生技',
+-  '6651': '電子上游:IC-設計',
+-  '6654': '電子中游:儀器設備工程',
+-  '6655': '傳產:其他',
+-  '6657': '傳產:生技',
+-  '6658': '電子上游:PCB-材料設備',
+-  '6661': '傳產:生技',
+-  '6662': '傳產:生技',
+-  '6664': '電子上游:PCB-材料設備',
+-  '6666': '傳產:生技',
+-  '6667': '電子中游:儀器設備工程',
+-  '6668': '電子中游:光學鏡片',
+-  '6669': '電子中游:EMS',
+-  '6670': '傳產:高爾夫球',
+-  '6671': '傳產:其他',
+-  '6672': '電子上游:PCB-製造',
+-  '6674': '電子中游:網通',
+-  '6679': '電子上游:IC-設計',
+-  '6680': '電子下游:工業電腦',
+-  '6683': '電子上游:IC-半導體設備',
+-  '6684': '電子上游:IC-設計',
+-  '6689': '軟體:系統整合',
+-  '6690': '軟體:系統整合',
+-  '6691': '電子中游:儀器設備工程',
+-  '6692': '電子下游:太陽能',
+-  '6693': '電子上游:IC-設計',
+-  '6695': '電子上游:IC-設計',
+-  '6697': '軟體:系統整合',
+-  '6698': '傳產:其他',
+-  '6703': '傳產:生技',
+-  '6706': '電子上游:LED及光元件',
+-  '6708': '電子上游:IC-設計',
+-  '6712': '傳產:生技',
+-  '6715': '電子上游:連接元件',
+-  '6716': '電子上游:IC-設計',
+-  '6719': '電子上游:IC-設計',
+-  '6720': '電子上游:IC-設計',
+-  '6721': '傳產:其他',
+-  '6722': '電子下游:安全監控',
+-  '6725': '電子上游:IC-半導體設備',
+-  '6727': '電子上游:PCB-材料設備',
+-  '6728': '傳產:電機',
+-  '6730': '傳產:生技',
+-  '6732': '電子上游:IC-設計',
+-  '6733': '傳產:生技',
+-  '6735': '電子中游:儀器設備工程',
+-  '6739': '電子中游:其他',
+-  '6741': '軟體:其他',
+-  '6742': '電子中游:光學鏡片',
+-  '6743': '電子下游:消費電子',
+-  '6751': '軟體:系統整合',
+-  '6752': '軟體:系統整合',
+-  '6753': '傳產:航運',
+-  '6754': '傳產:其他',
+-  '6756': '電子上游:IC-設計',
+-  '6757': '傳產:航運',
+-  '6761': '電子中游:電子元件通路',
+-  '6762': '傳產:生技',
+-  '6763': '軟體:系統整合',
+-  '6767': '傳產:生技',
+-  '6768': '傳產:其他',
+-  '6770': '電子上游:IC-代工',
+-  '6771': '傳產:綠能環保',
+-  '6776': '電子下游:資訊通路',
+-  '6781': '電子中游:二次電池',
+-  '6782': '傳產:生技',
+-  '6785': '傳產:生技',
+-  '6788': '電子上游:IC-半導體設備',
+-  '6789': '電子上游:LED及光元件',
+-  '6790': '傳產:紙業',
+-  '6791': '軟體:系統整合',
+-  '6792': '電子上游:被動元件',
+-  '6794': '傳產:生技',
+-  '6796': '傳產:生技',
+-  '6799': '電子上游:IC-設計',
+-  '6803': '傳產:綠能環保',
+-  '6804': '傳產:自行車',
+-  '6805': '電子上游:連接元件',
+-  '6806': '電子下游:太陽能',
+-  '6807': '傳產:其他',
+-  '6811': '軟體:系統整合',
+-  '6821': '電子上游:被動元件',
+-  '6823': '電子上游:IC-半導體設備',
+-  '6829': '電子上游:半導體元件',
+-  '6830': '電子上游:IC-其他',
+-  '6831': '電子中游:散熱零組件',
+-  '6834': '電子上游:被動元件',
+-  '6835': '電子上游:PCB-材料設備',
+-  '6838': '傳產:生技',
+-  '6840': '電子中游:其他',
+-  '6841': '軟體:系統整合',
+-  '6843': '傳產:電機',
+-  '6844': '傳產:生技',
+-  '6846': '傳產:生技',
+-  '6854': '電子上游:LED及光元件',
+-  '6855': '電子下游:其他',
+-  '6856': '傳產:文創娛樂',
+-  '6859': '電子下游:手機製造',
+-  '6861': '傳產:生技',
+-  '6862': '電子中游:其他',
+-  '6863': '電子下游:掃描器',
+-  '6865': '軟體:其他',
+-  '6869': '電子下游:太陽能',
+-  '6870': '軟體:系統整合',
+-  '6872': '傳產:生技',
+-  '6873': '電子下游:太陽能',
+-  '6874': '軟體:系統整合',
+-  '6875': '傳產:生技',
+-  '6877': '電子中游:儀器設備工程',
+-  '6881': '傳產:其他',
+-  '6884': '電子下游:其他',
+-  '6885': '傳產:生技',
+-  '6887': '傳產:其他',
+-  '6890': '傳產:其他',
+-  '6894': '傳產:其他',
+-  '6895': '電子中游:其他',
+-  '6899': '電子上游:被動元件',
+-  '6901': '傳產:生技',
+-  '6902': '軟體:系統整合',
+-  '6903': '電子中游:儀器設備工程',
+-  '6904': '傳產:其他',
+-  '6906': '軟體:系統整合',
+-  '6907': '電子上游:IC-設計',
+-  '6908': '電子下游:電腦周邊',
+-  '6909': '電子上游:IC-半導體設備',
+-  '6910': '軟體:系統整合',
+-  '6913': '電子上游:連接元件',
+-  '6914': '傳產:其他',
+-  '6916': '電子中游:LCD-STN面板',
+-  '6918': '傳產:生技',
+-  '6919': '傳產:生技',
+-  '6921': '電子上游:IC-設計',
+-  '6922': '電子下游:工業電腦',
+-  '6923': '傳產:其他',
+-  '6924': '電子上游:PCB-製造',
+-  '6925': '軟體:系統整合',
+-  '6928': '電子下游:工業電腦',
+-  '6929': '傳產:生技',
+-  '6931': '傳產:生技',
+-  '6933': '電子中游:其他',
+-  '6934': '傳產:生技',
+-  '6936': '傳產:生技',
+-  '6937': '電子上游:IC-半導體設備',
+-  '6944': '傳產:綠能環保',
+-  '6949': '傳產:生技',
+-  '6951': '傳產:綠能環保',
+-  '6952': '傳產:食品',
+-  '6953': '電子上游:IC-半導體設備',
+-  '6955': '傳產:生技',
+-  '6957': '傳產:其他',
+-  '6958': '傳產:其他',
+-  '6961': '傳產:觀光',
+-  '6962': '電子上游:IC-設計',
+-  '6965': '傳產:其他',
+-  '6967': '電子中游:其他',
+-  '6968': '傳產:其他',
+-  '6969': '傳產:其他',
+-  '6971': '傳產:綠能環保',
+-  '6982': '傳產:電機',
+-  '6983': '電子中游:儀器設備工程',
+-  '6988': '傳產:汽車零組件',
+-  '6994': '傳產:其他',
+-  '6996': '電子中游:LCD-零組件',
+-  '6997': '軟體:其他',
+-  '7402': '電子中游:光學鏡片',
+-  '7547': '軟體:系統整合',
+-  '7556': '電子上游:IC-半導體設備',
+-  '7584': '軟體:遊戲',
+-  '7610': '傳產:鋼鐵',
+-  '7631': '電子中游:儀器設備工程',
+-  '7642': '傳產:電機',
+-  '7703': '電子中游:儀器設備工程',
+-  '7704': '電子中游:儀器設備工程',
+-  '7705': '傳產:觀光',
+-  '7708': '傳產:觀光',
+-  '7709': '傳產:電機',
+-  '7711': '電子中游:EMS',
+-  '7712': '電子上游:IC-製造',
+-  '7713': '傳產:生技',
+-  '7714': '軟體:其他',
+-  '7715': '傳產:其他',
+-  '7716': '傳產:航運',
+-  '7717': '電子上游:LED及光元件',
+-  '7718': '傳產:電機',
+-  '7721': '軟體:系統整合',
+-  '7722': '軟體:其他',
+-  '7723': '傳產:觀光',
+-  '7728': '電子上游:IC-其他',
+-  '7730': '電子中游:儀器設備工程',
+-  '7732': '傳產:汽車零組件',
+-  '7734': '電子上游:IC-其他',
+-  '7736': '傳產:汽車零組件',
+-  '7738': '軟體:其他',
+-  '7740': '傳產:綠能環保',
+-  '7743': '傳產:食品',
+-  '7744': '電子中游:EMS',
+-  '7747': '軟體:系統整合',
+-  '7749': '電子上游:IP/ASIC',
+-  '7750': '傳產:電機',
+-  '7751': '電子上游:IC-半導體設備',
+-  '7753': '電子下游:顯示器',
+-  '7757': '傳產:觀光',
+-  '7760': '傳產:觀光',
+-  '7765': '軟體:系統整合',
+-  '7767': '軟體:系統整合',
+-  '7768': '電子上游:晶圓材料',
+-  '7769': '電子上游:IC-半導體設備',
+-  '7770': '電子上游:IC-設計',
+-  '7772': '電子中游:光學鏡片',
+-  '7777': '傳產:其他',
+-  '7780': '傳產:生技',
+-  '7782': '傳產:百貨',
+-  '7786': '傳產:綠能環保',
+-  '7788': '傳產:電機',
+-  '7791': '傳產:食品',
+-  '7792': '電子中游:變壓器與UPS',
+-  '7794': '電子下游:消費電子',
+-  '7795': '電子上游:IC-半導體設備',
+-  '7799': '傳產:生技',
+-  '7803': '傳產:生技',
+-  '7805': '電子中游:磁碟陣列',
+-  '7810': '電子上游:IC-封測',
+-  '7811': '傳產:運動休閒',
+-  '7818': '傳產:其他',
+-  '7819': '軟體:系統整合',
+-  '7820': '傳產:綠能環保',
+-  '7821': '電子下游:工業電腦',
+-  '7822': '電子上游:IC-半導體設備',
+-  '7823': '軟體:系統整合',
+-  '7827': '傳產:生技',
+-  '7828': '電子中游:儀器設備工程',
+-  '7842': '傳產:綠能環保',
+-  '8011': '電子中游:網通',
+-  '8016': '電子上游:IC-設計',
+-  '8021': '電子上游:PCB-材料設備',
+-  '8024': '電子上游:IC-設計',
+-  '8027': '傳產:電機',
+-  '8028': '電子上游:IC-半導體設備',
+-  '8032': '電子上游:IC-通路',
+-  '8033': '電子下游:消費電子',
+-  '8034': '電子中游:通訊設備',
+-  '8038': '電子中游:二次電池',
+-  '8039': '電子上游:PCB-製造',
+-  '8040': '電子上游:IC-設計',
+-  '8042': '電子上游:被動元件',
+-  '8043': '電子上游:被動元件',
+-  '8044': '軟體:其他',
+-  '8045': '電子中游:通訊設備',
+-  '8046': '電子上游:ABF',
+-  '8047': '電子下游:其他',
+-  '8048': '電子中游:通訊設備',
+-  '8049': '電子中游:LCD-STN面板',
+-  '8050': '電子下游:工業電腦',
+-  '8054': '電子上游:IC-設計',
+-  '8059': '電子中游:通訊設備',
+-  '8064': '電子中游:儀器設備工程',
+-  '8066': '傳產:百貨',
+-  '8067': '電子下游:資訊通路',
+-  '8068': '電子上游:IC-通路',
+-  '8069': '電子中游:LCD-TFT面板',
+-  '8070': '電子上游:IC-導線架',
+-  '8071': '電子上游:連接元件',
+-  '8072': '電子下游:安全監控',
+-  '8074': '電子上游:PCB-材料設備',
+-  '8076': '電子下游:商業自動化',
+-  '8077': '傳產:觀光',
+-  '8080': '傳產:營建',
+-  '8081': '電子上游:IC-設計',
+-  '8083': '電子中游:其他',
+-  '8084': '電子上游:DRAM銷售',
++  '6592': '傳產:其�// 全域泡泡圖軸線狀態 (flow: 量能與資金流向, inst: 三大法人籌碼分析)
++window.bubbleAxisMode = 'flow';
++
++window.changeBubbleAxisMode = function() {
++  const select = document.getElementById('bubble-axis-mode');
++  if (select) {
++    window.bubbleAxisMode = select.value;
++    const legend = document.getElementById('bubble-legend-text');
++    if (legend) {
++      if (window.bubbleAxisMode === 'flow') {
++        legend.textContent = '泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 資金淨流向 (往上流入 / 往下流出) | 點擊泡泡查看成分股';
++      } else {
++        legend.textContent = '泡泡大小: 法人20D累計(絕對值) | X軸: 法人5D累計買超 | Y軸: 當日法人買超加速度 | 點擊泡泡查看成分股';
++      }
++    }
++    renderSectorFlowMap();
++  }
++};
++
++// 1. 繪製產業資金輪動泡泡圖
++function renderSectorFlowMap() {
++  const container = document.getElementById('sectorTreeMap');
++  if (!container) return;
++  container.innerHTML = '';
++
++  const isInstMode = (window.bubbleAxisMode === 'inst');
++
++  // 分組計算
++  const sectorGroups = {};
++  mockStocks.forEach(s => {
++    const sector = getStockSector(s).split(':')[1] || getStockSector(s);
++    if (!sectorGroups[sector]) {
++      sectorGroups[sector] = { 
++        name: sector, 
++        stocks: [], 
++        totalVol: 0, 
++        sumVolRatio: 0,
++        sumInst5D: 0,
++        sumInstToday: 0,
++        sumInstAvg7D: 0,
++        sumInst20D: 0
++      };
++    }
++    const g = sectorGroups[sector];
++    g.stocks.push(s);
++    g.sumVolRatio += (s.volRatio || 1);
++    g.totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
++
++    // 三大法人今日買超 (張)
++    let instToday = 0;
++    if (s.instDetail5D && s.instDetail5D[0]) {
++      const td = s.instDetail5D[0];
++      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
++    } else {
++      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
++    }
++    g.sumInstToday += instToday;
++
++    // 法人 5D 與 7D 日均
++    const inst5D_real = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
++    g.sumInst5D += inst5D_real;
++    g.sumInstAvg7D += (s.instAvg7D || (inst5D_real / 5));
++
++    // 法人 20D 估算
++    g.sumInst20D += (inst5D_real * 4);
++  });
++
++  const sectors = Object.values(sectorGroups).map(g => {
++    const n = g.stocks.length;
++    const sumChange = g.stocks.reduce((sum, s) => {
++      if (s.liveChange !== undefined) return sum + s.liveChange;
++      const live = getLiveStockData(s);
++      return sum + (live.change || 0);
++    }, 0);
++    const avgChange = n > 0 ? sumChange / n : 0;
++
++    // 資金流入流出物理算法：產業淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元)
++    const netFlow = g.stocks.reduce((sum, s) => {
++      const live = getLiveStockData(s);
++      const chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
++      const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
++      return sum + (amount * (chg / 100));
++    }, 0) / 1e8;
++
++    // 法人平均指標
++    const avgInst5D = n > 0 ? g.sumInst5D / n : 0;
++    const avgInstToday = n > 0 ? g.sumInstToday / n : 0;
++    const avgInstAvg7D = n > 0 ? g.sumInstAvg7D / n : 0;
++    const avgInst20D = n > 0 ? g.sumInst20D / n : 0;
++    const avgInstAccel = avgInstToday - avgInstAvg7D; // 當日法人買超加速度
++
++    return { 
++      ...g, 
++      avgChange, 
++      avgVolRatio: n > 0 ? g.sumVolRatio / n : 1, 
++      netFlow,
++      avgInst5D,
++      avgInstToday,
++      avgInstAccel,
++      avgInst20D
++    };
++  });
++
++  // 顏色分類映射：主力加碼/買盤放緩/低檔築底/主力減碼
++  const COLOR_MAP = { 
++    major: '#ef4444',   // 紅：主力加碼
++    rotate: '#eab308',  // 黃：買盤放緩
++    bottom: '#3b82f6',  // 藍：低檔築底
++    retreat: '#10b981'  // 綠：主力減碼
++  };
++
++  function getCategory(g) {
++    if (isInstMode) {
++      if (g.avgInst5D > 0) {
++        return g.avgInstAccel >= 0 ? 'major' : 'rotate';
++      } else {
++        return g.avgInstAccel >= 0 ? 'bottom' : 'retreat';
++      }
++    } else {
++      if (g.avgChange > 1.0 && g.avgVolRatio >= 1.3) return 'major';
++      if (g.avgChange > 0) return 'rotate';
++      return 'retreat';
++    }
++  }
++
++  // 幾何範圍與變換函數
++  const W = container.clientWidth || 800;
++  const H = 620;
++  const ML = 58, MR = 18, MT = 22, MB = 42;
++  const PW = W - ML - MR, PH = H - MT - MB;
++
++  let toSvgX, toSvgY, centerX, centerY;
++  let X_AXIS_LABEL = '';
++  let Y_AXIS_LABEL = '';
++  let xLabels = [];
++  let yLabels = [];
++  let quadrantLabels = [];
++
++  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
++  const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
++
++  if (isInstMode) {
++    // 法人籌碼分析幾何
++    const max5DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst5D)), 1);
++    const maxAccelAbs = Math.max(...sectors.map(g => Math.abs(g.avgInstAccel)), 1);
++
++    const X_MAX_INST = Math.max(800, Math.ceil(max5DAbs * 1.15));
++    const Y_HALF_INST = Math.max(400, Math.ceil(maxAccelAbs * 1.15));
++
++    toSvgX = function(v) {
++      const ratio = (v + X_MAX_INST) / (X_MAX_INST * 2);
++      return ML + Math.min(Math.max(ratio, 0.08), 0.92) * PW;
++    };
++    toSvgY = function(v) {
++      const ratio = (v + Y_HALF_INST) / (Y_HALF_INST * 2);
++      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
++    };
++
++    centerX = toSvgX(0);
++    centerY = toSvgY(0);
++
++    X_AXIS_LABEL = '← 法人近 5 日累計買賣超 (張) →';
++    Y_AXIS_LABEL = '← 當日法人買超加速度 (張) →';
++
++    const xStep = X_MAX_INST / 2;
++    xLabels = [-X_MAX_INST, -xStep, 0, xStep, X_MAX_INST];
++    const yStep = Y_HALF_INST / 2;
++    yLabels = [-Y_HALF_INST, -yStep, 0, yStep, Y_HALF_INST];
++
++    quadrantLabels = [
++      { x: centerX + 6, y: MT + 13, text: '🔥 主力加碼區', c: '#ef4444' },
++      { x: ML + 6, y: MT + 13, text: '🌱 低檔築底區', c: '#3b82f6' },
++      { x: ML + 6, y: MT + PH - 5, text: '📉 主力減碼區', c: '#10b981' },
++      { x: centerX + 6, y: MT + PH - 5, text: '🌀 買盤放緩區', c: '#eab308' }
++    ];
++
++  } else {
++    // 原有的量能與資金流向幾何
++    const X_MAX = 3.0;
++    const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
++
++    toSvgX = function(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; };
++    toSvgY = function(flow) {
++      const sign = Math.sign(flow);
++      const absFlow = Math.abs(flow);
++      const flow_scaled = sign * Math.sqrt(absFlow);
++      const half_scaled = Math.sqrt(maxNetFlowAbs) * 1.15;
++      const ratio = (flow_scaled + half_scaled) / (half_scaled * 2);
++      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
++    };
++
++    centerX = toSvgX(1.0);
++    centerY = toSvgY(0);
++
++    X_AXIS_LABEL = '← 量能強度 (今日量/均量) →';
++    Y_AXIS_LABEL = '← 資金淨流向 (億元) →';
++
++    xLabels = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
++    const stepValue = Y_HALF / 2;
++    yLabels = [-Y_HALF, -stepValue, 0, stepValue, Y_HALF];
++
++    quadrantLabels = [
++      { x: centerX + 6, y: MT + 13, text: '主力流入 🟢', c: '#ef4444' },
++      { x: ML + 6, y: MT + 13, text: '量縮流入 🟢', c: '#3b82f6' },
++      { x: ML + 6, y: MT + PH - 5, text: '量縮流出 🔴', c: '#10b981' },
++      { x: centerX + 6, y: MT + PH - 5, text: '主力流出 🔴', c: '#eab308' }
++    ];
++  }
++
++  const ns = 'http://www.w3.org/2000/svg';
++  const svg = document.createElementNS(ns, 'svg');
++  svg.setAttribute('width', W);
++  svg.setAttribute('height', H);
++  svg.style.cssText = 'display:block;overflow:visible;';
++
++  function el(tag, attrs, text) {
++    const e = document.createElementNS(ns, tag);
++    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
++    if (text !== undefined) e.textContent = text;
++    return e;
++  }
++
++  // 背景
++  svg.appendChild(el('rect', { x: ML, y: MT, width: PW, height: PH, fill: 'rgba(15,23,42,0.5)', rx: '8' }));
++
++  // 象限背景色
++  if (isInstMode) {
++    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 加碼 (紅)
++    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 築底 (藍)
++    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 減碼 (綠)
++    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 放緩 (黃)
++  } else {
++    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' }));
++    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' }));
++    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' }));
++    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' }));
++  }
++
++  // 繪製背景格線 (X 軸)
++  xLabels.forEach(v => {
++    svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
++  });
++  
++  // 繪製背景格線 (Y 軸)
++  yLabels.forEach(v => {
++    svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
++  });
++
++  // 中心線 (虛線)
++  svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
++  svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
++
++  // X 軸刻度文字
++  xLabels.forEach(v => {
++    const text = isInstMode ? (v > 0 ? '+' : '') + v.toLocaleString() : v + 'x';
++    svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, text));
++  });
++  
++  // Y 軸刻度文字
++  yLabels.forEach(v => {
++    let text = '';
++    if (isInstMode) {
++      text = (v > 0 ? '+' : '') + Math.round(v).toLocaleString() + '張';
++    } else {
++      text = v === 0 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1) + '億';
++    }
++    svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, text));
++  });
++
++  // 軸標題
++  svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, X_AXIS_LABEL));
++  
++  const yG = document.createElementNS(ns, 'g');
++  yG.setAttribute('transform', `translate(13,${MT + PH / 2}) rotate(-90)`);
++  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, Y_AXIS_LABEL));
++  svg.appendChild(yG);
++
++  // 象限標籤
++  quadrantLabels.forEach(({ x, y, text, c }) => {
++    svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text));
++  });
++
++  // Tooltip
++  let tooltip = document.getElementById('bubbleTooltip');
++  if (!tooltip) {
++    tooltip = document.createElement('div');
++    tooltip.id = 'bubbleTooltip';
++    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;min-width:190px;max-width:250px;box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:12px;color:white;';
++    document.body.appendChild(tooltip);
++  }
++
++  const maxInst20DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst20D)), 1);
++
++  // 繪製泡泡
++  sectors.forEach(g => {
++    const cat = getCategory(g);
++    if (!activeBubbleFilters[cat]) return; // 連動過濾開關
++    const color = COLOR_MAP[cat];
++
++    let x, y, r;
++    if (isInstMode) {
++      x = toSvgX(g.avgInst5D);
++      y = toSvgY(g.avgInstAccel);
++      r = Math.max(10, Math.min(50, 10 + Math.sqrt(Math.abs(g.avgInst20D) / maxInst20DAbs) * 40));
++    } else {
++      x = toSvgX(g.avgVolRatio);
++      y = toSvgY(g.netFlow);
++      r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
++    }
++
++    // glow
++    const glow = el('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.25' });
++    svg.appendChild(glow);
++
++    // 泡泡
++    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.82', style: 'cursor:pointer;transition:opacity 0.15s;' });
++
++    // 標籤
++    const shortName = g.name.length > 5 ? g.name.slice(0, 4) + '…' : g.name;
++    const label = el('text', {
++      x, y: y + 1, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
++      fill: 'rgba(0,0,0,0.85)', 'font-size': r >= 24 ? '10' : '8',
++      'font-weight': '700', style: 'pointer-events:none;user-select:none;'
++    }, shortName);
++
++    // hover
++    circle.addEventListener('mouseenter', () => {
++      circle.setAttribute('opacity', '1');
++      glow.setAttribute('opacity', '0.55');
++
++      let catLabel = '';
++      if (isInstMode) {
++        catLabel = cat === 'major' ? '🔴 主力加碼' : cat === 'rotate' ? '🟡 買盤放緩' : cat === 'bottom' ? '🔵 低檔築底' : '🟢 主力減碼';
++      } else {
++        catLabel = cat === 'major' ? '🔴 主力' : cat === 'rotate' ? '🟡 輪動' : '🟢 退潮';
++      }
++
++      const top3 = [...g.stocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 3);
++      const stockTags = top3.map(s => `<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">${s.id} ${s.name}</span>`).join(' ');
++
++      let detailHTML = '';
++      if (isInstMode) {
++        detailHTML = `
++          <span style="color:#94a3b8;">法人5D買超</span><span style="color:${g.avgInst5D >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInst5D >= 0 ? '+' : ''}${Math.round(g.avgInst5D).toLocaleString()}張</span>
++          <span style="color:#94a3b8;">法人20D累計</span><span style="color:white;font-weight:700;">${Math.round(g.avgInst20D).toLocaleString()}張</span>
++          <span style="color:#94a3b8;">籌碼加速度</span><span style="color:${g.avgInstAccel >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInstAccel >= 0 ? '+' : ''}${Math.round(g.avgInstAccel).toLocaleString()}張</span>
++        `;
++      } else {
++        const capB = (g.totalVol / 1e8).toFixed(1);
++        const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億 (流入)` : `${g.netFlow.toFixed(2)}億 (流出)`;
++        const flowColor = g.netFlow >= 0 ? 'var(--up-color)' : 'var(--down-color)';
++        detailHTML = `
++          <span style="color:#94a3b8;">量能強度</span><span style="color:white;font-weight:700;">${g.avgVolRatio.toFixed(2)}x</span>
++          <span style="color:#94a3b8;">估算金額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
++          <span style="color:#94a3b8;">資金流向</span><span style="color:${flowColor};font-weight:700;">${flowText}</span>
++        `;
++      }
++
++      tooltip.innerHTML = `
++        <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;color:#94a3b8;">(${catLabel})</span></div>
++        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:7px;">
++          <span style="color:#94a3b8;">漲跌幅</span><span style="color:${g.avgChange >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
++          ${detailHTML}
++          <span style="color:#94a3b8;">成分股</span><span style="color:white;">${g.stocks.length}檔</span>
++        </div>
++        <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
++        <div style="display:flex;flex-wrap:wrap;gap:3px;">${stockTags}</div>
++      `;
++      tooltip.style.display = 'block';
++    });
++
++    circle.addEventListener('mousemove', e => {
++      tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
++      tooltip.style.top = (e.clientY - 10) + 'px';
++    });
++
++    circle.addEventListener('mouseleave', () => {
++      circle.setAttribute('opacity', '0.82');
++      glow.setAttribute('opacity', '0.25');
++      tooltip.style.display = 'none';
++    });
++
++    circle.addEventListener('click', () => openSectorDetailModal(g.name, g.stocks, g.avgChange));
++
++    svg.appendChild(circle);
++    if (r >= 14) svg.appendChild(label);
++  });
++
++  container.appendChild(svg);
++}
++ '電子上游:DRAM銷售',
+   '8085': '電子中游:LCD-零組件',
+   '8086': '電子上游:IC-代工',
+   '8087': '電子下游:太陽能',
+@@ -3695,13 +3791,21 @@ window.showStockInstCompare = function(event, symbol, name, today, avg, sum5d, d
+   }
+ };
+ 
+-// 方案 B：盤後籌碼風向與防禦避風港卡片渲染
++// 方案 B：盤後籌碼風向與防禦避風港卡片渲染 (每日狗狗彈窗提醒版)
+ function renderPostmarketSummary() {
+-  const panel = document.getElementById('postmarketSummaryPanel');
+-  if (!panel) return;
++  // 1. 檢查 LocalStorage 鎖，當日已提示過則不重彈
++  const todayStr = new Date().toISOString().split('T')[0];
++  const lastDate = localStorage.getItem('trading_ai_last_remind_date');
++  if (lastDate === todayStr) {
++    return; // 今日已摸過狗狗頭，不打擾主人
++  }
++
++  const modal = document.getElementById('dogReminderModal');
++  const content = document.getElementById('dogReminderContent');
++  if (!modal || !content) return;
+ 
+   if (!mockStocks || mockStocks.length === 0) {
+-    panel.style.display = 'none';
++    modal.classList.remove('active');
+     return;
+   }
+ 
+@@ -3761,18 +3865,26 @@ function renderPostmarketSummary() {
+     .slice(0, 3);
+ 
+   if (safeSectors.length === 0 && anomalyStocks.length === 0) {
+-    panel.style.display = 'none';
++    modal.classList.remove('active');
+     return;
+   }
+ 
+   let html = `
+-    <div class="postmarket-summary-card">
+-      <div class="postmarket-summary-title">
+-        <span>🐾 荳荳盤後籌碼風向與防禦指南</span>
++    <!-- 狗狗大頭像與泡泡話語 -->
++    <div style="display:flex; align-items:center; gap:14px; margin-bottom: 16px; border-bottom: 1.5px solid rgba(249,115,22,0.25); padding-bottom: 14px;">
++      <div style="width:48px; height:48px; border-radius:50%; overflow:hidden; border:2px solid var(--primary); box-shadow: 0 0 10px rgba(249,115,22,0.4); background:rgba(255,255,255,0.1);">
++        <img src="photo/doudou_happy.png" style="width:100%; height:100%; object-fit:cover;" alt="荳荳">
+       </div>
+-      <div class="postmarket-grid">
++      <div>
++        <strong style="color:white; font-size:16px;">荳荳盤後籌碼風向與防禦指南 🐾</strong>
++        <div style="font-size:11px; color:var(--primary); margin-top:3px; font-weight:700;">拔麻主人汪！今日最新法人資金動態算好囉，趕快來看看汪！🐶</div>
++      </div>
++    </div>
++    
++    <div class="postmarket-grid">
+   `;
+ 
++  // 避風港
+   html += `
+         <div class="postmarket-section">
+           <div class="postmarket-section-title">
+@@ -3802,6 +3914,7 @@ function renderPostmarketSummary() {
+         </div>
+   `;
+ 
++  // 異常大買
+   html += `
+         <div class="postmarket-section">
+           <div class="postmarket-section-title">
+@@ -3816,7 +3929,7 @@ function renderPostmarketSummary() {
+       const sign = chg >= 0 ? '+' : '';
+       const color = chg >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+       html += `
+-            <div class="postmarket-row" style="cursor:pointer;" onclick="openChart('${item.s.id}')">
++            <div class="postmarket-row" style="cursor:pointer;" onclick="closeDogReminder(); openChart('${item.s.id}')">
+               <div>
+                 <strong style="color: white; font-size:12px;">${item.s.id} ${item.s.name}</strong>
+                 <span class="badge" style="font-size:9px; padding:1px 3px; margin-left:4px; background:rgba(255,255,255,0.08);">量比 ${item.volRatio.toFixed(1)}x</span>
+@@ -3838,13 +3951,29 @@ function renderPostmarketSummary() {
+ 
+   html += `
+       </div>
+-    </div>
++      
++      <!-- 摸狗狗頭按鈕 -->
++      <div style="text-align: center; margin-top: 18px;">
++        <button class="btn-primary" onclick="closeDogReminder()" style="padding: 10px 24px; font-size: 13px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(249, 115, 22, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(249, 115, 22, 0.4)';">
++          🐾 摸摸荳荳頭 (我知道了汪)
++        </button>
++      </div>
+   `;
+ 
+-  panel.innerHTML = html;
+-  panel.style.display = 'block';
++  content.innerHTML = html;
++  modal.classList.add('active');
+ }
+ 
++// 關閉狗狗提醒彈窗並記錄已讀
++window.closeDogReminder = function(event) {
++  if (event) event.stopPropagation();
++  const modal = document.getElementById('dogReminderModal');
++  if (modal) modal.classList.remove('active');
++  const todayStr = new Date().toISOString().split('T')[0];
++  localStorage.setItem('trading_ai_last_remind_date', todayStr);
++};
++
++
+ // 3. 渲染排行榜
+ function renderRankings() {
+   const container = document.getElementById('rankListContent');
+diff --git a/index.html b/index.html
+index 707c2df..1a92f5a 100644
+--- a/index.html
++++ b/index.html
+@@ -107,13 +107,17 @@
+       </div>
+ 
+       <!-- 方案 B：盤後籌碼風向與防禦避風港卡片 -->
+-      <div id="postmarketSummaryPanel" style="margin-bottom: 20px; display: none;"></div>
+-
+       <!-- ===== 2. 中間：泡泡圖 (全寬置頂) ===== -->
+       <div class="flow-bubble-full flow-map-panel">
+         <div class="panel-header">
+           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+-            <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
++            <div style="display:flex;align-items:center;gap:12px;">
++              <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
++              <select id="bubble-axis-mode" onchange="changeBubbleAxisMode()" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:700;">
++                <option value="flow">📊 量能與資金流向</option>
++                <option value="inst">💼 三大法人籌碼分析</option>
++              </select>
++            </div>
+             <!-- 開關過濾按鈕 -->
+             <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+               <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
+@@ -127,7 +131,7 @@
+               </button>
+             </div>
+           </div>
+-          <div style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
++          <div id="bubble-legend-text" style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
+             泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 資金淨流向 (往上流入 / 往下流出) | 點擊泡泡查看成分股
+           </div>
+         </div>
+@@ -487,6 +491,14 @@
+     </section>
+   </main>
+ 
++  <!-- 🐾 荳荳每日盤後風向提醒彈窗 (狗狗口吻) 🐾 -->
++  <div class="modal-overlay" id="dogReminderModal" onclick="closeDogReminder(event)">
++    <div class="postmarket-summary-card modal-content-glass" id="dogReminderBox" style="max-width: 600px; width:95%; position:relative; border: 1.5px solid rgba(249, 115, 22, 0.45); animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); margin: 20px auto;" onclick="event.stopPropagation()">
++      <button class="shiba-chat-close" onclick="closeDogReminder()" style="position:absolute; right:15px; top:15px; font-size:18px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold;">✕</button>
++      <div id="dogReminderContent"></div>
++    </div>
++  </div>
++
+   <!-- 股票詳情 Modal -->
+   <div class="modal-overlay" id="stockModal" onclick="closeModal(event)">
+     <div class="modal-box" id="modalBox">
+diff --git a/scratch/institutional_history.json b/scratch/institutional_history.json
+index d6cb762..356988f 100644
+--- a/scratch/institutional_history.json
++++ b/scratch/institutional_history.json
+@@ -8627,11 +8627,6 @@
+       "trust": 0,
+       "dealer": -8
+     },
+-    "5906": {
+-      "foreign": 3,
+-      "trust": 0,
+-      "dealer": 0
+-    },
+     "020037": {
+       "foreign": 0,
+       "trust": 0,
+@@ -8642,6 +8637,11 @@
+       "trust": 0,
+       "dealer": 0
+     },
++    "5906": {
++      "foreign": 3,
++      "trust": 0,
++      "dealer": 0
++    },
+     "2910": {
+       "foreign": 1,
+       "trust": 0,
+@@ -8922,11 +8922,6 @@
+       "trust": 0,
+       "dealer": 0
+     },
+-    "1443": {
+-      "foreign": -7,
+-      "trust": 0,
+-      "dealer": 4
+-    },
+     "6771": {
+       "foreign": -8,
+       "trust": 0,
+@@ -8937,6 +8932,11 @@
+       "trust": 0,
+       "dealer": 2
+     },
++    "1443": {
++      "foreign": -7,
++      "trust": 0,
++      "dealer": 4
++    },
+     "00703": {
+       "foreign": 0,
+       "trust": 0,
+@@ -9172,11 +9172,6 @@
+       "trust": 0,
+       "dealer": -1
+     },
+-    "1470": {
+-      "foreign": -8,
+-      "trust": 0,
+-      "dealer": 0
+-    },
+     "7705": {
+       "foreign": -8,
+       "trust": 0,
+@@ -9197,6 +9192,11 @@
+       "trust": 0,
+       "dealer": 0
+     },
++    "1470": {
++      "foreign": -8,
++      "trust": 0,
++      "dealer": 0
++    },
+     "1614": {
+       "foreign": -6,
+       "trust": 0,
+@@ -9217,16 +9217,16 @@
+       "trust": 0,
+       "dealer": 0
+     },
+-    "6201": {
+-      "foreign": -11,
+-      "trust": 0,
+-      "dealer": 2
+-    },
+     "4994": {
+       "foreign": -9,
+       "trust": 0,
+       "dealer": 0
+     },
++    "6201": {
++      "foreign": -11,
++      "trust": 0,
++      "dealer": 2
++    },
+     "3032": {
+       "foreign": 1,
+       "trust": 0,
+@@ -9547,16 +9547,16 @@
+       "trust": 0,
+       "dealer": -4
+     },
+-    "4930": {
+-      "foreign": -18,
+-      "trust": 0,
+-      "dealer": -1
+-    },
+     "3052": {
+       "foreign": -10,
+       "trust": 0,
+       "dealer": -9
+     },
++    "4930": {
++      "foreign": -18,
++      "trust": 0,
++      "dealer": -1
++    },
+     "2611": {
+       "foreign": -19,
+       "trust": 0,
+@@ -10152,16 +10152,16 @@
+       "trust": 0,
+       "dealer": -38
+     },
+-    "1323": {
+-      "foreign": -52,
+-      "trust": 0,
+-      "dealer": 6
+-    },
+     "2459": {
+       "foreign": -45,
+       "trust": 0,
+       "dealer": -1
+     },
++    "1323": {
++      "foreign": -52,
++      "trust": 0,
++      "dealer": 6
++    },
+     "6152": {
+       "foreign": -48,
+       "trust": 0,
+@@ -11182,16 +11182,16 @@
+       "trust": 0,
+       "dealer": -156
+     },
+-    "4178": {
+-      "foreign": -156,
+-      "trust": 0,
+-      "dealer": -1
+-    },
+     "6142": {
+       "foreign": -155,
+       "trust": 0,
+       "dealer": -2
+     },
++    "4178": {
++      "foreign": -156,
++      "trust": 0,
++      "dealer": -1
++    },
+     "1471": {
+       "foreign": -159,
+       "trust": 0,
+diff --git a/scratch/sector_history.json b/scratch/sector_history.json
+index df91dcb..60c36ef 100644
+--- a/scratch/sector_history.json
++++ b/scratch/sector_history.json
+@@ -3,20 +3,20 @@
+     "date": "2026-06-29",
+     "strong": [
+       "電腦周邊",
+-      "手機製造",
+-      "筆記型電腦",
+       "綠能環保",
+-      "一般",
++      "觀光",
+       "自行車",
+       "食品",
+       "儀器設備工程",
+-      "通訊設備",
+       "營建",
+-      "鋼鐵",
++      "通訊設備",
++      "一般",
+       "生技",
+       "晶圓材料",
++      "被動元件",
+       "IC-封測",
+-      "被動元件"
++      "ABF",
++      "塑膠"
+     ],
+     "weak": [
+       "ABF",
+@@ -28,12 +28,12 @@
+       "IC-製造",
+       "PCB-製造",
+       "IC-設計",
+-      "IC-代工",
+       "紡織纖維",
++      "IC-代工",
++      "電機",
+       "IC-半導體設備",
+-      "觀光",
+-      "文創娛樂",
+-      "金屬製品"
++      "運動休閒",
++      "電源供應器"
+     ]
+   },
+   {
+diff --git a/style.css b/style.css
+index 73b38b6..4d9f1d5 100644
+--- a/style.css
++++ b/style.css
+@@ -2430,4 +2430,25 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
+   box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+ }
+ 
++/* 玻璃擬態彈窗與縮放動畫 */
++.modal-content-glass {
++  background: rgba(15, 23, 42, 0.88) !important;
++  backdrop-filter: blur(16px) !important;
++  -webkit-backdrop-filter: blur(16px) !important;
++  border: 1.5px solid rgba(249, 115, 22, 0.35) !important;
++  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
++}
++
++@keyframes zoomIn {
++  from {
++    opacity: 0;
++    transform: scale(0.92);
++  }
++  to {
++    opacity: 1;
++    transform: scale(1);
++  }
++}
++
++
+ 

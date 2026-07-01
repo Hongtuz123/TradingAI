@@ -176,6 +176,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 渲染最近查詢歷史
     if (typeof window.renderRecentSearchesUI === 'function') {
       window.renderRecentSearchesUI();
+      if (typeof window.updateDoudouCounters === 'function') {
+        window.updateDoudouCounters();
+      }
     }
   } catch (err) {
     console.error('[App Init Error] Failed to load data.json:', err);
@@ -3292,23 +3295,71 @@ function toggleBubbleFilter(cat) {
   renderSectorFlowMap();
 }
 
+// 全域泡泡圖軸線狀態 (flow: 量能與資金流向, inst: 三大法人籌碼分析)
+window.bubbleAxisMode = 'flow';
+
+window.changeBubbleAxisMode = function() {
+  const select = document.getElementById('bubble-axis-mode');
+  if (select) {
+    window.bubbleAxisMode = select.value;
+    const legend = document.getElementById('bubble-legend-text');
+    if (legend) {
+      if (window.bubbleAxisMode === 'flow') {
+        legend.textContent = '泡泡大小: 估算資金 | X軸: 量能強度 | Y軸: 資金淨流向 (往上流入 / 往下流出) | 點擊泡泡查看成分股';
+      } else {
+        legend.textContent = '泡泡大小: 法人20D累計(絕對值) | X軸: 法人5D累計買超 | Y軸: 當日法人買超加速度 | 點擊泡泡查看成分股';
+      }
+    }
+    renderSectorFlowMap();
+  }
+};
+
 // 1. 繪製產業資金輪動泡泡圖
- function renderSectorFlowMap() {
+function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
   if (!container) return;
   container.innerHTML = '';
+
+  const isInstMode = (window.bubbleAxisMode === 'inst');
 
   // 分組計算
   const sectorGroups = {};
   mockStocks.forEach(s => {
     const sector = getStockSector(s).split(':')[1] || getStockSector(s);
     if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { name: sector, stocks: [], totalVol: 0, sumVolRatio: 0 };
+      sectorGroups[sector] = { 
+        name: sector, 
+        stocks: [], 
+        totalVol: 0, 
+        sumVolRatio: 0,
+        sumInst5D: 0,
+        sumInstToday: 0,
+        sumInstAvg7D: 0,
+        sumInst20D: 0
+      };
     }
     const g = sectorGroups[sector];
     g.stocks.push(s);
     g.sumVolRatio += (s.volRatio || 1);
     g.totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
+
+    // 三大法人今日買超 (張)
+    let instToday = 0;
+    if (s.instDetail5D && s.instDetail5D[0]) {
+      const td = s.instDetail5D[0];
+      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
+    } else {
+      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+    }
+    g.sumInstToday += instToday;
+
+    // 法人 5D 與 7D 日均
+    const inst5D_real = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
+    g.sumInst5D += inst5D_real;
+    g.sumInstAvg7D += (s.instAvg7D || (inst5D_real / 5));
+
+    // 法人 20D 估算
+    g.sumInst20D += (inst5D_real * 4);
   });
 
   const sectors = Object.values(sectorGroups).map(g => {
@@ -3328,42 +3379,130 @@ function toggleBubbleFilter(cat) {
       return sum + (amount * (chg / 100));
     }, 0) / 1e8;
 
-    return { ...g, avgChange, avgVolRatio: n > 0 ? g.sumVolRatio / n : 1, netFlow };
+    // 法人平均指標
+    const avgInst5D = n > 0 ? g.sumInst5D / n : 0;
+    const avgInstToday = n > 0 ? g.sumInstToday / n : 0;
+    const avgInstAvg7D = n > 0 ? g.sumInstAvg7D / n : 0;
+    const avgInst20D = n > 0 ? g.sumInst20D / n : 0;
+    const avgInstAccel = avgInstToday - avgInstAvg7D; // 當日法人買超加速度
+
+    return { 
+      ...g, 
+      avgChange, 
+      avgVolRatio: n > 0 ? g.sumVolRatio / n : 1, 
+      netFlow,
+      avgInst5D,
+      avgInstToday,
+      avgInstAccel,
+      avgInst20D
+    };
   });
 
-  // 顏色分類：主力/輪動/退潮（維持原邏輯配色）
-  const COLOR_MAP = { major: '#f97316', rotate: '#eab308', retreat: '#22c55e' };
+  // 顏色分類映射：主力加碼/買盤放緩/低檔築底/主力減碼
+  const COLOR_MAP = { 
+    major: '#ef4444',   // 紅：主力加碼
+    rotate: '#eab308',  // 黃：買盤放緩
+    bottom: '#3b82f6',  // 藍：低檔築底
+    retreat: '#10b981'  // 綠：主力減碼
+  };
+
   function getCategory(g) {
-    if (g.avgChange > 1.0 && g.avgVolRatio >= 1.3) return 'major';
-    if (g.avgChange > 0) return 'rotate';
-    return 'retreat';
+    if (isInstMode) {
+      if (g.avgInst5D > 0) {
+        return g.avgInstAccel >= 0 ? 'major' : 'rotate';
+      } else {
+        return g.avgInstAccel >= 0 ? 'bottom' : 'retreat';
+      }
+    } else {
+      if (g.avgChange > 1.0 && g.avgVolRatio >= 1.3) return 'major';
+      if (g.avgChange > 0) return 'rotate';
+      return 'retreat';
+    }
   }
 
-  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
-  const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
-
-  // SVG 尺寸
+  // 幾何範圍與變換函數
   const W = container.clientWidth || 800;
   const H = 620;
   const ML = 58, MR = 18, MT = 22, MB = 42;
   const PW = W - ML - MR, PH = H - MT - MB;
-  const X_MAX = 3.0;
-  // Y_HALF 為 Y 軸單向最大值（帶有 15% padding 的上限）
-  const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
 
-  function toSvgX(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; }
-  
-  // 引入開根號（平方根）縮放縮放，避免權值板塊極端值把中小板塊壓平在中心線
-  function toSvgY(flow) {
-    const sign = Math.sign(flow);
-    const absFlow = Math.abs(flow);
-    const flow_scaled = sign * Math.sqrt(absFlow);
-    const half_scaled = Math.sqrt(maxNetFlowAbs) * 1.15;
-    const ratio = (flow_scaled + half_scaled) / (half_scaled * 2);
-    return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+  let toSvgX, toSvgY, centerX, centerY;
+  let X_AXIS_LABEL = '';
+  let Y_AXIS_LABEL = '';
+  let xLabels = [];
+  let yLabels = [];
+  let quadrantLabels = [];
+
+  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
+  const maxNetFlowAbs = Math.max(...sectors.map(g => Math.abs(g.netFlow)), 1);
+
+  if (isInstMode) {
+    // 法人籌碼分析幾何
+    const max5DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst5D)), 1);
+    const maxAccelAbs = Math.max(...sectors.map(g => Math.abs(g.avgInstAccel)), 1);
+
+    const X_MAX_INST = Math.max(800, Math.ceil(max5DAbs * 1.15));
+    const Y_HALF_INST = Math.max(400, Math.ceil(maxAccelAbs * 1.15));
+
+    toSvgX = function(v) {
+      const ratio = (v + X_MAX_INST) / (X_MAX_INST * 2);
+      return ML + Math.min(Math.max(ratio, 0.08), 0.92) * PW;
+    };
+    toSvgY = function(v) {
+      const ratio = (v + Y_HALF_INST) / (Y_HALF_INST * 2);
+      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+    };
+
+    centerX = toSvgX(0);
+    centerY = toSvgY(0);
+
+    X_AXIS_LABEL = '← 法人近 5 日累計買賣超 (張) →';
+    Y_AXIS_LABEL = '← 當日法人買超加速度 (張) →';
+
+    const xStep = X_MAX_INST / 2;
+    xLabels = [-X_MAX_INST, -xStep, 0, xStep, X_MAX_INST];
+    const yStep = Y_HALF_INST / 2;
+    yLabels = [-Y_HALF_INST, -yStep, 0, yStep, Y_HALF_INST];
+
+    quadrantLabels = [
+      { x: centerX + 6, y: MT + 13, text: '🔥 主力加碼區', c: '#ef4444' },
+      { x: ML + 6, y: MT + 13, text: '🌱 低檔築底區', c: '#3b82f6' },
+      { x: ML + 6, y: MT + PH - 5, text: '📉 主力減碼區', c: '#10b981' },
+      { x: centerX + 6, y: MT + PH - 5, text: '🌀 買盤放緩區', c: '#eab308' }
+    ];
+
+  } else {
+    // 原有的量能與資金流向幾何
+    const X_MAX = 3.0;
+    const Y_HALF = Math.ceil(maxNetFlowAbs * 1.15);
+
+    toSvgX = function(vr) { return ML + Math.min(Math.max(vr / X_MAX, 0.08), 0.92) * PW; };
+    toSvgY = function(flow) {
+      const sign = Math.sign(flow);
+      const absFlow = Math.abs(flow);
+      const flow_scaled = sign * Math.sqrt(absFlow);
+      const half_scaled = Math.sqrt(maxNetFlowAbs) * 1.15;
+      const ratio = (flow_scaled + half_scaled) / (half_scaled * 2);
+      return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+    };
+
+    centerX = toSvgX(1.0);
+    centerY = toSvgY(0);
+
+    X_AXIS_LABEL = '← 量能強度 (今日量/均量) →';
+    Y_AXIS_LABEL = '← 資金淨流向 (億元) →';
+
+    xLabels = [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
+    const stepValue = Y_HALF / 2;
+    yLabels = [-Y_HALF, -stepValue, 0, stepValue, Y_HALF];
+
+    quadrantLabels = [
+      { x: centerX + 6, y: MT + 13, text: '主力流入 🟢', c: '#ef4444' },
+      { x: ML + 6, y: MT + 13, text: '量縮流入 🟢', c: '#3b82f6' },
+      { x: ML + 6, y: MT + PH - 5, text: '量縮流出 🔴', c: '#10b981' },
+      { x: centerX + 6, y: MT + PH - 5, text: '主力流出 🔴', c: '#eab308' }
+    ];
   }
-  const centerX = toSvgX(1.0);
-  const centerY = toSvgY(0);
 
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -3381,54 +3520,62 @@ function toggleBubbleFilter(cat) {
   // 背景
   svg.appendChild(el('rect', { x: ML, y: MT, width: PW, height: PH, fill: 'rgba(15,23,42,0.5)', rx: '8' }));
 
-  // 象限背景
-  [
-    { x: centerX, y: MT, w: ML + PW - centerX, h: centerY - MT, fill: 'rgba(249,115,22,0.05)' },
-    { x: ML, y: MT, w: centerX - ML, h: centerY - MT, fill: 'rgba(234,179,8,0.05)' },
-    { x: ML, y: centerY, w: centerX - ML, h: MT + PH - centerY, fill: 'rgba(34,197,94,0.05)' },
-    { x: centerX, y: centerY, w: ML + PW - centerX, h: MT + PH - centerY, fill: 'rgba(100,116,139,0.03)' },
-  ].forEach(({ x, y, w, h, fill }) => svg.appendChild(el('rect', { x, y, width: w, height: h, fill, rx: '4' })));
+  // 象限背景色
+  if (isInstMode) {
+    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // 加碼 (紅)
+    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // 築底 (藍)
+    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // 減碼 (綠)
+    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // 放緩 (黃)
+  } else {
+    svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' }));
+    svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' }));
+    svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' }));
+    svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' }));
+  }
 
-  // 格線 (X 軸量能)
-  [0, 0.5, 1.5, 2.0, 2.5, 3.0].forEach(v => {
-    svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.05)', 'stroke-width': '1' }));
+  // 繪製背景格線 (X 軸)
+  xLabels.forEach(v => {
+    svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
   });
   
-  // 格線 (Y 軸資金流)
-  const stepValue = Y_HALF / 2;
-  [-Y_HALF, -stepValue, stepValue, Y_HALF].forEach(v => {
-    svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.05)', 'stroke-width': '1' }));
+  // 繪製背景格線 (Y 軸)
+  yLabels.forEach(v => {
+    svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
   });
 
   // 中心線 (虛線)
   svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
   svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
 
-  // X 軸刻度
-  [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0].forEach(v => {
-    svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, v + 'x'));
+  // X 軸刻度文字
+  xLabels.forEach(v => {
+    const text = isInstMode ? (v > 0 ? '+' : '') + v.toLocaleString() : v + 'x';
+    svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, text));
   });
   
-  // Y 軸刻度
-  [-Y_HALF, -stepValue, 0, stepValue, Y_HALF].forEach(v => {
-    const labelText = v === 0 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1) + '億';
-    svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, labelText));
+  // Y 軸刻度文字
+  yLabels.forEach(v => {
+    let text = '';
+    if (isInstMode) {
+      text = (v > 0 ? '+' : '') + Math.round(v).toLocaleString() + '張';
+    } else {
+      text = v === 0 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1) + '億';
+    }
+    svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, text));
   });
 
   // 軸標題
-  svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, '← 量能強度 (今日量/均量) →'));
+  svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, X_AXIS_LABEL));
+  
   const yG = document.createElementNS(ns, 'g');
-  yG.setAttribute('transform', `translate(13,${MT + PH / 2}) rotate(-90)`);
-  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, '← 資金淨流向 (億元) →'));
+  yG.setAttribute('transform', 'translate(13,' + (MT + PH / 2) + ') rotate(-90)');
+  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, Y_AXIS_LABEL));
   svg.appendChild(yG);
 
-  // 象限標簽 (Y 軸上為流入，下為流出，X 軸右為強量主力，左為量縮)
-  [
-    { x: centerX + 6, y: MT + 13, text: '主力流入 🟢', c: '#22c55e' },
-    { x: ML + 6, y: MT + 13, text: '量縮流入 🟢', c: '#10b981' },
-    { x: ML + 6, y: MT + PH - 5, text: '量縮流出 🔴', c: '#ef4444' },
-    { x: centerX + 6, y: MT + PH - 5, text: '主力流出 🔴', c: '#ec4899' },
-  ].forEach(({ x, y, text, c }) => svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text)));
+  // 象限標籤
+  quadrantLabels.forEach(({ x, y, text, c }) => {
+    svg.appendChild(el('text', { x, y, fill: c, 'font-size': '9', opacity: '0.65', 'font-weight': '700' }, text));
+  });
 
   // Tooltip
   let tooltip = document.getElementById('bubbleTooltip');
@@ -3439,15 +3586,24 @@ function toggleBubbleFilter(cat) {
     document.body.appendChild(tooltip);
   }
 
-  // 繪製泡泡 (大先畫小後畫，小的居上層)
-  [...sectors].sort((a, b) => b.totalVol - a.totalVol).forEach(g => {
+  const maxInst20DAbs = Math.max(...sectors.map(g => Math.abs(g.avgInst20D)), 1);
+
+  // 繪製泡泡
+  sectors.forEach(g => {
     const cat = getCategory(g);
-    if (!activeBubbleFilters[cat]) return; // 過濾開關連動
+    if (!activeBubbleFilters[cat]) return; // 連動過濾開關
     const color = COLOR_MAP[cat];
-    const x = toSvgX(g.avgVolRatio);
-    const y = toSvgY(g.netFlow);
-    const r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
-    const capB = (g.totalVol / 1e8).toFixed(1);
+
+    let x, y, r;
+    if (isInstMode) {
+      x = toSvgX(g.avgInst5D);
+      y = toSvgY(g.avgInstAccel);
+      r = Math.max(10, Math.min(50, 10 + Math.sqrt(Math.abs(g.avgInst20D) / maxInst20DAbs) * 40));
+    } else {
+      x = toSvgX(g.avgVolRatio);
+      y = toSvgY(g.netFlow);
+      r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
+    }
 
     // glow
     const glow = el('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.25' });
@@ -3456,7 +3612,7 @@ function toggleBubbleFilter(cat) {
     // 泡泡
     const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.82', style: 'cursor:pointer;transition:opacity 0.15s;' });
 
-    // 標簽
+    // 標籤
     const shortName = g.name.length > 5 ? g.name.slice(0, 4) + '…' : g.name;
     const label = el('text', {
       x, y: y + 1, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
@@ -3468,18 +3624,40 @@ function toggleBubbleFilter(cat) {
     circle.addEventListener('mouseenter', () => {
       circle.setAttribute('opacity', '1');
       glow.setAttribute('opacity', '0.55');
-      const catLabel = cat === 'major' ? '🟠 主力' : cat === 'rotate' ? '🟡 輪動' : '🟢 退潮';
+
+      let catLabel = '';
+      if (isInstMode) {
+        catLabel = cat === 'major' ? '🔴 主力加碼' : cat === 'rotate' ? '🟡 買盤放緩' : cat === 'bottom' ? '🔵 低檔築底' : '🟢 主力減碼';
+      } else {
+        catLabel = cat === 'major' ? '🔴 主力' : cat === 'rotate' ? '🟡 輪動' : '🟢 退潮';
+      }
+
       const top3 = [...g.stocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 3);
-      const stockTags = top3.map(s => `<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">${s.id} ${s.name}</span>`).join(' ');
-      const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億 (流入)` : `${g.netFlow.toFixed(2)}億 (流出)`;
-      const flowColor = g.netFlow >= 0 ? '#22c55e' : '#ef4444';
-      tooltip.innerHTML = `
-        <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;">${catLabel}</span></div>
-        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:7px;">
-          <span style="color:#94a3b8;">漲跌幅</span><span style="color:${g.avgChange >= 0 ? '#22c55e' : '#ef4444'};font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
+      const stockTags = top3.map(s => '<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">' + s.id + ' ' + s.name + '</span>').join(' ');
+
+      let detailHTML = '';
+      if (isInstMode) {
+        detailHTML = `
+          <span style="color:#94a3b8;">法人5D買超</span><span style="color:${g.avgInst5D >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInst5D >= 0 ? '+' : ''}${Math.round(g.avgInst5D).toLocaleString()}張</span>
+          <span style="color:#94a3b8;">法人20D累計</span><span style="color:white;font-weight:700;">${Math.round(g.avgInst20D).toLocaleString()}張</span>
+          <span style="color:#94a3b8;">籌碼加速度</span><span style="color:${g.avgInstAccel >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgInstAccel >= 0 ? '+' : ''}${Math.round(g.avgInstAccel).toLocaleString()}張</span>
+        `;
+      } else {
+        const capB = (g.totalVol / 1e8).toFixed(1);
+        const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億 (流入)` : `${g.netFlow.toFixed(2)}億 (流出)`;
+        const flowColor = g.netFlow >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        detailHTML = `
           <span style="color:#94a3b8;">量能強度</span><span style="color:white;font-weight:700;">${g.avgVolRatio.toFixed(2)}x</span>
           <span style="color:#94a3b8;">估算金額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
           <span style="color:#94a3b8;">資金流向</span><span style="color:${flowColor};font-weight:700;">${flowText}</span>
+        `;
+      }
+
+      tooltip.innerHTML = `
+        <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;color:#94a3b8;">(${catLabel})</span></div>
+        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:7px;">
+          <span style="color:#94a3b8;">漲跌幅</span><span style="color:${g.avgChange >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
+          ${detailHTML}
           <span style="color:#94a3b8;">成分股</span><span style="color:white;">${g.stocks.length}檔</span>
         </div>
         <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
@@ -3487,15 +3665,18 @@ function toggleBubbleFilter(cat) {
       `;
       tooltip.style.display = 'block';
     });
+
     circle.addEventListener('mousemove', e => {
       tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
       tooltip.style.top = (e.clientY - 10) + 'px';
     });
+
     circle.addEventListener('mouseleave', () => {
       circle.setAttribute('opacity', '0.82');
       glow.setAttribute('opacity', '0.25');
       tooltip.style.display = 'none';
     });
+
     circle.addEventListener('click', () => openSectorDetailModal(g.name, g.stocks, g.avgChange));
 
     svg.appendChild(circle);
@@ -3695,155 +3876,178 @@ window.showStockInstCompare = function(event, symbol, name, today, avg, sum5d, d
   }
 };
 
-// 方案 B：盤後籌碼風向與防禦避風港卡片渲染
-function renderPostmarketSummary() {
-  const panel = document.getElementById('postmarketSummaryPanel');
-  if (!panel) return;
+// 🐾 荳荳系統底頁與互動統計全域函數 🐾
+window.updateDoudouCounters = function() {
+  const petCount = localStorage.getItem('doudou_pet_count') || 0;
+  const cannedCount = localStorage.getItem('doudou_canned_count') || 0;
+  const petEl = document.getElementById('doudouPetCount');
+  const cannedEl = document.getElementById('doudouCannedCount');
+  if (petEl) petEl.innerText = petCount;
+  if (cannedEl) cannedEl.innerText = cannedCount;
+};
 
-  if (!mockStocks || mockStocks.length === 0) {
-    panel.style.display = 'none';
+window.petDoudou = function() {
+  let count = parseInt(localStorage.getItem('doudou_pet_count') || 0);
+  count++;
+  localStorage.setItem('doudou_pet_count', count);
+  window.updateDoudouCounters();
+  
+  sessionStorage.setItem('trading_ai_session_remind', 'true');
+  
+  const modal = document.getElementById('dogReminderModal');
+  if (modal) modal.classList.remove('active');
+  
+  // 右下角荳荳對話氣泡互動反饋
+  const bubble = document.getElementById('shibaMascotBubble');
+  if (bubble) {
+    bubble.innerText = "汪汪！最喜歡拔麻摸我頭了，荳荳會繼續加油汪！🐾🐾";
+    bubble.style.display = 'block';
+    setTimeout(() => {
+      bubble.innerText = "汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！";
+    }, 4000);
+  }
+};
+
+window.giveDoudouCan = function() {
+  let count = parseInt(localStorage.getItem('doudou_canned_count') || 0);
+  count++;
+  localStorage.setItem('doudou_canned_count', count);
+  window.updateDoudouCounters();
+  
+  sessionStorage.setItem('trading_ai_session_remind', 'true');
+  
+  const modal = document.getElementById('dogReminderModal');
+  if (modal) modal.classList.remove('active');
+  
+  // 右下角荳荳對話氣泡互動反饋
+  const bubble = document.getElementById('shibaMascotBubble');
+  if (bubble) {
+    bubble.innerText = "🥫 嗷嗚！好香的罐罐！謝謝拔麻賞荳荳吃罐罐汪！🍖";
+    bubble.style.display = 'block';
+    setTimeout(() => {
+      bubble.innerText = "汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！";
+    }, 4000);
+  }
+};
+
+// 方案 B：盤後籌碼風向與防禦避風港卡片渲染 (每日狗狗彈窗提醒版)
+function renderPostmarketSummary() {
+  // 1. 檢查 sessionStorage，避免同一次 session 內重複彈出打擾
+  const sessionRemind = sessionStorage.getItem('trading_ai_session_remind');
+  if (sessionRemind === 'true') {
     return;
   }
 
-  // 1. 計算避風港族群 (今日三大法人合計買超最大，且平均漲跌幅抗跌之族群)
-  const sectorGroups = {};
-  mockStocks.forEach(s => {
-    const sector = getStockSector(s).split(':')[1] || getStockSector(s);
-    if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { name: sector, stocks: [], totalInstToday: 0 };
+  const modal = document.getElementById('dogReminderModal');
+  const content = document.getElementById('dogReminderContent');
+  if (!modal || !content) return;
+
+  // 取得大盤數據評分與趨勢判定
+  const twTotalScore = marketData.tw_health_score !== undefined ? marketData.tw_health_score : 0;
+  const usTotalScore = marketData.us_health_score !== undefined ? marketData.us_health_score : 0;
+
+  let twTrend = '<span style="color:var(--success); font-weight:bold;">偏多 📈</span>';
+  if (twTotalScore < 60) {
+    twTrend = '<span style="color:var(--danger); font-weight:bold;">偏空 📉</span>';
+  } else if (twTotalScore < 80) {
+    twTrend = '<span style="color:var(--warning); font-weight:bold;">中性盤整 ➡️</span>';
+  }
+
+  let usTrend = '<span style="color:var(--success); font-weight:bold;">偏多 📈</span>';
+  if (usTotalScore < 60) {
+    usTrend = '<span style="color:var(--danger); font-weight:bold;">偏空 📉</span>';
+  } else if (usTotalScore < 80) {
+    usTrend = '<span style="color:var(--warning); font-weight:bold;">中性盤整 ➡️</span>';
+  }
+
+  // 運算強勢產業與強勢天數
+  const history = marketData.sectorHistory || [];
+  let strongSectorsText = '';
+  if (history.length > 0 && history[0].strong) {
+    const topStrong = history[0].strong.slice(0, 3); // 取最強的前 3 個
+    strongSectorsText = topStrong.map(s => {
+      const days = getSectorStreakDays(s, 'strong');
+      return `🔥 <strong style="color:white;">${s}</strong> (已強勢 ${days} 天)`;
+    }).join('、');
+  } else {
+    strongSectorsText = '<span style="color:var(--text-muted);">今日無明顯強勢產業汪。</span>';
+  }
+
+  // 運算弱轉強與轉弱要注意產業
+  let turnStrongText = '<span style="color:var(--text-muted);">無明顯由弱轉強產業汪。</span>';
+  let turnWeakText = '<span style="color:var(--text-muted);">大盤穩健，無轉弱產業要注意汪。</span>';
+
+  if (history.length >= 2) {
+    const todayStrong = history[0].strong || [];
+    const yesterdayStrong = history[1].strong || [];
+    const todayWeak = history[0].weak || [];
+    const yesterdayWeak = history[1].weak || [];
+
+    // 由弱轉強：今天在 strong 且前一天不在 strong
+    const turnStrongSectors = todayStrong.filter(s => !yesterdayStrong.includes(s));
+    if (turnStrongSectors.length > 0) {
+      turnStrongText = turnStrongSectors.map(s => `<span style="color:var(--success); font-weight:bold;">✨ ${s}</span>`).join('、');
     }
-    const g = sectorGroups[sector];
-    g.stocks.push(s);
 
-    let instToday = 0;
-    if (s.instDetail5D && s.instDetail5D[0]) {
-      const td = s.instDetail5D[0];
-      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
-    } else {
-      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
+    // 轉弱要注意：今天在 weak 且前一天不在 weak
+    const turnWeakSectors = todayWeak.filter(s => !yesterdayWeak.includes(s));
+    if (turnWeakSectors.length > 0) {
+      turnWeakText = turnWeakSectors.map(s => `<span style="color:var(--danger); font-weight:bold;">⚠️ ${s}</span>`).join('、');
     }
-    g.totalInstToday += instToday;
-  });
-
-  const sectors = Object.values(sectorGroups).map(g => {
-    const n = g.stocks.length;
-    const sumChange = g.stocks.reduce((sum, s) => {
-      const live = getLiveStockData(s);
-      return sum + (s.liveChange !== undefined ? s.liveChange : (live.change || 0));
-    }, 0);
-    const avgChange = n > 0 ? sumChange / n : 0;
-    return { ...g, avgChange };
-  });
-
-  // 篩選：今日法人合計買超為正，且今日抗跌 (avgChange >= -1.0%)
-  const safeSectors = sectors
-    .filter(g => g.totalInstToday > 0 && g.avgChange >= -1.0)
-    .sort((a, b) => b.totalInstToday - a.totalInstToday)
-    .slice(0, 3);
-
-  // 2. 計算籌碼異常爆買股 (量比 >= 1.5x, 法人買超張數占當日成交量比例最高者)
-  const anomalyStocks = mockStocks
-    .map(s => {
-      let instToday = 0;
-      if (s.instDetail5D && s.instDetail5D[0]) {
-        const td = s.instDetail5D[0];
-        instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
-      } else {
-        instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
-      }
-      const volRatio = s.volRatio || 1.0;
-      const dailyVol = s.dailyVol || 1;
-      const ratio = dailyVol > 0 ? (instToday / dailyVol) : 0;
-      return { s, instToday, volRatio, ratio };
-    })
-    .filter(item => item.volRatio >= 1.5 && item.instToday > 0)
-    .sort((a, b) => b.ratio - a.ratio)
-    .slice(0, 3);
-
-  if (safeSectors.length === 0 && anomalyStocks.length === 0) {
-    panel.style.display = 'none';
-    return;
   }
 
   let html = `
-    <div class="postmarket-summary-card">
-      <div class="postmarket-summary-title">
-        <span>🐾 荳荳盤後籌碼風向與防禦指南</span>
+    <!-- 狗狗大頭像與泡泡話語 -->
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom: 16px; border-bottom: 1.5px solid rgba(249,115,22,0.25); padding-bottom: 14px;">
+      <div style="width:48px; height:48px; border-radius:50%; overflow:hidden; border:2px solid var(--primary); box-shadow: 0 0 10px rgba(249,115,22,0.4); background:rgba(255,255,255,0.1);">
+        <img src="photo/doudou_happy.png" style="width:100%; height:100%; object-fit:cover;" alt="荳荳">
       </div>
-      <div class="postmarket-grid">
-  `;
-
-  html += `
-        <div class="postmarket-section">
-          <div class="postmarket-section-title">
-            <span>🛡️ 法人逆勢加碼避風港</span>
-          </div>
-          <div class="postmarket-item-list">
-  `;
-  if (safeSectors.length > 0) {
-    safeSectors.forEach(g => {
-      const sign = g.avgChange >= 0 ? '+' : '';
-      const color = g.avgChange >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-      html += `
-            <div class="postmarket-row">
-              <strong style="color: white; font-size:12px;">${g.name}</strong>
-              <div style="text-align: right;">
-                <span style="color: var(--primary); font-weight:700; margin-right:8px;">+${g.totalInstToday.toLocaleString()} 張</span>
-                <span style="color: ${color}; font-weight:bold;">${sign}${g.avgChange.toFixed(2)}%</span>
-              </div>
-            </div>
-      `;
-    });
-  } else {
-    html += `<div style="font-size:11px; color:var(--text-muted); padding:4px 0;">今日市場暫無法人逆勢防禦板塊。</div>`;
-  }
-  html += `
-          </div>
-        </div>
-  `;
-
-  html += `
-        <div class="postmarket-section">
-          <div class="postmarket-section-title">
-            <span>🚨 三大法人籌碼異常偏多股</span>
-          </div>
-          <div class="postmarket-item-list">
-  `;
-  if (anomalyStocks.length > 0) {
-    anomalyStocks.forEach(item => {
-      const pct = (item.ratio * 100).toFixed(1);
-      const chg = item.s.liveChange !== undefined ? item.s.liveChange : (getLiveStockData(item.s).change || 0);
-      const sign = chg >= 0 ? '+' : '';
-      const color = chg >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-      html += `
-            <div class="postmarket-row" style="cursor:pointer;" onclick="openChart('${item.s.id}')">
-              <div>
-                <strong style="color: white; font-size:12px;">${item.s.id} ${item.s.name}</strong>
-                <span class="badge" style="font-size:9px; padding:1px 3px; margin-left:4px; background:rgba(255,255,255,0.08);">量比 ${item.volRatio.toFixed(1)}x</span>
-              </div>
-              <div style="text-align: right;">
-                <span style="color: var(--primary); font-weight:700; margin-right:8px;">買超比 ${pct}%</span>
-                <span style="color: ${color}; font-weight:bold;">${sign}${chg.toFixed(2)}%</span>
-              </div>
-            </div>
-      `;
-    });
-  } else {
-    html += `<div style="font-size:11px; color:var(--text-muted); padding:4px 0;">今日市場暫無爆量籌碼異常偏多股。</div>`;
-  }
-  html += `
-          </div>
-        </div>
-  `;
-
-  html += `
+      <div>
+        <strong style="color:white; font-size:16px;">荳荳 AI 數據戰術室氣象播報 🐾</strong>
+        <div style="font-size:11px; color:var(--primary); margin-top:3px; font-weight:700;">拔麻主人汪！荳荳幫你整理了最新的大盤與產業情報，請過目汪！🐶</div>
       </div>
+    </div>
+    
+    <!-- 播報內容區 -->
+    <div style="display:flex; flex-direction:column; gap:12px; font-size:13px; color:var(--text-main); line-height:1.6;">
+      <div style="background:rgba(255,255,255,0.03); border-left:4px solid var(--primary); padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+        <span style="font-weight:700; color:var(--primary); font-size:14px;">📈 大盤風向播報：</span><br>
+        <span style="display:inline-block; margin-top:4px;">
+          台股大盤目前：${twTrend} (市場健康度: <strong style="color:white;">${twTotalScore}</strong> 分)<br>
+          美股大盤目前：${usTrend} (市場健康度: <strong style="color:white;">${usTotalScore}</strong> 分)
+        </span>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border-left:4px solid #10b981; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+        <span style="font-weight:700; color:#10b981; font-size:14px;">🔥 目前最強產業趨勢：</span><br>
+        <span style="display:inline-block; margin-top:4px;">${strongSectorsText}</span>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border-left:4px solid #f59e0b; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+        <span style="font-weight:700; color:#f59e0b; font-size:14px;">🔄 產業轉折警示：</span><br>
+        <span style="display:inline-block; margin-top:4px;">
+          由弱轉強產業：${turnStrongText}<br>
+          轉弱要注意產業：${turnWeakText}
+        </span>
+      </div>
+    </div>
+
+    <!-- 互動選項按鈕 -->
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+      <button class="btn-primary" onclick="petDoudou()" style="padding: 10px 20px; font-size: 13px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+        🐾 摸摸荳荳頭 (知道了汪)
+      </button>
+      <button class="btn-primary" onclick="giveDoudouCan()" style="padding: 10px 20px; font-size: 13px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border: none; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+        🥫 給荳荳罐頭 (獎勵你汪)
+      </button>
     </div>
   `;
 
-  panel.innerHTML = html;
-  panel.style.display = 'block';
+  content.innerHTML = html;
+  modal.classList.add('active');
 }
+
+// 3. 渲染排行榜
 
 // 3. 渲染排行榜
 function renderRankings() {
@@ -4788,3 +4992,12 @@ window.renderPortfolioGrid = function() {
   });
 };
 
+// 關閉狗狗提醒彈窗並記錄已讀
+window.closeDogReminder = function(event) {
+  if (event) event.stopPropagation();
+  const modal = document.getElementById('dogReminderModal');
+  if (modal) modal.classList.remove('active');
+  sessionStorage.setItem('trading_ai_session_remind', 'true');
+  const todayStr = new Date().toISOString().split('T')[0];
+  localStorage.setItem('trading_ai_last_remind_date', todayStr);
+};
