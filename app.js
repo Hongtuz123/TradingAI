@@ -4260,16 +4260,17 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>當日: <span class="text-up" style="font-weight:700;">+${g.avgChange.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-              <span style="opacity:0.7;">資金: ${val}億</span>
-            </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>近5日: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-              <span>法人5D: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px;">+${g.avgChange.toFixed(2)}%</div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+            </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+            <span class="text-up" style="font-size:13px; font-weight:700;">+${g.avgChange.toFixed(2)}%</span>
+            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+          </div>
         </div>
       `;
     }).join('');
@@ -4296,16 +4297,17 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>當日: <span class="text-down" style="font-weight:700;">${g.avgChange.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-              <span style="opacity:0.7;">資金: ${val}億</span>
-            </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>近5日: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-              <span>法人5D: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div class="rank-value text-down" style="display: flex; align-items: center; font-size: 14px;">${g.avgChange.toFixed(2)}%</div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+            </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+            <span class="text-down" style="font-size:13px; font-weight:700;">${g.avgChange.toFixed(2)}%</span>
+            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+          </div>
         </div>
       `;
     }).join('');
@@ -4358,16 +4360,17 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'};">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
-              <span style="opacity:0.7;">量: ${s.dailyVol?.toLocaleString() || '--'}張</span>
-            </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
-              <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px; color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+              <span>1D 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'}">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
+            </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
+          </div>
         </div>
       `;
     }).join('');
@@ -4427,16 +4430,18 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-              <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-              <span style="opacity:0.7; font-size:10px;">外:${s.foreignNetBuy || 0} 投:${s.trustDays || 0} 自:${s.dealerDays || 0}</span>
-            </div>
-            <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
-              <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div class="rank-value text-up" style="display: flex; align-items: center; font-size: 14px; color: var(--warning);">${s.volRatio?.toFixed(2) || '1.0'}x</div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+              <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+              <span style="margin-left:8px; opacity:0.6; font-size:10px;">外:${s.foreignNetBuy||0} 投:${s.trustDays||0} 自:${s.dealerDays||0}</span>
+            </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
+          </div>
         </div>
       `;
     }).join('');
@@ -4499,16 +4504,17 @@ function renderRankings() {
                 ${streakBadge}
                 ${instStreakBadge}
               </div>
-              <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:2px;">
-                <span>當日: <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span> | 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-                <span style="opacity:0.7;">量比: ${(s.volRatio||0).toFixed(1)}x</span>
-              </div>
-              <div class="rank-desc" style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-                <span>近5日: <span class="${pct5D >= 0 ? 'text-up' : 'text-down'}" style="font-weight:700;">${pct5D >= 0 ? '+' : ''}${pct5D.toFixed(2)}%</span></span>
-                <span>法人5D: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'};">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-              </div>
-            </div>
-            <div class="rank-value ${change >= 0 ? 'text-up' : 'text-down'}" style="display: flex; align-items: center; font-size: 14px;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</div>
+              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+                <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+              </div>
+              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+                <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+              <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+              <span style="font-size:12px; color:var(--warning); font-weight:700;">${(s.volRatio||0).toFixed(1)}x</span>
+            </div>
           </div>
         `;
       }).join('');
