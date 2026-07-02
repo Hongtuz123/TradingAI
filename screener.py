@@ -1238,21 +1238,30 @@ def run_screener():
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 漲跌幅：智慧判定昨收基底（解決盤中延遲與假日問題）
+            # 漲跌幅：優先使用 OpenAPI 提供的漲跌額（Change）來計算，最精準
+            # 若 OpenAPI 無漲跌額，再退回 K 線倒數兩筆計算
             try:
-                latest_date_str = latest['date']
-                today_str = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
-                
-                # 若最新一筆 K 線就是今天，代表已收盤，昨收應為倒數第二筆；否則最新一筆 K 線就是昨收
-                if latest_date_str == today_str:
-                    prev_close = float(prev['close'])
+                openapi_change_raw = s.get('Change', '')  # TWSE/OTC 的漲跌額（元，字串）
+                openapi_change_val = safe_float(str(openapi_change_raw).replace('+', '').strip()) if openapi_change_raw else None
+                if openapi_change_val is not None and close and close > 0:
+                    # 昨收 = 今收 - 漲跌額
+                    prev_close_calc = close - openapi_change_val
+                    if prev_close_calc > 0:
+                        change_num = round((openapi_change_val / prev_close_calc) * 100, 2)
+                    else:
+                        change_num = 0.0
                 else:
-                    prev_close = float(latest['close'])
-                
-                if prev_close > 0:
-                    change_num = round(((close - prev_close) / prev_close) * 100, 2)
-                else:
-                    change_num = 0.0
+                    # Fallback：用 K 線倒數兩筆計算
+                    latest_date_str = latest['date']
+                    today_str = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
+                    if latest_date_str == today_str:
+                        prev_close = float(prev['close'])
+                    else:
+                        prev_close = float(latest['close'])
+                    if prev_close > 0:
+                        change_num = round(((close - prev_close) / prev_close) * 100, 2)
+                    else:
+                        change_num = 0.0
             except Exception:
                 change_num = 0.0
 
