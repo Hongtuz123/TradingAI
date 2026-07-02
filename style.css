@@ -2883,3 +2883,73 @@ body {
   flex-shrink: 0;
 }
 
+
+/* ================= 📱 行動裝置 (Mobile) RWD 回測優化 ================= */
+@media (max-width: 768px) {
+  /* 保障手機版 K 線圖有足夠且明確的高度，不被折行的控制項擠壓為 0 */
+  #tvChartContainer {
+    min-height: 380px !important;
+    height: 380px !important;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* 調整 K 線控制列在手機版上的折行佈局，使其垂直整齊堆疊，好點擊且不卡 BUG */
+  .chart-control-bar {
+    display: flex;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .chart-control-left {
+    margin-bottom: 8px !important;
+  }
+
+  .chart-control-right {
+    margin-top: 8px !important;
+  }
+
+  /* 搜尋輸入欄在手機上自動拉寬 */
+  #chartSearchInput {
+    flex: 1 !important;
+    width: auto !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+  }
+
+  /* 策略多圖層按鈕在手機上以 Grid 排版，好手指點觸且防重疊 */
+  .layer-control-group {
+    display: flex;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .layer-control-group .layer-pill {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* 頂部 Tab 欄在手機上微調字體與內距以防換行錯位 */
+  .topbar-nav {
+    gap: 6px !important;
+  }
+
+  .topbar-nav button {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+}
