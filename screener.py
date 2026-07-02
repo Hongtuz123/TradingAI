@@ -1712,7 +1712,8 @@ def run_screener():
     try:
         import subprocess as _sp
         _sp.run(['git', 'add', 'data.json'], check=True)
-        _sp.run(['git', 'commit', '-m', f'data: 自動更新選股數據 {now_str}'], check=True)
+        # 用 try commit 加上 --allow-empty 避免沒有變更時報錯
+        _sp.run(['git', 'commit', '--allow-empty', '-m', f'data: 自動更新選股數據 {now_str}'], check=True)
         
         # 🚀 防禦機制：推送前先做 pull --rebase，並在衝突時優先使用我們本地新產出的 data.json，避免 rejected
         print("🔄 正在拉取遠端最新狀態以防止 Git 衝突...")
