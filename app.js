@@ -4077,21 +4077,27 @@ function renderPostmarketSummary() {
     usTrend = '<span style="color:var(--warning); font-weight:bold;">中性盤整 ➡️</span>';
   }
 
-  // 運算今日即時強勢產業 (取得今日即時最熱的前 3 名)
+  // 運算今日即時強/弱勢產業 (取得今日即時漲跌前 4 名)
   const sectorsArray = getCurrentSectorsData();
   const sortedStrong = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange);
   const sortedWeak = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange);
 
-  const topStrong = sortedStrong.slice(0, 3);
-  let strongSectorsText = '';
-  if (topStrong.length > 0) {
-    strongSectorsText = topStrong.map(g => {
-      const days = getSectorStreakDays(g.name, 'strong');
-      return `🔥 <strong style="color:white;">${g.name}</strong> (已強勢 ${days} 天)`;
-    }).join('、');
-  } else {
-    strongSectorsText = '<span style="color:var(--text-muted);">今日無明顯強勢產業汪。</span>';
-  }
+  const topStrong = sortedStrong.slice(0, 4);
+  const topWeak = sortedWeak.slice(0, 4);
+
+  // 產生強勢產業玻璃按鈕 HTML
+  const strongButtons = topStrong.map(g => {
+    const days = getSectorStreakDays(g.name, 'strong');
+    const streakLabel = days >= 2 ? ` (連強${days}D)` : '';
+    return `<button class="glass-btn strong-sector" onclick="togglePostmarketSectorDetail('${g.name}', this)">🔥 ${g.name}${streakLabel}</button>`;
+  }).join('');
+
+  // 產生弱勢產業玻璃按鈕 HTML
+  const weakButtons = topWeak.map(g => {
+    const days = getSectorStreakDays(g.name, 'weak');
+    const streakLabel = days >= 2 ? ` (連弱${days}D)` : '';
+    return `<button class="glass-btn weak-sector" onclick="togglePostmarketSectorDetail('${g.name}', this)">❄️ ${g.name}${streakLabel}</button>`;
+  }).join('');
 
   // 運算由弱轉強與轉弱要注意產業 (今日強/弱前 5 名比對昨日盤後歷史)
   let turnStrongText = '<span style="color:var(--text-muted);">無明顯由弱轉強產業汪。</span>';
@@ -4126,7 +4132,7 @@ function renderPostmarketSummary() {
       </div>
       <div>
         <strong style="color:white; font-size:16px;">荳荳 AI 數據戰術室氣象播報 🐾</strong>
-        <div style="font-size:11px; color:var(--primary); margin-top:3px; font-weight:700;">拔麻主人汪！荳荳幫你整理了最新的大盤與產業情報，請過目汪！🐶</div>
+        <div style="font-size:11px; color:var(--primary); margin-top:3px; font-weight:700;">拔麻主人汪！荳荳幫你整理了最新的大盤與產業情報，點擊產業按鈕可展開成分股汪！🐶</div>
       </div>
     </div>
     
@@ -4141,8 +4147,17 @@ function renderPostmarketSummary() {
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #10b981; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
-        <span style="font-weight:700; color:#10b981; font-size:14px;">🔥 目前最強產業趨勢：</span><br>
-        <span style="display:inline-block; margin-top:4px;">${strongSectorsText}</span>
+        <span style="font-weight:700; color:#10b981; font-size:14px;">🔥 即時強勢產業趨勢 (點擊展開成分股)：</span><br>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+          ${strongButtons}
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border-left:4px solid #3b82f6; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
+        <span style="font-weight:700; color:#60a5fa; font-size:14px;">❄️ 即時弱勢產業趨勢 (點擊展開成分股)：</span><br>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+          ${weakButtons}
+        </div>
       </div>
 
       <div style="background:rgba(255,255,255,0.03); border-left:4px solid #f59e0b; padding:10px 12px; border-radius:4px; border: 1px solid rgba(255,255,255,0.05); border-left-width: 4px;">
@@ -4152,6 +4167,9 @@ function renderPostmarketSummary() {
           轉弱要注意產業：${turnWeakText}
         </span>
       </div>
+
+      <!-- 📂 成分股折疊展示面板 -->
+      <div id="doudouBroadcastDetailPanel" class="broadcast-detail-panel"></div>
     </div>
 
     <!-- 互動選項按鈕 -->
@@ -4168,6 +4186,94 @@ function renderPostmarketSummary() {
   content.innerHTML = html;
   modal.classList.add('active');
 }
+
+// 🐾 荳荳氣象播報成分股折疊展開與詳情邏輯 🐾
+let currentActiveBroadcastSector = '';
+
+window.togglePostmarketSectorDetail = function(sectorName, btnEl) {
+  const panel = document.getElementById('doudouBroadcastDetailPanel');
+  if (!panel) return;
+
+  // 1. 如果點擊已展開的同一個產業，則摺疊收回
+  if (currentActiveBroadcastSector === sectorName) {
+    panel.classList.remove('active');
+    panel.style.maxHeight = '0';
+    panel.style.padding = '0 12px';
+    btnEl.classList.remove('active');
+    currentActiveBroadcastSector = '';
+    return;
+  }
+
+  // 2. 清除其他按鈕的 active 狀態
+  document.querySelectorAll('.glass-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  // 3. 尋找產業
+  const sectorsArray = getCurrentSectorsData();
+  const g = sectorsArray.find(item => item.name === sectorName);
+  if (!g) return;
+
+  btnEl.classList.add('active');
+  currentActiveBroadcastSector = sectorName;
+
+  // 依漲跌幅降序排列成分股
+  const sortedStocks = [...g.stocks].sort((a, b) => {
+    const changeA = a.liveChange !== undefined ? a.liveChange : (a.change || 0);
+    const changeB = b.liveChange !== undefined ? b.liveChange : (b.change || 0);
+    return changeB - changeA;
+  });
+
+  // 4. 渲染詳情清單 HTML
+  let rowsHTML = sortedStocks.map(s => {
+    const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
+    const volRatio = s.volRatio || 1.0;
+
+    const changeClass = change >= 0 ? 'text-up' : 'text-down';
+    const changeSign = change >= 0 ? '+' : '';
+    const instText = instToday >= 0 ? `+${instToday.toLocaleString()}張` : `${instToday.toLocaleString()}張`;
+    const instColor = instToday >= 0 ? 'var(--success)' : 'var(--danger)';
+
+    return `
+      <div class="broadcast-detail-row" onclick="window.selectStockFromBroadcast('${s.id}')">
+        <span class="stock-name">🐾 ${s.id} ${s.name}</span>
+        <div class="stock-metrics">
+          <span>漲跌: <span class="${changeClass}" style="font-weight:700;">${changeSign}${change.toFixed(2)}%</span></span>
+          <span>法人: <span style="font-weight:700; color:${instColor};">${instText}</span></span>
+          <span>量能比: <span style="font-weight:700; color:var(--warning);">${volRatio.toFixed(2)}x</span></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  panel.innerHTML = `
+    <div style="font-weight:800; font-size:12px; color:var(--primary); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:6px;">
+      <span>📂 [${sectorName}] 成分股即時表現 (${g.stocks.length}檔)</span>
+      <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">💡 點擊個股可跳轉 K 線圖</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:2px;">
+      ${rowsHTML}
+    </div>
+  `;
+
+  // 5. 平滑動畫滑開
+  panel.classList.add('active');
+  panel.style.padding = '12px 14px';
+  panel.style.maxHeight = panel.scrollHeight + 50 + 'px';
+
+  // 平滑滾動到面板視區
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+};
+
+window.selectStockFromBroadcast = function(symbol) {
+  if (typeof openChart === 'function') {
+    openChart(symbol);
+  }
+  closeDogReminder();
+};
 
 // 3. 渲染排行榜
 
@@ -4260,17 +4366,28 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-            <span class="text-up" style="font-size:13px; font-weight:700;">+${g.avgChange.toFixed(2)}%</span>
-            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-          </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+
+              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+
+            </div>
+
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+
+              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
+
+            </div>
+
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+
+            <span class="text-up" style="font-size:13px; font-weight:700;">+${g.avgChange.toFixed(2)}%</span>
+
+            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+
+          </div>
+
         </div>
       `;
     }).join('');
@@ -4297,17 +4414,28 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-            <span class="text-down" style="font-size:13px; font-weight:700;">${g.avgChange.toFixed(2)}%</span>
-            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-          </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+
+              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
+
+            </div>
+
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+
+              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
+
+            </div>
+
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+
+            <span class="text-down" style="font-size:13px; font-weight:700;">${g.avgChange.toFixed(2)}%</span>
+
+            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
+
+          </div>
+
         </div>
       `;
     }).join('');
@@ -4360,17 +4488,28 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-              <span>1D 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'}">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
-          </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+
+              <span>1D 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'}">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
+
+            </div>
+
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+
+              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+
+            </div>
+
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+
+            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+
+            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
+
+          </div>
+
         </div>
       `;
     }).join('');
@@ -4430,18 +4569,30 @@ function renderRankings() {
               ${streakBadge}
               ${instStreakBadge}
             </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-              <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-              <span style="margin-left:8px; opacity:0.6; font-size:10px;">外:${s.foreignNetBuy||0} 投:${s.trustDays||0} 自:${s.dealerDays||0}</span>
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-            </div>
-          </div>
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
-          </div>
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+
+              <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+
+              <span style="margin-left:8px; opacity:0.6; font-size:10px;">外:${s.foreignNetBuy||0} 投:${s.trustDays||0} 自:${s.dealerDays||0}</span>
+
+            </div>
+
+            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+
+              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+
+            </div>
+
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+
+            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+
+            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
+
+          </div>
+
         </div>
       `;
     }).join('');
@@ -4504,17 +4655,28 @@ function renderRankings() {
                 ${streakBadge}
                 ${instStreakBadge}
               </div>
-              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-                <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-              </div>
-              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-                <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-              </div>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-              <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-              <span style="font-size:12px; color:var(--warning); font-weight:700;">${(s.volRatio||0).toFixed(1)}x</span>
-            </div>
+              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
+
+                <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
+
+              </div>
+
+              <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
+
+                <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
+
+              </div>
+
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
+
+              <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+
+              <span style="font-size:12px; color:var(--warning); font-weight:700;">${(s.volRatio||0).toFixed(1)}x</span>
+
+            </div>
+
           </div>
         `;
       }).join('');
