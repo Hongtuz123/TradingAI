@@ -1660,17 +1660,47 @@ def run_screener():
         "sectors": bubble_sectors
     }
 
-    # 隱私保護：對 results 進行個股機密欄位清理 (只保留最基本的 ID/名稱/價量/K線，隱去技術型態及敏感指標值)
+    # 隱私保護：對 results 進行個股機密欄位清理
+    # 原則：隱去計算公式與策略邏輯，但保留「結果類」欄位供前端篩選表格顯示
     cleaned_mock_stocks = []
     for s in results:
         cleaned_mock_stocks.append({
+            # === 基本識別 ===
             "id": s["id"],
             "name": s["name"],
+            "market": s.get("market", "TSE"),
+            "industry": s.get("industry", ""),
+            # === 價格與量能 ===
             "price": s["price"],
             "change": s["change"],
             "dailyVol": s["dailyVol"],
             "volRatio": s["volRatio"],
-            "kline": s["kline"]  # 保留 K 線供前端做 MA/Supertrend 彈性回測
+            "turnover": s.get("turnover"),
+            "marketCap": s.get("marketCap"),
+            # === 基本面結果值（已計算完成，不含公式）===
+            "eps": s.get("eps"),
+            "epsYoY": s.get("epsYoY"),
+            "revYoY": s.get("revYoY"),
+            "roe": s.get("roe"),
+            "grossMargin": s.get("grossMargin"),
+            "debtRatio": s.get("debtRatio"),
+            # === 法人籌碼結果值 ===
+            "trustDays": s.get("trustDays"),
+            "foreignBuy": s.get("foreignBuy"),
+            "foreignNetBuy": s.get("foreignNetBuy"),
+            "dealerDays": s.get("dealerDays"),
+            "instSum5D": s.get("instSum5D", 0),
+            "instAvg7D": s.get("instAvg7D", 0),
+            "instDetail5D": s.get("instDetail5D", [0,0,0,0,0]),
+            # === 技術指標結果值 ===
+            "maBull": s.get("maBull"),
+            "ma20Rising": s.get("ma20Rising"),
+            "closeToHigh": s.get("closeToHigh"),
+            "dist52W": s.get("dist52W"),
+            "rsi14": s.get("rsi14"),
+            "type": s.get("type", ""),
+            # === K 線（供前端回測）===
+            "kline": s["kline"]
         })
 
     json_data = {
