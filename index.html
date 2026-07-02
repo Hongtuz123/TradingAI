@@ -1,566 +1,1132 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>荳荳AI智能選股 | 五層智能選股系統</title>
-  <meta name="description" content="荳荳AI智能選股 - 整合市場健康度、基本面、籌碼、技術面五層智能選股系統，精準找出強勢標的" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=47" />
-  <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
-</head>
-<body>
-  <!-- 頂部導航 -->
-  <header class="topbar" id="topbar">
-    <div class="topbar-brand" style="gap: 8px;">
-      <div class="brand-logo" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 1.5px solid #f97316; background: rgba(255,255,255,0.15);">
-        <img src="photo/doudou_happy.png" style="width: 100%; height: 100%; object-fit: cover;" alt="荳荳" />
-      </div>
-      <div class="brand-text">
-        <span class="brand-name" style="color: #f97316; font-weight: 800; font-size: 16px;">🐾 荳荳 AI</span>
-        <span class="brand-sub">智能選股</span>
-      </div>
-    </div>
-    <nav class="topbar-nav">
-      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
-        <span class="nav-icon">⊞</span> 儀表板
-      </button>
-      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
-        <span class="nav-icon">⚡</span> 篩選器
-      </button>
-      <button class="nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
-        <span class="nav-icon">⭐</span> 自選清單
-      </button>
-      <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
-        <span class="nav-icon">📈</span> 回測功能
-      </button>
-    </nav>
-    <div class="topbar-status">
-      <div class="market-status-badge" id="marketStatusBadge">
-        <span class="status-dot"></span>
-        <span id="marketStatusText">市場評估中...</span>
-      </div>
-      <div class="current-time">現在時間：<span id="currentTime">----/--/-- --:--:--</span></div>
-      <div class="last-update" style="display: flex; align-items: center; gap: 8px;">
-        <span>資料更新：<span id="lastUpdateTime"></span></span>
-      </div>
-    </div>
-  </header>
-
-  <!-- 主內容區 -->
-  <main class="main-container">
-
-    <!-- ======================== 儀表板視圖 ======================== -->
-    <section class="view active" id="view-dashboard">
-      <div class="dashboard-grid-layout">
-
-        <!-- ===== 1. 左上：市場健康度 (縮小篇幅，台美股並排) ===== -->
-        <div class="market-health-banner-mini" id="marketHealthBanner" style="margin-bottom: 0;">
-          <div class="health-header-mini">
-            <h2 style="margin:0; font-size:15px; display:flex; align-items:center;">📊 市場健康度
-              <!-- 警示 tooltip icon -->
-              <span class="warning-tooltip-wrap" id="warningTooltipWrap" style="display:none; margin-left:6px;">
-                <span class="warning-tooltip-icon">⚠️</span>
-                <span class="warning-tooltip-box" id="warningTooltipBox">
-                  <strong>市場警示</strong>
-                  <ul id="warningList"></ul>
-                </span>
-              </span>
-            </h2>
-            <!-- 保持 JS 控制不報錯 -->
-            <div class="health-overall" id="healthOverall" style="display:none;"></div>
-            <div style="display:none;" id="twHealthGrade">--</div>
-            <div style="display:none;" id="usHealthGrade">--</div>
-            <div style="display:none;" id="healthGrade">--</div>
-          </div>
-
-          <!-- 並排的健康度指標容器 -->
-          <div class="health-mini-row">
-            <!-- 台股版塊 -->
-            <div class="market-group-mini">
-              <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>🇹🇼 台股</span>
-                <span id="twMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
-              </div>
-              <div class="health-indicators us-grid" id="twIndicators"><!-- JS 填充 --></div>
-              <div class="vol-indicator" id="volIndicator" style="display:none;"><!-- JS 填充 --></div>
-            </div>
-
-            <!-- 美股版塊 -->
-            <div class="market-group-mini">
-              <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>🇺🇸 美股</span>
-                <span id="usMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
-              </div>
-              <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
-            </div>
-          </div>
-
-          <!-- 保留舊警示 div（隱藏） -->
-          <div class="health-warning" id="healthWarning" style="display:none;">
-            <div class="warning-icon">⚠️</div>
-            <div class="warning-content">
-              <ul id="warningListLegacy"></ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== 2. 右上：五大排行 Tab ===== -->
-        <div class="flow-bottom-row-full" style="margin-bottom: 0;">
-          <div class="flow-rankings-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
-              <div class="rankings-tabs" style="flex:1; margin-bottom:0;">
-                <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
-                <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
-                <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
-                <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
-                <button class="rank-tab-btn" onclick="switchRankTab('dip')">🎯 抄底名單</button>
-              </div>
-              <select id="rankLimitSelect" onchange="renderRankings()" style="background:var(--bg-card); color:white; border:1px solid var(--border-color); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; height:34px; cursor:pointer;">
-                <option value="5" selected>前 5 名</option>
-                <option value="6">前 6 名</option>
-                <option value="10">前 10 名</option>
-                <option value="15">前 15 名</option>
-                <option value="20">前 20 名</option>
-              </select>
-            </div>
-            <div class="rank-list-container" id="rankListContent"><!-- JS 填充 --></div>
-          </div>
-        </div>
-
-        <!-- ===== 3. 下方：荳花漲跌區塊偵測 (全寬) ===== -->
-        <div class="flow-bubble-full flow-map-panel">
-          <div class="panel-header">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
-              </div>
-              <!-- 開關過濾按鈕 -->
-              <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
-                <!-- 縮放控制 -->
-                <div style="display:flex;align-items:center;gap:4px;margin-right:8px;border-right:1px solid rgba(255,255,255,0.1);padding-right:12px;">
-                  <button onclick="zoomSectorBubble(1.2)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="放大氣泡圖">➕ 放大</button>
-                  <button onclick="zoomSectorBubble(0.8)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="縮小氣泡圖">➖ 縮小</button>
-                  <button onclick="resetSectorBubble()" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="重置視角">🔄 重置</button>
-                </div>
-                
-                <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
-                  <span class="dot major" style="background:#ef4444;"></span>主力爆買
-                </button>
-                <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
-                  <span class="dot bottom" style="background:#3b82f6;"></span>資金入場
-                </button>
-                <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
-                  <span class="dot retreat" style="background:#10b981;"></span>量縮流出
-                </button>
-                <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
-                  <span class="dot rotate" style="background:#eab308;"></span>買力下降
-                </button>
-              </div>
-            </div>
-            <div id="bubble-legend-text" style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
-              泡泡大小: 估算成交額 | X軸: 近5日累計資金淨流量 (億元) | Y軸: 當日資金淨流量 (億元) (中心點為 0) | 點擊泡泡查看成分股
-            </div>
-          </div>
-          <div class="flow-map-container" id="sectorTreeMap">
-            <!-- 由 JS 動態繪製泡泡圖 -->
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-
-    <!-- ======================== 篩選器視圖 ======================== -->
-    <section class="view" id="view-screener">
-      <div class="screener-layout">
-        <!-- 手機版專屬：展開/收合篩選條件按鈕 -->
-        <button class="mobile-filter-toggle" onclick="toggleMobileFilter()">⚙️ 展開/收合篩選條件</button>
-        
-        <!-- 左側：篩選條件面板 -->
-        <aside class="filter-panel" id="filterPanel">
-          <div class="filter-panel-header">
-            <h2>⚙️ 篩選條件</h2>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 500 大進行運算，<br>最高 100 分，低於 60 分不予顯示。</p>
-            
-            <!-- 手動個股評估功能 -->
-            <div class="manual-eval-box" style="margin-top: 12px; padding: 10px; background: rgba(30, 41, 59, 0.7); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
-              <label style="font-size: 11px; font-weight: 700; color: var(--primary); display: block; margin-bottom: 6px;">🐾 手動個股健檢評估</label>
-              <div style="display: flex; gap: 6px;">
-                <input type="text" id="screenerManualInput" placeholder="輸入股號 (如 2330)" style="flex: 1; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; padding: 4px 8px; color: white; font-size: 12px;" onkeydown="if(event.key==='Enter') evaluateManualStock()">
-                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; height: 26px;" onclick="evaluateManualStock()">評估</button>
-              </div>
-              <div id="manualEvalResult" style="margin-top: 8px; display: none;"></div>
-            </div>
-            
-            <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
-          </div>
-
-          <!-- L1：基本面（綁定） -->
-          <div class="filter-group">
-            <div class="filter-group-title" style="color: var(--primary);">
-              <span class="layer-badge layer-1">L1</span>
-              基本面門檻 (已綁定)
-              <span class="info-tooltip-container">
-                <span class="info-icon">ⓘ</span>
-                <span class="tooltip-content">
-                  <strong>🐾 L1 基本面固定門檻值：</strong><br>
-                  • <strong>市值前 500 大</strong>個股過濾<br>
-                  • 當季 <strong>EPS &gt; 0</strong> 元 (非虧損)<br>
-                  • 當月 <strong>營收年增率 (YoY) &gt; -30%</strong><br>
-                  • 當季 <strong>ROE &gt; -5%</strong> (股東權益報酬率)
-                </span>
-              </span>
-            </div>
-            <div class="filter-item">
-              <label>最低符合評分 (滿分100)</label>
-              <div class="filter-input-wrap">
-                <input type="range" id="f_min_score" min="0" max="100" value="60" step="5" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
-                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
-              </div>
-            </div>
-            <div class="filter-item" style="opacity: 0.85;">
-              <span style="font-size: 12px; color: var(--text-muted);">• 財務指標前 500 大個股過濾</span>
-            </div>
-            <div class="filter-item" style="opacity: 0.85;">
-              <span style="font-size: 12px; color: var(--text-muted);">• EPS / 營收 / ROE 多頭篩選</span>
-            </div>
-          </div>
-
-          <!-- L2：技術面（可調） -->
-          <div class="filter-group">
-            <div class="filter-group-title">
-              <span class="layer-badge layer-2">L2</span>
-              技術指標 (加權 100分)
-            </div>
-            <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-              <button type="button" class="tech-filter-btn" id="btn_f_above200ma" onclick="toggleTechFilter('above200ma')">股價 &gt; 200MA (20分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_stBull" onclick="toggleTechFilter('stBull')">Supertrend = 多頭 (20分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_dmiBull" onclick="toggleTechFilter('dmiBull')">DMI 多頭 (20分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_trendlineBreak" onclick="toggleTechFilter('trendlineBreak')">突破下降趨勢 (20分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_volAboveMa" onclick="toggleTechFilter('volAboveMa')">今日量 &gt; 20日均量 (20分)</button>
-            </div>
-          </div>
-
-          <!-- L3：籌碼面與資金面 -->
-          <div class="filter-group">
-            <div class="filter-group-title">
-              <span class="layer-badge layer-3">L3</span>
-              籌碼資金與量能門檻
-            </div>
-            <div class="filter-item">
-              <label>投信當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_trust_days" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>外資當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_foreign_net_buy_threshold" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>自營商當日買超 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_dealer_net_buy_threshold" value="0" min="0" max="10000" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>今日量 > 均量倍數</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_vol_ratio" value="0.6" min="0" max="10" step="0.1" />
-                <span class="unit">倍</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>週轉率 (%)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_turnover" value="0.5" min="0" max="50" step="0.1" />
-                <span class="unit">%以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>市值 (億)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_market_cap" value="50" min="0" max="10000" />
-                <span class="unit">億以上</span>
-              </div>
-            </div>
-            <div class="filter-item">
-              <label>日均量 (張)</label>
-              <div class="filter-input-wrap">
-                <input type="number" id="f_daily_vol" value="800" min="0" max="100000" step="100" />
-                <span class="unit">張以上</span>
-              </div>
-            </div>
-          </div>
-         </aside>
-
-        <!-- 右側：結果列表 -->
-        <div class="screener-results">
-          <div class="results-header">
-            <h3>篩選結果</h3>
-            <div class="results-meta">
-              <span>共 <strong id="resultCount">0</strong> 檔</span>
-              <select id="resultSort" onchange="sortResults(this.value)">
-                <option value="score">按荳荳評分排序</option>
-                <option value="techType">按技術類型</option>
-                <option value="price">按收盤價</option>
-                <option value="trustDays">按投信當日買超</option>
-              </select>
-            </div>
-          </div>
-          <div class="results-table-wrap">
-            <table class="results-table" id="resultsTable">
-              <thead>
-                <tr>
-                  <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
-                  <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
-                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按評分排序">荳荳評分 <span class="sort-icon" id="sort-score">↕</span></th>
-                  <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>
-                  <th onclick="toggleSort('revGrowth')" style="cursor:pointer; user-select:none;" title="點擊按營收成長排序">營收↑ <span class="sort-icon" id="sort-revGrowth">↕</span></th>
-                  <th onclick="toggleSort('roe')" style="cursor:pointer; user-select:none;" title="點擊按ROE排序">ROE <span class="sort-icon" id="sort-roe">↕</span></th>
-                  <th onclick="toggleSort('trustDays')" style="cursor:pointer; user-select:none;" title="點擊按投信買超排序">投信 <span class="sort-icon" id="sort-trustDays">↕</span></th>
-                  <th onclick="toggleSort('foreignNet')" style="cursor:pointer; user-select:none;" title="點擊按外資買超排序">外資 <span class="sort-icon" id="sort-foreignNet">↕</span></th>
-                  <th onclick="toggleSort('dealerNet')" style="cursor:pointer; user-select:none;" title="點擊按自營商買超排序">自營商 <span class="sort-icon" id="sort-dealerNet">↕</span></th>
-                  <th onclick="toggleSort('volRatio')" style="cursor:pointer; user-select:none;" title="點擊按量能比排序">量比 <span class="sort-icon" id="sort-volRatio">↕</span></th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="resultsBody">
-                <tr class="empty-row">
-                  <td colspan="11">請點擊「執行篩選」開始篩選</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-
-    <!-- ======================== 自選清單視圖 ======================== -->
-    <section class="view" id="view-portfolio">
-      <div class="whitelist-page">
-        <div class="whitelist-header">
-          <div>
-            <h2>⭐ 自選監控戰術看板</h2>
-            <p class="subtitle">追蹤您加入自選的台股核心強勢飆股，動態分析 5D/20D 籌碼與多天空金買賣盤汪！🐶</p>
-          </div>
-          <div class="whitelist-actions" style="display:flex; align-items:center; gap:8px;">
-            <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-              <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
-              <input type="text" id="portfolioSearchInput" placeholder="輸入股號或名稱 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; width:200px;" onkeydown="if(event.key==='Enter') addStockToPortfolioFromInput()">
-              <button class="btn-primary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="addStockToPortfolioFromInput()">加入自選</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- 自選清單高級卡片容器 -->
-        <div class="portfolio-grid" id="portfolioGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 15px;">
-          <!-- 由 JS 動態繪製卡片 -->
-          <div class="empty-row" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted); background: rgba(30,41,59,0.3); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
-            <div style="font-size: 48px; margin-bottom: 12px;">⭐</div>
-            <p style="font-size: 15px; font-weight: 600; color: white;">目前自選清單空空如也汪！</p>
-            <p style="font-size: 12px; margin-top: 6px;">請前往【篩選器結果】或【K線回測功能】將優質飆股加入自選追蹤唷！🐶</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ======================== K線與回測功能視圖 ======================== -->
-    <section class="view" id="view-chart">
-      <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;overflow:hidden;">
-        <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
-          <div class="chart-toolbar" style="flex-shrink:0;gap:12px;display:flex;justify-content:space-between;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;align-items:center;">
-            
-            <!-- 左側控制群：標的名稱 + 搜尋列 + 時框選擇 + 自選此股 -->
-            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
-              <!-- 目前標的名稱 -->
-              <div class="chart-stock-info" style="display:flex; align-items:center; background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); padding: 4px 12px; border-radius: 6px; height: 28px;">
-                <span class="chart-name" style="font-size: 14px; font-weight: 700; color: white;">--</span>
-              </div>
-
-              <!-- 搜尋功能 -->
-              <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
-                <input type="text" id="chartSearchInput" placeholder="輸入股號 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:14px; width:130px;" onkeydown="if(event.key==='Enter') searchAndLoadChart()">
-                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="searchAndLoadChart()">搜尋</button>
-              </div>
-
-              <!-- 時框選擇 (15分/1小時/4小時/日) -->
-              <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
-                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
-                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1h')">1小時</button>
-                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('4h')">4小時</button>
-                <button class="btn-secondary active" style="padding: 2px 8px; font-size:12px; height: 24px; background:var(--primary-color);" onclick="changeResolution('1D')">日</button>
-              </div>
-
-              <!-- 自選此股按鈕 -->
-              <button class="btn-primary" id="btn-chart-add-portfolio" style="font-weight: 700; background: linear-gradient(135deg, #f59e0b, #eab308); border: none; box-shadow: 0 0 10px rgba(245,158,11,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleCurrentStockPortfolio()">
-                <span>⭐ 自選此股</span>
-              </button>
-
-              <!-- API 連線狀態燈 -->
-              <div id="api-status-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; height: 28px; transition: all 0.2s; user-select: none;">
-                🟢 API 在線 (即時)
-              </div>
-            </div>
-
-            <!-- 右側控制群：回測績效 + 策略圖層 + 副圖指標 + 趨勢選股 -->
-            <div style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
-              <!-- 績效看板 -->
-              <div id="backtest-summary" style="display:none; align-items:center; gap: 12px; background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); font-size:13px; color: white;">
-                <!-- 由 JS 動態寫入回測數據 -->
-              </div>
-
-              <!-- 策略與指標多圖層控制面板 -->
-              <div style="display:flex; align-items:center; gap: 10px; flex-wrap:wrap;">
-                <!-- 主圖疊加圖層 -->
-                 <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                  <span style="font-size:12px; color:var(--text-muted); padding: 0 4px; font-weight: 600;">主圖疊加:</span>
-                  <button class="layer-pill active" onclick="toggleChartLayer('ma5')" id="pill-ma5">5MA</button>
-                  <button class="layer-pill active" onclick="toggleChartLayer('srLines')" id="pill-srLines">支撐壓力</button>
-                  <button class="layer-pill" onclick="toggleChartLayer('strategySupertrend')" id="pill-strategySupertrend">超級趨勢</button>
-                  <button class="layer-pill" onclick="toggleChartLayer('strategyTrendline')" id="pill-strategyTrendline">突破下降</button>
-                </div>
-
-                <!-- 副圖切換圖層 -->
-                <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-                  <span style="font-size:12px; color:var(--text-muted); padding: 0 4px; font-weight: 600;">副圖指標:</span>
-                  <button class="layer-pill active" onclick="selectSubIndicator('rsi')" id="pill-sub-rsi">RSI</button>
-                  <button class="layer-pill" onclick="selectSubIndicator('macd')" id="pill-sub-macd">MACD</button>
-                  <button class="layer-pill" onclick="selectSubIndicator('none')" id="pill-sub-none">無副圖</button>
-                </div>
-              </div>
-
-              <button class="btn-primary" style="font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
-                <span>🎯 趨勢突破選股</span>
-              </button>
-            </div>
-            
-          </div>
-          <!-- 繪圖工具欄與 Lightweight Charts 雙層容器 -->
-          <div class="chart-container-wrapper" id="chartContainerWrapper" style="display:flex; flex:1; min-height:0; position:relative; width:100%;">
-            <!-- 最近查詢側邊欄 -->
-            <div id="recentSearchPanel" style="width: 100px; display: flex; flex-direction: column; background: rgba(15, 23, 42, 0.65); border-right: 1.5px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); z-index: 10; flex-shrink: 0; padding: 8px 4px; gap: 8px; box-sizing: border-box; overflow: hidden;">
-              <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 4px; text-align: center; white-space: nowrap;">最近查詢</div>
-              <div id="recentSearchList" style="display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1;">
-                <!-- Dynamically populated via JS -->
-              </div>
-            </div>
-
-            <!-- 左側垂直繪圖工具列 (Premium 玻璃帷幕設計) -->
-            <div class="drawing-toolbar" id="drawingToolbar" style="width:45px; display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 0; background:rgba(15,23,42,0.75); border-right:1.5px solid rgba(255,255,255,0.08); backdrop-filter:blur(8px); z-index:10; flex-shrink:0;">
-              <button class="draw-btn active" data-tool="cursor" title="游標選取 (選取後可點色塊換色，按Delete鍵刪除)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🖱️</button>
-              <button class="draw-btn" data-tool="trendline" title="繪製趨勢線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">╱</button>
-              <button class="draw-btn" data-tool="horizline" title="繪製水平支撐阻力線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">──</button>
-              <button class="draw-btn" data-tool="fib" title="繪製斐波那契回撤線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">☰</button>
-              <button class="draw-btn" data-tool="measure" title="測量工具 (價格/時間)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">📏</button>
-              
-              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
-              
-              <!-- 快捷調色盤，選取物件時可點擊換色 -->
-              <button class="color-dot-btn" data-color="#f97316" style="background:#f97316; width:18px; height:18px; border-radius:50%; border:2px solid white; cursor:pointer; padding:0;" title="橘色"></button>
-              <button class="color-dot-btn" data-color="#ef4444" style="background:#ef4444; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="紅色"></button>
-              <button class="color-dot-btn" data-color="#22c55e" style="background:#22c55e; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="綠色"></button>
-              <button class="color-dot-btn" data-color="#3b82f6" style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="藍色"></button>
-              <button class="color-dot-btn" data-color="#ffffff" style="background:#ffffff; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="白色"></button>
-              
-              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
-              
-              <button class="draw-btn" id="btn-delete-selected" title="刪除選取圖形 (Delete)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:not-allowed; display:flex; align-items:center; justify-content:center; opacity:0.4; transition:all 0.2s;">🗑️</button>
-              <button class="draw-btn" onclick="clearAllCurrentDrawings()" title="清空全部圖形" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🧹</button>
-            </div>
-            
-            <!-- 圖表畫布與滑鼠事件疊加層 -->
-            <div id="chartCanvasWrapper" style="flex:1; position:relative; min-height:0; overflow:hidden;">
-              <div id="tvChartContainer" style="width:100%; height:100%;"></div>
-              <canvas id="drawingCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;"></canvas>
-              <div id="drawingOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;"></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- 🐾 荳荳每日盤後風向提醒彈窗 (狗狗口吻) 🐾 -->
-  <div class="modal-overlay" id="dogReminderModal" onclick="closeDogReminder(event)">
-    <div class="postmarket-summary-card modal-content-glass" id="dogReminderBox" style="max-width: 600px; width:95%; position:relative; border: 1.5px solid rgba(249, 115, 22, 0.45); animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); margin: 20px auto;" onclick="event.stopPropagation()">
-      <button class="shiba-chat-close" onclick="closeDogReminder()" style="position:absolute; right:15px; top:15px; font-size:18px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold;">✕</button>
-      <div id="dogReminderContent"></div>
-    </div>
-  </div>
-
-  <!-- 股票詳情 Modal -->
-  <div class="modal-overlay" id="stockModal" onclick="closeModal(event)">
-    <div class="modal-box" id="modalBox">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <div id="modalContent"></div>
-    </div>
-  </div>
-
-  <!-- 🐾 荳荳柴犬吉祥物對話框 🐾 -->
-  <div class="shiba-mascot-container" id="shibaMascotContainer">
-    <!-- 荳荳 AI 戰術室智能對話面板 -->
-    <div class="shiba-chat-panel" id="shibaChatPanel" style="display: none;">
-      <div class="shiba-chat-header">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <img src="photo/doudou_happy.png" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--primary);" alt="荳荳">
-          <div>
-            <strong style="color:white; font-size:13px;">荳荳 AI 數據戰術室 🐾</strong>
-            <div style="font-size:10px; color:var(--primary);">大盤前 500 大實時統計中汪！🐶</div>
-          </div>
-        </div>
-        <button class="shiba-chat-close" onclick="toggleShibaChatPanel(false)">✕</button>
-      </div>
-      <div class="shiba-chat-body" id="shibaChatBody">
-        <div class="shiba-msg shiba-msg-bot">
-          <div class="shiba-msg-text">
-            嗨！我是荳荳🐾！今天也來陪拔麻一起找出強勢大飆股汪！<br>
-            我可以幫您分析大盤最新數據，您可以直接問我或點選下方快捷提問喔！🐶
-          </div>
-        </div>
-      </div>
-      <div class="shiba-chat-quick-tags">
-        <button class="quick-tag-btn" onclick="askShiba('today_strong')">🔥 今日強勢類股與清單</button>
-        <button class="quick-tag-btn" onclick="askShiba('today_weak')">❄️ 今日弱勢類股與清單</button>
-        <button class="quick-tag-btn" onclick="askShiba('trust_favorite')">💼 法人狂買追蹤</button>
-        <button class="quick-tag-btn" onclick="askShiba('volume_burst')">⚡ 今日爆量突破飆股</button>
-        <button class="quick-tag-btn" onclick="askShiba('doudou_backtest')" style="border: 1px solid #ff007f; color: #ff007f; background: rgba(255,0,127,0.08);">🐾 荳荳突破回測選股</button>
-      </div>
-      <div class="shiba-chat-input-wrap">
-        <input type="text" id="shibaChatInput" placeholder="問荳荳：今日漲幅都是哪一類股？" onkeydown="if(event.key==='Enter') sendShibaMessage()">
-        <button class="shiba-chat-send" onclick="sendShibaMessage()">發送</button>
-      </div>
-    </div>
-
-    <div class="shiba-bubble" id="shibaMascotBubble">汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！</div>
-    <div class="shiba-avatar-wrap" onclick="toggleShibaChatPanel()">
-      <img src="photo/doudou_happy.png" class="shiba-avatar" id="shibaMascotAvatar" alt="荳荳柴犬" />
-    </div>
-  </div>
-
-  <!-- 🐾 系統底頁統計 🐾 -->
-  <footer class="doudou-footer">
-    <div class="footer-left">🐾 荳荳選股戰術室 © 2026</div>
-    <div class="footer-right">
-      <span>🐶 荳荳被摸頭：<strong id="doudouPetCount">0</strong> 次</span>
-      <span>🥫 獲得罐頭：<strong id="doudouCannedCount">0</strong> 個</span>
-    </div>
-  </footer>
-
-  <!-- 腳本 -->
-  <script src="app.js?v=52"></script>
-  <script src="stock-dashboard.js?v=51"></script>
-</body>
-</html>
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>荳荳AI智能選股 | 五層智能選股系統</title>
+
+  <meta name="description" content="荳荳AI智能選股 - 整合市場健康度、基本面、籌碼、技術面五層智能選股系統，精準找出強勢標的" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css?v=47" />
+
+  <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
+
+</head>
+
+<body>
+
+  <!-- 頂部導航 -->
+
+  <header class="topbar" id="topbar">
+
+    <div class="topbar-brand" style="gap: 8px;">
+
+      <div class="brand-logo" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 1.5px solid #f97316; background: rgba(255,255,255,0.15);">
+
+        <img src="photo/doudou_happy.png" style="width: 100%; height: 100%; object-fit: cover;" alt="荳荳" />
+
+      </div>
+
+      <div class="brand-text">
+
+        <span class="brand-name" style="color: #f97316; font-weight: 800; font-size: 16px;">🐾 荳荳 AI</span>
+
+        <span class="brand-sub">智能選股</span>
+
+      </div>
+
+    </div>
+
+    <nav class="topbar-nav">
+
+      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+
+        <span class="nav-icon">⊞</span> 儀表板
+
+      </button>
+
+      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
+
+        <span class="nav-icon">⚡</span> 篩選器
+
+      </button>
+
+      <button class="nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
+
+        <span class="nav-icon">⭐</span> 自選清單
+
+      </button>
+
+      <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
+
+        <span class="nav-icon">📈</span> 回測功能
+
+      </button>
+
+    </nav>
+
+    <div class="topbar-status">
+
+      <div class="market-status-badge" id="marketStatusBadge">
+
+        <span class="status-dot"></span>
+
+        <span id="marketStatusText">市場評估中...</span>
+
+      </div>
+
+      <div class="current-time">現在時間：<span id="currentTime">----/--/-- --:--:--</span></div>
+
+      <div class="last-update" style="display: flex; align-items: center; gap: 8px;">
+
+        <span>資料更新：<span id="lastUpdateTime"></span></span>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- 主內容區 -->
+
+  <main class="main-container">
+
+
+
+    <!-- ======================== 儀表板視圖 ======================== -->
+
+    <section class="view active" id="view-dashboard">
+
+      <div class="dashboard-grid-layout">
+
+
+
+        <!-- ===== 1. 左上：市場健康度 (縮小篇幅，台美股並排) ===== -->
+
+        <div class="market-health-banner-mini" id="marketHealthBanner" style="margin-bottom: 0;">
+
+          <div class="health-header-mini">
+
+            <h2 style="margin:0; font-size:15px; display:flex; align-items:center;">📊 市場健康度
+
+              <!-- 警示 tooltip icon -->
+
+              <span class="warning-tooltip-wrap" id="warningTooltipWrap" style="display:none; margin-left:6px;">
+
+                <span class="warning-tooltip-icon">⚠️</span>
+
+                <span class="warning-tooltip-box" id="warningTooltipBox">
+
+                  <strong>市場警示</strong>
+
+                  <ul id="warningList"></ul>
+
+                </span>
+
+              </span>
+
+            </h2>
+
+            <!-- 保持 JS 控制不報錯 -->
+
+            <div class="health-overall" id="healthOverall" style="display:none;"></div>
+
+            <div style="display:none;" id="twHealthGrade">--</div>
+
+            <div style="display:none;" id="usHealthGrade">--</div>
+
+            <div style="display:none;" id="healthGrade">--</div>
+
+          </div>
+
+
+
+          <!-- 並排的健康度指標容器 -->
+
+          <div class="health-mini-row">
+
+            <!-- 台股版塊 -->
+
+            <div class="market-group-mini">
+
+              <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
+
+                <span>🇹🇼 台股</span>
+
+                <span id="twMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
+
+              </div>
+
+              <div class="health-indicators us-grid" id="twIndicators"><!-- JS 填充 --></div>
+
+              <div class="vol-indicator" id="volIndicator" style="display:none;"><!-- JS 填充 --></div>
+
+            </div>
+
+
+
+            <!-- 美股版塊 -->
+
+            <div class="market-group-mini">
+
+              <div class="market-group-title-mini" style="display: flex; justify-content: space-between; align-items: center;">
+
+                <span>🇺🇸 美股</span>
+
+                <span id="usMarketScoreBadge" style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; letter-spacing: 0;">--</span>
+
+              </div>
+
+              <div class="health-indicators us-grid" id="usIndicators"><!-- JS 填充 --></div>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- 保留舊警示 div（隱藏） -->
+
+          <div class="health-warning" id="healthWarning" style="display:none;">
+
+            <div class="warning-icon">⚠️</div>
+
+            <div class="warning-content">
+
+              <ul id="warningListLegacy"></ul>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ===== 2. 右上：五大排行 Tab ===== -->
+
+        <div class="flow-bottom-row-full" style="margin-bottom: 0;">
+
+          <div class="flow-rankings-panel">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px;">
+
+              <div class="rankings-tabs" style="flex:1; margin-bottom:0;">
+
+                <button class="rank-tab-btn active" onclick="switchRankTab('strong')">🚀 強勢族群</button>
+
+                <button class="rank-tab-btn" onclick="switchRankTab('weak')">📉 弱勢族群</button>
+
+                <button class="rank-tab-btn" onclick="switchRankTab('hot')">🔥 熱門標的</button>
+
+                <button class="rank-tab-btn" onclick="switchRankTab('inst')">🏆 法人買超</button>
+
+                <button class="rank-tab-btn" onclick="switchRankTab('dip')">🎯 抄底名單</button>
+
+              </div>
+
+              <select id="rankLimitSelect" onchange="renderRankings()" style="background:var(--bg-card); color:white; border:1px solid var(--border-color); padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; height:34px; cursor:pointer;">
+
+                <option value="5" selected>前 5 名</option>
+
+                <option value="6">前 6 名</option>
+
+                <option value="10">前 10 名</option>
+
+                <option value="15">前 15 名</option>
+
+                <option value="20">前 20 名</option>
+
+              </select>
+
+            </div>
+
+            <div class="rank-list-container" id="rankListContent"><!-- JS 填充 --></div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ===== 3. 下方：荳花漲跌區塊偵測 (全寬) ===== -->
+
+        <div class="flow-bubble-full flow-map-panel">
+
+          <div class="panel-header">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+
+              <div style="display:flex;align-items:center;gap:12px;">
+
+                <h3 style="margin:0;">🔥 荳花漲跌區塊偵測</h3>
+
+              </div>
+
+              <!-- 開關過濾按鈕 -->
+
+              <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+
+                <!-- 縮放控制 -->
+
+                <div style="display:flex;align-items:center;gap:4px;margin-right:8px;border-right:1px solid rgba(255,255,255,0.1);padding-right:12px;">
+
+                  <button onclick="zoomSectorBubble(1.2)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="放大氣泡圖">➕ 放大</button>
+
+                  <button onclick="zoomSectorBubble(0.8)" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="縮小氣泡圖">➖ 縮小</button>
+
+                  <button onclick="resetSectorBubble()" class="bubble-filter-btn" style="border-color:rgba(255,255,255,0.15); padding:3px 6px; font-size:10px; cursor:pointer;" title="重置視角">🔄 重置</button>
+
+                </div>
+
+                
+
+                <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
+
+                  <span class="dot major" style="background:#ef4444;"></span>主力爆買
+
+                </button>
+
+                <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
+
+                  <span class="dot bottom" style="background:#3b82f6;"></span>資金入場
+
+                </button>
+
+                <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
+
+                  <span class="dot retreat" style="background:#10b981;"></span>量縮流出
+
+                </button>
+
+                <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
+
+                  <span class="dot rotate" style="background:#eab308;"></span>買力下降
+
+                </button>
+
+              </div>
+
+            </div>
+
+            <div id="bubble-legend-text" style="font-size: 11px; color: var(--text-muted); margin-top:4px;">
+
+              泡泡大小: 估算成交額 | X軸: 近5日累計資金淨流量 (億元) | Y軸: 當日資金淨流量 (億元) (中心點為 0) | 點擊泡泡查看成分股
+
+            </div>
+
+          </div>
+
+          <div class="flow-map-container" id="sectorTreeMap">
+
+            <!-- 由 JS 動態繪製泡泡圖 -->
+
+          </div>
+
+        </div>
+
+
+
+      </div>
+
+    </section>
+
+
+
+
+
+    <!-- ======================== 篩選器視圖 ======================== -->
+
+    <section class="view" id="view-screener">
+
+      <div class="screener-layout">
+
+        <!-- 手機版專屬：展開/收合篩選條件按鈕 -->
+
+        <button class="mobile-filter-toggle" onclick="toggleMobileFilter()">⚙️ 展開/收合篩選條件</button>
+
+        
+
+        <!-- 左側：篩選條件面板 -->
+
+        <aside class="filter-panel" id="filterPanel">
+
+          <div class="filter-panel-header">
+
+            <h2>⚙️ 篩選條件</h2>
+
+            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; line-height:1.4;">API 每日抓取市值前 500 大進行運算，<br>最高 100 分，低於 60 分不予顯示。</p>
+
+            
+
+            <!-- 手動個股評估功能 -->
+
+            <div class="manual-eval-box" style="margin-top: 12px; padding: 10px; background: rgba(30, 41, 59, 0.7); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+
+              <label style="font-size: 11px; font-weight: 700; color: var(--primary); display: block; margin-bottom: 6px;">🐾 手動個股健檢評估</label>
+
+              <div style="display: flex; gap: 6px;">
+
+                <input type="text" id="screenerManualInput" placeholder="輸入股號 (如 2330)" style="flex: 1; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; padding: 4px 8px; color: white; font-size: 12px;" onkeydown="if(event.key==='Enter') evaluateManualStock()">
+
+                <button class="btn-primary" style="padding: 4px 10px; font-size: 12px; height: 26px;" onclick="evaluateManualStock()">評估</button>
+
+              </div>
+
+              <div id="manualEvalResult" style="margin-top: 8px; display: none;"></div>
+
+            </div>
+
+            
+
+            <button class="btn-run" onclick="runScreener()" style="margin-top:10px; width:100%;">🚀 執行篩選</button>
+
+          </div>
+
+
+
+          <!-- L1：基本面（綁定） -->
+
+          <div class="filter-group">
+
+            <div class="filter-group-title" style="color: var(--primary);">
+
+              <span class="layer-badge layer-1">L1</span>
+
+              基本面門檻 (已綁定)
+
+              <span class="info-tooltip-container">
+
+                <span class="info-icon">ⓘ</span>
+
+                <span class="tooltip-content">
+
+                  <strong>🐾 L1 基本面固定門檻值：</strong><br>
+
+                  • <strong>市值前 500 大</strong>個股過濾<br>
+
+                  • 當季 <strong>EPS &gt; 0</strong> 元 (非虧損)<br>
+
+                  • 當月 <strong>營收年增率 (YoY) &gt; -30%</strong><br>
+
+                  • 當季 <strong>ROE &gt; -5%</strong> (股東權益報酬率)
+
+                </span>
+
+              </span>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>最低符合評分 (滿分100)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="range" id="f_min_score" min="0" max="100" value="60" step="5" oninput="document.getElementById('scoreThresholdDisplay').innerText = this.value" />
+
+                <span class="unit" id="scoreThresholdDisplay" style="min-width:30px;text-align:right;">60</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item" style="opacity: 0.85;">
+
+              <span style="font-size: 12px; color: var(--text-muted);">• 財務指標前 500 大個股過濾</span>
+
+            </div>
+
+            <div class="filter-item" style="opacity: 0.85;">
+
+              <span style="font-size: 12px; color: var(--text-muted);">• EPS / 營收 / ROE 多頭篩選</span>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- L2：技術面（可調） -->
+
+          <div class="filter-group">
+
+            <div class="filter-group-title">
+
+              <span class="layer-badge layer-2">L2</span>
+
+              技術指標 (加權 100分)
+
+            </div>
+
+            <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+
+              <button type="button" class="tech-filter-btn" id="btn_f_above200ma" onclick="toggleTechFilter('above200ma')">股價 &gt; 200MA (20分)</button>
+
+              <button type="button" class="tech-filter-btn" id="btn_f_stBull" onclick="toggleTechFilter('stBull')">Supertrend = 多頭 (20分)</button>
+
+              <button type="button" class="tech-filter-btn" id="btn_f_dmiBull" onclick="toggleTechFilter('dmiBull')">DMI 多頭 (20分)</button>
+
+              <button type="button" class="tech-filter-btn" id="btn_f_trendlineBreak" onclick="toggleTechFilter('trendlineBreak')">突破下降趨勢 (20分)</button>
+
+              <button type="button" class="tech-filter-btn" id="btn_f_volAboveMa" onclick="toggleTechFilter('volAboveMa')">今日量 &gt; 20日均量 (20分)</button>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- L3：籌碼面與資金面 -->
+
+          <div class="filter-group">
+
+            <div class="filter-group-title">
+
+              <span class="layer-badge layer-3">L3</span>
+
+              籌碼資金與量能門檻
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>投信當日買超 (張)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_trust_days" value="0" min="0" max="10000" />
+
+                <span class="unit">張以上</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>外資當日買超 (張)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_foreign_net_buy_threshold" value="0" min="0" max="10000" />
+
+                <span class="unit">張以上</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>自營商當日買超 (張)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_dealer_net_buy_threshold" value="0" min="0" max="10000" />
+
+                <span class="unit">張以上</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>今日量 > 均量倍數</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_vol_ratio" value="0.6" min="0" max="10" step="0.1" />
+
+                <span class="unit">倍</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>週轉率 (%)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_turnover" value="0.5" min="0" max="50" step="0.1" />
+
+                <span class="unit">%以上</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>市值 (億)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_market_cap" value="50" min="0" max="10000" />
+
+                <span class="unit">億以上</span>
+
+              </div>
+
+            </div>
+
+            <div class="filter-item">
+
+              <label>日均量 (張)</label>
+
+              <div class="filter-input-wrap">
+
+                <input type="number" id="f_daily_vol" value="800" min="0" max="100000" step="100" />
+
+                <span class="unit">張以上</span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+         </aside>
+
+
+
+        <!-- 右側：結果列表 -->
+
+        <div class="screener-results">
+
+          <div class="results-header">
+
+            <h3>篩選結果</h3>
+
+            <div class="results-meta">
+
+              <span>共 <strong id="resultCount">0</strong> 檔</span>
+
+              <select id="resultSort" onchange="sortResults(this.value)">
+
+                <option value="score">按荳荳評分排序</option>
+
+                <option value="techType">按技術類型</option>
+
+                <option value="price">按收盤價</option>
+
+                <option value="trustDays">按投信當日買超</option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+          <div class="results-table-wrap">
+
+            <table class="results-table" id="resultsTable">
+
+              <thead>
+
+                <tr>
+
+                  <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
+
+                  <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
+
+                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按評分排序">荳荳評分 <span class="sort-icon" id="sort-score">↕</span></th>
+
+                  <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>
+
+                  <th onclick="toggleSort('revGrowth')" style="cursor:pointer; user-select:none;" title="點擊按營收成長排序">營收↑ <span class="sort-icon" id="sort-revGrowth">↕</span></th>
+
+                  <th onclick="toggleSort('roe')" style="cursor:pointer; user-select:none;" title="點擊按ROE排序">ROE <span class="sort-icon" id="sort-roe">↕</span></th>
+
+                  <th onclick="toggleSort('trustDays')" style="cursor:pointer; user-select:none;" title="點擊按投信買超排序">投信 <span class="sort-icon" id="sort-trustDays">↕</span></th>
+
+                  <th onclick="toggleSort('foreignNet')" style="cursor:pointer; user-select:none;" title="點擊按外資買超排序">外資 <span class="sort-icon" id="sort-foreignNet">↕</span></th>
+
+                  <th onclick="toggleSort('dealerNet')" style="cursor:pointer; user-select:none;" title="點擊按自營商買超排序">自營商 <span class="sort-icon" id="sort-dealerNet">↕</span></th>
+
+                  <th onclick="toggleSort('volRatio')" style="cursor:pointer; user-select:none;" title="點擊按量能比排序">量比 <span class="sort-icon" id="sort-volRatio">↕</span></th>
+
+                  <th>操作</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="resultsBody">
+
+                <tr class="empty-row">
+
+                  <td colspan="11">請點擊「執行篩選」開始篩選</td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+
+
+
+
+    <!-- ======================== 自選清單視圖 ======================== -->
+
+    <section class="view" id="view-portfolio">
+
+      <div class="whitelist-page">
+
+        <div class="whitelist-header">
+
+          <div>
+
+            <h2>⭐ 自選監控戰術看板</h2>
+
+            <p class="subtitle">追蹤您加入自選的台股核心強勢飆股，動態分析 5D/20D 籌碼與多天空金買賣盤汪！🐶</p>
+
+          </div>
+
+          <div class="whitelist-actions" style="display:flex; align-items:center; gap:8px;">
+
+            <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+
+              <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
+
+              <input type="text" id="portfolioSearchInput" placeholder="輸入股號或名稱 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:13px; width:200px;" onkeydown="if(event.key==='Enter') addStockToPortfolioFromInput()">
+
+              <button class="btn-primary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="addStockToPortfolioFromInput()">加入自選</button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        
+
+        <!-- 自選清單高級卡片容器 -->
+
+        <div class="portfolio-grid" id="portfolioGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 15px;">
+
+          <!-- 由 JS 動態繪製卡片 -->
+
+          <div class="empty-row" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted); background: rgba(30,41,59,0.3); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+
+            <div style="font-size: 48px; margin-bottom: 12px;">⭐</div>
+
+            <p style="font-size: 15px; font-weight: 600; color: white;">目前自選清單空空如也汪！</p>
+
+            <p style="font-size: 12px; margin-top: 6px;">請前往【篩選器結果】或【K線回測功能】將優質飆股加入自選追蹤唷！🐶</p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ======================== K線與回測功能視圖 ======================== -->
+
+    <section class="view" id="view-chart">
+
+      <div class="chart-layout" style="display:flex;flex-direction:column;height:calc(100vh - 60px);width:100%;overflow:hidden;">
+
+        <div class="chart-main" style="display:flex;flex-direction:column;padding:0;overflow:hidden;flex:1;min-height:0;">
+
+          <div class="chart-toolbar" style="flex-shrink:0;gap:12px;display:flex;justify-content:space-between;flex-wrap:wrap;padding:8px 16px;height:auto;min-height:48px;align-items:center;">
+
+            
+
+            <!-- 左側控制群：標的名稱 + 搜尋列 + 時框選擇 + 自選此股 -->
+
+            <div class="chart-control-bar chart-control-left" style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+
+              <!-- 目前標的名稱 -->
+
+              <div class="chart-stock-info" style="display:flex; align-items:center; background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); padding: 4px 12px; border-radius: 6px; height: 28px;">
+
+                <span class="chart-name" style="font-size: 14px; font-weight: 700; color: white;">--</span>
+
+              </div>
+
+
+
+              <!-- 搜尋功能 -->
+
+              <div style="display:flex; align-items:center; gap:6px; background: rgba(30, 41, 59, 0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+
+                <span style="font-size: 14px; color: var(--text-muted);">🔍</span>
+
+                <input type="text" id="chartSearchInput" placeholder="輸入股號 (如 2330)" style="background:transparent; border:none; color:white; outline:none; font-size:14px; width:130px;" onkeydown="if(event.key==='Enter') searchAndLoadChart()">
+
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="searchAndLoadChart()">搜尋</button>
+
+              </div>
+
+
+
+              <!-- 時框選擇 (15分/1小時/4小時/日) -->
+
+              <div id="chart-resolutions" style="display:flex; gap: 4px; background: rgba(30, 41, 59, 0.6); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('15m')">15分</button>
+
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('1h')">1小時</button>
+
+                <button class="btn-secondary" style="padding: 2px 8px; font-size:12px; height: 24px;" onclick="changeResolution('4h')">4小時</button>
+
+                <button class="btn-secondary active" style="padding: 2px 8px; font-size:12px; height: 24px; background:var(--primary-color);" onclick="changeResolution('1D')">日</button>
+
+              </div>
+
+
+
+              <!-- 自選此股按鈕 -->
+
+              <button class="btn-primary" id="btn-chart-add-portfolio" style="font-weight: 700; background: linear-gradient(135deg, #f59e0b, #eab308); border: none; box-shadow: 0 0 10px rgba(245,158,11,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleCurrentStockPortfolio()">
+
+                <span>⭐ 自選此股</span>
+
+              </button>
+
+
+
+              <!-- API 連線狀態燈 -->
+
+              <div id="api-status-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; height: 28px; transition: all 0.2s; user-select: none;">
+
+                🟢 API 在線 (即時)
+
+              </div>
+
+            </div>
+
+
+
+            <!-- 右側控制群：回測績效 + 策略圖層 + 副圖指標 + 趨勢選股 -->
+
+            <div class="chart-control-bar chart-control-right" style="display:flex; align-items:center; gap: 12px; flex-wrap:wrap;">
+
+              <!-- 績效看板 -->
+
+              <div id="backtest-summary" style="display:none; align-items:center; gap: 12px; background: rgba(16,185,129,0.12); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); font-size:13px; color: white;">
+
+                <!-- 由 JS 動態寫入回測數據 -->
+
+              </div>
+
+
+
+              <!-- 策略與指標多圖層控制面板 -->
+
+              <div style="display:flex; align-items:center; gap: 10px; flex-wrap:wrap;">
+
+                <!-- 主圖疊加圖層 -->
+
+                 <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+
+                  <span style="font-size:12px; color:var(--text-muted); padding: 0 4px; font-weight: 600;">主圖疊加:</span>
+
+                  <button class="layer-pill active" onclick="toggleChartLayer('ma5')" id="pill-ma5">5MA</button>
+
+                  <button class="layer-pill active" onclick="toggleChartLayer('srLines')" id="pill-srLines">支撐壓力</button>
+
+                  <button class="layer-pill" onclick="toggleChartLayer('strategySupertrend')" id="pill-strategySupertrend">超級趨勢</button>
+
+                  <button class="layer-pill" onclick="toggleChartLayer('strategyTrendline')" id="pill-strategyTrendline">突破下降</button>
+
+                </div>
+
+
+
+                <!-- 副圖切換圖層 -->
+
+                <div class="layer-control-group" style="display:flex; align-items:center; gap: 4px; background: rgba(30, 41, 59, 0.5); padding: 3px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+
+                  <span style="font-size:12px; color:var(--text-muted); padding: 0 4px; font-weight: 600;">副圖指標:</span>
+
+                  <button class="layer-pill active" onclick="selectSubIndicator('rsi')" id="pill-sub-rsi">RSI</button>
+
+                  <button class="layer-pill" onclick="selectSubIndicator('macd')" id="pill-sub-macd">MACD</button>
+
+                  <button class="layer-pill" onclick="selectSubIndicator('none')" id="pill-sub-none">無副圖</button>
+
+                </div>
+
+              </div>
+
+
+
+              <button class="btn-primary" style="font-weight: 700; background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; box-shadow: 0 0 10px rgba(236,72,153,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="openTrendlineBreakoutModal()">
+
+                <span>🎯 趨勢突破選股</span>
+
+              </button>
+
+            </div>
+
+            
+
+          </div>
+
+          <!-- 繪圖工具欄與 Lightweight Charts 雙層容器 -->
+
+          <div class="chart-container-wrapper" id="chartContainerWrapper" style="display:flex; flex:1; min-height:0; position:relative; width:100%;">
+
+            <!-- 最近查詢側邊欄 -->
+
+            <div id="recentSearchPanel" style="width: 100px; display: flex; flex-direction: column; background: rgba(15, 23, 42, 0.65); border-right: 1.5px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); z-index: 10; flex-shrink: 0; padding: 8px 4px; gap: 8px; box-sizing: border-box; overflow: hidden;">
+
+              <div style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 4px; text-align: center; white-space: nowrap;">最近查詢</div>
+
+              <div id="recentSearchList" style="display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1;">
+
+                <!-- Dynamically populated via JS -->
+
+              </div>
+
+            </div>
+
+
+
+            <!-- 左側垂直繪圖工具列 (Premium 玻璃帷幕設計) -->
+
+            <div class="drawing-toolbar" id="drawingToolbar" style="width:45px; display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 0; background:rgba(15,23,42,0.75); border-right:1.5px solid rgba(255,255,255,0.08); backdrop-filter:blur(8px); z-index:10; flex-shrink:0;">
+
+              <button class="draw-btn active" data-tool="cursor" title="游標選取 (選取後可點色塊換色，按Delete鍵刪除)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🖱️</button>
+
+              <button class="draw-btn" data-tool="trendline" title="繪製趨勢線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">╱</button>
+
+              <button class="draw-btn" data-tool="horizline" title="繪製水平支撐阻力線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">──</button>
+
+              <button class="draw-btn" data-tool="fib" title="繪製斐波那契回撤線" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">☰</button>
+
+              <button class="draw-btn" data-tool="measure" title="測量工具 (價格/時間)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">📏</button>
+
+              
+
+              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
+
+              
+
+              <!-- 快捷調色盤，選取物件時可點擊換色 -->
+
+              <button class="color-dot-btn" data-color="#f97316" style="background:#f97316; width:18px; height:18px; border-radius:50%; border:2px solid white; cursor:pointer; padding:0;" title="橘色"></button>
+
+              <button class="color-dot-btn" data-color="#ef4444" style="background:#ef4444; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="紅色"></button>
+
+              <button class="color-dot-btn" data-color="#22c55e" style="background:#22c55e; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="綠色"></button>
+
+              <button class="color-dot-btn" data-color="#3b82f6" style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="藍色"></button>
+
+              <button class="color-dot-btn" data-color="#ffffff" style="background:#ffffff; width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;" title="白色"></button>
+
+              
+
+              <div style="width:70%; height:1.5px; background:rgba(255,255,255,0.12); margin:4px 0;"></div>
+
+              
+
+              <button class="draw-btn" id="btn-delete-selected" title="刪除選取圖形 (Delete)" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:not-allowed; display:flex; align-items:center; justify-content:center; opacity:0.4; transition:all 0.2s;">🗑️</button>
+
+              <button class="draw-btn" onclick="clearAllCurrentDrawings()" title="清空全部圖形" style="background:transparent; border:none; color:white; font-size:16px; width:32px; height:32px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🧹</button>
+
+            </div>
+
+            
+
+            <!-- 圖表畫布與滑鼠事件疊加層 -->
+
+            <div id="chartCanvasWrapper" style="flex:1; position:relative; min-height:0; overflow:hidden;">
+
+              <div id="tvChartContainer" style="width:100%; height:100%;"></div>
+
+              <canvas id="drawingCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5;"></canvas>
+
+              <div id="drawingOverlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:6; background:transparent;"></div>
+
+            </div>
+
+          </div>
+
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- 🐾 荳荳每日盤後風向提醒彈窗 (狗狗口吻) 🐾 -->
+
+  <div class="modal-overlay" id="dogReminderModal" onclick="closeDogReminder(event)">
+
+    <div class="postmarket-summary-card modal-content-glass" id="dogReminderBox" style="max-width: 600px; width:95%; position:relative; border: 1.5px solid rgba(249, 115, 22, 0.45); animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); margin: 20px auto;" onclick="event.stopPropagation()">
+
+      <button class="shiba-chat-close" onclick="closeDogReminder()" style="position:absolute; right:15px; top:15px; font-size:18px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold;">✕</button>
+
+      <div id="dogReminderContent"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- 股票詳情 Modal -->
+
+  <div class="modal-overlay" id="stockModal" onclick="closeModal(event)">
+
+    <div class="modal-box" id="modalBox">
+
+      <button class="modal-close" onclick="closeModal()">✕</button>
+
+      <div id="modalContent"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- 🐾 荳荳柴犬吉祥物對話框 🐾 -->
+
+  <div class="shiba-mascot-container" id="shibaMascotContainer">
+
+    <!-- 荳荳 AI 戰術室智能對話面板 -->
+
+    <div class="shiba-chat-panel" id="shibaChatPanel" style="display: none;">
+
+      <div class="shiba-chat-header">
+
+        <div style="display:flex; align-items:center; gap:8px;">
+
+          <img src="photo/doudou_happy.png" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--primary);" alt="荳荳">
+
+          <div>
+
+            <strong style="color:white; font-size:13px;">荳荳 AI 數據戰術室 🐾</strong>
+
+            <div style="font-size:10px; color:var(--primary);">大盤前 500 大實時統計中汪！🐶</div>
+
+          </div>
+
+        </div>
+
+        <button class="shiba-chat-close" onclick="toggleShibaChatPanel(false)">✕</button>
+
+      </div>
+
+      <div class="shiba-chat-body" id="shibaChatBody">
+
+        <div class="shiba-msg shiba-msg-bot">
+
+          <div class="shiba-msg-text">
+
+            嗨！我是荳荳🐾！今天也來陪拔麻一起找出強勢大飆股汪！<br>
+
+            我可以幫您分析大盤最新數據，您可以直接問我或點選下方快捷提問喔！🐶
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="shiba-chat-quick-tags">
+
+        <button class="quick-tag-btn" onclick="askShiba('today_strong')">🔥 今日強勢類股與清單</button>
+
+        <button class="quick-tag-btn" onclick="askShiba('today_weak')">❄️ 今日弱勢類股與清單</button>
+
+        <button class="quick-tag-btn" onclick="askShiba('trust_favorite')">💼 法人狂買追蹤</button>
+
+        <button class="quick-tag-btn" onclick="askShiba('volume_burst')">⚡ 今日爆量突破飆股</button>
+
+        <button class="quick-tag-btn" onclick="askShiba('doudou_backtest')" style="border: 1px solid #ff007f; color: #ff007f; background: rgba(255,0,127,0.08);">🐾 荳荳突破回測選股</button>
+
+      </div>
+
+      <div class="shiba-chat-input-wrap">
+
+        <input type="text" id="shibaChatInput" placeholder="問荳荳：今日漲幅都是哪一類股？" onkeydown="if(event.key==='Enter') sendShibaMessage()">
+
+        <button class="shiba-chat-send" onclick="sendShibaMessage()">發送</button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="shiba-bubble" id="shibaMascotBubble">汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！</div>
+
+    <div class="shiba-avatar-wrap" onclick="toggleShibaChatPanel()">
+
+      <img src="photo/doudou_happy.png" class="shiba-avatar" id="shibaMascotAvatar" alt="荳荳柴犬" />
+
+    </div>
+
+  </div>
+
+
+
+  <!-- 🐾 系統底頁統計 🐾 -->
+
+  <footer class="doudou-footer">
+
+    <div class="footer-left">🐾 荳荳選股戰術室 © 2026</div>
+
+    <div class="footer-right">
+
+      <span>🐶 荳荳被摸頭：<strong id="doudouPetCount">0</strong> 次</span>
+
+      <span>🥫 獲得罐頭：<strong id="doudouCannedCount">0</strong> 個</span>
+
+    </div>
+
+  </footer>
+
+
+
+  <!-- 腳本 -->
+
+  <script src="app.js?v=52"></script>
+
+  <script src="stock-dashboard.js?v=51"></script>
+
+</body>
+
+</html>
+
