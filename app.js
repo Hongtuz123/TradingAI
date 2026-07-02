@@ -31,6 +31,9 @@ window.reloadDataJson = async function() {
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
     mockStocks = data.mockStocks || [];
+    window.rankingsData = data.rankingsData || {};
+    window.broadcastData = data.broadcastData || {};
+    window.bubbleChartData = data.bubbleChartData || {};
     
     console.log('[App] Data successfully reloaded! Stock count:', mockStocks.length);
     updateAllStockPrices();
@@ -138,6 +141,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
     mockStocks = data.mockStocks || [];
+    window.rankingsData = data.rankingsData || {};
+    window.broadcastData = data.broadcastData || {};
+    window.bubbleChartData = data.bubbleChartData || {};
     
     console.log('[App] Data successfully loaded! Stock count:', mockStocks.length);
     
@@ -3335,79 +3341,8 @@ function renderSectorFlowMap() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 分組計算
-  const sectorGroups = {};
-  mockStocks.forEach(s => {
-    const sector = getStockSector(s).split(':')[1] || getStockSector(s);
-    if (!sectorGroups[sector]) {
-      sectorGroups[sector] = { 
-        name: sector, 
-        stocks: [], 
-        totalVol: 0, 
-        netFlow5D: 0
-      };
-    }
-    const g = sectorGroups[sector];
-    g.stocks.push(s);
-    g.totalVol += (s.dailyVol || 0) * 1000 * (s.price || 0);
-
-    // 計算個股近 5 日累計資金淨流量 (億元) (加強 isNaN 與 parseFloat 防禦)
-    let stockFlow5D = 0;
-    const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
-    const live = getLiveStockData(s) || {};
-    let chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
-    if (isNaN(chg)) chg = 0;
-    const todayFlow = (amount * (chg / 100)) / 1e8;
-
-    if (s.kline && s.kline.length >= 6) {
-      const len = s.kline.length;
-      // 統計近 5 日 (含今日共 5 天的歷史 K 線累計)
-      for (let i = len - 5; i < len; i++) {
-        if (s.kline[i] && s.kline[i-1]) {
-          const close = parseFloat(s.kline[i].close) || 0;
-          const prevClose = parseFloat(s.kline[i-1].close) || 0;
-          const volume = parseFloat(s.kline[i].volume) || 0;
-          const c_chg = prevClose > 0 ? ((close - prevClose) / prevClose) : 0;
-          const c_amount = volume * close;
-          const dailyFlow = c_amount * c_chg;
-          if (!isNaN(dailyFlow)) {
-            stockFlow5D += dailyFlow;
-          }
-        }
-      }
-      stockFlow5D = stockFlow5D / 1e8;
-    } else {
-      stockFlow5D = isNaN(todayFlow) ? 0 : (todayFlow * 5);
-    }
-    if (isNaN(stockFlow5D)) stockFlow5D = 0;
-    g.netFlow5D += stockFlow5D;
-  });
-
-  const sectors = Object.values(sectorGroups).map(g => {
-    const n = g.stocks.length;
-    const sumChange = g.stocks.reduce((sum, s) => {
-      if (s.liveChange !== undefined) return sum + s.liveChange;
-      const live = getLiveStockData(s);
-      return sum + (live.change || 0);
-    }, 0);
-    const avgChange = n > 0 ? sumChange / n : 0;
-
-    // 當日資金淨流入金額 = 成分股(成交量金額 * 漲跌幅百分比)之和 / 1e8 (億元) (加強 isNaN 防禦)
-    const netFlow = g.stocks.reduce((sum, s) => {
-      const live = getLiveStockData(s) || {};
-      let chg = s.liveChange !== undefined ? s.liveChange : (live.change || 0);
-      if (isNaN(chg)) chg = 0;
-      const amount = (s.dailyVol || 0) * 1000 * (s.price || 0);
-      const flow = (amount * (chg / 100)) / 1e8;
-      return sum + (isNaN(flow) ? 0 : flow);
-    }, 0);
-
-    return { 
-      ...g, 
-      avgChange, 
-      netFlow
-    };
-  });
+  // 直接拿 Python 端預算好之氣泡圖產業資料，零前端運算！
+  const sectors = window.bubbleChartData?.sectors || [];
 
   // 顏色分類映射：主力爆買(紅)/資金入場(藍)/量縮流出(綠)/買力下降(黃)
   const COLOR_MAP = { 
@@ -4101,13 +4036,9 @@ function renderPostmarketSummary() {
     usTrend = '<span style="color:var(--warning); font-weight:bold;">中性盤整 ➡️</span>';
   }
 
-  // 運算今日即時強/弱勢產業 (取得今日即時漲跌前 4 名)
-  const sectorsArray = getCurrentSectorsData();
-  const sortedStrong = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange);
-  const sortedWeak = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange);
-
-  const topStrong = sortedStrong.slice(0, 4);
-  const topWeak = sortedWeak.slice(0, 4);
+  // 讀取 Python 端預算好的強弱勢族群排行
+  const topStrong = (window.rankingsData?.strong || []).slice(0, 4);
+  const topWeak = (window.rankingsData?.weak || []).slice(0, 4);
 
   // 產生強勢產業玻璃按鈕 HTML
   const strongButtons = topStrong.map(g => {
@@ -4123,35 +4054,13 @@ function renderPostmarketSummary() {
     return `<button class="glass-btn weak-sector" onclick="togglePostmarketSectorDetail('${g.name}', this)">❄️ ${g.name}${streakLabel}</button>`;
   }).join('');
 
-  // 運算由弱轉強與轉弱要注意產業 (今日強/弱前 5 名比對昨日盤後歷史)
-  let turnStrongText = '<span style="color:var(--text-muted);">無明顯由弱轉強產業汪。</span>';
-  let turnWeakText = '<span style="color:var(--text-muted);">大盤穩健，無轉弱產業要注意汪。</span>';
-
-  const history = marketData.sectorHistory || [];
-  if (history.length >= 2) {
-    const yesterdayStrong = history[1].strong || [];
-    const yesterdayWeak = history[1].weak || [];
-
-    const todayTop5Strong = sortedStrong.slice(0, 5).map(g => g.name);
-    const todayTop5Weak = sortedWeak.slice(0, 5).map(g => g.name);
-
-    // 由弱轉強：今日排名前 5 強，但昨天的歷史在 weak 中
-    const turnStrongSectors = todayTop5Strong.filter(s => yesterdayWeak.includes(s));
-    if (turnStrongSectors.length > 0) {
-      turnStrongText = turnStrongSectors.map(s => `<span style="color:var(--success); font-weight:bold;">✨ ${s}</span>`).join('、');
-    }
-
-    // 轉弱要注意：今日排名最弱前 5 名，但昨天的歷史在 strong 中
-    const turnWeakSectors = todayTop5Weak.filter(s => yesterdayStrong.includes(s));
-    if (turnWeakSectors.length > 0) {
-      turnWeakText = turnWeakSectors.map(s => `<span style="color:var(--danger); font-weight:bold;">⚠️ ${s}</span>`).join('、');
-    }
-  }
+  const turnStrongText = window.broadcastData?.turnStrongText || '<span style="color:var(--text-muted);">無明顯由弱轉強產業汪。</span>';
+  const turnWeakText = window.broadcastData?.turnWeakText || '<span style="color:var(--text-muted);">大盤穩健，無轉弱產業要注意汪。</span>';
 
   let html = `
     <!-- 狗狗大頭像與泡泡話語 -->
     <div style="display:flex; align-items:center; gap:14px; margin-bottom: 16px; border-bottom: 1.5px solid rgba(249,115,22,0.25); padding-bottom: 14px;">
-      <div style="width:48px; height:48px; border-radius:50%; overflow:hidden; border:2px solid var(--primary); box-shadow: 0 0 10px rgba(249,115,22,0.4); background:rgba(255,255,255,0.1);">
+      <div style="width:48px; height:48px; border-radius:50%; overflow:hidden; border:2px solid var(--primary); box-shadow: 0 0 10px rgba(249,115,22,0.4); background:rgba(255,255,255,0.15);">
         <img src="photo/doudou_happy.png" style="width:100%; height:100%; object-fit:cover;" alt="荳荳">
       </div>
       <div>
@@ -4211,14 +4120,12 @@ function renderPostmarketSummary() {
   modal.classList.add('active');
 }
 
-// 🐾 荳荳氣象播報成分股折疊展開與詳情邏輯 🐾
 let currentActiveBroadcastSector = '';
 
 window.togglePostmarketSectorDetail = function(sectorName, btnEl) {
   const panel = document.getElementById('doudouBroadcastDetailPanel');
   if (!panel) return;
 
-  // 1. 如果點擊已展開的同一個產業，則摺疊收回
   if (currentActiveBroadcastSector === sectorName) {
     panel.classList.remove('active');
     panel.style.maxHeight = '0';
@@ -4228,29 +4135,21 @@ window.togglePostmarketSectorDetail = function(sectorName, btnEl) {
     return;
   }
 
-  // 2. 清除其他按鈕的 active 狀態
   document.querySelectorAll('.glass-btn').forEach(btn => {
     btn.classList.remove('active');
   });
 
-  // 3. 尋找產業
-  const sectorsArray = getCurrentSectorsData();
-  const g = sectorsArray.find(item => item.name === sectorName);
+  const allSectors = [...(window.rankingsData?.strong || []), ...(window.rankingsData?.weak || [])];
+  const g = allSectors.find(item => item.name === sectorName);
   if (!g) return;
 
   btnEl.classList.add('active');
   currentActiveBroadcastSector = sectorName;
 
-  // 依漲跌幅降序排列成分股
-  const sortedStocks = [...g.stocks].sort((a, b) => {
-    const changeA = a.liveChange !== undefined ? a.liveChange : (a.change || 0);
-    const changeB = b.liveChange !== undefined ? b.liveChange : (b.change || 0);
-    return changeB - changeA;
-  });
+  const sortedStocks = [...g.stocks].sort((a, b) => b.change - a.change);
 
-  // 4. 渲染詳情清單 HTML
   let rowsHTML = sortedStocks.map(s => {
-    const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    const change = s.change || 0;
     const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
     const volRatio = s.volRatio || 1.0;
 
@@ -4273,7 +4172,7 @@ window.togglePostmarketSectorDetail = function(sectorName, btnEl) {
 
   panel.innerHTML = `
     <div style="font-weight:800; font-size:12px; color:var(--primary); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:6px;">
-      <span>📂 [${sectorName}] 成分股即時表現 (${g.stocks.length}檔)</span>
+      <span>📂 [${sectorName}] 成分股表現 (${g.stocks.length}檔)</span>
       <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">💡 點擊個股可跳轉 K 線圖</span>
     </div>
     <div style="display:flex; flex-direction:column; gap:2px;">
@@ -4281,12 +4180,10 @@ window.togglePostmarketSectorDetail = function(sectorName, btnEl) {
     </div>
   `;
 
-  // 5. 平滑動畫滑開
   panel.classList.add('active');
   panel.style.padding = '12px 14px';
   panel.style.maxHeight = panel.scrollHeight + 50 + 'px';
 
-  // 平滑滾動到面板視區
   setTimeout(() => {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 100);
@@ -4307,366 +4204,79 @@ function renderRankings() {
   if (!container) return;
   container.innerHTML = '';
 
-  // 🐾 輔助函數：計算個股法人連續買賣超天數
   function getStockInstStreak(s, instToday) {
-    const detail = s.instDetail5D || [instToday, instToday, instToday, instToday, instToday];
-    if (detail.length === 0) return '';
-    const todayVal = detail[0] !== undefined ? detail[0] : instToday;
-    if (todayVal > 0) {
-      let streak = 1;
-      for (let i = 1; i < detail.length; i++) {
-        if (detail[i] > 0) streak++;
-        else break;
-      }
-      return `連買 ${streak}D`;
-    } else if (todayVal < 0) {
-      let streak = 1;
-      for (let i = 1; i < detail.length; i++) {
-        if (detail[i] < 0) streak++;
-        else break;
-      }
-      return `連賣 ${streak}D`;
-    }
+    if (instToday > 0) return '偏多';
+    if (instToday < 0) return '偏空';
     return '';
   }
 
-  // 🐾 輔助函數：計算產業法人連續買賣超天數
   function getSectorInstStreak(g) {
-    const daily = [0, 0, 0, 0, 0];
-    g.stocks.forEach(s => {
-      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-      const detail = s.instDetail5D || [instToday, instToday, instToday, instToday, instToday];
-      for (let i = 0; i < 5; i++) {
-        daily[i] += detail[i] !== undefined ? detail[i] : 0;
-      }
-    });
-    const todayVal = daily[0];
-    if (todayVal > 0) {
-      let streak = 1;
-      for (let i = 1; i < daily.length; i++) {
-        if (daily[i] > 0) streak++;
-        else break;
-      }
-      return `連買 ${streak}D`;
-    } else if (todayVal < 0) {
-      let streak = 1;
-      for (let i = 1; i < daily.length; i++) {
-        if (daily[i] < 0) streak++;
-        else break;
-      }
-      return `連賣 ${streak}D`;
-    }
+    const totalInst = g.totalInst || 0;
+    if (totalInst > 0) return '法人買超';
+    if (totalInst < 0) return '法人賣超';
     return '';
   }
 
-  // 動態即時計算產業數據並排序，供強弱勢排行使用
-  const sectorsArray = getCurrentSectorsData();
-
-  // 讀取前台設定的限制個數，預設為 5
   const limitSelect = document.getElementById('rankLimitSelect');
   const limit = limitSelect ? parseInt(limitSelect.value) : 5;
 
   let listHTML = '';
 
-  if (currentRankTab === 'strong') {
-    // 強勢族群排行榜 (漲幅前 N 名)
-    const sorted = [...sectorsArray].sort((a, b) => b.avgChange - a.avgChange).slice(0, limit);
+  if (currentRankTab === 'strong' || currentRankTab === 'weak') {
+    const sorted = (window.rankingsData?.[currentRankTab] || []).slice(0, limit);
     listHTML = sorted.map((g, idx) => {
-      const streak = getSectorStreakDays(g.name, 'strong');
-      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">強勢 day${streak}</span>` : '';
+      const streak = getSectorStreakDays(g.name, currentRankTab);
+      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:${currentRankTab === 'strong' ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${currentRankTab === 'strong' ? '強勢' : '弱勢'} day${streak}</span>` : '';
       
       const instStreak = getSectorInstStreak(g);
       const isBuy = instStreak.includes('買');
       const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
       
-      const displayTitle = g.name; 
-      const val = (g.totalVol / 1e8).toFixed(1); // 億元
       return `
         <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
           <div class="rank-number top${idx+1}">${idx+1}</div>
           <div class="rank-info" style="flex:1;">
             <div class="rank-title" style="display:flex; align-items:center;">
-              <strong>${displayTitle}</strong>
+              <strong>${g.name}</strong>
               ${streakBadge}
               ${instStreakBadge}
             </div>
             <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-
               <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-
             </div>
-
             <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-
               <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-
             </div>
-
           </div>
-
           <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-
-            <span class="text-up" style="font-size:13px; font-weight:700;">+${g.avgChange.toFixed(2)}%</span>
-
+            <span class="${currentRankTab === 'strong' ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
             <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-
           </div>
-
         </div>
       `;
     }).join('');
 
-  } else if (currentRankTab === 'weak') {
-    // 弱勢族群排行榜 (跌幅前 N 名)
-    const sorted = [...sectorsArray].sort((a, b) => a.avgChange - b.avgChange).slice(0, limit);
-    listHTML = sorted.map((g, idx) => {
-      const streak = getSectorStreakDays(g.name, 'weak');
-      const streakBadge = streak >= 2 ? ` <span class="badge" style="background:#10b981; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">弱勢 day${streak}</span>` : '';
-      
-      const instStreak = getSectorInstStreak(g);
-      const isBuy = instStreak.includes('買');
-      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
-      
-      const displayTitle = g.name; 
-      const val = (g.totalVol / 1e8).toFixed(1); // 億元
-      return `
-        <div class="rank-item-row" onclick="openSectorDetailModal('${g.name}', ${JSON.stringify(g.stocks).replace(/"/g, '&quot;')}, ${g.avgChange})">
-          <div class="rank-number top${idx+1}">${idx+1}</div>
-          <div class="rank-info" style="flex:1;">
-            <div class="rank-title" style="display:flex; align-items:center;">
-              <strong>${displayTitle}</strong>
-              ${streakBadge}
-              ${instStreakBadge}
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-
-              <span>1D 法人: <span style="font-weight:700; color:${g.totalInst >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst >= 0 ? '+' : ''}${g.totalInst.toLocaleString()}張</span></span>
-
-            </div>
-
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-
-              <span>5D 法人: <span style="font-weight:700; color:${g.totalInst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${g.totalInst5D >= 0 ? '+' : ''}${g.totalInst5D.toLocaleString()}張</span></span>
-
-            </div>
-
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-
-            <span class="text-down" style="font-size:13px; font-weight:700;">${g.avgChange.toFixed(2)}%</span>
-
-            <span style="font-size:11px; color:var(--text-muted);">5D: <span class="${g.avgChange5D >= 0 ? 'text-up' : 'text-down'}">${g.avgChange5D >= 0 ? '+' : ''}${g.avgChange5D.toFixed(2)}%</span></span>
-
-          </div>
-
-        </div>
-      `;
-    }).join('');
-
-  } else if (currentRankTab === 'hot') {
-    // 熱門標的排行榜 (量能比 volRatio 排序前 N 名，只看量)
-    const sorted = [...mockStocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, limit);
-    listHTML = sorted.map((s, idx) => {
-      const sector = getStockSector(s).split(':')[1] || '一般';
-      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-      const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-      
-      let pct5D = 0;
-      if (s.kline && s.kline.length >= 6) {
-        const len = s.kline.length;
-        const todayClose = s.price || s.kline[len - 1].close;
-        const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
-        pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
-      } else {
-        pct5D = change * 5;
-      }
-      
-      const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
-      
-      const instStreak = getStockInstStreak(s, instToday);
-      const isBuy = instStreak.includes('買');
-      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
-
-      const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
-      const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
-      let streakBadge = '';
-      if (sectorStreakStrong >= 2) {
-        streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
-      } else if (sectorStreakWeak >= 2) {
-        streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
-      }
-
-      let anomalyBadge = '';
-      if ((s.volRatio || 0) >= 10.0) {
-        const status = change >= 0 ? '買量過多' : '賣量過多';
-        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:9px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
-      }
-      
-      return `
-        <div class="rank-item-row" onclick="openChart('${s.id}')">
-          <div class="rank-number top${idx+1}">${idx+1}</div>
-          <div class="rank-info" style="flex:1;">
-            <div class="rank-title" style="display:flex; align-items:center;">
-              ${anomalyBadge}<strong>${s.id} ${s.name}</strong>
-              ${streakBadge}
-              ${instStreakBadge}
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-
-              <span>1D 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'}">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
-
-            </div>
-
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-
-              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-
-            </div>
-
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-
-            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-
-            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
-
-          </div>
-
-        </div>
-      `;
-    }).join('');
-
-  } else if (currentRankTab === 'inst') {
-    // 法人買超排行榜 (只看三大法人合計買超 > 0，並改依量能比 volRatio 由高到低排序)
-    const sorted = [...mockStocks]
-      .filter(s => {
-        const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-        return instToday > 0;
-      })
-      .sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0))
-      .slice(0, limit);
-    
-    listHTML = sorted.map((s, idx) => {
-      const sector = getStockSector(s).split(':')[1] || '一般';
-      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-      const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-      
-      let pct5D = 0;
-      if (s.kline && s.kline.length >= 6) {
-        const len = s.kline.length;
-        const todayClose = s.price || s.kline[len - 1].close;
-        const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
-        pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
-      } else {
-        pct5D = change * 5;
-      }
-      
-      const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
-      
-      const instStreak = getStockInstStreak(s, instToday);
-      const isBuy = instStreak.includes('買');
-      const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
-
-      const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
-      const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
-      let streakBadge = '';
-      if (sectorStreakStrong >= 2) {
-        streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
-      } else if (sectorStreakWeak >= 2) {
-        streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
-      }
-
-      let anomalyBadge = '';
-      if ((s.volRatio || 0) >= 10.0) {
-        const status = change >= 0 ? '買量過多' : '賣量過多';
-        anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:9px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
-      }
-      
-      return `
-        <div class="rank-item-row" onclick="openChart('${s.id}')">
-          <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
-          <div class="rank-info" style="flex:1;">
-            <div class="rank-title" style="display:flex; align-items:center;">
-              ${anomalyBadge}<strong>${s.id} ${s.name}</strong>
-              ${streakBadge}
-              ${instStreakBadge}
-            </div>
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-
-              <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-
-              <span style="margin-left:8px; opacity:0.6; font-size:10px;">外:${s.foreignNetBuy||0} 投:${s.trustDays||0} 自:${s.dealerDays||0}</span>
-
-            </div>
-
-            <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-
-              <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-
-            </div>
-
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-
-            <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-
-            <span style="font-size:12px; color:var(--warning); font-weight:700;">${s.volRatio?.toFixed(2) || '1.0'}x</span>
-
-          </div>
-
-        </div>
-      `;
-    }).join('');
-
-  } else if (currentRankTab === 'dip') {
-    // 抄底名單（更新門檻與新技術指標）
-    const dipStocks = [...mockStocks].filter(s => {
-      const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-      const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-      
-      const condVol = (s.volRatio || 0) >= 1.25;
-      const condInst = instToday > 0 && change >= -5.0;
-      const condPrice = change >= -5.0 && change <= 1.5;
-      const condST = s.prev_supertrend === -1 && s.supertrend === 1;
-      const condDMI = (s.plus_di || 0) > (s.minus_di || 0) && (s.adx || 0) > 25;
-      
-      return condVol && condInst && condPrice && condST && condDMI;
-    }).sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, limit);
-
-    if (dipStocks.length === 0) {
+  } else {
+    const sorted = (window.rankingsData?.[currentRankTab] || []).slice(0, limit);
+    if (currentRankTab === 'dip' && sorted.length === 0) {
       listHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">今日無符合條件的抄底標的<br><span style="font-size:11px;opacity:.6;">條件：量比≥1.25x 且 漲跌幅在-5%~+1.5% 且 主力買超 且 Supertrend空轉多 且 +DI>-DI 且 ADX>25</span></p>';
     } else {
-      listHTML = dipStocks.map((s, idx) => {
-        const change = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-        const sector = getStockSector(s).split(':')[1] || '一般';
+      listHTML = sorted.map((s, idx) => {
         const instToday = (s.trustDays || 0) + (s.foreignNetBuy || 0) + (s.dealerDays || 0);
-        
-        let pct5D = 0;
-        if (s.kline && s.kline.length >= 6) {
-          const len = s.kline.length;
-          const todayClose = s.price || s.kline[len - 1].close;
-          const prevClose = s.kline[len - 6] ? s.kline[len - 6].close : s.kline[0].close;
-          pct5D = prevClose > 0 ? ((todayClose - prevClose) / prevClose) * 100 : (change * 5);
-        } else {
-          pct5D = change * 5;
-        }
-        
         const inst5D = s.instSum5D !== undefined ? s.instSum5D : (instToday * 5);
-        
         const instStreak = getStockInstStreak(s, instToday);
-        const isBuy = instStreak.includes('買');
-        const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instStreak}</span>` : '';
+        const isBuy = instStreak.includes('買') || instToday > 0;
+        const instStreakBadge = instStreak ? ` <span class="badge" style="background:${isBuy ? '#ef4444' : '#10b981'}; color:white; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${instToday > 0 ? '法人加碼' : '法人減碼'}</span>` : '';
+        
+        let anomalyBadge = '';
+        if ((s.volRatio || 0) >= 10.0) {
+          const status = s.change >= 0 ? '買量過多' : '賣量過多';
+          anomalyBadge = `<span class="badge" style="background:#ec4899; color:white; font-size:9px; margin-right:4px;">⚠️ 量能異常 ${status}</span>`;
+        }
 
-        const sectorStreakStrong = getSectorStreakDays(sector, 'strong');
-        const sectorStreakWeak = getSectorStreakDays(sector, 'weak');
-        let streakBadge = '';
-        if (sectorStreakStrong >= 2) {
-          streakBadge = ` <span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 強勢day${sectorStreakStrong}</span>`;
-        } else if (sectorStreakWeak >= 2) {
-          streakBadge = ` <span class="badge" style="background:rgba(16, 185, 129, 0.15); color:#10b981; font-size:9px; padding:1px 4px; border-radius:4px; margin-left:4px;">${sector} 弱勢day${sectorStreakWeak}</span>`;
+        let badgeInfo = '';
+        if (currentRankTab === 'dip') {
+          badgeInfo = `<span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 3px;">ST轉多</span>`;
         }
 
         return `
@@ -4674,33 +4284,22 @@ function renderRankings() {
             <div class="rank-number top${Math.min(idx+1,5)}">${idx+1}</div>
             <div class="rank-info" style="flex:1;">
               <div class="rank-title" style="display:flex; align-items:center;">
-                <strong>${s.id} ${s.name}</strong>
-                <span class="badge" style="background:#ef4444; color:white; font-size:9px; padding:1px 3px;">ST轉多</span>
-                ${streakBadge}
+                ${anomalyBadge}<strong>${s.id} ${s.name}</strong>
+                ${badgeInfo}
                 ${instStreakBadge}
               </div>
               <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:2px;">
-
-                <span>1D 法人: <span style="font-weight:700; color:var(--success);">+${instToday.toLocaleString()}張</span></span>
-
+                <span>1D 法人: <span style="font-weight:700; color:${instToday >= 0 ? 'var(--success)' : 'var(--danger)'}">${instToday >= 0 ? '+' : ''}${instToday.toLocaleString()}張</span></span>
+                ${currentRankTab === 'inst' ? `<span style="margin-left:8px; opacity:0.6; font-size:10px;">外:${s.foreignNetBuy||0} 投:${s.trustDays||0} 自:${s.dealerDays||0}</span>` : ''}
               </div>
-
               <div class="rank-desc" style="display:flex; align-items:center; width:100%; margin-top:1px; opacity:0.8; font-size:10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top:1px;">
-
                 <span>5D 法人: <span style="font-weight:700; color:${inst5D >= 0 ? 'var(--success)' : 'var(--danger)'}">${inst5D >= 0 ? '+' : ''}${inst5D.toLocaleString()}張</span></span>
-
               </div>
-
             </div>
-
             <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px; min-width:58px;">
-
-              <span class="${change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
-
+              <span class="${s.change >= 0 ? 'text-up' : 'text-down'}" style="font-size:13px; font-weight:700;">${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%</span>
               <span style="font-size:12px; color:var(--warning); font-weight:700;">${(s.volRatio||0).toFixed(1)}x</span>
-
             </div>
-
           </div>
         `;
       }).join('');
@@ -4710,8 +4309,6 @@ function renderRankings() {
   container.innerHTML = listHTML || '<p style="color:var(--text-muted);padding:10px;">查無排行資料</p>';
   if (typeof renderPostmarketSummary === 'function') renderPostmarketSummary();
 }
-
-
 
 // Chart 相關
 function renderChartStockList() {

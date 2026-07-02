@@ -118,6 +118,19 @@ def load_all_market_info():
         
     return all_listed
 
+
+def get_sector_streak_days_py(sector_name, streak_type, sec_history):
+    if not sec_history or not isinstance(sec_history, list):
+        return 1
+    streak = 0
+    for hist in sec_history:
+        s_list = hist.get(streak_type, [])
+        if sector_name in s_list:
+            streak += 1
+        else:
+            break
+    return streak if streak > 0 else 1
+
 def safe_float(val):
     if val is None or val == "":
         return None
@@ -1474,10 +1487,199 @@ def run_screener():
         "sectorHistory": sec_history
     }
 
+    # ── 1. 預計算 RankingsData ──
+    sectors_map = {}
+    for s in results:
+        ind_str = s.get("industry", "")
+        sector = ind_str.split(":")[1] if ":" in ind_str else ind_str
+        if not sector:
+            sector = "一般"
+        sectors_map.setdefault(sector, []).append(s)
+
+    sectors_calc = []
+    for sname, s_list in sectors_map.items():
+        total_vol = sum((st.get('dailyVol', 0) or 0) * 1000 * (st.get('price', 0) or 0) for st in s_list)
+        sum_chg = sum(st.get('change', 0) or 0 for st in s_list)
+        avg_chg = sum_chg / len(s_list) if s_list else 0
+        
+        tot_inst = sum((st.get('trustDays', 0) or 0) + (st.get('foreignNetBuy', 0) or 0) + (st.get('dealerDays', 0) or 0) for st in s_list)
+        tot_inst_5d = sum(st.get('instSum5D', 0) or 0 for st in s_list)
+        
+        sum_chg_5d = 0
+        for st in s_list:
+            kline = st.get('kline', [])
+            if len(kline) >= 6:
+                close_t = st.get('price') or kline[-1]['close']
+                close_p = kline[-6]['close']
+                sum_chg_5d += ((close_t - close_p) / close_p * 100) if close_p > 0 else 0
+            else:
+                sum_chg_5d += (st.get('change', 0) or 0) * 5
+        avg_chg_5d = sum_chg_5d / len(s_list) if s_list else 0
+
+        simplified_stocks = []
+        for st in s_list:
+            simplified_stocks.append({
+                "id": st["id"],
+                "name": st["name"],
+                "change": st["change"],
+                "volRatio": st["volRatio"],
+                "trustDays": st["trustDays"],
+                "foreignNetBuy": st["foreignNetBuy"],
+                "dealerDays": st["dealerDays"]
+            })
+
+        sectors_calc.append({
+            "name": sname,
+            "totalVol": total_vol,
+            "avgChange": avg_chg,
+            "avgChange5D": avg_chg_5d,
+            "totalInst": tot_inst,
+            "totalInst5D": tot_inst_5d,
+            "stocks": simplified_stocks
+        })
+
+    rank_limit = 15
+    strong_list = sorted(sectors_calc, key=lambda x: x["avgChange"], reverse=True)[:rank_limit]
+    weak_list = sorted(sectors_calc, key=lambda x: x["avgChange"])[:rank_limit]
+    hot_list = sorted(results, key=lambda x: x.get("volRatio", 0), reverse=True)[:rank_limit]
+    
+    inst_stocks = [s for s in results if ((s.get("trustDays", 0) or 0) + (s.get("foreignNetBuy", 0) or 0) + (s.get("dealerDays", 0) or 0)) > 0]
+    inst_list = sorted(inst_stocks, key=lambda x: x.get("volRatio", 0), reverse=True)[:rank_limit]
+    
+    dip_stocks = []
+    for s in results:
+        change_val = s.get("change", 0)
+        inst_today = (s.get("trustDays", 0) or 0) + (s.get("foreignNetBuy", 0) or 0) + (s.get("dealerDays", 0) or 0)
+        cond_vol = s.get("volRatio", 0) >= 1.25
+        cond_inst = inst_today > 0 and change_val >= -5.0
+        cond_price = change_val >= -5.0 and change_val <= 1.5
+        cond_st = s.get("prev_supertrend") == -1 and s.get("supertrend") == 1
+        cond_dmi = s.get("plus_di", 0) > s.get("minus_di", 0) and s.get("adx", 0) > 25
+        if cond_vol and cond_inst and cond_price and cond_st and cond_dmi:
+            dip_stocks.append(s)
+    dip_list = sorted(dip_stocks, key=lambda x: x.get("volRatio", 0), reverse=True)[:rank_limit]
+
+    def clean_rank_stock(s_dict):
+        return {
+            "id": s_dict["id"],
+            "name": s_dict["name"],
+            "change": s_dict["change"],
+            "volRatio": s_dict["volRatio"],
+            "trustDays": s_dict["trustDays"],
+            "foreignNetBuy": s_dict["foreignNetBuy"],
+            "dealerDays": s_dict["dealerDays"],
+            "instSum5D": s_dict.get("instSum5D", 0)
+        }
+
+    rankings_data = {
+        "strong": [{"name": g["name"], "avgChange": g["avgChange"], "avgChange5D": g["avgChange5D"], "totalInst": g["totalInst"], "totalInst5D": g["totalInst5D"], "stocks": g["stocks"]} for g in strong_list],
+        "weak": [{"name": g["name"], "avgChange": g["avgChange"], "avgChange5D": g["avgChange5D"], "totalInst": g["totalInst"], "totalInst5D": g["totalInst5D"], "stocks": g["stocks"]} for g in weak_list],
+        "hot": [clean_rank_stock(s) for s in hot_list],
+        "inst": [clean_rank_stock(s) for s in inst_list],
+        "dip": [clean_rank_stock(s) for s in dip_list]
+    }
+
+    # ── 2. 預計算 BroadcastData ──
+    top_strong_3 = sorted(sectors_calc, key=lambda x: x["avgChange"], reverse=True)[:4]
+    strong_sec_text = ""
+    if top_strong_3:
+        strong_sec_text = "、".join([f"🔥 <strong style='color:white;'>{g['name']}</strong> (已強勢 {get_sector_streak_days_py(g['name'], 'strong', sec_history)} 天)" for g in top_strong_3])
+    else:
+        strong_sec_text = "<span style='color:var(--text-muted);'>今日無明顯強勢產業汪。</span>"
+
+    turn_strong_text = "<span style='color:var(--text-muted);'>無明顯由弱轉強產業汪。</span>"
+    turn_weak_text = "<span style='color:var(--text-muted);'>大盤穩健，無轉弱產業要注意汪。</span>"
+    if len(sec_history) >= 2:
+        yesterday_strong = sec_history[1].get("strong", [])
+        yesterday_weak = sec_history[1].get("weak", [])
+        today_top5_strong = [g["name"] for g in sorted(sectors_calc, key=lambda x: x["avgChange"], reverse=True)[:5]]
+        today_top5_weak = [g["name"] for g in sorted(sectors_calc, key=lambda x: x["avgChange"])[:5]]
+        
+        turn_strong_s = [s for s in today_top5_strong if s in yesterday_weak]
+        if turn_strong_s:
+            turn_strong_text = "、".join([f"<span style='color:var(--success); font-weight:bold;'>✨ {s}</span>" for s in turn_strong_s])
+            
+        turn_weak_s = [s for s in today_top5_weak if s in yesterday_strong]
+        if turn_weak_s:
+            turn_weak_text = "、".join([f"<span style='color:var(--danger); font-weight:bold;'>⚠️ {s}</span>" for s in turn_weak_s])
+
+    broadcast_data = {
+        "strongSectorsText": strong_sec_text,
+        "turnStrongText": turn_strong_text,
+        "turnWeakText": turn_weak_text
+    }
+
+    # ── 3. 預計算 BubbleChartData ──
+    bubble_sectors = []
+    for g in sectors_calc:
+        net_flow_1d = 0
+        net_flow_5d = 0
+        
+        for st in g["stocks"]:
+            full_s = next((x for x in results if x["id"] == st["id"]), None)
+            if not full_s: continue
+            
+            amount = (full_s.get("dailyVol", 0) or 0) * 1000 * (full_s.get("price", 0) or 0)
+            chg = full_s.get("change", 0) or 0
+            today_flow = (amount * (chg / 100)) / 1e8
+            
+            stock_flow_5d = 0
+            kline = full_s.get("kline", [])
+            if len(kline) >= 6:
+                for i in range(len(kline) - 5, len(kline)):
+                    if kline[i] and kline[i-1]:
+                        close_c = float(kline[i]["close"]) or 0.0
+                        close_p = float(kline[i-1]["close"]) or 0.0
+                        vol_c = float(kline[i]["volume"]) or 0.0
+                        c_chg = (close_c - close_p) / close_p if close_p > 0 else 0.0
+                        c_amount = vol_c * close_c
+                        stock_flow_5d += (c_amount * c_chg)
+                stock_flow_5d = stock_flow_5d / 1e8
+            else:
+                stock_flow_5d = today_flow * 5
+                
+            net_flow_1d += today_flow
+            net_flow_5d += stock_flow_5d
+
+        bubble_sectors.append({
+            "name": g["name"],
+            "netFlow": round(net_flow_1d, 3),
+            "netFlow5D": round(net_flow_5d, 3),
+            "totalVol": g["totalVol"],
+            "avgChange": g["avgChange"],
+            "stocks": [{
+                "id": st["id"],
+                "name": st["name"],
+                "change": st["change"],
+                "volRatio": st["volRatio"],
+                "instToday": (st.get("trustDays", 0) or 0) + (st.get("foreignNetBuy", 0) or 0) + (st.get("dealerDays", 0) or 0)
+            } for st in g["stocks"]]
+        })
+
+    bubble_chart_data = {
+        "sectors": bubble_sectors
+    }
+
+    # 隱私保護：對 results 進行個股機密欄位清理 (只保留最基本的 ID/名稱/價量/K線，隱去技術型態及敏感指標值)
+    cleaned_mock_stocks = []
+    for s in results:
+        cleaned_mock_stocks.append({
+            "id": s["id"],
+            "name": s["name"],
+            "price": s["price"],
+            "change": s["change"],
+            "dailyVol": s["dailyVol"],
+            "volRatio": s["volRatio"],
+            "kline": s["kline"]  # 保留 K 線供前端做 MA/Supertrend 彈性回測
+        })
+
     json_data = {
         "marketData": market_data_dict,
         "rulesConfig": rules,
-        "mockStocks": results
+        "rankingsData": rankings_data,
+        "broadcastData": broadcast_data,
+        "bubbleChartData": bubble_chart_data,
+        "mockStocks": cleaned_mock_stocks
     }
 
     # 🚀 深度清理 NaN 與 Infinity，保證輸出符合標準 JSON 規範 (防範瀏覽器 JSON.parse 崩潰)
