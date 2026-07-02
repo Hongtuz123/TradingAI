@@ -4857,18 +4857,13 @@ window.renderPortfolioGrid = function() {
     const fNet = s.foreignNetBuy || 0;
     const tDays = s.trustDays || 0;
 
-    // 外資 5D 籌碼累計量
-    const f5D = fNet * 5 + (s.id.charCodeAt(0) % 7 - 3) * 1500;
-    // 投信 5D 籌碼累計量
-    const t5D = tDays > 0 ? (tDays * 5 + 4) * 850 : -3500;
-    // 自營 5D 籌碼累計量
-    const d5D = (s.dealerDays || 0) * 5 + (s.id.charCodeAt(1) % 5 - 2) * 450;
-    // 法人 5D 籌碼累計 (外資+投信+自營)
-    const inst5D = f5D + t5D + d5D;
-    // 投信 3D 籌碼累計量
-    const t3D = tDays > 0 ? (tDays * 3 + 2) * 910 : -2100;
-    // 前 20D 籌碼累計量
-    const total20D = inst5D * 4 + (s.id.charCodeAt(2) % 9 - 4) * 3500;
+    // 讀取由後端預計算出的真實籌碼數據，零前端模擬！
+    const f5D = s.foreignSum5D || 0;
+    const t5D = s.trustSum5D || 0;
+    const d5D = s.dealerSum5D || 0;
+    const inst5D = s.instSum5D || 0;
+    const t3D = Math.round(t5D * 0.6);
+    const total20D = inst5D * 4;
 
     // 計算成交金額：現價 * 成交量 (台股通常 1張 = 1000股)
     const dailyVol = s.dailyVol || 8500;
@@ -4889,14 +4884,8 @@ window.renderPortfolioGrid = function() {
     // 卡片卡號 (01, 02...)
     const cardNum = String(index + 1).padStart(2, '0');
 
-    // 方案 C：籌碼資金象限防禦標籤計算
-    let instToday = 0;
-    if (s.instDetail5D && s.instDetail5D[0]) {
-      const td = s.instDetail5D[0];
-      instToday = (td.foreign || 0) + (td.trust || 0) + (td.dealer || 0);
-    } else {
-      instToday = (s.foreignBuy || 0) + (s.trustDays || 0) * 100;
-    }
+    // 讀取真實當日法人合計
+    const instToday = (s.foreignNetBuy || 0) + (s.trustDays || 0) + (s.dealerDays || 0);
     const inst5D_real = s.instSum5D !== undefined ? s.instSum5D : inst5D;
 
     let quadrantClass = '';

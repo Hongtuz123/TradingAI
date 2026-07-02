@@ -434,6 +434,45 @@ function showMockWarning(show, timeframe = '') {
   warnEl.innerHTML = `⚠️ 偵測到與本地交易伺服器斷線。當前 <strong>${friendlyTF}</strong> 為日K模擬數據，僅供介面展示！`;
 }
 
+// ---- 離線 API 狀態警告 Banner (Bug 3) ----
+function showOfflineWarning(show, reason = '') {
+  let warnEl = document.getElementById('api-offline-warning');
+  if (!show) {
+    if (warnEl) warnEl.remove();
+    updateApiStatusBadge(true);
+    return;
+  }
+  if (!warnEl) {
+    warnEl = document.createElement('div');
+    warnEl.id = 'api-offline-warning';
+    warnEl.style.cssText = 'position:absolute; top:48px; left:50%; transform:translateX(-50%); z-index:99; background:rgba(245, 158, 11, 0.95); color:white; padding:6px 14px; border-radius:6px; font-size:11px; font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); pointer-events:none; display:flex; align-items:center; gap:6px;';
+    const container = document.getElementById('tvChartContainer');
+    if (container) {
+      container.style.position = 'relative';
+      container.appendChild(warnEl);
+    }
+  }
+  warnEl.innerHTML = `⚠️ 離線模式：未連接到本地後端伺服器 (已自動切換為歷史靜態 K 線)`;
+  updateApiStatusBadge(false);
+}
+
+function updateApiStatusBadge(online) {
+  const badge = document.getElementById('api-status-badge');
+  if (badge) {
+    if (online) {
+      badge.style.background = 'rgba(16, 185, 129, 0.15)';
+      badge.style.color = '#10b981';
+      badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+      badge.innerHTML = '🟢 API 在線 (即時)';
+    } else {
+      badge.style.background = 'rgba(245, 158, 11, 0.15)';
+      badge.style.color = '#f59e0b';
+      badge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+      badge.innerHTML = '🔴 API 離線 (靜態)';
+    }
+  }
+}
+
 // ---- Lightweight Charts 渲染函式 ----
 function renderLWChart(containerId, klineData, height = 260, resolution = '1D') {
   const container = document.getElementById(containerId);
@@ -1750,27 +1789,37 @@ async function changeResolution(res) {
   container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">載入中...</div>';
 
   try {
-    const r = await fetch(`http://localhost:8000/api/history?symbol=${currentChartSymbol}&days=${days}&interval=${interval}&market=${market}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+    const r = await fetch(`http://localhost:8000/api/history?symbol=${currentChartSymbol}&days=${days}&interval=${interval}&market=${market}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     if (data.kline && data.kline.length > 0) {
       currentKlineData = data.kline;
       currentLWChart = renderLWChart('tvChartContainer', data.kline, 500, res);
-      showMockWarning(false); // 成功拿到真實資料，關閉警告
+      showOfflineWarning(false); // 成功拿到真實資料，關閉離線警告
+      showMockWarning(false); 
     } else {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">無可用資料</div>';
+      showOfflineWarning(false);
       showMockWarning(false);
     }
   } catch (err) {
-    console.warn("無法取得 API K 線，嘗試進入離線多時框模擬模式：", err.message);
+    const isTimeoutOrNetworkErr = err.name === 'AbortError' || err.message.includes('fetch') || err.message.includes('Failed');
+    console.warn("無法取得 API K 線，進入離線模擬模式：", err.message);
+    showOfflineWarning(true, isTimeoutOrNetworkErr ? "未連線本地 API" : err.message);
+
     const stock = mockStocks.find(s => s.id === currentChartSymbol);
     if (stock && stock.kline && stock.kline.length > 0) {
-      // 離線/靜態部署模式：依時框動態生成高擬真 K 線數據
       const simulatedKline = generateMockTimeframeData(stock.kline, res);
       currentKlineData = simulatedKline;
       currentLWChart = renderLWChart('tvChartContainer', simulatedKline, 500, res);
       
-      // 如果切換的是分K時框，則顯示模擬警告
       if (res === '15m' || res === '1h' || res === '4h') {
         showMockWarning(true, res);
       } else {
@@ -1796,21 +1845,31 @@ async function searchAndLoadChart() {
   }
   
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
     const fetchMarket = stock.market === 'OTC' ? 'OTC' : 'TSE';
-    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}&market=${fetchMarket}`);
+    const res = await fetch(`http://localhost:8000/api/history?symbol=${stock.id}&market=${fetchMarket}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
     if (res.ok) {
       const data = await res.json();
       stock.kline = data.kline;
+      updateApiStatusBadge(true);
     }
     loadTVChart(stock);
     inputEl.value = '';
   } catch (err) {
     console.warn("API 取得失敗，嘗試載入本地資料:", err.message);
+    updateApiStatusBadge(false);
     if (stock && stock.kline && stock.kline.length > 0) {
       loadTVChart(stock);
       inputEl.value = '';
     } else {
-      alert(`找不到標的或無法連接伺服器: ${err.message}`);
+      alert(`離線模式：無法連線本地交易伺服器 (已使用昨收靜態 K 線)：${err.message}`);
+      loadTVChart(stock); // 依然強制載入以防卡死
+      inputEl.value = '';
     }
   }
 }

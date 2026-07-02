@@ -407,6 +407,11 @@
               <button class="btn-primary" id="btn-chart-add-portfolio" style="font-weight: 700; background: linear-gradient(135deg, #f59e0b, #eab308); border: none; box-shadow: 0 0 10px rgba(245,158,11,0.35); padding: 4px 12px; height: 28px; font-size: 12px; display: flex; align-items: center; gap: 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleCurrentStockPortfolio()">
                 <span>⭐ 自選此股</span>
               </button>
+
+              <!-- API 連線狀態燈 -->
+              <div id="api-status-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; height: 28px; transition: all 0.2s; user-select: none;">
+                🟢 API 在線 (即時)
+              </div>
             </div>
 
             <!-- 右側控制群：回測績效 + 策略圖層 + 副圖指標 + 趨勢選股 -->
