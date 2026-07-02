@@ -3318,6 +3318,20 @@ window.changeBubbleAxisMode = function() {
 // 1. 繪製產業資金輪動泡泡圖
 function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
+  
+  // 🐾 效能優化：隨鼠 Tooltip rAF 快取變數與更新函數
+  let lastTooltipX = 0;
+  let lastTooltipY = 0;
+  let tooltipTicking = false;
+
+  function updateTooltipPosition() {
+    const tooltip = document.getElementById('bubbleTooltip');
+    if (!tooltip) return;
+    const x = Math.min(lastTooltipX + 16, window.innerWidth - 260);
+    const y = Math.max(10, lastTooltipY - 10);
+    tooltip.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    tooltipTicking = false;
+  }
   if (!container) return;
   container.innerHTML = '';
 
@@ -3534,7 +3548,7 @@ function renderSectorFlowMap() {
   if (!tooltip) {
     tooltip = document.createElement('div');
     tooltip.id = 'bubbleTooltip';
-    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;min-width:190px;max-width:250px;box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:12px;color:white;';
+    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;min-width:190px;max-width:250px;box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:12px;color:white;left:0;top:0;transform:translate3d(0,0,0);';
     document.body.appendChild(tooltip);
   }
 
@@ -3572,8 +3586,10 @@ function renderSectorFlowMap() {
 
     // hover
     bubbleGroup.addEventListener('mouseenter', (e) => {
-      // 提昇當前氣泡至最上層
-      mainG.appendChild(bubbleGroup);
+      // 🐾 效能優化：只有在當前氣泡不在最上層時，才進行 appendChild 移位操作以減少 DOM 排版重繪
+      if (mainG.lastChild !== bubbleGroup) {
+        mainG.appendChild(bubbleGroup);
+      }
 
       circle.setAttribute('opacity', '1');
       circle.setAttribute('r', (r + 3).toString()); // 微微放大
@@ -3604,15 +3620,23 @@ function renderSectorFlowMap() {
         <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
         <div style="display:flex;flex-wrap:wrap;gap:3px;">${stockTags}</div>
       `;
-      // 先用 mouseenter 的座標設定初始位置，避免 tooltip 閃在左上角
-      tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
-      tooltip.style.top = Math.max(10, e.clientY - 10) + 'px';
+      // 先用 mouseenter 的座標設定初始位置，避免 tooltip 閃在左上角 (使用 GPU 硬體加速 translate3d)
+      lastTooltipX = e.clientX;
+      lastTooltipY = e.clientY;
+      const x = Math.min(lastTooltipX + 16, window.innerWidth - 260);
+      const y = Math.max(10, lastTooltipY - 10);
+      tooltip.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       tooltip.style.display = 'block';
     });
 
     bubbleGroup.addEventListener('mousemove', e => {
-      tooltip.style.left = Math.min(e.clientX + 16, window.innerWidth - 260) + 'px';
-      tooltip.style.top = (e.clientY - 10) + 'px';
+      // 🐾 效能優化：使用 requestAnimationFrame 對滑鼠移動事件進行節流，避免頻繁觸發 Reflow
+      lastTooltipX = e.clientX;
+      lastTooltipY = e.clientY;
+      if (!tooltipTicking) {
+        requestAnimationFrame(updateTooltipPosition);
+        tooltipTicking = true;
+      }
     });
 
     bubbleGroup.addEventListener('mouseleave', () => {
