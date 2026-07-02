@@ -3558,7 +3558,7 @@ function renderSectorFlowMap() {
     bubbleGroup.appendChild(glow);
 
     // 泡泡
-    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.82', style: 'transition:opacity 0.15s, r 0.15s;' });
+    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.5', style: 'transition:opacity 0.15s, r 0.15s;' });
     bubbleGroup.appendChild(circle);
 
     // 標籤
@@ -3616,7 +3616,7 @@ function renderSectorFlowMap() {
     });
 
     bubbleGroup.addEventListener('mouseleave', () => {
-      circle.setAttribute('opacity', '0.82');
+      circle.setAttribute('opacity', '0.5');
       circle.setAttribute('r', r.toString());
       glow.setAttribute('opacity', '0.25');
       tooltip.style.display = 'none';
