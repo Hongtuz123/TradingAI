@@ -1054,6 +1054,17 @@ def update_institutional_history_and_calc_stats(today_date, today_data):
 
 
 def run_screener():
+    # 🚀 頻率限制防禦：下午 14:00 ~ 隔日 08:00 期間只在 15:00 和 18:00 執行更新
+    import pandas as pd
+    now_taipei = pd.Timestamp.now(tz='Asia/Taipei')
+    current_hour = now_taipei.hour
+    
+    if current_hour >= 14 or current_hour < 8:
+        if current_hour not in [15, 18]:
+            print(f"⏰ 目前台北時間為 {now_taipei.strftime('%Y-%m-%d %H:%M:%S')} (Hour: {current_hour})")
+            print("🚫 處於 14:00 ~ 08:00 限制更新時段，且非指定更新小時 (15:00 或 18:00)，略過本次排程更新。")
+            return
+
     print("載入 TWSE/TPEX OpenAPI 全市場資訊以計算合併市值前 500 大標的...")
     all_market_info = load_all_market_info()
 
