@@ -7046,6 +7046,13 @@ function openSectorDetailModal(sectorName, stocks, avgChange) {
 
   const stocksHTML = topStocks.map(s => {
 
+      const fullStock = mockStocks.find(item => item.id === s.id) || s;
+    const live = typeof getLiveStockData === 'function' ? getLiveStockData(fullStock) : { price: fullStock.price, change: fullStock.change };
+    const displayPrice = (live.price !== undefined && live.price !== null) ? live.price : (fullStock.price || '--');
+    const displayChange = live.change !== undefined ? live.change : (fullStock.change || 0);
+    const changeClass = displayChange >= 0 ? 'text-up' : 'text-down';
+    const changeSign = displayChange >= 0 ? '+' : '';
+
     return `
 
       <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" 
@@ -7066,7 +7073,7 @@ function openSectorDetailModal(sectorName, stocks, avgChange) {
 
         <div style="display: flex; align-items: center; gap: 12px;">
 
-          <span style="font-weight: 700;" class="${(s.liveChange !== undefined ? s.liveChange : s.change) >= 0 ? 'text-up' : 'text-down'}">${s.livePrice || s.price} (${(s.liveChange !== undefined ? s.liveChange : s.change) >= 0 ? '+' : ''}${(s.liveChange !== undefined ? s.liveChange : s.change)}%)</span>
+          <span style="font-weight: 700;" class="${changeClass}">${displayPrice} (${changeSign}${displayChange}%)</span>
 
           <button class="btn-primary" style="padding: 2px 8px; font-size:11px; height:24px;" onclick="event.stopPropagation(); closeModal(); openChart('${s.id}')">K線回測 📈</button>
 
