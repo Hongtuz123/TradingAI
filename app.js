@@ -7634,7 +7634,13 @@ function renderPostmarketSummary() {
 
 
 
-  const modal = document.getElementById('dogReminderModal');
+  const modal = document.getElementById('dogReminderModal');
+
+  if (modal && modal.classList.contains('active')) {
+
+    return;
+
+  }
 
   const content = document.getElementById('dogReminderContent');
 
