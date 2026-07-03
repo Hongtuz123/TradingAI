@@ -8048,7 +8048,7 @@ function renderRankings() {
 
   const limitSelect = document.getElementById('rankLimitSelect');
 
-  const limit = limitSelect ? parseInt(limitSelect.value) : 5;
+  const limit = limitSelect ? parseInt(limitSelect.value) :  10;
 
 
 
