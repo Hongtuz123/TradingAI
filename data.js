@@ -587141,7 +587141,7 @@ const marketData = {
       ],
       "maBull": false,
       "ma20Rising": false,
-      "closeToHigh": false,
+      "closeToHigh": true,
       "dist52W": 30.9,
       "rsi14": 38.97,
       "type": "none",
