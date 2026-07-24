@@ -20462,14 +20462,6 @@ const marketData = {
       "type": "none",
       "kline": [
         {
-          "date": "2025-07-15",
-          "open": 117.51,
-          "high": 117.51,
-          "low": 113.72,
-          "close": 115.62,
-          "volume": 2413464
-        },
-        {
           "date": "2025-07-16",
           "open": 115.15,
           "high": 117.51,
@@ -22492,14 +22484,6 @@ const marketData = {
       "rsi14": 36.1,
       "type": "none",
       "kline": [
-        {
-          "date": "2025-07-15",
-          "open": 680.95,
-          "high": 682.62,
-          "low": 670.95,
-          "close": 678.45,
-          "volume": 786387
-        },
         {
           "date": "2025-07-16",
           "open": 676.78,
@@ -24524,14 +24508,6 @@ const marketData = {
       "type": "none",
       "kline": [
         {
-          "date": "2025-07-15",
-          "open": 207.93,
-          "high": 208.9,
-          "low": 206.47,
-          "close": 207.93,
-          "volume": 517353
-        },
-        {
           "date": "2025-07-16",
           "open": 207.93,
           "high": 211.34,
@@ -26554,14 +26530,6 @@ const marketData = {
       "rsi14": 34.72,
       "type": "none",
       "kline": [
-        {
-          "date": "2025-07-15",
-          "open": 175.42,
-          "high": 175.92,
-          "low": 173.94,
-          "close": 174.43,
-          "volume": 2390463
-        },
         {
           "date": "2025-07-16",
           "open": 176.91,
@@ -126066,14 +126034,6 @@ const marketData = {
       "type": "D",
       "kline": [
         {
-          "date": "2025-07-15",
-          "open": 40.09,
-          "high": 40.23,
-          "low": 39.75,
-          "close": 40.19,
-          "volume": 1638831
-        },
-        {
           "date": "2025-07-16",
           "open": 40.19,
           "high": 41.0,
@@ -128096,14 +128056,6 @@ const marketData = {
       "rsi14": 45.64,
       "type": "none",
       "kline": [
-        {
-          "date": "2025-07-15",
-          "open": 28.27,
-          "high": 28.91,
-          "low": 28.27,
-          "close": 28.8,
-          "volume": 3166557
-        },
         {
           "date": "2025-07-16",
           "open": 28.86,
@@ -690835,14 +690787,6 @@ const marketData = {
       "type": "none",
       "kline": [
         {
-          "date": "2025-07-15",
-          "open": 291.93,
-          "high": 293.27,
-          "low": 289.26,
-          "close": 291.93,
-          "volume": 383392
-        },
-        {
           "date": "2025-07-16",
           "open": 292.38,
           "high": 293.27,
@@ -863149,14 +863093,6 @@ const marketData = {
       "type": "none",
       "kline": [
         {
-          "date": "2025-07-15",
-          "open": 12.69,
-          "high": 13.31,
-          "low": 12.69,
-          "close": 13.26,
-          "volume": 5752000
-        },
-        {
           "date": "2025-07-16",
           "open": 13.32,
           "high": 13.64,
@@ -865187,14 +865123,6 @@ const marketData = {
       "rsi14": 30.62,
       "type": "none",
       "kline": [
-        {
-          "date": "2025-07-15",
-          "open": 34.15,
-          "high": 34.55,
-          "low": 33.7,
-          "close": 34.3,
-          "volume": 966002
-        },
         {
           "date": "2025-07-16",
           "open": 34.3,
