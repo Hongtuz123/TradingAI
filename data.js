@@ -560,7 +560,7 @@ const marketData = {
             "id": "3231",
             "name": "緯創",
             "change": 5.79,
-            "volRatio": 1.74,
+            "volRatio": 2.88,
             "trustDays": 1307,
             "foreignNetBuy": 79016,
             "dealerDays": 2397
@@ -569,7 +569,7 @@ const marketData = {
             "id": "2324",
             "name": "仁寶",
             "change": 1.52,
-            "volRatio": 0.28,
+            "volRatio": 0.49,
             "trustDays": 94,
             "foreignNetBuy": 11036,
             "dealerDays": 954
@@ -578,7 +578,7 @@ const marketData = {
             "id": "3005",
             "name": "神基",
             "change": -0.87,
-            "volRatio": 0.08,
+            "volRatio": 0.19,
             "trustDays": -32,
             "foreignNetBuy": 17,
             "dealerDays": -51
@@ -587,7 +587,7 @@ const marketData = {
             "id": "2362",
             "name": "藍天",
             "change": 1.27,
-            "volRatio": 0.21,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": 319,
             "dealerDays": 10
@@ -596,7 +596,7 @@ const marketData = {
             "id": "2357",
             "name": "華碩",
             "change": 1.59,
-            "volRatio": 0.27,
+            "volRatio": 0.36,
             "trustDays": -189,
             "foreignNetBuy": 1180,
             "dealerDays": 16
@@ -605,7 +605,7 @@ const marketData = {
             "id": "3213",
             "name": "茂訊",
             "change": 1.17,
-            "volRatio": 0.11,
+            "volRatio": 0.28,
             "trustDays": 0,
             "foreignNetBuy": 116,
             "dealerDays": -3
@@ -614,7 +614,7 @@ const marketData = {
             "id": "2382",
             "name": "廣達",
             "change": 2.13,
-            "volRatio": 0.17,
+            "volRatio": 0.31,
             "trustDays": 483,
             "foreignNetBuy": -1500,
             "dealerDays": 511
@@ -623,7 +623,7 @@ const marketData = {
             "id": "2356",
             "name": "英業達",
             "change": 2.11,
-            "volRatio": 0.52,
+            "volRatio": 0.73,
             "trustDays": -3727,
             "foreignNetBuy": 7952,
             "dealerDays": 279
@@ -632,7 +632,7 @@ const marketData = {
             "id": "2353",
             "name": "宏碁",
             "change": -1.31,
-            "volRatio": 0.11,
+            "volRatio": 0.22,
             "trustDays": -3667,
             "foreignNetBuy": 2058,
             "dealerDays": -221
@@ -650,7 +650,7 @@ const marketData = {
             "id": "6761",
             "name": "穩得",
             "change": 1.29,
-            "volRatio": 0.02,
+            "volRatio": 0.17,
             "trustDays": 0,
             "foreignNetBuy": 21,
             "dealerDays": 3
@@ -665,28 +665,28 @@ const marketData = {
         "totalInst5D": 4251,
         "stocks": [
           {
-            "id": "3081",
-            "name": "聯亞",
-            "change": 9.91,
-            "volRatio": 2.83,
-            "trustDays": 8,
-            "foreignNetBuy": -420,
-            "dealerDays": 21
-          },
-          {
             "id": "2455",
             "name": "全新",
             "change": 6.32,
-            "volRatio": 1.19,
+            "volRatio": 1.84,
             "trustDays": 362,
             "foreignNetBuy": 1481,
             "dealerDays": 261
           },
           {
+            "id": "3081",
+            "name": "聯亞",
+            "change": 9.91,
+            "volRatio": 3.56,
+            "trustDays": 8,
+            "foreignNetBuy": -420,
+            "dealerDays": 21
+          },
+          {
             "id": "5434",
             "name": "崇越",
             "change": -1.06,
-            "volRatio": 0.05,
+            "volRatio": 0.11,
             "trustDays": 105,
             "foreignNetBuy": -75,
             "dealerDays": -9
@@ -695,7 +695,7 @@ const marketData = {
             "id": "6829",
             "name": "千附精密",
             "change": -7.08,
-            "volRatio": 0.16,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": -67,
             "dealerDays": -30
@@ -704,7 +704,7 @@ const marketData = {
             "id": "6208",
             "name": "日揚",
             "change": -1.77,
-            "volRatio": 0.13,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": -64,
             "dealerDays": -4
@@ -722,7 +722,7 @@ const marketData = {
             "id": "3617",
             "name": "碩天",
             "change": 3.84,
-            "volRatio": 0.13,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": 183,
             "dealerDays": 6
@@ -731,7 +731,7 @@ const marketData = {
             "id": "6409",
             "name": "旭隼",
             "change": 0.0,
-            "volRatio": 0.41,
+            "volRatio": 0.52,
             "trustDays": 59,
             "foreignNetBuy": -41,
             "dealerDays": -10
@@ -740,7 +740,7 @@ const marketData = {
             "id": "7792",
             "name": "安葆",
             "change": 1.89,
-            "volRatio": 0.18,
+            "volRatio": 0.66,
             "trustDays": 0,
             "foreignNetBuy": 26,
             "dealerDays": 2
@@ -749,7 +749,7 @@ const marketData = {
             "id": "5309",
             "name": "系統電",
             "change": -0.73,
-            "volRatio": 0.05,
+            "volRatio": 0.16,
             "trustDays": -1,
             "foreignNetBuy": 98,
             "dealerDays": -17
@@ -767,7 +767,7 @@ const marketData = {
             "id": "8271",
             "name": "宇瞻",
             "change": 6.87,
-            "volRatio": 2.68,
+            "volRatio": 3.5,
             "trustDays": -31,
             "foreignNetBuy": 525,
             "dealerDays": 79
@@ -776,7 +776,7 @@ const marketData = {
             "id": "2451",
             "name": "創見",
             "change": 1.24,
-            "volRatio": 2.29,
+            "volRatio": 2.98,
             "trustDays": -482,
             "foreignNetBuy": 123,
             "dealerDays": 18
@@ -785,7 +785,7 @@ const marketData = {
             "id": "5289",
             "name": "宜鼎",
             "change": 0.74,
-            "volRatio": 0.43,
+            "volRatio": 0.71,
             "trustDays": -10,
             "foreignNetBuy": 154,
             "dealerDays": -18
@@ -794,7 +794,7 @@ const marketData = {
             "id": "3260",
             "name": "威剛",
             "change": -0.26,
-            "volRatio": 0.8,
+            "volRatio": 1.12,
             "trustDays": -1,
             "foreignNetBuy": 101,
             "dealerDays": -39
@@ -803,7 +803,7 @@ const marketData = {
             "id": "4967",
             "name": "十銓",
             "change": -0.69,
-            "volRatio": 0.64,
+            "volRatio": 1.0,
             "trustDays": 0,
             "foreignNetBuy": 64,
             "dealerDays": -25
@@ -812,7 +812,7 @@ const marketData = {
             "id": "3135",
             "name": "凌航",
             "change": -1.96,
-            "volRatio": 0.84,
+            "volRatio": 1.21,
             "trustDays": 0,
             "foreignNetBuy": -93,
             "dealerDays": 3
@@ -830,7 +830,7 @@ const marketData = {
             "id": "2059",
             "name": "川湖",
             "change": 0.92,
-            "volRatio": 0.14,
+            "volRatio": 0.41,
             "trustDays": -38,
             "foreignNetBuy": 140,
             "dealerDays": -17
@@ -839,7 +839,7 @@ const marketData = {
             "id": "6584",
             "name": "南俊國際",
             "change": 0.91,
-            "volRatio": 0.22,
+            "volRatio": 0.33,
             "trustDays": 0,
             "foreignNetBuy": 14,
             "dealerDays": 2
@@ -849,7 +849,7 @@ const marketData = {
       {
         "name": "通訊設備",
         "avgChange": 0.7166666666666668,
-        "avgChange5D": 5.068277268365934,
+        "avgChange5D": 5.068277268365933,
         "totalInst": -1535,
         "totalInst5D": 7402,
         "stocks": [
@@ -857,7 +857,7 @@ const marketData = {
             "id": "3491",
             "name": "昇達科",
             "change": 0.0,
-            "volRatio": 0.21,
+            "volRatio": 0.4,
             "trustDays": 10,
             "foreignNetBuy": 229,
             "dealerDays": -1
@@ -866,61 +866,61 @@ const marketData = {
             "id": "4979",
             "name": "華星光",
             "change": 7.52,
-            "volRatio": 1.9,
+            "volRatio": 2.58,
             "trustDays": 129,
             "foreignNetBuy": -533,
+            "dealerDays": 5
+          },
+          {
+            "id": "6442",
+            "name": "光聖",
+            "change": 0.36,
+            "volRatio": 1.36,
+            "trustDays": 173,
+            "foreignNetBuy": -846,
             "dealerDays": 5
           },
           {
             "id": "2485",
             "name": "兆赫",
             "change": -1.77,
-            "volRatio": 0.21,
+            "volRatio": 0.4,
             "trustDays": -88,
             "foreignNetBuy": 481,
             "dealerDays": 30
           },
           {
-            "id": "6426",
-            "name": "統新",
-            "change": -1.8,
-            "volRatio": 1.24,
-            "trustDays": 0,
-            "foreignNetBuy": -104,
-            "dealerDays": 1
-          },
-          {
-            "id": "6442",
-            "name": "光聖",
-            "change": 0.36,
-            "volRatio": 0.88,
-            "trustDays": 173,
-            "foreignNetBuy": -846,
-            "dealerDays": 5
-          },
-          {
-            "id": "3163",
-            "name": "波若威",
-            "change": 4.25,
-            "volRatio": 1.91,
-            "trustDays": 0,
-            "foreignNetBuy": -538,
-            "dealerDays": 24
-          },
-          {
             "id": "4908",
             "name": "前鼎",
             "change": -0.35,
-            "volRatio": 0.79,
+            "volRatio": 1.28,
             "trustDays": 0,
             "foreignNetBuy": -469,
             "dealerDays": -2
           },
           {
+            "id": "6426",
+            "name": "統新",
+            "change": -1.8,
+            "volRatio": 2.41,
+            "trustDays": 0,
+            "foreignNetBuy": -104,
+            "dealerDays": 1
+          },
+          {
+            "id": "3163",
+            "name": "波若威",
+            "change": 4.25,
+            "volRatio": 2.78,
+            "trustDays": 0,
+            "foreignNetBuy": -538,
+            "dealerDays": 24
+          },
+          {
             "id": "2419",
             "name": "仲琦",
             "change": -1.16,
-            "volRatio": 0.05,
+            "volRatio": 0.23,
             "trustDays": -39,
             "foreignNetBuy": 66,
             "dealerDays": -2
@@ -929,7 +929,7 @@ const marketData = {
             "id": "8045",
             "name": "達運光電",
             "change": 2.08,
-            "volRatio": 0.19,
+            "volRatio": 0.36,
             "trustDays": 0,
             "foreignNetBuy": -22,
             "dealerDays": -1
@@ -938,28 +938,28 @@ const marketData = {
             "id": "3138",
             "name": "耀登",
             "change": 0.0,
-            "volRatio": 0.21,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": 43,
-            "dealerDays": 0
-          },
-          {
-            "id": "6184",
-            "name": "大豐電",
-            "change": -0.12,
-            "volRatio": 0.02,
-            "trustDays": 0,
-            "foreignNetBuy": -6,
             "dealerDays": 0
           },
           {
             "id": "6530",
             "name": "創威",
             "change": -0.41,
-            "volRatio": 1.06,
+            "volRatio": 1.71,
             "trustDays": 0,
             "foreignNetBuy": -79,
             "dealerDays": -1
+          },
+          {
+            "id": "6184",
+            "name": "大豐電",
+            "change": -0.12,
+            "volRatio": 0.04,
+            "trustDays": 0,
+            "foreignNetBuy": -6,
+            "dealerDays": 0
           }
         ]
       }
@@ -976,7 +976,7 @@ const marketData = {
             "id": "2408",
             "name": "南亞科",
             "change": -4.38,
-            "volRatio": 0.33,
+            "volRatio": 0.59,
             "trustDays": -1252,
             "foreignNetBuy": 577,
             "dealerDays": 1
@@ -994,7 +994,7 @@ const marketData = {
             "id": "1810",
             "name": "和成",
             "change": -9.96,
-            "volRatio": 0.71,
+            "volRatio": 0.92,
             "trustDays": 0,
             "foreignNetBuy": -5887,
             "dealerDays": 1636
@@ -1003,7 +1003,7 @@ const marketData = {
             "id": "1802",
             "name": "台玻",
             "change": -2.34,
-            "volRatio": 0.11,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": -1156,
             "dealerDays": 31
@@ -1012,7 +1012,7 @@ const marketData = {
             "id": "1809",
             "name": "中釉",
             "change": 0.0,
-            "volRatio": 0.06,
+            "volRatio": 0.12,
             "trustDays": 0,
             "foreignNetBuy": -17,
             "dealerDays": 11
@@ -1030,7 +1030,7 @@ const marketData = {
             "id": "2481",
             "name": "強茂",
             "change": -8.25,
-            "volRatio": 0.55,
+            "volRatio": 0.84,
             "trustDays": 668,
             "foreignNetBuy": -8046,
             "dealerDays": -26
@@ -1039,7 +1039,7 @@ const marketData = {
             "id": "2302",
             "name": "麗正",
             "change": -2.53,
-            "volRatio": 0.86,
+            "volRatio": 1.1,
             "trustDays": 47,
             "foreignNetBuy": -1480,
             "dealerDays": 0
@@ -1048,7 +1048,7 @@ const marketData = {
             "id": "2344",
             "name": "華邦電",
             "change": -5.85,
-            "volRatio": 0.35,
+            "volRatio": 0.55,
             "trustDays": -201,
             "foreignNetBuy": 15553,
             "dealerDays": -429
@@ -1057,7 +1057,7 @@ const marketData = {
             "id": "2337",
             "name": "旺宏",
             "change": -4.07,
-            "volRatio": 0.22,
+            "volRatio": 0.38,
             "trustDays": -6401,
             "foreignNetBuy": 5863,
             "dealerDays": 181
@@ -1066,7 +1066,7 @@ const marketData = {
             "id": "3675",
             "name": "德微",
             "change": -3.48,
-            "volRatio": 0.06,
+            "volRatio": 0.11,
             "trustDays": 0,
             "foreignNetBuy": 26,
             "dealerDays": -3
@@ -1075,7 +1075,7 @@ const marketData = {
             "id": "7712",
             "name": "博盛半導體",
             "change": -0.34,
-            "volRatio": 0.23,
+            "volRatio": 0.52,
             "trustDays": 0,
             "foreignNetBuy": -24,
             "dealerDays": -2
@@ -1093,25 +1093,16 @@ const marketData = {
             "id": "3016",
             "name": "嘉晶",
             "change": -1.9,
-            "volRatio": 0.12,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": 1121,
             "dealerDays": -49
           },
           {
-            "id": "6182",
-            "name": "合晶",
-            "change": -1.94,
-            "volRatio": 0.05,
-            "trustDays": -1100,
-            "foreignNetBuy": 14003,
-            "dealerDays": -560
-          },
-          {
             "id": "6488",
             "name": "環球晶",
             "change": -9.68,
-            "volRatio": 0.53,
+            "volRatio": 0.97,
             "trustDays": -509,
             "foreignNetBuy": -124,
             "dealerDays": 26
@@ -1120,37 +1111,46 @@ const marketData = {
             "id": "3532",
             "name": "台勝科",
             "change": -9.94,
-            "volRatio": 0.68,
+            "volRatio": 0.88,
             "trustDays": -998,
             "foreignNetBuy": -2018,
             "dealerDays": -207
           },
           {
+            "id": "6182",
+            "name": "合晶",
+            "change": -1.94,
+            "volRatio": 0.11,
+            "trustDays": -1100,
+            "foreignNetBuy": 14003,
+            "dealerDays": -560
+          },
+          {
             "id": "7768",
             "name": "頌勝科技",
             "change": 0.0,
-            "volRatio": 0.32,
+            "volRatio": 1.12,
             "trustDays": 0,
             "foreignNetBuy": 20,
             "dealerDays": 1
           },
           {
-            "id": "3707",
-            "name": "漢磊",
-            "change": -1.06,
-            "volRatio": 0.09,
-            "trustDays": 0,
-            "foreignNetBuy": -615,
-            "dealerDays": -7
-          },
-          {
             "id": "4971",
             "name": "IET-KY",
             "change": -0.72,
-            "volRatio": 0.97,
+            "volRatio": 1.45,
             "trustDays": 0,
             "foreignNetBuy": -250,
             "dealerDays": -4
+          },
+          {
+            "id": "3707",
+            "name": "漢磊",
+            "change": -1.06,
+            "volRatio": 0.21,
+            "trustDays": 0,
+            "foreignNetBuy": -615,
+            "dealerDays": -7
           }
         ]
       },
@@ -1165,7 +1165,7 @@ const marketData = {
             "id": "8462",
             "name": "柏文",
             "change": -0.96,
-            "volRatio": 0.24,
+            "volRatio": 0.33,
             "trustDays": 0,
             "foreignNetBuy": -8,
             "dealerDays": 1
@@ -1174,7 +1174,7 @@ const marketData = {
             "id": "4536",
             "name": "拓凱",
             "change": -0.91,
-            "volRatio": 0.17,
+            "volRatio": 0.37,
             "trustDays": 0,
             "foreignNetBuy": 3,
             "dealerDays": 0
@@ -1183,7 +1183,7 @@ const marketData = {
             "id": "1736",
             "name": "喬山",
             "change": -3.66,
-            "volRatio": 0.08,
+            "volRatio": 0.2,
             "trustDays": 0,
             "foreignNetBuy": -250,
             "dealerDays": -1
@@ -1192,7 +1192,7 @@ const marketData = {
             "id": "2762",
             "name": "世界健身-KY",
             "change": -1.17,
-            "volRatio": 0.04,
+            "volRatio": 0.14,
             "trustDays": 0,
             "foreignNetBuy": -8,
             "dealerDays": 0
@@ -1201,7 +1201,7 @@ const marketData = {
             "id": "1515",
             "name": "力山",
             "change": -9.92,
-            "volRatio": 0.49,
+            "volRatio": 0.65,
             "trustDays": 79,
             "foreignNetBuy": 670,
             "dealerDays": 1
@@ -1219,7 +1219,7 @@ const marketData = {
             "id": "3149",
             "name": "正達",
             "change": -5.91,
-            "volRatio": 0.24,
+            "volRatio": 0.41,
             "trustDays": 0,
             "foreignNetBuy": 2289,
             "dealerDays": 2
@@ -1228,7 +1228,7 @@ const marketData = {
             "id": "3622",
             "name": "洋華",
             "change": 0.19,
-            "volRatio": 0.09,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": -43,
             "dealerDays": 34
@@ -1237,7 +1237,7 @@ const marketData = {
             "id": "8105",
             "name": "凌巨",
             "change": -3.37,
-            "volRatio": 0.05,
+            "volRatio": 0.13,
             "trustDays": 114,
             "foreignNetBuy": -992,
             "dealerDays": 9
@@ -1246,7 +1246,7 @@ const marketData = {
             "id": "3615",
             "name": "安可",
             "change": -6.52,
-            "volRatio": 0.14,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": -193,
             "dealerDays": -2
@@ -1255,7 +1255,7 @@ const marketData = {
             "id": "3673",
             "name": "TPK-KY",
             "change": -1.53,
-            "volRatio": 0.1,
+            "volRatio": 0.27,
             "trustDays": 0,
             "foreignNetBuy": 6,
             "dealerDays": -96
@@ -1264,7 +1264,7 @@ const marketData = {
             "id": "6456",
             "name": "GIS-KY",
             "change": -1.89,
-            "volRatio": 0.17,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": 367,
             "dealerDays": -23
@@ -1282,7 +1282,7 @@ const marketData = {
             "id": "3443",
             "name": "創意",
             "change": 0.23,
-            "volRatio": 0.29,
+            "volRatio": 0.66,
             "trustDays": 114,
             "foreignNetBuy": -56,
             "dealerDays": 14
@@ -1291,7 +1291,7 @@ const marketData = {
             "id": "6533",
             "name": "晶心科",
             "change": -8.74,
-            "volRatio": 0.28,
+            "volRatio": 0.47,
             "trustDays": 0,
             "foreignNetBuy": -377,
             "dealerDays": -6
@@ -1300,7 +1300,7 @@ const marketData = {
             "id": "8227",
             "name": "巨有科技",
             "change": -2.91,
-            "volRatio": 0.06,
+            "volRatio": 0.13,
             "trustDays": 0,
             "foreignNetBuy": 18,
             "dealerDays": -11
@@ -1309,7 +1309,7 @@ const marketData = {
             "id": "3661",
             "name": "世芯-KY",
             "change": -2.23,
-            "volRatio": 0.33,
+            "volRatio": 0.57,
             "trustDays": -21,
             "foreignNetBuy": -255,
             "dealerDays": 3
@@ -1318,7 +1318,7 @@ const marketData = {
             "id": "3529",
             "name": "力旺",
             "change": -3.65,
-            "volRatio": 0.18,
+            "volRatio": 0.3,
             "trustDays": -14,
             "foreignNetBuy": -90,
             "dealerDays": 11
@@ -1327,7 +1327,7 @@ const marketData = {
             "id": "3035",
             "name": "智原",
             "change": -3.02,
-            "volRatio": 0.19,
+            "volRatio": 0.32,
             "trustDays": 0,
             "foreignNetBuy": -408,
             "dealerDays": -84
@@ -1336,7 +1336,7 @@ const marketData = {
             "id": "7749",
             "name": "意騰-KY",
             "change": -1.9,
-            "volRatio": 0.03,
+            "volRatio": 0.26,
             "trustDays": 0,
             "foreignNetBuy": -2,
             "dealerDays": -1
@@ -1345,7 +1345,7 @@ const marketData = {
             "id": "6643",
             "name": "M31",
             "change": -0.94,
-            "volRatio": 0.17,
+            "volRatio": 0.3,
             "trustDays": 0,
             "foreignNetBuy": -62,
             "dealerDays": 1
@@ -1363,28 +1363,28 @@ const marketData = {
             "id": "8046",
             "name": "南電",
             "change": -5.75,
-            "volRatio": 0.27,
+            "volRatio": 0.56,
             "trustDays": 667,
             "foreignNetBuy": 482,
             "dealerDays": 52
           },
           {
-            "id": "3037",
-            "name": "欣興",
-            "change": -1.21,
-            "volRatio": 0.22,
-            "trustDays": 2270,
-            "foreignNetBuy": -532,
-            "dealerDays": -152
-          },
-          {
             "id": "3189",
             "name": "景碩",
             "change": -1.38,
-            "volRatio": 0.4,
+            "volRatio": 0.84,
             "trustDays": 1009,
             "foreignNetBuy": -881,
             "dealerDays": 76
+          },
+          {
+            "id": "3037",
+            "name": "欣興",
+            "change": -1.21,
+            "volRatio": 0.51,
+            "trustDays": 2270,
+            "foreignNetBuy": -532,
+            "dealerDays": -152
           }
         ]
       },
@@ -1399,7 +1399,7 @@ const marketData = {
             "id": "2406",
             "name": "國碩",
             "change": -5.52,
-            "volRatio": 0.11,
+            "volRatio": 0.23,
             "trustDays": 356,
             "foreignNetBuy": -5492,
             "dealerDays": 53
@@ -1408,7 +1408,7 @@ const marketData = {
             "id": "6873",
             "name": "泓德能源",
             "change": -2.63,
-            "volRatio": 0.1,
+            "volRatio": 0.28,
             "trustDays": 0,
             "foreignNetBuy": -56,
             "dealerDays": -8
@@ -1417,7 +1417,7 @@ const marketData = {
             "id": "3691",
             "name": "碩禾",
             "change": -1.68,
-            "volRatio": 0.1,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": 35,
             "dealerDays": -5
@@ -1426,7 +1426,7 @@ const marketData = {
             "id": "4949",
             "name": "有成精密",
             "change": 3.35,
-            "volRatio": 0.09,
+            "volRatio": 0.25,
             "trustDays": -17,
             "foreignNetBuy": 114,
             "dealerDays": 2
@@ -1435,7 +1435,7 @@ const marketData = {
             "id": "6477",
             "name": "安集",
             "change": -4.11,
-            "volRatio": 0.34,
+            "volRatio": 0.51,
             "trustDays": 0,
             "foreignNetBuy": -264,
             "dealerDays": 58
@@ -1444,7 +1444,7 @@ const marketData = {
             "id": "6244",
             "name": "茂迪",
             "change": -3.98,
-            "volRatio": 0.12,
+            "volRatio": 0.32,
             "trustDays": 0,
             "foreignNetBuy": -859,
             "dealerDays": -53
@@ -1453,7 +1453,7 @@ const marketData = {
             "id": "6869",
             "name": "雲豹能源",
             "change": -1.46,
-            "volRatio": 0.15,
+            "volRatio": 0.48,
             "trustDays": 0,
             "foreignNetBuy": -18,
             "dealerDays": -11
@@ -1462,7 +1462,7 @@ const marketData = {
             "id": "5483",
             "name": "中美晶",
             "change": 0.0,
-            "volRatio": 0.21,
+            "volRatio": 0.39,
             "trustDays": -1071,
             "foreignNetBuy": -6848,
             "dealerDays": -351
@@ -1471,7 +1471,7 @@ const marketData = {
             "id": "3576",
             "name": "聯合再生",
             "change": -5.66,
-            "volRatio": 0.15,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": -2344,
             "dealerDays": 10
@@ -1480,7 +1480,7 @@ const marketData = {
             "id": "6443",
             "name": "元晶",
             "change": -2.7,
-            "volRatio": 0.14,
+            "volRatio": 0.3,
             "trustDays": 0,
             "foreignNetBuy": -59,
             "dealerDays": 3
@@ -1498,7 +1498,7 @@ const marketData = {
             "id": "2492",
             "name": "華新科",
             "change": 0.0,
-            "volRatio": 0.1,
+            "volRatio": 0.21,
             "trustDays": 308,
             "foreignNetBuy": 543,
             "dealerDays": 843
@@ -1507,7 +1507,7 @@ const marketData = {
             "id": "3026",
             "name": "禾伸堂",
             "change": 5.13,
-            "volRatio": 0.02,
+            "volRatio": 0.04,
             "trustDays": 56,
             "foreignNetBuy": 352,
             "dealerDays": -6
@@ -1516,7 +1516,7 @@ const marketData = {
             "id": "2375",
             "name": "凱美",
             "change": -2.06,
-            "volRatio": 0.08,
+            "volRatio": 0.15,
             "trustDays": 55,
             "foreignNetBuy": 232,
             "dealerDays": -10
@@ -1525,7 +1525,7 @@ const marketData = {
             "id": "6834",
             "name": "天二科技",
             "change": -3.48,
-            "volRatio": 0.16,
+            "volRatio": 0.33,
             "trustDays": 32,
             "foreignNetBuy": 311,
             "dealerDays": 0
@@ -1534,7 +1534,7 @@ const marketData = {
             "id": "6155",
             "name": "鈞寶",
             "change": -3.49,
-            "volRatio": 0.06,
+            "volRatio": 0.12,
             "trustDays": 37,
             "foreignNetBuy": 120,
             "dealerDays": 3
@@ -1543,7 +1543,7 @@ const marketData = {
             "id": "2478",
             "name": "大毅",
             "change": -8.0,
-            "volRatio": 0.2,
+            "volRatio": 0.34,
             "trustDays": 135,
             "foreignNetBuy": -1455,
             "dealerDays": -33
@@ -1552,7 +1552,7 @@ const marketData = {
             "id": "3042",
             "name": "晶技",
             "change": -2.66,
-            "volRatio": 0.09,
+            "volRatio": 0.17,
             "trustDays": -1578,
             "foreignNetBuy": 1938,
             "dealerDays": 3
@@ -1561,7 +1561,7 @@ const marketData = {
             "id": "3090",
             "name": "日電貿",
             "change": -6.28,
-            "volRatio": 0.08,
+            "volRatio": 0.23,
             "trustDays": -94,
             "foreignNetBuy": 183,
             "dealerDays": 2
@@ -1570,7 +1570,7 @@ const marketData = {
             "id": "6173",
             "name": "信昌電",
             "change": 2.81,
-            "volRatio": 0.01,
+            "volRatio": 0.04,
             "trustDays": 0,
             "foreignNetBuy": 582,
             "dealerDays": 139
@@ -1579,7 +1579,7 @@ const marketData = {
             "id": "3357",
             "name": "臺慶科",
             "change": -2.28,
-            "volRatio": 0.13,
+            "volRatio": 0.36,
             "trustDays": 0,
             "foreignNetBuy": 218,
             "dealerDays": -27
@@ -1588,7 +1588,7 @@ const marketData = {
             "id": "3152",
             "name": "璟德",
             "change": -2.11,
-            "volRatio": 0.08,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": 31,
             "dealerDays": -12
@@ -1597,7 +1597,7 @@ const marketData = {
             "id": "8042",
             "name": "金山電",
             "change": -4.63,
-            "volRatio": 0.1,
+            "volRatio": 0.26,
             "trustDays": 0,
             "foreignNetBuy": 328,
             "dealerDays": -18
@@ -1606,7 +1606,7 @@ const marketData = {
             "id": "2484",
             "name": "希華",
             "change": -3.74,
-            "volRatio": 0.19,
+            "volRatio": 0.39,
             "trustDays": 79,
             "foreignNetBuy": 3,
             "dealerDays": 1
@@ -1615,7 +1615,7 @@ const marketData = {
             "id": "8121",
             "name": "越峰",
             "change": -2.32,
-            "volRatio": 0.1,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": 32,
             "dealerDays": 10
@@ -1624,7 +1624,7 @@ const marketData = {
             "id": "6642",
             "name": "富致",
             "change": 1.2,
-            "volRatio": 0.11,
+            "volRatio": 0.28,
             "trustDays": 0,
             "foreignNetBuy": 46,
             "dealerDays": 0
@@ -1633,7 +1633,7 @@ const marketData = {
             "id": "8289",
             "name": "泰藝",
             "change": -2.54,
-            "volRatio": 0.08,
+            "volRatio": 0.18,
             "trustDays": 0,
             "foreignNetBuy": 8,
             "dealerDays": 6
@@ -1642,7 +1642,7 @@ const marketData = {
             "id": "6432",
             "name": "今展科",
             "change": -0.82,
-            "volRatio": 0.05,
+            "volRatio": 0.13,
             "trustDays": 0,
             "foreignNetBuy": 7,
             "dealerDays": -33
@@ -1651,7 +1651,7 @@ const marketData = {
             "id": "6174",
             "name": "安碁",
             "change": -10.0,
-            "volRatio": 0.42,
+            "volRatio": 0.58,
             "trustDays": 0,
             "foreignNetBuy": 68,
             "dealerDays": -272
@@ -1660,16 +1660,25 @@ const marketData = {
             "id": "2327",
             "name": "國巨*",
             "change": -1.0,
-            "volRatio": 0.27,
+            "volRatio": 0.53,
             "trustDays": -152,
             "foreignNetBuy": -267,
             "dealerDays": 97
           },
           {
+            "id": "3363",
+            "name": "上詮",
+            "change": 4.06,
+            "volRatio": 1.66,
+            "trustDays": 7,
+            "foreignNetBuy": -300,
+            "dealerDays": 3
+          },
+          {
             "id": "2472",
             "name": "立隆電",
             "change": -2.3,
-            "volRatio": 0.09,
+            "volRatio": 0.16,
             "trustDays": -38,
             "foreignNetBuy": -54,
             "dealerDays": -32
@@ -1678,7 +1687,7 @@ const marketData = {
             "id": "2428",
             "name": "興勤",
             "change": -2.53,
-            "volRatio": 0.06,
+            "volRatio": 0.14,
             "trustDays": 0,
             "foreignNetBuy": -9,
             "dealerDays": -9
@@ -1687,7 +1696,7 @@ const marketData = {
             "id": "6449",
             "name": "鈺邦",
             "change": -6.12,
-            "volRatio": 0.12,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": -235,
             "dealerDays": -7
@@ -1696,7 +1705,7 @@ const marketData = {
             "id": "6175",
             "name": "立敦",
             "change": -3.22,
-            "volRatio": 0.06,
+            "volRatio": 0.14,
             "trustDays": 0,
             "foreignNetBuy": -186,
             "dealerDays": -4
@@ -1705,7 +1714,7 @@ const marketData = {
             "id": "3624",
             "name": "光頡",
             "change": -0.11,
-            "volRatio": 0.03,
+            "volRatio": 0.07,
             "trustDays": 0,
             "foreignNetBuy": -20,
             "dealerDays": -7
@@ -1714,7 +1723,7 @@ const marketData = {
             "id": "4760",
             "name": "勤凱",
             "change": -2.35,
-            "volRatio": 0.09,
+            "volRatio": 0.26,
             "trustDays": 0,
             "foreignNetBuy": -82,
             "dealerDays": -12
@@ -1723,7 +1732,7 @@ const marketData = {
             "id": "6417",
             "name": "韋僑",
             "change": 3.38,
-            "volRatio": 0.26,
+            "volRatio": 0.4,
             "trustDays": 0,
             "foreignNetBuy": -3,
             "dealerDays": 0
@@ -1732,25 +1741,16 @@ const marketData = {
             "id": "3221",
             "name": "台嘉碩",
             "change": -3.94,
-            "volRatio": 0.09,
+            "volRatio": 0.17,
             "trustDays": 0,
             "foreignNetBuy": -65,
             "dealerDays": -17
           },
           {
-            "id": "3363",
-            "name": "上詮",
-            "change": 4.06,
-            "volRatio": 1.14,
-            "trustDays": 7,
-            "foreignNetBuy": -300,
-            "dealerDays": 3
-          },
-          {
             "id": "3236",
             "name": "千如",
             "change": -4.89,
-            "volRatio": 0.1,
+            "volRatio": 0.17,
             "trustDays": 0,
             "foreignNetBuy": 151,
             "dealerDays": -12
@@ -1759,7 +1759,7 @@ const marketData = {
             "id": "6284",
             "name": "佳邦",
             "change": -2.52,
-            "volRatio": 0.06,
+            "volRatio": 0.17,
             "trustDays": 0,
             "foreignNetBuy": -55,
             "dealerDays": -20
@@ -1768,7 +1768,7 @@ const marketData = {
             "id": "8043",
             "name": "蜜望實",
             "change": -2.01,
-            "volRatio": 0.11,
+            "volRatio": 0.19,
             "trustDays": 0,
             "foreignNetBuy": -174,
             "dealerDays": 0
@@ -1777,7 +1777,7 @@ const marketData = {
             "id": "6224",
             "name": "聚鼎",
             "change": 0.17,
-            "volRatio": 0.02,
+            "volRatio": 0.08,
             "trustDays": 0,
             "foreignNetBuy": -25,
             "dealerDays": 2
@@ -1786,7 +1786,7 @@ const marketData = {
             "id": "6127",
             "name": "九豪",
             "change": -3.76,
-            "volRatio": 0.06,
+            "volRatio": 0.12,
             "trustDays": 0,
             "foreignNetBuy": 15,
             "dealerDays": -20
@@ -1796,7 +1796,7 @@ const marketData = {
       {
         "name": "IC-半導體設備",
         "avgChange": -2.0366666666666666,
-        "avgChange5D": -0.07021592213714976,
+        "avgChange5D": 0.15361952855855496,
         "totalInst": -2122,
         "totalInst5D": -7431,
         "stocks": [
@@ -1804,7 +1804,7 @@ const marketData = {
             "id": "7769",
             "name": "鴻勁",
             "change": 0.94,
-            "volRatio": 0.36,
+            "volRatio": 0.58,
             "trustDays": 6,
             "foreignNetBuy": 71,
             "dealerDays": -1
@@ -1813,7 +1813,7 @@ const marketData = {
             "id": "3413",
             "name": "京鼎",
             "change": -6.06,
-            "volRatio": 0.11,
+            "volRatio": 0.51,
             "trustDays": 0,
             "foreignNetBuy": -848,
             "dealerDays": -162
@@ -1822,7 +1822,7 @@ const marketData = {
             "id": "6187",
             "name": "萬潤",
             "change": -2.84,
-            "volRatio": 0.25,
+            "volRatio": 0.54,
             "trustDays": 56,
             "foreignNetBuy": -158,
             "dealerDays": 3
@@ -1831,7 +1831,7 @@ const marketData = {
             "id": "8028",
             "name": "昇陽半導體",
             "change": -2.44,
-            "volRatio": 0.03,
+            "volRatio": 0.07,
             "trustDays": 0,
             "foreignNetBuy": 61,
             "dealerDays": -52
@@ -1840,25 +1840,16 @@ const marketData = {
             "id": "6937",
             "name": "天虹",
             "change": 1.04,
-            "volRatio": 0.7,
+            "volRatio": 1.15,
             "trustDays": 0,
             "foreignNetBuy": 63,
             "dealerDays": 22
           },
           {
-            "id": "6953",
-            "name": "家碩",
-            "change": -3.9,
-            "volRatio": 1.83,
-            "trustDays": 0,
-            "foreignNetBuy": 3,
-            "dealerDays": -1
-          },
-          {
             "id": "3131",
             "name": "弘塑",
             "change": 0.83,
-            "volRatio": 0.74,
+            "volRatio": 1.02,
             "trustDays": -101,
             "foreignNetBuy": 97,
             "dealerDays": -5
@@ -1867,7 +1858,7 @@ const marketData = {
             "id": "6683",
             "name": "雍智科技",
             "change": 1.23,
-            "volRatio": 0.07,
+            "volRatio": 0.12,
             "trustDays": 0,
             "foreignNetBuy": 24,
             "dealerDays": -6
@@ -1876,7 +1867,7 @@ const marketData = {
             "id": "7795",
             "name": "長廣",
             "change": -5.3,
-            "volRatio": 0.12,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": 50,
             "dealerDays": -4
@@ -1885,16 +1876,25 @@ const marketData = {
             "id": "7751",
             "name": "竑騰",
             "change": -5.95,
-            "volRatio": 0.08,
+            "volRatio": 0.3,
             "trustDays": -68,
             "foreignNetBuy": 30,
             "dealerDays": -9
           },
           {
+            "id": "6953",
+            "name": "家碩",
+            "change": -3.9,
+            "volRatio": 0.1,
+            "trustDays": 0,
+            "foreignNetBuy": 3,
+            "dealerDays": -1
+          },
+          {
             "id": "6532",
             "name": "瑞耘",
             "change": 0.0,
-            "volRatio": 0.02,
+            "volRatio": 0.18,
             "trustDays": 0,
             "foreignNetBuy": 8,
             "dealerDays": -1
@@ -1903,7 +1903,7 @@ const marketData = {
             "id": "3583",
             "name": "辛耘",
             "change": -1.04,
-            "volRatio": 0.1,
+            "volRatio": 0.26,
             "trustDays": 29,
             "foreignNetBuy": -66,
             "dealerDays": -10
@@ -1912,7 +1912,7 @@ const marketData = {
             "id": "3680",
             "name": "家登",
             "change": -2.73,
-            "volRatio": 0.13,
+            "volRatio": 0.31,
             "trustDays": 0,
             "foreignNetBuy": -370,
             "dealerDays": -19
@@ -1921,7 +1921,7 @@ const marketData = {
             "id": "7822",
             "name": "倍利科",
             "change": -1.93,
-            "volRatio": 0.49,
+            "volRatio": 0.89,
             "trustDays": 0,
             "foreignNetBuy": -5,
             "dealerDays": 0
@@ -1930,7 +1930,7 @@ const marketData = {
             "id": "8091",
             "name": "翔名",
             "change": -4.26,
-            "volRatio": 0.12,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": -201,
             "dealerDays": -38
@@ -1939,25 +1939,16 @@ const marketData = {
             "id": "6725",
             "name": "矽科宏晟",
             "change": -3.49,
-            "volRatio": 0.06,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": -11,
             "dealerDays": -3
           },
           {
-            "id": "5443",
-            "name": "均豪",
-            "change": -0.5,
-            "volRatio": 0.09,
-            "trustDays": 0,
-            "foreignNetBuy": -53,
-            "dealerDays": -41
-          },
-          {
             "id": "7556",
             "name": "意德士",
             "change": -2.0,
-            "volRatio": 0.09,
+            "volRatio": 0.18,
             "trustDays": 0,
             "foreignNetBuy": 10,
             "dealerDays": -3
@@ -1966,16 +1957,25 @@ const marketData = {
             "id": "6640",
             "name": "均華",
             "change": 0.41,
-            "volRatio": 0.05,
+            "volRatio": 0.26,
             "trustDays": 0,
             "foreignNetBuy": -11,
             "dealerDays": 0
           },
           {
+            "id": "5443",
+            "name": "均豪",
+            "change": -0.5,
+            "volRatio": 0.21,
+            "trustDays": 0,
+            "foreignNetBuy": -53,
+            "dealerDays": -41
+          },
+          {
             "id": "2338",
             "name": "光罩",
             "change": -3.23,
-            "volRatio": 0.1,
+            "volRatio": 0.28,
             "trustDays": 0,
             "foreignNetBuy": -397,
             "dealerDays": -7
@@ -1984,7 +1984,7 @@ const marketData = {
             "id": "6788",
             "name": "華景電",
             "change": -1.55,
-            "volRatio": 0.26,
+            "volRatio": 0.47,
             "trustDays": 0,
             "foreignNetBuy": -1,
             "dealerDays": -3
@@ -2002,7 +2002,7 @@ const marketData = {
             "id": "3034",
             "name": "聯詠",
             "change": 0.4,
-            "volRatio": 0.18,
+            "volRatio": 0.3,
             "trustDays": -538,
             "foreignNetBuy": 1164,
             "dealerDays": 22
@@ -2011,7 +2011,7 @@ const marketData = {
             "id": "6907",
             "name": "雅特力-KY",
             "change": 3.33,
-            "volRatio": 0.03,
+            "volRatio": 0.07,
             "trustDays": 0,
             "foreignNetBuy": 83,
             "dealerDays": -9
@@ -2020,7 +2020,7 @@ const marketData = {
             "id": "5274",
             "name": "信驊",
             "change": 0.19,
-            "volRatio": 0.15,
+            "volRatio": 0.4,
             "trustDays": 60,
             "foreignNetBuy": -68,
             "dealerDays": -11
@@ -2029,7 +2029,7 @@ const marketData = {
             "id": "2379",
             "name": "瑞昱",
             "change": 0.27,
-            "volRatio": 0.28,
+            "volRatio": 0.39,
             "trustDays": 348,
             "foreignNetBuy": -903,
             "dealerDays": -8
@@ -2038,43 +2038,34 @@ const marketData = {
             "id": "8261",
             "name": "富鼎",
             "change": -7.48,
-            "volRatio": 0.09,
+            "volRatio": 0.14,
             "trustDays": 44,
             "foreignNetBuy": 5,
             "dealerDays": -19
           },
           {
-            "id": "2454",
-            "name": "聯發科",
-            "change": 0.65,
-            "volRatio": 0.4,
-            "trustDays": 259,
-            "foreignNetBuy": 564,
-            "dealerDays": 187
-          },
-          {
-            "id": "3227",
-            "name": "原相",
-            "change": 0.25,
-            "volRatio": 0.05,
-            "trustDays": 0,
-            "foreignNetBuy": 321,
-            "dealerDays": -75
-          },
-          {
             "id": "6756",
             "name": "威鋒電子",
             "change": 0.52,
-            "volRatio": 0.16,
+            "volRatio": 0.28,
             "trustDays": 0,
             "foreignNetBuy": 29,
             "dealerDays": 2
           },
           {
+            "id": "2454",
+            "name": "聯發科",
+            "change": 0.65,
+            "volRatio": 0.63,
+            "trustDays": 259,
+            "foreignNetBuy": 564,
+            "dealerDays": 187
+          },
+          {
             "id": "5269",
             "name": "祥碩",
             "change": -0.71,
-            "volRatio": 0.07,
+            "volRatio": 0.19,
             "trustDays": 28,
             "foreignNetBuy": -95,
             "dealerDays": -18
@@ -2083,16 +2074,25 @@ const marketData = {
             "id": "2388",
             "name": "威盛",
             "change": -2.0,
-            "volRatio": 0.2,
+            "volRatio": 0.54,
             "trustDays": -163,
             "foreignNetBuy": -293,
             "dealerDays": -144
           },
           {
+            "id": "3227",
+            "name": "原相",
+            "change": 0.25,
+            "volRatio": 0.12,
+            "trustDays": 0,
+            "foreignNetBuy": 321,
+            "dealerDays": -75
+          },
+          {
             "id": "4961",
             "name": "天鈺",
             "change": -1.82,
-            "volRatio": 0.08,
+            "volRatio": 0.14,
             "trustDays": 0,
             "foreignNetBuy": -130,
             "dealerDays": -4
@@ -2101,7 +2101,7 @@ const marketData = {
             "id": "3592",
             "name": "瑞鼎",
             "change": 0.0,
-            "volRatio": 0.05,
+            "volRatio": 0.29,
             "trustDays": 0,
             "foreignNetBuy": 49,
             "dealerDays": 0
@@ -2110,7 +2110,7 @@ const marketData = {
             "id": "4973",
             "name": "廣穎",
             "change": -1.38,
-            "volRatio": 0.36,
+            "volRatio": 0.59,
             "trustDays": 0,
             "foreignNetBuy": 45,
             "dealerDays": -1
@@ -2119,7 +2119,7 @@ const marketData = {
             "id": "8040",
             "name": "九暘",
             "change": -1.94,
-            "volRatio": 0.06,
+            "volRatio": 0.15,
             "trustDays": 0,
             "foreignNetBuy": 13,
             "dealerDays": 0
@@ -2128,7 +2128,7 @@ const marketData = {
             "id": "2458",
             "name": "義隆",
             "change": -2.01,
-            "volRatio": 0.06,
+            "volRatio": 0.11,
             "trustDays": 579,
             "foreignNetBuy": -626,
             "dealerDays": -26
@@ -2137,7 +2137,7 @@ const marketData = {
             "id": "6415",
             "name": "矽力*-KY",
             "change": -1.86,
-            "volRatio": 0.19,
+            "volRatio": 0.39,
             "trustDays": -119,
             "foreignNetBuy": -49,
             "dealerDays": -11
@@ -2146,7 +2146,7 @@ const marketData = {
             "id": "8016",
             "name": "矽創",
             "change": -0.5,
-            "volRatio": 0.12,
+            "volRatio": 0.2,
             "trustDays": 0,
             "foreignNetBuy": -85,
             "dealerDays": -12
@@ -2155,7 +2155,7 @@ const marketData = {
             "id": "2363",
             "name": "矽統",
             "change": -3.22,
-            "volRatio": 0.05,
+            "volRatio": 0.13,
             "trustDays": 0,
             "foreignNetBuy": -1379,
             "dealerDays": -56
@@ -2164,7 +2164,7 @@ const marketData = {
             "id": "2401",
             "name": "凌陽",
             "change": -5.69,
-            "volRatio": 0.17,
+            "volRatio": 0.31,
             "trustDays": 0,
             "foreignNetBuy": -2728,
             "dealerDays": -213
@@ -2173,7 +2173,7 @@ const marketData = {
             "id": "6291",
             "name": "沛亨",
             "change": -0.93,
-            "volRatio": 0.39,
+            "volRatio": 0.71,
             "trustDays": 0,
             "foreignNetBuy": -140,
             "dealerDays": 7
@@ -2182,7 +2182,7 @@ const marketData = {
             "id": "6202",
             "name": "盛群",
             "change": -2.26,
-            "volRatio": 0.06,
+            "volRatio": 0.11,
             "trustDays": 0,
             "foreignNetBuy": -179,
             "dealerDays": 1
@@ -2191,7 +2191,7 @@ const marketData = {
             "id": "2436",
             "name": "偉詮電",
             "change": -1.79,
-            "volRatio": 0.1,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": -323,
             "dealerDays": -22
@@ -2200,7 +2200,7 @@ const marketData = {
             "id": "3228",
             "name": "金麗科",
             "change": -3.63,
-            "volRatio": 0.08,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": -7,
             "dealerDays": -5
@@ -2209,7 +2209,7 @@ const marketData = {
             "id": "6435",
             "name": "大中",
             "change": -3.62,
-            "volRatio": 0.09,
+            "volRatio": 0.17,
             "trustDays": 0,
             "foreignNetBuy": -9,
             "dealerDays": 5
@@ -2218,7 +2218,7 @@ const marketData = {
             "id": "5471",
             "name": "松翰",
             "change": -1.04,
-            "volRatio": 0.08,
+            "volRatio": 0.19,
             "trustDays": 0,
             "foreignNetBuy": -171,
             "dealerDays": -8
@@ -2227,7 +2227,7 @@ const marketData = {
             "id": "6693",
             "name": "廣閎科",
             "change": 1.29,
-            "volRatio": 0.09,
+            "volRatio": 0.29,
             "trustDays": 0,
             "foreignNetBuy": -84,
             "dealerDays": 78
@@ -2236,7 +2236,7 @@ const marketData = {
             "id": "6732",
             "name": "昇佳電子",
             "change": -6.27,
-            "volRatio": 0.18,
+            "volRatio": 0.34,
             "trustDays": 0,
             "foreignNetBuy": 51,
             "dealerDays": -15
@@ -2245,7 +2245,7 @@ const marketData = {
             "id": "3317",
             "name": "尼克森",
             "change": -1.5,
-            "volRatio": 0.08,
+            "volRatio": 0.16,
             "trustDays": 0,
             "foreignNetBuy": -28,
             "dealerDays": -21
@@ -2254,7 +2254,7 @@ const marketData = {
             "id": "3169",
             "name": "亞信",
             "change": -3.74,
-            "volRatio": 0.04,
+            "volRatio": 0.29,
             "trustDays": 0,
             "foreignNetBuy": -63,
             "dealerDays": -2
@@ -2263,7 +2263,7 @@ const marketData = {
             "id": "4952",
             "name": "凌通",
             "change": -1.59,
-            "volRatio": 0.04,
+            "volRatio": 0.11,
             "trustDays": 0,
             "foreignNetBuy": -61,
             "dealerDays": 3
@@ -2272,7 +2272,7 @@ const marketData = {
             "id": "6526",
             "name": "達發",
             "change": -0.51,
-            "volRatio": 0.17,
+            "volRatio": 0.34,
             "trustDays": 0,
             "foreignNetBuy": 23,
             "dealerDays": -4
@@ -2281,7 +2281,7 @@ const marketData = {
             "id": "4919",
             "name": "新唐",
             "change": -1.4,
-            "volRatio": 0.11,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": 526,
             "dealerDays": -35
@@ -2290,7 +2290,7 @@ const marketData = {
             "id": "4966",
             "name": "譜瑞-KY",
             "change": 0.0,
-            "volRatio": 0.1,
+            "volRatio": 0.2,
             "trustDays": 0,
             "foreignNetBuy": 24,
             "dealerDays": -13
@@ -2299,7 +2299,7 @@ const marketData = {
             "id": "6138",
             "name": "茂達",
             "change": -5.0,
-            "volRatio": 0.14,
+            "volRatio": 0.42,
             "trustDays": -37,
             "foreignNetBuy": -244,
             "dealerDays": -7
@@ -2308,7 +2308,7 @@ const marketData = {
             "id": "6462",
             "name": "神盾",
             "change": -1.29,
-            "volRatio": 0.72,
+            "volRatio": 1.13,
             "trustDays": 0,
             "foreignNetBuy": 27,
             "dealerDays": -5
@@ -2317,7 +2317,7 @@ const marketData = {
             "id": "3141",
             "name": "晶宏",
             "change": -2.43,
-            "volRatio": 0.11,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": 48,
             "dealerDays": 0
@@ -2326,7 +2326,7 @@ const marketData = {
             "id": "6719",
             "name": "力智",
             "change": -5.68,
-            "volRatio": 0.15,
+            "volRatio": 0.25,
             "trustDays": 0,
             "foreignNetBuy": -128,
             "dealerDays": -50
@@ -2335,7 +2335,7 @@ const marketData = {
             "id": "8081",
             "name": "致新",
             "change": -0.79,
-            "volRatio": 0.38,
+            "volRatio": 0.74,
             "trustDays": 0,
             "foreignNetBuy": -238,
             "dealerDays": 6
@@ -2344,7 +2344,7 @@ const marketData = {
             "id": "6962",
             "name": "奕力-KY",
             "change": -1.79,
-            "volRatio": 0.11,
+            "volRatio": 0.22,
             "trustDays": 0,
             "foreignNetBuy": -511,
             "dealerDays": -2
@@ -2353,7 +2353,7 @@ const marketData = {
             "id": "6679",
             "name": "鈺太",
             "change": -2.35,
-            "volRatio": 0.31,
+            "volRatio": 0.57,
             "trustDays": 0,
             "foreignNetBuy": -35,
             "dealerDays": -16
@@ -2362,7 +2362,7 @@ const marketData = {
             "id": "3545",
             "name": "敦泰",
             "change": -1.79,
-            "volRatio": 0.15,
+            "volRatio": 0.24,
             "trustDays": 0,
             "foreignNetBuy": -105,
             "dealerDays": -1
@@ -2371,7 +2371,7 @@ const marketData = {
             "id": "8054",
             "name": "安國",
             "change": -3.63,
-            "volRatio": 0.17,
+            "volRatio": 0.3,
             "trustDays": 0,
             "foreignNetBuy": -247,
             "dealerDays": 2
@@ -2380,7 +2380,7 @@ const marketData = {
             "id": "4968",
             "name": "立積",
             "change": -0.7,
-            "volRatio": 0.12,
+            "volRatio": 0.4,
             "trustDays": 0,
             "foreignNetBuy": -91,
             "dealerDays": -1
@@ -2389,7 +2389,7 @@ const marketData = {
             "id": "5236",
             "name": "凌陽創新",
             "change": -0.33,
-            "volRatio": 0.09,
+            "volRatio": 0.18,
             "trustDays": 0,
             "foreignNetBuy": -2,
             "dealerDays": -2
@@ -2398,7 +2398,7 @@ const marketData = {
             "id": "6104",
             "name": "創惟",
             "change": -2.11,
-            "volRatio": 0.07,
+            "volRatio": 0.15,
             "trustDays": 0,
             "foreignNetBuy": -113,
             "dealerDays": -14
@@ -2407,7 +2407,7 @@ const marketData = {
             "id": "6411",
             "name": "晶焱",
             "change": -1.82,
-            "volRatio": 0.04,
+            "volRatio": 0.16,
             "trustDays": 0,
             "foreignNetBuy": -43,
             "dealerDays": -4
@@ -2416,7 +2416,7 @@ const marketData = {
             "id": "6695",
             "name": "芯鼎",
             "change": -5.19,
-            "volRatio": 0.24,
+            "volRatio": 0.4,
             "trustDays": 0,
             "foreignNetBuy": -172,
             "dealerDays": 0
@@ -2425,7 +2425,7 @@ const marketData = {
             "id": "6485",
             "name": "點序",
             "change": -3.59,
-            "volRatio": 0.16,
+            "volRatio": 0.24,
             "trustDays": 0,
             "foreignNetBuy": -90,
             "dealerDays": -3
@@ -2434,7 +2434,7 @@ const marketData = {
             "id": "6237",
             "name": "驊訊",
             "change": -2.78,
-            "volRatio": 0.15,
+            "volRatio": 0.34,
             "trustDays": 0,
             "foreignNetBuy": -104,
             "dealerDays": -2
@@ -2443,7 +2443,7 @@ const marketData = {
             "id": "6568",
             "name": "宏觀",
             "change": 0.69,
-            "volRatio": 0.12,
+            "volRatio": 0.21,
             "trustDays": 0,
             "foreignNetBuy": -6,
             "dealerDays": -1
@@ -2458,10 +2458,19 @@ const marketData = {
         "totalInst5D": 5755,
         "stocks": [
           {
+            "id": "8021",
+            "name": "尖點",
+            "change": -2.87,
+            "volRatio": 1.52,
+            "trustDays": 190,
+            "foreignNetBuy": -623,
+            "dealerDays": -61
+          },
+          {
             "id": "2383",
             "name": "台光電",
             "change": -0.59,
-            "volRatio": 0.24,
+            "volRatio": 0.52,
             "trustDays": 39,
             "foreignNetBuy": -43,
             "dealerDays": 24
@@ -2470,25 +2479,16 @@ const marketData = {
             "id": "6274",
             "name": "台燿",
             "change": -1.48,
-            "volRatio": 0.18,
+            "volRatio": 0.62,
             "trustDays": 533,
             "foreignNetBuy": -916,
             "dealerDays": -124
           },
           {
-            "id": "8021",
-            "name": "尖點",
-            "change": -2.87,
-            "volRatio": 1.04,
-            "trustDays": 190,
-            "foreignNetBuy": -623,
-            "dealerDays": -61
-          },
-          {
             "id": "2493",
             "name": "揚博",
             "change": -9.92,
-            "volRatio": 0.44,
+            "volRatio": 0.78,
             "trustDays": 178,
             "foreignNetBuy": -387,
             "dealerDays": 3
@@ -2497,7 +2497,7 @@ const marketData = {
             "id": "2467",
             "name": "志聖",
             "change": -1.47,
-            "volRatio": 0.08,
+            "volRatio": 0.19,
             "trustDays": -34,
             "foreignNetBuy": 90,
             "dealerDays": -2
@@ -2506,7 +2506,7 @@ const marketData = {
             "id": "1815",
             "name": "富喬",
             "change": -1.99,
-            "volRatio": 0.09,
+            "volRatio": 0.23,
             "trustDays": 0,
             "foreignNetBuy": 1087,
             "dealerDays": -98
@@ -2515,7 +2515,7 @@ const marketData = {
             "id": "6217",
             "name": "中探針",
             "change": -1.45,
-            "volRatio": 0.08,
+            "volRatio": 0.16,
             "trustDays": 0,
             "foreignNetBuy": 270,
             "dealerDays": -3
@@ -2524,7 +2524,7 @@ const marketData = {
             "id": "5340",
             "name": "建榮",
             "change": -1.77,
-            "volRatio": 0.11,
+            "volRatio": 0.34,
             "trustDays": 0,
             "foreignNetBuy": 163,
             "dealerDays": -5
@@ -2533,7 +2533,7 @@ const marketData = {
             "id": "8074",
             "name": "鉅橡",
             "change": 0.35,
-            "volRatio": 0.13,
+            "volRatio": 0.3,
             "trustDays": 0,
             "foreignNetBuy": 95,
             "dealerDays": -5
@@ -2542,7 +2542,7 @@ const marketData = {
             "id": "6213",
             "name": "聯茂",
             "change": -6.4,
-            "volRatio": 0.25,
+            "volRatio": 0.59,
             "trustDays": 186,
             "foreignNetBuy": -6297,
             "dealerDays": -279
@@ -2551,7 +2551,7 @@ const marketData = {
             "id": "8358",
             "name": "金居",
             "change": -1.45,
-            "volRatio": 0.37,
+            "volRatio": 0.66,
             "trustDays": -199,
             "foreignNetBuy": -69,
             "dealerDays": -28
@@ -2560,7 +2560,7 @@ const marketData = {
             "id": "5234",
             "name": "達興材料",
             "change": 0.44,
-            "volRatio": 0.11,
+            "volRatio": 0.33,
             "trustDays": -20,
             "foreignNetBuy": -13,
             "dealerDays": -7
@@ -2569,7 +2569,7 @@ const marketData = {
             "id": "6664",
             "name": "群翊",
             "change": -2.43,
-            "volRatio": 0.07,
+            "volRatio": 0.26,
             "trustDays": 0,
             "foreignNetBuy": -74,
             "dealerDays": -6
@@ -2578,7 +2578,7 @@ const marketData = {
             "id": "5475",
             "name": "德宏",
             "change": -2.29,
-            "volRatio": 0.16,
+            "volRatio": 0.75,
             "trustDays": 0,
             "foreignNetBuy": -230,
             "dealerDays": -1
@@ -2587,7 +2587,7 @@ const marketData = {
             "id": "4770",
             "name": "上品",
             "change": 0.88,
-            "volRatio": 0.3,
+            "volRatio": 0.61,
             "trustDays": 0,
             "foreignNetBuy": 41,
             "dealerDays": 0
@@ -2596,7 +2596,7 @@ const marketData = {
             "id": "3305",
             "name": "昇貿",
             "change": 0.89,
-            "volRatio": 0.12,
+            "volRatio": 0.29,
             "trustDays": 0,
             "foreignNetBuy": -87,
             "dealerDays": -11
@@ -2605,7 +2605,7 @@ const marketData = {
             "id": "4542",
             "name": "科嶠",
             "change": -0.6,
-            "volRatio": 0.02,
+            "volRatio": 0.04,
             "trustDays": 0,
             "foreignNetBuy": -15,
             "dealerDays": 0
@@ -2614,7 +2614,7 @@ const marketData = {
             "id": "6192",
             "name": "巨路",
             "change": 0.0,
-            "volRatio": 0.14,
+            "volRatio": 0.41,
             "trustDays": 0,
             "foreignNetBuy": -15,
             "dealerDays": -1
@@ -2623,7 +2623,7 @@ const marketData = {
             "id": "6658",
             "name": "聯策",
             "change": -1.54,
-            "volRatio": 0.09,
+            "volRatio": 0.16,
             "trustDays": -9,
             "foreignNetBuy": -9,
             "dealerDays": 5
@@ -2632,7 +2632,7 @@ const marketData = {
             "id": "6727",
             "name": "亞泰金屬",
             "change": 2.6,
-            "volRatio": 0.02,
+            "volRatio": 0.06,
             "trustDays": 0,
             "foreignNetBuy": 7,
             "dealerDays": 8
@@ -2641,7 +2641,7 @@ const marketData = {
             "id": "3455",
             "name": "由田",
             "change": -0.25,
-            "volRatio": 0.18,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": -87,
             "dealerDays": 0
@@ -2650,7 +2650,7 @@ const marketData = {
             "id": "4989",
             "name": "榮科",
             "change": -3.03,
-            "volRatio": 0.09,
+            "volRatio": 0.2,
             "trustDays": 0,
             "foreignNetBuy": -282,
             "dealerDays": -5
@@ -2659,7 +2659,7 @@ const marketData = {
             "id": "5498",
             "name": "凱崴",
             "change": -1.91,
-            "volRatio": 0.15,
+            "volRatio": 0.38,
             "trustDays": 0,
             "foreignNetBuy": -226,
             "dealerDays": -10
@@ -2668,7 +2668,7 @@ const marketData = {
             "id": "6234",
             "name": "高僑",
             "change": -3.92,
-            "volRatio": 0.16,
+            "volRatio": 0.3,
             "trustDays": 0,
             "foreignNetBuy": 15,
             "dealerDays": -2
@@ -4750,7 +4750,7 @@ const marketData = {
             "id": "3529",
             "name": "力旺",
             "change": -3.65,
-            "volRatio": 0.18,
+            "volRatio": 0.3,
             "instToday": -93
           },
           {
@@ -6354,232 +6354,232 @@ const marketData = {
             "id": "5489",
             "name": "彩富",
             "change": -1.66,
-            "volRatio": 0.23,
+            "volRatio": 0.4,
             "instToday": -22
           },
           {
             "id": "4976",
             "name": "佳凌",
             "change": -0.16,
-            "volRatio": 0.06,
+            "volRatio": 0.16,
             "instToday": 17
           }
         ]
       },
       {
         "name": "太陽能",
-        "netFlow": -0.134,
-        "netFlow5D": -8.178,
-        "totalVol": 1994370750.0,
+        "netFlow": -0.245,
+        "netFlow5D": -9.475,
+        "totalVol": 3677385900.0,
         "avgChange": -2.439,
         "stocks": [
           {
             "id": "2406",
             "name": "國碩",
             "change": -5.52,
-            "volRatio": 0.11,
+            "volRatio": 0.23,
             "instToday": -5083
           },
           {
             "id": "6873",
             "name": "泓德能源",
             "change": -2.63,
-            "volRatio": 0.1,
+            "volRatio": 0.28,
             "instToday": -64
           },
           {
             "id": "3691",
             "name": "碩禾",
             "change": -1.68,
-            "volRatio": 0.1,
+            "volRatio": 0.21,
             "instToday": 30
           },
           {
             "id": "4949",
             "name": "有成精密",
             "change": 3.35,
-            "volRatio": 0.09,
+            "volRatio": 0.25,
             "instToday": 99
           },
           {
             "id": "6477",
             "name": "安集",
             "change": -4.11,
-            "volRatio": 0.34,
+            "volRatio": 0.51,
             "instToday": -206
           },
           {
             "id": "6244",
             "name": "茂迪",
             "change": -3.98,
-            "volRatio": 0.12,
+            "volRatio": 0.32,
             "instToday": -912
           },
           {
             "id": "6869",
             "name": "雲豹能源",
             "change": -1.46,
-            "volRatio": 0.15,
+            "volRatio": 0.48,
             "instToday": -29
           },
           {
             "id": "5483",
             "name": "中美晶",
             "change": 0.0,
-            "volRatio": 0.21,
+            "volRatio": 0.39,
             "instToday": -8270
           },
           {
             "id": "3576",
             "name": "聯合再生",
             "change": -5.66,
-            "volRatio": 0.15,
+            "volRatio": 0.25,
             "instToday": -2334
           },
           {
             "id": "6443",
             "name": "元晶",
             "change": -2.7,
-            "volRatio": 0.14,
+            "volRatio": 0.3,
             "instToday": -56
           }
         ]
       },
       {
         "name": "顯示器",
-        "netFlow": 0.156,
-        "netFlow5D": 0.204,
-        "totalVol": 222233650.0,
+        "netFlow": 0.165,
+        "netFlow5D": 0.161,
+        "totalVol": 340272600.0,
         "avgChange": 3.486666666666667,
         "stocks": [
           {
             "id": "6577",
             "name": "勁豐",
             "change": 9.99,
-            "volRatio": 10.7,
+            "volRatio": 10.88,
             "instToday": -23
           },
           {
             "id": "2352",
             "name": "佳世達",
             "change": 0.0,
-            "volRatio": 0.04,
+            "volRatio": 0.12,
             "instToday": 5734
           },
           {
             "id": "2489",
             "name": "瑞軒",
             "change": 0.47,
-            "volRatio": 0.12,
+            "volRatio": 0.31,
             "instToday": -574
           }
         ]
       },
       {
         "name": "LCD-TFT面板",
-        "netFlow": -0.289,
-        "netFlow5D": -2.263,
-        "totalVol": 5052100350.0,
+        "netFlow": -0.486,
+        "netFlow5D": -4.328,
+        "totalVol": 9098021800.0,
         "avgChange": -0.696,
         "stocks": [
           {
             "id": "3481",
             "name": "群創",
             "change": -1.14,
-            "volRatio": 0.19,
+            "volRatio": 0.32,
             "instToday": 5790
           },
           {
             "id": "8069",
             "name": "元太",
             "change": -1.29,
-            "volRatio": 0.13,
+            "volRatio": 0.27,
             "instToday": 797
           },
           {
             "id": "4749",
             "name": "新應材",
             "change": -0.74,
-            "volRatio": 0.12,
+            "volRatio": 0.51,
             "instToday": 69
           },
           {
             "id": "2409",
             "name": "友達",
             "change": 1.74,
-            "volRatio": 0.11,
+            "volRatio": 0.21,
             "instToday": 9842
           },
           {
             "id": "6116",
             "name": "彩晶",
             "change": -2.05,
-            "volRatio": 0.11,
+            "volRatio": 0.2,
             "instToday": -954
           }
         ]
       },
       {
         "name": "百貨",
-        "netFlow": -0.014,
-        "netFlow5D": -0.244,
-        "totalVol": 209178250.0,
+        "netFlow": -0.031,
+        "netFlow5D": -0.245,
+        "totalVol": 453569150.0,
         "avgChange": -0.5387500000000001,
         "stocks": [
           {
             "id": "2912",
             "name": "統一超",
             "change": -1.04,
-            "volRatio": 0.14,
+            "volRatio": 0.3,
             "instToday": -1449
           },
           {
             "id": "2915",
             "name": "潤泰全",
             "change": 0.19,
-            "volRatio": 0.08,
+            "volRatio": 0.19,
             "instToday": -331
           },
           {
             "id": "5904",
             "name": "寶雅",
             "change": 0.63,
-            "volRatio": 0.11,
+            "volRatio": 0.25,
             "instToday": -20
           },
           {
             "id": "8454",
             "name": "富邦媒",
             "change": -1.41,
-            "volRatio": 0.11,
+            "volRatio": 0.29,
             "instToday": 238
           },
           {
             "id": "2903",
             "name": "遠百",
             "change": -0.45,
-            "volRatio": 0.2,
+            "volRatio": 0.36,
             "instToday": -118
           },
           {
             "id": "2908",
             "name": "特力",
             "change": 0.23,
-            "volRatio": 0.3,
+            "volRatio": 0.4,
             "instToday": 1
           },
           {
             "id": "2913",
             "name": "農林",
             "change": -2.19,
-            "volRatio": 0.04,
+            "volRatio": 0.1,
             "instToday": -251
           },
           {
             "id": "5903",
             "name": "全家",
             "change": -0.27,
-            "volRatio": 0.67,
+            "volRatio": 0.08,
             "instToday": -6
           }
         ]
@@ -7961,6 +7961,13 @@ const marketData = {
             "instToday": 710
           },
           {
+            "id": "6176",
+            "name": "瑞儀",
+            "change": 0.69,
+            "volRatio": 0.33,
+            "instToday": 1601
+          },
+          {
             "id": "5371",
             "name": "中光電",
             "change": 2.04,
@@ -8333,315 +8340,331 @@ const marketData = {
       },
       {
         "name": "LCD-STN面板",
-        "netFlow": -0.152,
-        "netFlow5D": -1.115,
-        "totalVol": 333690400.0,
+        "netFlow": -0.274,
+        "netFlow5D": -1.318,
+        "totalVol": 658443900.0,
         "avgChange": -3.171666666666667,
         "stocks": [
           {
             "id": "3149",
             "name": "正達",
             "change": -5.91,
-            "volRatio": 0.24,
+            "volRatio": 0.41,
             "instToday": 2291
           },
           {
             "id": "3622",
             "name": "洋華",
             "change": 0.19,
-            "volRatio": 0.09,
+            "volRatio": 0.21,
             "instToday": -9
           },
           {
             "id": "8105",
             "name": "凌巨",
             "change": -3.37,
-            "volRatio": 0.05,
+            "volRatio": 0.13,
             "instToday": -869
           },
           {
             "id": "3615",
             "name": "安可",
             "change": -6.52,
-            "volRatio": 0.14,
+            "volRatio": 0.23,
             "instToday": -195
           },
           {
             "id": "3673",
             "name": "TPK-KY",
             "change": -1.53,
-            "volRatio": 0.1,
+            "volRatio": 0.27,
             "instToday": -90
           },
           {
             "id": "6456",
             "name": "GIS-KY",
             "change": -1.89,
-            "volRatio": 0.17,
+            "volRatio": 0.38,
             "instToday": 344
           }
         ]
       },
       {
         "name": "電子元件通路",
-        "netFlow": 0.0,
-        "netFlow5D": 0.01,
-        "totalVol": 1260000.0,
+        "netFlow": 0.001,
+        "netFlow5D": 0.007,
+        "totalVol": 8977500.0,
         "avgChange": 1.29,
         "stocks": [
           {
             "id": "6761",
             "name": "穩得",
             "change": 1.29,
-            "volRatio": 0.02,
+            "volRatio": 0.17,
             "instToday": 24
           }
         ]
       },
       {
         "name": "一般",
-        "netFlow": -0.529,
-        "netFlow5D": -87.389,
-        "totalVol": 9447534550.0,
-        "avgChange": -0.5211764705882352,
+        "netFlow": -3.449,
+        "netFlow5D": -91.411,
+        "totalVol": 19147493850.0,
+        "avgChange": -0.8917647058823528,
         "stocks": [
           {
             "id": "00919",
             "name": "群益台灣精選高息",
             "change": 0.14,
-            "volRatio": 0.13,
+            "volRatio": 0.27,
             "instToday": 2537
           },
           {
             "id": "00981B",
             "name": "第一金優選非投債",
             "change": -0.22,
-            "volRatio": 0.3,
+            "volRatio": 0.42,
             "instToday": -4427
           },
           {
             "id": "00719B",
             "name": "元大美債1-3",
-            "change": 0.0,
-            "volRatio": 0.13,
+            "change": 0.06,
+            "volRatio": 0.36,
             "instToday": -1974
           },
           {
             "id": "0050",
             "name": "元大台灣50",
             "change": 0.05,
-            "volRatio": 0.14,
+            "volRatio": 0.31,
             "instToday": -5750
           },
           {
             "id": "00955",
             "name": "中信日本商社",
             "change": 0.13,
-            "volRatio": 0.14,
+            "volRatio": 0.44,
             "instToday": 3776
           },
           {
             "id": "6945",
             "name": "圓祥生技",
             "change": -1.22,
-            "volRatio": 0.08,
+            "volRatio": 0.14,
             "instToday": -61
           },
           {
             "id": "00403A",
             "name": "主動統一升級50",
-            "change": -0.9,
-            "volRatio": 0.13,
+            "change": -3.2,
+            "volRatio": 0.37,
             "instToday": 25760
           },
           {
             "id": "00981A",
             "name": "主動統一台股增長",
-            "change": 0.11,
-            "volRatio": 0.16,
+            "change": -3.02,
+            "volRatio": 0.38,
             "instToday": 49705
           },
           {
             "id": "00631L",
             "name": "元大台灣50正2",
-            "change": -1.41,
-            "volRatio": 0.3,
+            "change": -3.94,
+            "volRatio": 0.5,
             "instToday": 23433
           },
           {
             "id": "00679B",
             "name": "元大美債20年",
-            "change": -0.34,
-            "volRatio": 0.12,
+            "change": -0.22,
+            "volRatio": 0.22,
             "instToday": -1058
           },
           {
             "id": "009816",
             "name": "凱基台灣TOP50",
             "change": 0.27,
-            "volRatio": 0.14,
+            "volRatio": 0.3,
             "instToday": 8972
           },
           {
             "id": "00632R",
             "name": "元大台灣50反1",
-            "change": 0.58,
-            "volRatio": 0.32,
+            "change": 1.92,
+            "volRatio": 0.55,
             "instToday": -43197
           },
           {
             "id": "0052",
             "name": "富邦科技",
             "change": 0.5,
-            "volRatio": 0.12,
+            "volRatio": 0.42,
             "instToday": 2924
           },
           {
             "id": "00988A",
             "name": "主動統一全球創新",
-            "change": -0.79,
-            "volRatio": 0.13,
+            "change": -2.89,
+            "volRatio": 0.27,
             "instToday": 8267
-          },
-          {
-            "id": "00738U",
-            "name": "期元大道瓊白銀",
-            "change": -3.17,
-            "volRatio": 0.4,
-            "instToday": 547
           },
           {
             "id": "00991A",
             "name": "主動復華未來50",
-            "change": -1.27,
-            "volRatio": 0.15,
+            "change": -4.67,
+            "volRatio": 0.43,
             "instToday": 1231
           },
           {
             "id": "00795B",
             "name": "中信美國公債20年",
-            "change": -0.26,
-            "volRatio": 0.08,
+            "change": -0.22,
+            "volRatio": 0.48,
             "instToday": -900
           },
           {
             "id": "00764B",
             "name": "群益25年美債",
             "change": -0.25,
-            "volRatio": 0.0,
+            "volRatio": 0.05,
             "instToday": -82
           },
           {
             "id": "00948B",
             "name": "中信優息投資級債",
-            "change": -0.32,
-            "volRatio": 0.07,
+            "change": -0.43,
+            "volRatio": 0.17,
             "instToday": -1851
           },
           {
             "id": "00696B",
             "name": "富邦美債20年",
-            "change": -0.28,
-            "volRatio": 0.08,
+            "change": -0.31,
+            "volRatio": 0.16,
             "instToday": -131
           },
           {
             "id": "00878",
             "name": "國泰永續高股息",
             "change": 0.03,
-            "volRatio": 0.14,
+            "volRatio": 0.28,
             "instToday": -3655
           },
           {
             "id": "00937B",
             "name": "群益ESG投等債20+",
-            "change": -0.34,
-            "volRatio": 0.21,
+            "change": -0.41,
+            "volRatio": 0.41,
             "instToday": -35715
           },
           {
             "id": "0056",
             "name": "元大高股息",
             "change": -0.59,
-            "volRatio": 0.14,
+            "volRatio": 0.22,
             "instToday": 4918
+          },
+          {
+            "id": "00738U",
+            "name": "期元大道瓊白銀",
+            "change": -3.55,
+            "volRatio": 0.55,
+            "instToday": 547
           },
           {
             "id": "00687B",
             "name": "國泰20年美債",
-            "change": -0.22,
-            "volRatio": 0.07,
+            "change": -0.18,
+            "volRatio": 0.22,
             "instToday": -551
           },
           {
             "id": "00720B",
             "name": "元大投資級公司債",
-            "change": -0.43,
-            "volRatio": 0.15,
+            "change": -0.46,
+            "volRatio": 0.44,
             "instToday": -796
           },
           {
             "id": "00933B",
             "name": "國泰10Y+金融債",
             "change": -0.31,
-            "volRatio": 0.33,
+            "volRatio": 0.51,
             "instToday": -6880
           },
           {
             "id": "00751B",
             "name": "元大AAA至A公司債",
-            "change": -0.42,
-            "volRatio": 0.32,
+            "change": -0.45,
+            "volRatio": 0.51,
             "instToday": -981
           },
           {
             "id": "00724B",
             "name": "群益投資級金融債",
-            "change": -0.42,
-            "volRatio": 0.05,
+            "change": -0.45,
+            "volRatio": 0.06,
             "instToday": -69
           },
           {
             "id": "00887",
             "name": "永豐中國科技50大",
             "change": -1.97,
-            "volRatio": 0.15,
+            "volRatio": 0.21,
             "instToday": -4562
           },
           {
             "id": "00725B",
             "name": "國泰投資級公司債",
-            "change": -0.43,
-            "volRatio": 0.65,
+            "change": -0.4,
+            "volRatio": 0.72,
             "instToday": -1470
           },
           {
             "id": "00772B",
             "name": "中信高評級公司債",
-            "change": -0.45,
-            "volRatio": 0.29,
+            "change": -0.39,
+            "volRatio": 0.42,
             "instToday": -1118
           },
           {
             "id": "00877",
             "name": "復華中國5G",
             "change": -2.65,
-            "volRatio": 0.18,
+            "volRatio": 0.29,
             "instToday": -530
           },
           {
             "id": "00722B",
             "name": "群益投資級電信債",
-            "change": -0.51,
-            "volRatio": 0.04,
+            "change": -0.66,
+            "volRatio": 0.26,
             "instToday": -533
           },
           {
             "id": "00950B",
             "name": "凱基A級公司債",
             "change": -0.36,
-            "volRatio": 0.14,
+            "volRatio": 0.31,
             "instToday": -2753
+          }
+        ]
+      },
+      {
+        "name": "手機製造",
+        "netFlow": 0.001,
+        "netFlow5D": 0.049,
+        "totalVol": 121300500.0,
+        "avgChange": 0.12,
+        "stocks": [
+          {
+            "id": "2498",
+            "name": "宏達電",
+            "change": 0.12,
+            "volRatio": 0.55,
+            "instToday": -115
           }
         ]
       },
@@ -20928,9 +20951,9 @@ const marketData = {
       "industry": "電子上游:IC-設計",
       "price": 171.0,
       "change": -2.01,
-      "dailyVol": 394,
-      "volRatio": 0.06,
-      "turnover": 0.13,
+      "dailyVol": 747,
+      "volRatio": 0.11,
+      "turnover": 0.25,
       "marketCap": 519.64,
       "eps": 2.46,
       "epsYoY": null,
@@ -20955,7 +20978,7 @@ const marketData = {
       "ma20Rising": false,
       "closeToHigh": true,
       "dist52W": 9.5,
-      "rsi14": 41.51,
+      "rsi14": 39.29,
       "type": "none",
       "kline": [
         {
@@ -22945,10 +22968,10 @@ const marketData = {
         {
           "date": "2026-07-24",
           "open": 169.0,
-          "high": 171.0,
+          "high": 171.5,
           "low": 166.0,
-          "close": 170.0,
-          "volume": 394886
+          "close": 167.0,
+          "volume": 747617
         }
       ]
     },
@@ -22959,9 +22982,9 @@ const marketData = {
       "industry": "傳產:生技",
       "price": 401.0,
       "change": -5.2,
-      "dailyVol": 109,
-      "volRatio": 0.1,
-      "turnover": 0.09,
+      "dailyVol": 217,
+      "volRatio": 0.2,
+      "turnover": 0.17,
       "marketCap": 512.32,
       "eps": 0.21,
       "epsYoY": null,
@@ -22986,7 +23009,7 @@ const marketData = {
       "ma20Rising": false,
       "closeToHigh": false,
       "dist52W": 49.4,
-      "rsi14": 39.69,
+      "rsi14": 37.88,
       "type": "none",
       "kline": [
         {
@@ -24976,10 +24999,10 @@ const marketData = {
         {
           "date": "2026-07-24",
           "open": 398.0,
-          "high": 404.5,
-          "low": 398.0,
-          "close": 403.0,
-          "volume": 109641
+          "high": 407.0,
+          "low": 397.5,
+          "close": 398.0,
+          "volume": 217050
         }
       ]
     },
@@ -24990,9 +25013,9 @@ const marketData = {
       "industry": "電子上游:IP/ASIC",
       "price": 193.0,
       "change": -3.02,
-      "dailyVol": 1123,
-      "volRatio": 0.19,
-      "turnover": 0.43,
+      "dailyVol": 1890,
+      "volRatio": 0.32,
+      "turnover": 0.73,
       "marketCap": 502.86,
       "eps": 0.4,
       "epsYoY": null,
@@ -25017,7 +25040,7 @@ const marketData = {
       "ma20Rising": false,
       "closeToHigh": false,
       "dist52W": 17.2,
-      "rsi14": 41.81,
+      "rsi14": 38.73,
       "type": "none",
       "kline": [
         {
@@ -126504,8 +126527,2039 @@ const marketData = {
           "open": 190.0,
           "high": 197.5,
           "low": 189.0,
-          "close": 196.5,
-          "volume": 1123388
+          "close": 191.5,
+          "volume": 1890942
+        }
+      ]
+    },
+    {
+      "id": "1773",
+      "name": "勝一",
+      "market": "TSE",
+      "industry": "傳產:化學工業",
+      "price": 167.5,
+      "change": -0.89,
+      "dailyVol": 559,
+      "volRatio": 0.88,
+      "turnover": 0.19,
+      "marketCap": 502.5,
+      "eps": 2.02,
+      "epsYoY": null,
+      "revYoY": 20.49,
+      "roe": 5.04,
+      "grossMargin": 37.55,
+      "debtRatio": 32.56,
+      "trustDays": 0,
+      "foreignBuy": false,
+      "foreignNetBuy": -103,
+      "dealerDays": -12,
+      "instSum5D": -770,
+      "instAvg7D": -9.4,
+      "instDetail5D": [
+        -115,
+        -120,
+        -125,
+        -284,
+        -126
+      ],
+      "maBull": false,
+      "ma20Rising": false,
+      "closeToHigh": true,
+      "dist52W": 12.1,
+      "rsi14": 28.16,
+      "type": "none",
+      "kline": [
+        {
+          "date": "2025-07-16",
+          "open": 125.6,
+          "high": 128.05,
+          "low": 125.6,
+          "close": 126.58,
+          "volume": 231289
+        },
+        {
+          "date": "2025-07-17",
+          "open": 127.56,
+          "high": 130.0,
+          "low": 127.56,
+          "close": 130.0,
+          "volume": 298366
+        },
+        {
+          "date": "2025-07-18",
+          "open": 131.96,
+          "high": 132.45,
+          "low": 129.51,
+          "close": 130.98,
+          "volume": 248388
+        },
+        {
+          "date": "2025-07-21",
+          "open": 131.47,
+          "high": 132.94,
+          "low": 130.98,
+          "close": 131.96,
+          "volume": 200060
+        },
+        {
+          "date": "2025-07-22",
+          "open": 130.98,
+          "high": 130.98,
+          "low": 128.05,
+          "close": 129.03,
+          "volume": 227251
+        },
+        {
+          "date": "2025-07-23",
+          "open": 130.49,
+          "high": 131.96,
+          "low": 129.03,
+          "close": 131.96,
+          "volume": 176050
+        },
+        {
+          "date": "2025-07-24",
+          "open": 131.96,
+          "high": 131.96,
+          "low": 128.54,
+          "close": 129.51,
+          "volume": 275217
+        },
+        {
+          "date": "2025-07-25",
+          "open": 129.03,
+          "high": 129.03,
+          "low": 125.6,
+          "close": 126.09,
+          "volume": 411050
+        },
+        {
+          "date": "2025-07-28",
+          "open": 126.09,
+          "high": 127.07,
+          "low": 125.12,
+          "close": 126.09,
+          "volume": 104100
+        },
+        {
+          "date": "2025-07-29",
+          "open": 127.07,
+          "high": 127.07,
+          "low": 122.67,
+          "close": 123.65,
+          "volume": 388969
+        },
+        {
+          "date": "2025-07-30",
+          "open": 124.14,
+          "high": 124.14,
+          "low": 122.67,
+          "close": 123.65,
+          "volume": 171400
+        },
+        {
+          "date": "2025-07-31",
+          "open": 123.65,
+          "high": 125.12,
+          "low": 123.65,
+          "close": 124.14,
+          "volume": 178232
+        },
+        {
+          "date": "2025-08-04",
+          "open": 122.18,
+          "high": 124.14,
+          "low": 121.21,
+          "close": 122.18,
+          "volume": 142150
+        },
+        {
+          "date": "2025-08-05",
+          "open": 123.16,
+          "high": 123.65,
+          "low": 122.18,
+          "close": 122.18,
+          "volume": 240400
+        },
+        {
+          "date": "2025-08-06",
+          "open": 122.18,
+          "high": 124.14,
+          "low": 122.18,
+          "close": 122.67,
+          "volume": 148239
+        },
+        {
+          "date": "2025-08-07",
+          "open": 123.65,
+          "high": 131.96,
+          "low": 123.65,
+          "close": 130.49,
+          "volume": 951600
+        },
+        {
+          "date": "2025-08-08",
+          "open": 128.54,
+          "high": 129.03,
+          "low": 124.14,
+          "close": 126.09,
+          "volume": 821180
+        },
+        {
+          "date": "2025-08-11",
+          "open": 126.09,
+          "high": 128.05,
+          "low": 124.63,
+          "close": 127.07,
+          "volume": 361281
+        },
+        {
+          "date": "2025-08-12",
+          "open": 127.07,
+          "high": 134.89,
+          "low": 125.6,
+          "close": 133.91,
+          "volume": 2046460
+        },
+        {
+          "date": "2025-08-13",
+          "open": 136.36,
+          "high": 137.33,
+          "low": 132.45,
+          "close": 134.4,
+          "volume": 2463407
+        },
+        {
+          "date": "2025-08-14",
+          "open": 133.91,
+          "high": 134.4,
+          "low": 131.47,
+          "close": 131.96,
+          "volume": 646626
+        },
+        {
+          "date": "2025-08-15",
+          "open": 133.42,
+          "high": 133.91,
+          "low": 131.96,
+          "close": 133.91,
+          "volume": 444120
+        },
+        {
+          "date": "2025-08-18",
+          "open": 134.4,
+          "high": 139.78,
+          "low": 133.42,
+          "close": 139.78,
+          "volume": 1433353
+        },
+        {
+          "date": "2025-08-19",
+          "open": 139.78,
+          "high": 139.78,
+          "low": 135.87,
+          "close": 137.33,
+          "volume": 889260
+        },
+        {
+          "date": "2025-08-20",
+          "open": 137.82,
+          "high": 138.31,
+          "low": 132.94,
+          "close": 132.94,
+          "volume": 916360
+        },
+        {
+          "date": "2025-08-21",
+          "open": 134.89,
+          "high": 138.8,
+          "low": 133.91,
+          "close": 135.38,
+          "volume": 1006377
+        },
+        {
+          "date": "2025-08-22",
+          "open": 136.36,
+          "high": 136.36,
+          "low": 132.45,
+          "close": 132.94,
+          "volume": 431413
+        },
+        {
+          "date": "2025-08-25",
+          "open": 134.4,
+          "high": 134.89,
+          "low": 132.94,
+          "close": 133.42,
+          "volume": 331014
+        },
+        {
+          "date": "2025-08-26",
+          "open": 132.94,
+          "high": 132.94,
+          "low": 130.49,
+          "close": 132.94,
+          "volume": 531825
+        },
+        {
+          "date": "2025-08-27",
+          "open": 132.94,
+          "high": 134.89,
+          "low": 132.45,
+          "close": 132.94,
+          "volume": 784917
+        },
+        {
+          "date": "2025-08-28",
+          "open": 134.4,
+          "high": 136.85,
+          "low": 133.42,
+          "close": 135.38,
+          "volume": 846129
+        },
+        {
+          "date": "2025-08-29",
+          "open": 138.31,
+          "high": 139.78,
+          "low": 135.38,
+          "close": 137.33,
+          "volume": 1194762
+        },
+        {
+          "date": "2025-09-01",
+          "open": 137.82,
+          "high": 151.02,
+          "low": 137.82,
+          "close": 151.02,
+          "volume": 8420518
+        },
+        {
+          "date": "2025-09-02",
+          "open": 151.02,
+          "high": 151.02,
+          "low": 142.71,
+          "close": 145.15,
+          "volume": 6618036
+        },
+        {
+          "date": "2025-09-03",
+          "open": 144.66,
+          "high": 150.53,
+          "low": 142.22,
+          "close": 149.55,
+          "volume": 2320454
+        },
+        {
+          "date": "2025-09-04",
+          "open": 149.55,
+          "high": 149.55,
+          "low": 143.69,
+          "close": 144.18,
+          "volume": 2203235
+        },
+        {
+          "date": "2025-09-05",
+          "open": 146.13,
+          "high": 146.62,
+          "low": 142.71,
+          "close": 144.66,
+          "volume": 1077372
+        },
+        {
+          "date": "2025-09-08",
+          "open": 143.69,
+          "high": 144.18,
+          "low": 139.29,
+          "close": 140.27,
+          "volume": 1926088
+        },
+        {
+          "date": "2025-09-09",
+          "open": 140.27,
+          "high": 142.22,
+          "low": 138.8,
+          "close": 139.29,
+          "volume": 1004374
+        },
+        {
+          "date": "2025-09-10",
+          "open": 139.78,
+          "high": 141.24,
+          "low": 138.8,
+          "close": 139.78,
+          "volume": 669581
+        },
+        {
+          "date": "2025-09-11",
+          "open": 140.27,
+          "high": 140.27,
+          "low": 134.89,
+          "close": 135.38,
+          "volume": 1411344
+        },
+        {
+          "date": "2025-09-12",
+          "open": 135.87,
+          "high": 137.33,
+          "low": 134.89,
+          "close": 135.38,
+          "volume": 450176
+        },
+        {
+          "date": "2025-09-15",
+          "open": 135.87,
+          "high": 136.85,
+          "low": 134.4,
+          "close": 135.38,
+          "volume": 339140
+        },
+        {
+          "date": "2025-09-16",
+          "open": 136.36,
+          "high": 136.85,
+          "low": 134.89,
+          "close": 135.38,
+          "volume": 370146
+        },
+        {
+          "date": "2025-09-17",
+          "open": 135.87,
+          "high": 136.36,
+          "low": 132.45,
+          "close": 133.42,
+          "volume": 784790
+        },
+        {
+          "date": "2025-09-18",
+          "open": 134.4,
+          "high": 135.38,
+          "low": 133.91,
+          "close": 133.91,
+          "volume": 354516
+        },
+        {
+          "date": "2025-09-19",
+          "open": 134.89,
+          "high": 135.87,
+          "low": 132.45,
+          "close": 132.94,
+          "volume": 1029211
+        },
+        {
+          "date": "2025-09-22",
+          "open": 132.94,
+          "high": 135.38,
+          "low": 132.94,
+          "close": 133.91,
+          "volume": 280400
+        },
+        {
+          "date": "2025-09-23",
+          "open": 134.4,
+          "high": 136.36,
+          "low": 134.4,
+          "close": 134.89,
+          "volume": 480585
+        },
+        {
+          "date": "2025-09-24",
+          "open": 135.87,
+          "high": 135.87,
+          "low": 132.94,
+          "close": 133.42,
+          "volume": 455101
+        },
+        {
+          "date": "2025-09-25",
+          "open": 134.4,
+          "high": 135.38,
+          "low": 132.94,
+          "close": 132.94,
+          "volume": 331414
+        },
+        {
+          "date": "2025-09-26",
+          "open": 132.94,
+          "high": 132.94,
+          "low": 128.54,
+          "close": 130.0,
+          "volume": 729404
+        },
+        {
+          "date": "2025-09-30",
+          "open": 130.98,
+          "high": 131.96,
+          "low": 129.51,
+          "close": 131.96,
+          "volume": 336310
+        },
+        {
+          "date": "2025-10-01",
+          "open": 131.96,
+          "high": 134.89,
+          "low": 131.96,
+          "close": 133.42,
+          "volume": 565320
+        },
+        {
+          "date": "2025-10-02",
+          "open": 135.38,
+          "high": 135.38,
+          "low": 133.42,
+          "close": 134.4,
+          "volume": 358106
+        },
+        {
+          "date": "2025-10-03",
+          "open": 134.89,
+          "high": 138.31,
+          "low": 134.89,
+          "close": 137.82,
+          "volume": 1126654
+        },
+        {
+          "date": "2025-10-07",
+          "open": 138.8,
+          "high": 141.73,
+          "low": 137.82,
+          "close": 140.27,
+          "volume": 1232433
+        },
+        {
+          "date": "2025-10-08",
+          "open": 139.78,
+          "high": 140.27,
+          "low": 138.8,
+          "close": 138.8,
+          "volume": 632718
+        },
+        {
+          "date": "2025-10-09",
+          "open": 140.27,
+          "high": 142.22,
+          "low": 139.29,
+          "close": 141.73,
+          "volume": 937342
+        },
+        {
+          "date": "2025-10-13",
+          "open": 136.85,
+          "high": 142.71,
+          "low": 134.89,
+          "close": 141.73,
+          "volume": 1180364
+        },
+        {
+          "date": "2025-10-14",
+          "open": 142.71,
+          "high": 145.15,
+          "low": 140.75,
+          "close": 140.75,
+          "volume": 1151630
+        },
+        {
+          "date": "2025-10-15",
+          "open": 143.2,
+          "high": 143.2,
+          "low": 139.78,
+          "close": 142.71,
+          "volume": 470329
+        },
+        {
+          "date": "2025-10-16",
+          "open": 143.2,
+          "high": 146.62,
+          "low": 143.2,
+          "close": 146.13,
+          "volume": 1063506
+        },
+        {
+          "date": "2025-10-17",
+          "open": 145.15,
+          "high": 146.62,
+          "low": 142.22,
+          "close": 142.71,
+          "volume": 627350
+        },
+        {
+          "date": "2025-10-20",
+          "open": 142.71,
+          "high": 142.71,
+          "low": 141.24,
+          "close": 142.22,
+          "volume": 555010
+        },
+        {
+          "date": "2025-10-21",
+          "open": 143.69,
+          "high": 144.18,
+          "low": 140.27,
+          "close": 140.75,
+          "volume": 581330
+        },
+        {
+          "date": "2025-10-22",
+          "open": 141.73,
+          "high": 142.71,
+          "low": 138.31,
+          "close": 138.8,
+          "volume": 467900
+        },
+        {
+          "date": "2025-10-23",
+          "open": 138.8,
+          "high": 142.22,
+          "low": 137.82,
+          "close": 139.29,
+          "volume": 579602
+        },
+        {
+          "date": "2025-10-27",
+          "open": 139.78,
+          "high": 140.75,
+          "low": 136.85,
+          "close": 136.85,
+          "volume": 484540
+        },
+        {
+          "date": "2025-10-28",
+          "open": 137.33,
+          "high": 138.31,
+          "low": 135.38,
+          "close": 135.87,
+          "volume": 352593
+        },
+        {
+          "date": "2025-10-29",
+          "open": 136.36,
+          "high": 139.78,
+          "low": 136.36,
+          "close": 137.82,
+          "volume": 555879
+        },
+        {
+          "date": "2025-10-30",
+          "open": 138.31,
+          "high": 140.27,
+          "low": 138.31,
+          "close": 138.8,
+          "volume": 526170
+        },
+        {
+          "date": "2025-10-31",
+          "open": 141.24,
+          "high": 143.69,
+          "low": 140.75,
+          "close": 142.71,
+          "volume": 860545
+        },
+        {
+          "date": "2025-11-03",
+          "open": 144.18,
+          "high": 144.18,
+          "low": 139.78,
+          "close": 140.27,
+          "volume": 480800
+        },
+        {
+          "date": "2025-11-04",
+          "open": 141.24,
+          "high": 141.73,
+          "low": 139.29,
+          "close": 140.75,
+          "volume": 343430
+        },
+        {
+          "date": "2025-11-05",
+          "open": 140.75,
+          "high": 140.75,
+          "low": 137.33,
+          "close": 139.78,
+          "volume": 315680
+        },
+        {
+          "date": "2025-11-06",
+          "open": 140.75,
+          "high": 140.75,
+          "low": 138.8,
+          "close": 139.78,
+          "volume": 270274
+        },
+        {
+          "date": "2025-11-07",
+          "open": 139.78,
+          "high": 139.78,
+          "low": 136.36,
+          "close": 137.33,
+          "volume": 390471
+        },
+        {
+          "date": "2025-11-10",
+          "open": 137.82,
+          "high": 138.8,
+          "low": 136.36,
+          "close": 138.31,
+          "volume": 231252
+        },
+        {
+          "date": "2025-11-11",
+          "open": 138.8,
+          "high": 139.29,
+          "low": 136.36,
+          "close": 136.85,
+          "volume": 283969
+        },
+        {
+          "date": "2025-11-12",
+          "open": 137.82,
+          "high": 140.27,
+          "low": 137.33,
+          "close": 138.31,
+          "volume": 279650
+        },
+        {
+          "date": "2025-11-13",
+          "open": 138.31,
+          "high": 141.73,
+          "low": 138.31,
+          "close": 139.78,
+          "volume": 513670
+        },
+        {
+          "date": "2025-11-14",
+          "open": 138.8,
+          "high": 140.75,
+          "low": 138.31,
+          "close": 138.8,
+          "volume": 417429
+        },
+        {
+          "date": "2025-11-17",
+          "open": 138.8,
+          "high": 138.8,
+          "low": 134.89,
+          "close": 134.89,
+          "volume": 675765
+        },
+        {
+          "date": "2025-11-18",
+          "open": 133.42,
+          "high": 134.89,
+          "low": 130.49,
+          "close": 130.49,
+          "volume": 619066
+        },
+        {
+          "date": "2025-11-19",
+          "open": 129.51,
+          "high": 130.49,
+          "low": 128.05,
+          "close": 129.03,
+          "volume": 431361
+        },
+        {
+          "date": "2025-11-20",
+          "open": 130.49,
+          "high": 133.42,
+          "low": 130.49,
+          "close": 130.98,
+          "volume": 228445
+        },
+        {
+          "date": "2025-11-21",
+          "open": 130.49,
+          "high": 131.96,
+          "low": 129.03,
+          "close": 130.0,
+          "volume": 259408
+        },
+        {
+          "date": "2025-11-24",
+          "open": 129.51,
+          "high": 131.47,
+          "low": 129.51,
+          "close": 130.98,
+          "volume": 229401
+        },
+        {
+          "date": "2025-11-25",
+          "open": 131.47,
+          "high": 132.94,
+          "low": 130.98,
+          "close": 131.47,
+          "volume": 94546
+        },
+        {
+          "date": "2025-11-26",
+          "open": 131.96,
+          "high": 136.85,
+          "low": 131.96,
+          "close": 135.38,
+          "volume": 260899
+        },
+        {
+          "date": "2025-11-27",
+          "open": 135.87,
+          "high": 137.82,
+          "low": 135.87,
+          "close": 136.85,
+          "volume": 217477
+        },
+        {
+          "date": "2025-11-28",
+          "open": 137.33,
+          "high": 137.33,
+          "low": 134.89,
+          "close": 135.87,
+          "volume": 250450
+        },
+        {
+          "date": "2025-12-01",
+          "open": 135.87,
+          "high": 136.85,
+          "low": 135.38,
+          "close": 136.36,
+          "volume": 144710
+        },
+        {
+          "date": "2025-12-02",
+          "open": 136.85,
+          "high": 137.33,
+          "low": 134.89,
+          "close": 134.89,
+          "volume": 251800
+        },
+        {
+          "date": "2025-12-03",
+          "open": 136.36,
+          "high": 136.36,
+          "low": 134.89,
+          "close": 135.87,
+          "volume": 155160
+        },
+        {
+          "date": "2025-12-04",
+          "open": 136.36,
+          "high": 137.82,
+          "low": 134.89,
+          "close": 135.38,
+          "volume": 205358
+        },
+        {
+          "date": "2025-12-05",
+          "open": 135.38,
+          "high": 135.38,
+          "low": 132.45,
+          "close": 133.91,
+          "volume": 246095
+        },
+        {
+          "date": "2025-12-08",
+          "open": 136.85,
+          "high": 137.82,
+          "low": 135.87,
+          "close": 136.36,
+          "volume": 339400
+        },
+        {
+          "date": "2025-12-09",
+          "open": 136.85,
+          "high": 136.85,
+          "low": 134.89,
+          "close": 135.87,
+          "volume": 129259
+        },
+        {
+          "date": "2025-12-10",
+          "open": 135.38,
+          "high": 135.38,
+          "low": 131.47,
+          "close": 132.94,
+          "volume": 490429
+        },
+        {
+          "date": "2025-12-11",
+          "open": 133.42,
+          "high": 135.38,
+          "low": 133.42,
+          "close": 134.89,
+          "volume": 408144
+        },
+        {
+          "date": "2025-12-12",
+          "open": 135.87,
+          "high": 136.85,
+          "low": 134.89,
+          "close": 135.38,
+          "volume": 311600
+        },
+        {
+          "date": "2025-12-15",
+          "open": 133.91,
+          "high": 134.4,
+          "low": 132.94,
+          "close": 134.4,
+          "volume": 206038
+        },
+        {
+          "date": "2025-12-16",
+          "open": 132.45,
+          "high": 132.45,
+          "low": 130.49,
+          "close": 132.45,
+          "volume": 528103
+        },
+        {
+          "date": "2025-12-17",
+          "open": 132.94,
+          "high": 132.94,
+          "low": 130.98,
+          "close": 131.47,
+          "volume": 271201
+        },
+        {
+          "date": "2025-12-18",
+          "open": 130.98,
+          "high": 131.47,
+          "low": 130.49,
+          "close": 130.98,
+          "volume": 220800
+        },
+        {
+          "date": "2025-12-19",
+          "open": 131.47,
+          "high": 132.94,
+          "low": 131.47,
+          "close": 131.47,
+          "volume": 259635
+        },
+        {
+          "date": "2025-12-22",
+          "open": 132.94,
+          "high": 134.4,
+          "low": 132.94,
+          "close": 133.42,
+          "volume": 291600
+        },
+        {
+          "date": "2025-12-23",
+          "open": 134.4,
+          "high": 134.89,
+          "low": 132.94,
+          "close": 133.42,
+          "volume": 534851
+        },
+        {
+          "date": "2025-12-24",
+          "open": 133.91,
+          "high": 135.87,
+          "low": 133.42,
+          "close": 134.4,
+          "volume": 186504
+        },
+        {
+          "date": "2025-12-26",
+          "open": 134.89,
+          "high": 135.38,
+          "low": 134.4,
+          "close": 134.4,
+          "volume": 131600
+        },
+        {
+          "date": "2025-12-29",
+          "open": 134.4,
+          "high": 135.87,
+          "low": 134.4,
+          "close": 135.87,
+          "volume": 221209
+        },
+        {
+          "date": "2025-12-30",
+          "open": 134.89,
+          "high": 136.36,
+          "low": 133.91,
+          "close": 135.38,
+          "volume": 290400
+        },
+        {
+          "date": "2025-12-31",
+          "open": 135.38,
+          "high": 135.87,
+          "low": 133.91,
+          "close": 134.89,
+          "volume": 309404
+        },
+        {
+          "date": "2026-01-02",
+          "open": 134.89,
+          "high": 141.73,
+          "low": 134.4,
+          "close": 141.24,
+          "volume": 1308625
+        },
+        {
+          "date": "2026-01-05",
+          "open": 143.69,
+          "high": 150.53,
+          "low": 143.2,
+          "close": 149.06,
+          "volume": 3457346
+        },
+        {
+          "date": "2026-01-06",
+          "open": 151.51,
+          "high": 153.95,
+          "low": 149.06,
+          "close": 152.0,
+          "volume": 2962929
+        },
+        {
+          "date": "2026-01-07",
+          "open": 156.39,
+          "high": 166.17,
+          "low": 154.93,
+          "close": 165.19,
+          "volume": 6529800
+        },
+        {
+          "date": "2026-01-08",
+          "open": 164.7,
+          "high": 169.59,
+          "low": 158.84,
+          "close": 160.3,
+          "volume": 3805247
+        },
+        {
+          "date": "2026-01-09",
+          "open": 159.33,
+          "high": 164.21,
+          "low": 150.53,
+          "close": 162.75,
+          "volume": 2945053
+        },
+        {
+          "date": "2026-01-12",
+          "open": 167.15,
+          "high": 167.15,
+          "low": 157.86,
+          "close": 158.35,
+          "volume": 2581822
+        },
+        {
+          "date": "2026-01-13",
+          "open": 158.35,
+          "high": 161.77,
+          "low": 153.95,
+          "close": 156.88,
+          "volume": 1962825
+        },
+        {
+          "date": "2026-01-14",
+          "open": 159.82,
+          "high": 163.73,
+          "low": 155.91,
+          "close": 156.39,
+          "volume": 2039385
+        },
+        {
+          "date": "2026-01-15",
+          "open": 157.37,
+          "high": 157.37,
+          "low": 152.48,
+          "close": 153.46,
+          "volume": 1384583
+        },
+        {
+          "date": "2026-01-16",
+          "open": 158.35,
+          "high": 158.35,
+          "low": 151.02,
+          "close": 155.91,
+          "volume": 2055825
+        },
+        {
+          "date": "2026-01-19",
+          "open": 156.39,
+          "high": 160.3,
+          "low": 152.97,
+          "close": 156.88,
+          "volume": 2966809
+        },
+        {
+          "date": "2026-01-20",
+          "open": 156.39,
+          "high": 156.39,
+          "low": 152.97,
+          "close": 153.95,
+          "volume": 1056118
+        },
+        {
+          "date": "2026-01-21",
+          "open": 152.97,
+          "high": 153.95,
+          "low": 150.53,
+          "close": 151.51,
+          "volume": 1071918
+        },
+        {
+          "date": "2026-01-22",
+          "open": 153.95,
+          "high": 154.44,
+          "low": 151.51,
+          "close": 152.0,
+          "volume": 681325
+        },
+        {
+          "date": "2026-01-23",
+          "open": 152.97,
+          "high": 154.44,
+          "low": 150.53,
+          "close": 153.95,
+          "volume": 991537
+        },
+        {
+          "date": "2026-01-26",
+          "open": 154.93,
+          "high": 154.93,
+          "low": 144.66,
+          "close": 145.64,
+          "volume": 2157972
+        },
+        {
+          "date": "2026-01-27",
+          "open": 145.64,
+          "high": 147.11,
+          "low": 144.18,
+          "close": 146.13,
+          "volume": 744337
+        },
+        {
+          "date": "2026-01-28",
+          "open": 146.13,
+          "high": 146.62,
+          "low": 143.69,
+          "close": 144.66,
+          "volume": 662814
+        },
+        {
+          "date": "2026-01-29",
+          "open": 144.18,
+          "high": 144.18,
+          "low": 142.22,
+          "close": 142.71,
+          "volume": 516298
+        },
+        {
+          "date": "2026-01-30",
+          "open": 142.71,
+          "high": 144.18,
+          "low": 139.78,
+          "close": 139.78,
+          "volume": 882064
+        },
+        {
+          "date": "2026-02-02",
+          "open": 138.31,
+          "high": 138.31,
+          "low": 135.38,
+          "close": 135.87,
+          "volume": 846239
+        },
+        {
+          "date": "2026-02-03",
+          "open": 138.31,
+          "high": 139.29,
+          "low": 136.85,
+          "close": 137.33,
+          "volume": 405710
+        },
+        {
+          "date": "2026-02-04",
+          "open": 137.33,
+          "high": 141.73,
+          "low": 137.33,
+          "close": 139.29,
+          "volume": 490935
+        },
+        {
+          "date": "2026-02-05",
+          "open": 138.31,
+          "high": 139.29,
+          "low": 136.85,
+          "close": 138.31,
+          "volume": 349393
+        },
+        {
+          "date": "2026-02-06",
+          "open": 136.85,
+          "high": 136.85,
+          "low": 133.42,
+          "close": 135.87,
+          "volume": 614394
+        },
+        {
+          "date": "2026-02-09",
+          "open": 139.78,
+          "high": 144.66,
+          "low": 137.33,
+          "close": 142.71,
+          "volume": 1107545
+        },
+        {
+          "date": "2026-02-10",
+          "open": 143.69,
+          "high": 143.69,
+          "low": 140.27,
+          "close": 140.27,
+          "volume": 1563226
+        },
+        {
+          "date": "2026-02-11",
+          "open": 141.73,
+          "high": 143.69,
+          "low": 140.27,
+          "close": 142.71,
+          "volume": 779716
+        },
+        {
+          "date": "2026-02-23",
+          "open": 143.69,
+          "high": 150.04,
+          "low": 142.22,
+          "close": 149.06,
+          "volume": 1461058
+        },
+        {
+          "date": "2026-02-24",
+          "open": 150.04,
+          "high": 154.44,
+          "low": 149.06,
+          "close": 152.48,
+          "volume": 2173939
+        },
+        {
+          "date": "2026-02-25",
+          "open": 153.95,
+          "high": 156.88,
+          "low": 149.55,
+          "close": 151.51,
+          "volume": 1613379
+        },
+        {
+          "date": "2026-02-26",
+          "open": 151.51,
+          "high": 157.86,
+          "low": 151.02,
+          "close": 155.42,
+          "volume": 3048196
+        },
+        {
+          "date": "2026-03-02",
+          "open": 151.51,
+          "high": 154.44,
+          "low": 150.53,
+          "close": 151.51,
+          "volume": 1155162
+        },
+        {
+          "date": "2026-03-03",
+          "open": 153.46,
+          "high": 155.91,
+          "low": 147.6,
+          "close": 151.51,
+          "volume": 1404926
+        },
+        {
+          "date": "2026-03-04",
+          "open": 149.06,
+          "high": 149.06,
+          "low": 141.73,
+          "close": 142.22,
+          "volume": 1375974
+        },
+        {
+          "date": "2026-03-05",
+          "open": 145.15,
+          "high": 148.57,
+          "low": 144.66,
+          "close": 146.13,
+          "volume": 860327
+        },
+        {
+          "date": "2026-03-06",
+          "open": 145.64,
+          "high": 148.57,
+          "low": 143.69,
+          "close": 145.64,
+          "volume": 562697
+        },
+        {
+          "date": "2026-03-09",
+          "open": 138.8,
+          "high": 139.78,
+          "low": 134.89,
+          "close": 136.85,
+          "volume": 1180518
+        },
+        {
+          "date": "2026-03-10",
+          "open": 140.75,
+          "high": 141.24,
+          "low": 135.87,
+          "close": 136.85,
+          "volume": 843859
+        },
+        {
+          "date": "2026-03-11",
+          "open": 137.82,
+          "high": 144.18,
+          "low": 137.82,
+          "close": 143.2,
+          "volume": 787474
+        },
+        {
+          "date": "2026-03-12",
+          "open": 140.75,
+          "high": 145.64,
+          "low": 138.8,
+          "close": 140.75,
+          "volume": 823246
+        },
+        {
+          "date": "2026-03-13",
+          "open": 138.8,
+          "high": 152.48,
+          "low": 138.31,
+          "close": 147.11,
+          "volume": 1677495
+        },
+        {
+          "date": "2026-03-16",
+          "open": 150.53,
+          "high": 152.0,
+          "low": 142.71,
+          "close": 144.66,
+          "volume": 1084090
+        },
+        {
+          "date": "2026-03-17",
+          "open": 147.6,
+          "high": 147.6,
+          "low": 141.73,
+          "close": 142.22,
+          "volume": 806670
+        },
+        {
+          "date": "2026-03-18",
+          "open": 144.18,
+          "high": 144.66,
+          "low": 142.22,
+          "close": 144.66,
+          "volume": 529250
+        },
+        {
+          "date": "2026-03-19",
+          "open": 142.22,
+          "high": 147.6,
+          "low": 141.24,
+          "close": 145.64,
+          "volume": 841296
+        },
+        {
+          "date": "2026-03-20",
+          "open": 145.64,
+          "high": 148.57,
+          "low": 144.66,
+          "close": 146.62,
+          "volume": 659533
+        },
+        {
+          "date": "2026-03-23",
+          "open": 142.71,
+          "high": 143.69,
+          "low": 138.8,
+          "close": 138.8,
+          "volume": 853400
+        },
+        {
+          "date": "2026-03-24",
+          "open": 140.75,
+          "high": 140.75,
+          "low": 136.85,
+          "close": 139.29,
+          "volume": 511295
+        },
+        {
+          "date": "2026-03-25",
+          "open": 141.73,
+          "high": 143.2,
+          "low": 140.75,
+          "close": 142.22,
+          "volume": 537910
+        },
+        {
+          "date": "2026-03-26",
+          "open": 144.18,
+          "high": 144.66,
+          "low": 138.31,
+          "close": 138.31,
+          "volume": 691091
+        },
+        {
+          "date": "2026-03-27",
+          "open": 137.82,
+          "high": 140.27,
+          "low": 136.36,
+          "close": 139.29,
+          "volume": 428109
+        },
+        {
+          "date": "2026-03-30",
+          "open": 135.87,
+          "high": 139.78,
+          "low": 135.87,
+          "close": 139.29,
+          "volume": 366300
+        },
+        {
+          "date": "2026-03-31",
+          "open": 137.82,
+          "high": 138.31,
+          "low": 132.94,
+          "close": 132.94,
+          "volume": 1111156
+        },
+        {
+          "date": "2026-04-01",
+          "open": 137.82,
+          "high": 138.8,
+          "low": 135.87,
+          "close": 138.31,
+          "volume": 309011
+        },
+        {
+          "date": "2026-04-02",
+          "open": 138.31,
+          "high": 146.62,
+          "low": 134.4,
+          "close": 142.22,
+          "volume": 1606502
+        },
+        {
+          "date": "2026-04-07",
+          "open": 148.57,
+          "high": 148.57,
+          "low": 139.78,
+          "close": 142.22,
+          "volume": 3091485
+        },
+        {
+          "date": "2026-04-08",
+          "open": 146.13,
+          "high": 149.55,
+          "low": 144.18,
+          "close": 145.64,
+          "volume": 2516804
+        },
+        {
+          "date": "2026-04-09",
+          "open": 147.11,
+          "high": 152.48,
+          "low": 144.66,
+          "close": 150.53,
+          "volume": 2897557
+        },
+        {
+          "date": "2026-04-10",
+          "open": 152.0,
+          "high": 152.0,
+          "low": 148.09,
+          "close": 148.57,
+          "volume": 1421110
+        },
+        {
+          "date": "2026-04-13",
+          "open": 148.57,
+          "high": 152.0,
+          "low": 147.6,
+          "close": 149.06,
+          "volume": 1261600
+        },
+        {
+          "date": "2026-04-14",
+          "open": 150.53,
+          "high": 153.46,
+          "low": 148.57,
+          "close": 151.51,
+          "volume": 1495197
+        },
+        {
+          "date": "2026-04-15",
+          "open": 153.95,
+          "high": 153.95,
+          "low": 151.51,
+          "close": 153.46,
+          "volume": 1429872
+        },
+        {
+          "date": "2026-04-16",
+          "open": 154.93,
+          "high": 154.93,
+          "low": 150.04,
+          "close": 152.0,
+          "volume": 1041757
+        },
+        {
+          "date": "2026-04-17",
+          "open": 151.51,
+          "high": 154.44,
+          "low": 150.53,
+          "close": 153.95,
+          "volume": 1055643
+        },
+        {
+          "date": "2026-04-20",
+          "open": 154.93,
+          "high": 162.26,
+          "low": 154.93,
+          "close": 155.42,
+          "volume": 2649638
+        },
+        {
+          "date": "2026-04-21",
+          "open": 158.35,
+          "high": 159.82,
+          "low": 156.39,
+          "close": 159.82,
+          "volume": 1829833
+        },
+        {
+          "date": "2026-04-22",
+          "open": 161.28,
+          "high": 165.68,
+          "low": 157.86,
+          "close": 159.33,
+          "volume": 2236583
+        },
+        {
+          "date": "2026-04-23",
+          "open": 165.19,
+          "high": 174.97,
+          "low": 163.73,
+          "close": 170.08,
+          "volume": 8890734
+        },
+        {
+          "date": "2026-04-24",
+          "open": 172.03,
+          "high": 174.97,
+          "low": 166.66,
+          "close": 171.55,
+          "volume": 3851927
+        },
+        {
+          "date": "2026-04-27",
+          "open": 173.99,
+          "high": 176.92,
+          "low": 168.12,
+          "close": 174.97,
+          "volume": 2937082
+        },
+        {
+          "date": "2026-04-28",
+          "open": 174.97,
+          "high": 174.97,
+          "low": 165.68,
+          "close": 167.15,
+          "volume": 1976018
+        },
+        {
+          "date": "2026-04-29",
+          "open": 165.19,
+          "high": 171.06,
+          "low": 162.75,
+          "close": 168.12,
+          "volume": 1467776
+        },
+        {
+          "date": "2026-04-30",
+          "open": 168.12,
+          "high": 168.12,
+          "low": 162.75,
+          "close": 163.24,
+          "volume": 1690241
+        },
+        {
+          "date": "2026-05-04",
+          "open": 166.17,
+          "high": 170.57,
+          "low": 165.19,
+          "close": 169.1,
+          "volume": 1738830
+        },
+        {
+          "date": "2026-05-05",
+          "open": 170.08,
+          "high": 177.9,
+          "low": 167.64,
+          "close": 174.97,
+          "volume": 2272778
+        },
+        {
+          "date": "2026-05-06",
+          "open": 175.94,
+          "high": 177.41,
+          "low": 169.1,
+          "close": 171.55,
+          "volume": 1402215
+        },
+        {
+          "date": "2026-05-07",
+          "open": 172.03,
+          "high": 174.48,
+          "low": 170.08,
+          "close": 172.52,
+          "volume": 735109
+        },
+        {
+          "date": "2026-05-08",
+          "open": 172.52,
+          "high": 173.99,
+          "low": 167.64,
+          "close": 168.61,
+          "volume": 844901
+        },
+        {
+          "date": "2026-05-11",
+          "open": 173.5,
+          "high": 180.34,
+          "low": 172.03,
+          "close": 172.03,
+          "volume": 1787444
+        },
+        {
+          "date": "2026-05-12",
+          "open": 173.99,
+          "high": 178.88,
+          "low": 171.06,
+          "close": 175.45,
+          "volume": 1224261
+        },
+        {
+          "date": "2026-05-13",
+          "open": 174.48,
+          "high": 176.43,
+          "low": 172.52,
+          "close": 175.45,
+          "volume": 767469
+        },
+        {
+          "date": "2026-05-14",
+          "open": 176.92,
+          "high": 176.92,
+          "low": 172.52,
+          "close": 173.5,
+          "volume": 732926
+        },
+        {
+          "date": "2026-05-15",
+          "open": 174.97,
+          "high": 177.9,
+          "low": 170.08,
+          "close": 171.55,
+          "volume": 1248040
+        },
+        {
+          "date": "2026-05-18",
+          "open": 169.1,
+          "high": 171.55,
+          "low": 161.28,
+          "close": 162.75,
+          "volume": 1608199
+        },
+        {
+          "date": "2026-05-19",
+          "open": 162.75,
+          "high": 165.68,
+          "low": 161.77,
+          "close": 162.26,
+          "volume": 628410
+        },
+        {
+          "date": "2026-05-20",
+          "open": 162.26,
+          "high": 162.75,
+          "low": 157.86,
+          "close": 159.82,
+          "volume": 1036869
+        },
+        {
+          "date": "2026-05-21",
+          "open": 164.21,
+          "high": 173.99,
+          "low": 163.24,
+          "close": 173.01,
+          "volume": 2003520
+        },
+        {
+          "date": "2026-05-22",
+          "open": 175.45,
+          "high": 183.76,
+          "low": 173.01,
+          "close": 180.34,
+          "volume": 2709797
+        },
+        {
+          "date": "2026-05-25",
+          "open": 184.74,
+          "high": 187.67,
+          "low": 181.32,
+          "close": 184.74,
+          "volume": 1947855
+        },
+        {
+          "date": "2026-05-26",
+          "open": 189.14,
+          "high": 189.63,
+          "low": 180.83,
+          "close": 183.27,
+          "volume": 1586315
+        },
+        {
+          "date": "2026-05-27",
+          "open": 186.21,
+          "high": 199.4,
+          "low": 184.25,
+          "close": 190.61,
+          "volume": 3056660
+        },
+        {
+          "date": "2026-05-28",
+          "open": 192.56,
+          "high": 192.56,
+          "low": 177.9,
+          "close": 179.85,
+          "volume": 1882217
+        },
+        {
+          "date": "2026-05-29",
+          "open": 181.81,
+          "high": 185.72,
+          "low": 177.9,
+          "close": 182.3,
+          "volume": 1246968
+        },
+        {
+          "date": "2026-06-01",
+          "open": 183.76,
+          "high": 185.23,
+          "low": 179.85,
+          "close": 180.83,
+          "volume": 718670
+        },
+        {
+          "date": "2026-06-02",
+          "open": 178.88,
+          "high": 179.36,
+          "low": 171.55,
+          "close": 174.97,
+          "volume": 1050100
+        },
+        {
+          "date": "2026-06-03",
+          "open": 175.94,
+          "high": 177.9,
+          "low": 173.01,
+          "close": 175.94,
+          "volume": 510480
+        },
+        {
+          "date": "2026-06-04",
+          "open": 173.99,
+          "high": 176.92,
+          "low": 173.5,
+          "close": 174.48,
+          "volume": 487335
+        },
+        {
+          "date": "2026-06-05",
+          "open": 173.99,
+          "high": 174.48,
+          "low": 170.08,
+          "close": 171.06,
+          "volume": 759403
+        },
+        {
+          "date": "2026-06-08",
+          "open": 159.82,
+          "high": 171.06,
+          "low": 159.82,
+          "close": 168.12,
+          "volume": 850200
+        },
+        {
+          "date": "2026-06-09",
+          "open": 168.61,
+          "high": 171.55,
+          "low": 167.64,
+          "close": 169.1,
+          "volume": 522909
+        },
+        {
+          "date": "2026-06-10",
+          "open": 168.12,
+          "high": 171.55,
+          "low": 164.21,
+          "close": 164.7,
+          "volume": 643200
+        },
+        {
+          "date": "2026-06-11",
+          "open": 164.7,
+          "high": 167.15,
+          "low": 160.3,
+          "close": 166.17,
+          "volume": 816147
+        },
+        {
+          "date": "2026-06-12",
+          "open": 170.08,
+          "high": 175.94,
+          "low": 168.61,
+          "close": 175.94,
+          "volume": 921376
+        },
+        {
+          "date": "2026-06-15",
+          "open": 176.43,
+          "high": 179.36,
+          "low": 172.52,
+          "close": 173.5,
+          "volume": 456291
+        },
+        {
+          "date": "2026-06-16",
+          "open": 174.97,
+          "high": 175.45,
+          "low": 172.52,
+          "close": 173.5,
+          "volume": 695091
+        },
+        {
+          "date": "2026-06-17",
+          "open": 174.0,
+          "high": 175.0,
+          "low": 170.0,
+          "close": 174.5,
+          "volume": 644270
+        },
+        {
+          "date": "2026-06-18",
+          "open": 174.5,
+          "high": 181.5,
+          "low": 174.0,
+          "close": 180.0,
+          "volume": 1178503
+        },
+        {
+          "date": "2026-06-22",
+          "open": 180.5,
+          "high": 181.5,
+          "low": 176.5,
+          "close": 178.5,
+          "volume": 592444
+        },
+        {
+          "date": "2026-06-23",
+          "open": 179.5,
+          "high": 179.5,
+          "low": 172.5,
+          "close": 174.0,
+          "volume": 479300
+        },
+        {
+          "date": "2026-06-24",
+          "open": 172.5,
+          "high": 174.5,
+          "low": 171.0,
+          "close": 173.5,
+          "volume": 316031
+        },
+        {
+          "date": "2026-06-25",
+          "open": 175.0,
+          "high": 180.0,
+          "low": 170.5,
+          "close": 172.0,
+          "volume": 825100
+        },
+        {
+          "date": "2026-06-26",
+          "open": 171.0,
+          "high": 171.0,
+          "low": 165.0,
+          "close": 165.0,
+          "volume": 706737
+        },
+        {
+          "date": "2026-06-29",
+          "open": 167.0,
+          "high": 168.0,
+          "low": 165.0,
+          "close": 168.0,
+          "volume": 391025
+        },
+        {
+          "date": "2026-06-30",
+          "open": 169.5,
+          "high": 174.5,
+          "low": 169.5,
+          "close": 170.0,
+          "volume": 462500
+        },
+        {
+          "date": "2026-07-01",
+          "open": 172.0,
+          "high": 172.0,
+          "low": 167.5,
+          "close": 169.0,
+          "volume": 271600
+        },
+        {
+          "date": "2026-07-02",
+          "open": 169.0,
+          "high": 173.0,
+          "low": 167.5,
+          "close": 173.0,
+          "volume": 257970
+        },
+        {
+          "date": "2026-07-03",
+          "open": 171.0,
+          "high": 178.5,
+          "low": 171.0,
+          "close": 177.5,
+          "volume": 729453
+        },
+        {
+          "date": "2026-07-06",
+          "open": 179.0,
+          "high": 188.0,
+          "low": 179.0,
+          "close": 185.0,
+          "volume": 1371205
+        },
+        {
+          "date": "2026-07-07",
+          "open": 185.5,
+          "high": 185.5,
+          "low": 175.0,
+          "close": 175.5,
+          "volume": 790216
+        },
+        {
+          "date": "2026-07-08",
+          "open": 175.5,
+          "high": 177.0,
+          "low": 171.5,
+          "close": 175.0,
+          "volume": 351558
+        },
+        {
+          "date": "2026-07-09",
+          "open": 178.0,
+          "high": 179.5,
+          "low": 173.0,
+          "close": 174.5,
+          "volume": 465381
+        },
+        {
+          "date": "2026-07-10",
+          "open": 174.5,
+          "high": 174.5,
+          "low": 174.5,
+          "close": 174.5,
+          "volume": 0
+        },
+        {
+          "date": "2026-07-13",
+          "open": 177.0,
+          "high": 180.0,
+          "low": 173.5,
+          "close": 176.5,
+          "volume": 672330
+        },
+        {
+          "date": "2026-07-14",
+          "open": 177.0,
+          "high": 177.0,
+          "low": 169.5,
+          "close": 174.0,
+          "volume": 486002
+        },
+        {
+          "date": "2026-07-15",
+          "open": 174.0,
+          "high": 185.5,
+          "low": 174.0,
+          "close": 184.5,
+          "volume": 1142552
+        },
+        {
+          "date": "2026-07-16",
+          "open": 182.0,
+          "high": 183.5,
+          "low": 178.5,
+          "close": 181.5,
+          "volume": 840117
+        },
+        {
+          "date": "2026-07-17",
+          "open": 178.0,
+          "high": 181.5,
+          "low": 173.0,
+          "close": 174.5,
+          "volume": 778335
+        },
+        {
+          "date": "2026-07-20",
+          "open": 176.5,
+          "high": 176.5,
+          "low": 165.0,
+          "close": 167.5,
+          "volume": 1087300
+        },
+        {
+          "date": "2026-07-21",
+          "open": 169.0,
+          "high": 171.0,
+          "low": 167.0,
+          "close": 169.5,
+          "volume": 527531
+        },
+        {
+          "date": "2026-07-22",
+          "open": 171.0,
+          "high": 174.0,
+          "low": 168.5,
+          "close": 169.0,
+          "volume": 902703
+        },
+        {
+          "date": "2026-07-23",
+          "open": 171.5,
+          "high": 173.0,
+          "low": 166.0,
+          "close": 167.5,
+          "volume": 579245
+        },
+        {
+          "date": "2026-07-24",
+          "open": 166.0,
+          "high": 166.5,
+          "low": 162.0,
+          "close": 162.5,
+          "volume": 559296
         }
       ]
     },
@@ -126516,9 +128570,9 @@ const marketData = {
       "industry": "電子下游:顯示器",
       "price": 30.1,
       "change": 0.0,
-      "dailyVol": 992,
-      "volRatio": 0.04,
-      "turnover": 0.06,
+      "dailyVol": 2737,
+      "volRatio": 0.12,
+      "turnover": 0.17,
       "marketCap": 475.73,
       "eps": 0.2,
       "epsYoY": null,
@@ -126543,7 +128597,7 @@ const marketData = {
       "ma20Rising": true,
       "closeToHigh": false,
       "dist52W": 18.6,
-      "rsi14": 26.23,
+      "rsi14": 25.11,
       "type": "none",
       "kline": [
         {
@@ -128534,9 +130588,9 @@ const marketData = {
           "date": "2026-07-24",
           "open": 29.95,
           "high": 30.25,
-          "low": 29.8,
-          "close": 30.0,
-          "volume": 992426
+          "low": 29.55,
+          "close": 29.6,
+          "volume": 2737410
         }
       ]
     },
@@ -854788,7 +856842,7 @@ const marketData = {
         },
         {
           "date": "2026-04-07",
-          "open": 33.63,
+          "open": 33.62,
           "high": 33.66,
           "low": 33.59,
           "close": 33.6,
@@ -861560,8 +863614,8 @@ const marketData = {
       "industry": "",
       "price": 38.61,
       "change": -2.65,
-      "dailyVol": 893,
-      "volRatio": 0.18,
+      "dailyVol": 1456,
+      "volRatio": 0.29,
       "turnover": null,
       "marketCap": null,
       "eps": null,
@@ -861587,7 +863641,7 @@ const marketData = {
       "ma20Rising": false,
       "closeToHigh": true,
       "dist52W": 22.9,
-      "rsi14": 35.98,
+      "rsi14": 35.03,
       "type": "none",
       "kline": [
         {
@@ -863585,10 +865639,10 @@ const marketData = {
         {
           "date": "2026-07-24",
           "open": 38.3,
-          "high": 38.4,
+          "high": 38.44,
           "low": 37.59,
-          "close": 38.31,
-          "volume": 893732
+          "close": 37.82,
+          "volume": 1456136
         }
       ]
     },
@@ -863599,9 +865653,9 @@ const marketData = {
       "industry": "電子上游:LED及光元件",
       "price": 35.45,
       "change": 0.14,
-      "dailyVol": 74,
-      "volRatio": 0.07,
-      "turnover": 0.11,
+      "dailyVol": 213,
+      "volRatio": 0.21,
+      "turnover": 0.32,
       "marketCap": 23.6,
       "eps": -0.77,
       "epsYoY": null,
@@ -863626,7 +865680,7 @@ const marketData = {
       "ma20Rising": false,
       "closeToHigh": false,
       "dist52W": 50.4,
-      "rsi14": 34.97,
+      "rsi14": 31.14,
       "type": "none",
       "kline": [
         {
@@ -865617,9 +867671,9 @@ const marketData = {
           "date": "2026-07-24",
           "open": 35.05,
           "high": 36.05,
-          "low": 34.75,
-          "close": 36.05,
-          "volume": 74203
+          "low": 34.05,
+          "close": 34.65,
+          "volume": 213798
         }
       ]
     },
@@ -865628,10 +867682,10 @@ const marketData = {
       "name": "群益投資級電信債",
       "market": "OTC",
       "industry": "",
-      "price": 34.93,
-      "change": -0.51,
-      "dailyVol": 129,
-      "volRatio": 0.04,
+      "price": 34.88,
+      "change": -0.66,
+      "dailyVol": 779,
+      "volRatio": 0.26,
       "turnover": null,
       "marketCap": null,
       "eps": null,
@@ -865656,8 +867710,8 @@ const marketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 3.8,
-      "rsi14": 24.64,
+      "dist52W": 3.9,
+      "rsi14": 24.06,
       "type": "none",
       "kline": [
         {
@@ -867656,9 +869710,9 @@ const marketData = {
           "date": "2026-07-24",
           "open": 35.0,
           "high": 35.0,
-          "low": 34.93,
-          "close": 34.93,
-          "volume": 129614
+          "low": 34.87,
+          "close": 34.88,
+          "volume": 779633
         }
       ]
     },
