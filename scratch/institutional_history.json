@@ -3110,6 +3110,11 @@
       "trust": 0,
       "dealer": 7
     },
+    "6952": {
+      "foreign": -4,
+      "trust": 0,
+      "dealer": 2
+    },
     "1516": {
       "foreign": -1,
       "trust": 0,
@@ -3129,11 +3134,6 @@
       "foreign": -3,
       "trust": 0,
       "dealer": 1
-    },
-    "6952": {
-      "foreign": -4,
-      "trust": 0,
-      "dealer": 2
     },
     "3432": {
       "foreign": -2,
