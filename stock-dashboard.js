@@ -11,6 +11,7 @@ if (window.chartLayers === undefined) {
     ma5: true,
     supertrend: false,
     srLines: true,
+    strategyMultifactor: true, // 預設開啟荳荳多因子爆發指標
     strategySupertrend: false,
     strategyTrendline: false,
     subIndicator: 'rsi'
@@ -20,11 +21,13 @@ if (window.chartLayers === undefined) {
 // 橋接原有的單選全域變數，確保相容性
 Object.defineProperty(window, 'activeStrategy', {
   get() {
+    if (window.chartLayers.strategyMultifactor) return 'multifactor';
     if (window.chartLayers.strategySupertrend) return 'supertrend';
     if (window.chartLayers.strategyTrendline) return 'trendline';
     return 'none';
   },
   set(val) {
+    window.chartLayers.strategyMultifactor = (val === 'multifactor');
     window.chartLayers.strategySupertrend = (val === 'supertrend');
     window.chartLayers.strategyTrendline = (val === 'trendline');
   },
@@ -227,6 +230,95 @@ function calculateSupertrend(data, period = 10, multiplier = 3) {
   }
 
   return supertrend;
+}
+
+// ---- ATR (Average True Range) 計算函式 ----
+function calculateATR(data, period = 14) {
+  if (data.length < period) return new Array(data.length).fill(0);
+  const tr = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i === 0) {
+      tr.push(data[i].high - data[i].low);
+    } else {
+      const hl = data[i].high - data[i].low;
+      const hc = Math.abs(data[i].high - data[i - 1].close);
+      const lc = Math.abs(data[i].low - data[i - 1].close);
+      tr.push(Math.max(hl, hc, lc));
+    }
+  }
+  const atr = new Array(data.length).fill(0);
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += tr[i];
+  atr[period - 1] = sum / period;
+  for (let i = period; i < data.length; i++) {
+    atr[i] = (atr[i - 1] * (period - 1) + tr[i]) / period;
+  }
+  return atr;
+}
+
+// ---- ADX (Average Directional Index) 計算函式 ----
+function calculateADX(data, period = 14) {
+  if (data.length < period * 2) return data.map(d => ({ time: d.time, value: 0 }));
+  const tr = [], plusDM = [], minusDM = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i === 0) {
+      tr.push(0); plusDM.push(0); minusDM.push(0);
+    } else {
+      const upMove = data[i].high - data[i - 1].high;
+      const dnMove = data[i - 1].low - data[i].low;
+      plusDM.push((upMove > dnMove && upMove > 0) ? upMove : 0);
+      minusDM.push((dnMove > upMove && dnMove > 0) ? dnMove : 0);
+
+      const hl = data[i].high - data[i].low;
+      const hc = Math.abs(data[i].high - data[i - 1].close);
+      const lc = Math.abs(data[i].low - data[i - 1].close);
+      tr.push(Math.max(hl, hc, lc));
+    }
+  }
+
+  const smoothTR = new Array(data.length).fill(0);
+  const smoothPlusDM = new Array(data.length).fill(0);
+  const smoothMinusDM = new Array(data.length).fill(0);
+
+  let sumTR = 0, sumP = 0, sumM = 0;
+  for (let i = 1; i <= period; i++) {
+    sumTR += tr[i]; sumP += plusDM[i]; sumM += minusDM[i];
+  }
+  smoothTR[period] = sumTR;
+  smoothPlusDM[period] = sumP;
+  smoothMinusDM[period] = sumM;
+
+  for (let i = period + 1; i < data.length; i++) {
+    smoothTR[i] = smoothTR[i - 1] - (smoothTR[i - 1] / period) + tr[i];
+    smoothPlusDM[i] = smoothPlusDM[i - 1] - (smoothPlusDM[i - 1] / period) + plusDM[i];
+    smoothMinusDM[i] = smoothMinusDM[i - 1] - (smoothMinusDM[i - 1] / period) + minusDM[i];
+  }
+
+  const dx = new Array(data.length).fill(0);
+  for (let i = period; i < data.length; i++) {
+    const pDI = (smoothPlusDM[i] / (smoothTR[i] || 1)) * 100;
+    const mDI = (smoothMinusDM[i] / (smoothTR[i] || 1)) * 100;
+    const sum = pDI + mDI;
+    dx[i] = sum === 0 ? 0 : (Math.abs(pDI - mDI) / sum) * 100;
+  }
+
+  const adxResult = [];
+  let sumDX = 0;
+  for (let i = period; i < period * 2; i++) sumDX += dx[i];
+  let prevADX = sumDX / period;
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period * 2 - 1) {
+      adxResult.push({ time: data[i].time, value: 0 });
+    } else if (i === period * 2 - 1) {
+      adxResult.push({ time: data[i].time, value: prevADX });
+    } else {
+      const currADX = (prevADX * (period - 1) + dx[i]) / period;
+      prevADX = currADX;
+      adxResult.push({ time: data[i].time, value: currADX });
+    }
+  }
+  return adxResult;
 }
 
 function calculateSMA(data, period) {
@@ -1197,8 +1289,72 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       });
     }
 
+    // ---- 策略 C: 🐾 荳荳多因子爆發王牌策略 (DouDou AI Multifactor Master) ----
+    if (window.activeStrategy === 'multifactor') {
+      trendlineSeries.setData([]);
+
+      const adxData = calculateADX(formattedCandles, 14);
+      const vmaData = calculateVolumeMA(formattedCandles, 20);
+      const atrData = calculateATR(formattedCandles, 14);
+
+      const multifactorMarkers = [];
+
+      for (let i = 20; i < formattedCandles.length; i++) {
+        const curr = formattedCandles[i];
+        const prev = formattedCandles[i - 1];
+        const stCurr = supertrendData[i];
+        const stPrev = supertrendData[i - 1];
+
+        if (!stCurr || !stPrev || stCurr.value === null || stPrev.value === null) continue;
+
+        const adxObj = adxData.find(a => a.time === curr.time);
+        const f_adx = (adxObj && adxObj.value > 20) ? 25 : 0;
+
+        const vol = curr.volume || 0;
+        const vmaVal = vmaData[i] || 0;
+        const f_vol = (vol > vmaVal * 1.5) ? 25 : 0;
+        const f_oi = (vol > vmaVal) ? 25 : 0;
+
+        const isBullEngulf = curr.close > curr.open && prev.close < prev.open && curr.close >= prev.open && curr.open <= prev.close;
+        const isHammer = (curr.high - Math.max(curr.open, curr.close)) < (curr.high - curr.low) * 0.1 && (Math.min(curr.open, curr.close) - curr.low) > (curr.high - curr.low) * 0.6;
+        const isBearEngulf = curr.close < curr.open && prev.close > prev.open && curr.close <= prev.open && curr.open >= prev.close;
+
+        const f_sr_long = (isBullEngulf || isHammer) ? 25 : 0;
+        const f_sr_short = isBearEngulf ? 25 : 0;
+
+        const longScore = f_adx + f_vol + f_oi + f_sr_long;
+        const shortScore = f_adx + f_vol + f_oi + f_sr_short;
+
+        const stLongTurn = (stPrev.trend === -1 && stCurr.trend === 1);
+        const stShortTurn = (stPrev.trend === 1 && stCurr.trend === -1);
+
+        if (stLongTurn && longScore >= 60) {
+          multifactorMarkers.push({
+            time: curr.time,
+            position: 'belowBar',
+            color: '#f97316',
+            shape: 'arrowUp',
+            text: `🐾荳荳做多 (${longScore}分)`,
+            size: 2.5
+          });
+        } else if (stShortTurn && shortScore >= 60) {
+          multifactorMarkers.push({
+            time: curr.time,
+            position: 'aboveBar',
+            color: '#8b5cf6',
+            shape: 'arrowDown',
+            text: `🐾荳荳做空 (${shortScore}分)`,
+            size: 2.5
+          });
+        }
+      }
+
+      if (multifactorMarkers.length > 0) {
+        LightweightCharts.createSeriesMarkers(candleSeries, multifactorMarkers);
+      }
+    }
     // ---- 策略 A: Super-Trend 策略 ----
-    if (window.activeStrategy === 'supertrend') {
+    else if (window.activeStrategy === 'supertrend') {
       trendlineSeries.setData([]);
 
       function runSupertrendBacktest(candles, stData) {
@@ -1596,14 +1752,22 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
 
 // 多圖層控制切換
 window.toggleChartLayer = function(layerName) {
-  if (layerName === 'strategySupertrend') {
+  if (layerName === 'strategyMultifactor') {
+    window.chartLayers.strategyMultifactor = !window.chartLayers.strategyMultifactor;
+    if (window.chartLayers.strategyMultifactor) {
+      window.chartLayers.strategySupertrend = false;
+      window.chartLayers.strategyTrendline = false; // 策略互斥
+    }
+  } else if (layerName === 'strategySupertrend') {
     window.chartLayers.strategySupertrend = !window.chartLayers.strategySupertrend;
     if (window.chartLayers.strategySupertrend) {
+      window.chartLayers.strategyMultifactor = false;
       window.chartLayers.strategyTrendline = false; // 策略互斥
     }
   } else if (layerName === 'strategyTrendline') {
     window.chartLayers.strategyTrendline = !window.chartLayers.strategyTrendline;
     if (window.chartLayers.strategyTrendline) {
+      window.chartLayers.strategyMultifactor = false;
       window.chartLayers.strategySupertrend = false; // 策略互斥
     }
   } else {
@@ -1635,7 +1799,7 @@ window.selectSubIndicator = function(indicatorName) {
 
 // 同步 UI 按鈕狀態
 function updatePillButtonsUI() {
-  const layers = ['ma5', 'supertrend', 'srLines', 'strategySupertrend', 'strategyTrendline'];
+  const layers = ['ma5', 'supertrend', 'srLines', 'strategyMultifactor', 'strategySupertrend', 'strategyTrendline'];
   layers.forEach(layer => {
     const el = document.getElementById(`pill-${layer}`);
     if (el) {
