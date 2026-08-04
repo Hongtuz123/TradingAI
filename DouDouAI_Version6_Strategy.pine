@@ -1,0 +1,149 @@
+//@version=5
+indicator("荳荳 AI Version 6 多因子雙時框選股策略 (70-80分黃金甜蜜區)", overlay=true, max_labels_count=500, max_lines_count=500)
+
+// =============================================================================
+// 1. 參數設定面板 (Inputs)
+// =============================================================================
+grp_score = "🎯 分數與訊號門檻"
+min_score = input.int(70, "買進最低分數門檻 (預設 70 分)", minval=50, maxval=90, group=grp_score)
+max_score = input.int(89, "買進最高分數門檻 (預設 89 分, 排除 >= 90分過熱)", minval=70, maxval=100, group=grp_score)
+
+grp_ma = "📈 均線與趨勢參數"
+len_ma5  = input.int(5,  "快線 5MA 週期", group=grp_ma)
+len_ma20 = input.int(20, "慢線 20MA 週期", group=grp_ma)
+len_ma60 = input.int(60, "季線 60MA 週期", group=grp_ma)
+
+grp_adx = "⚡ ADX 趨勢強度參數"
+adx_len = input.int(14, "ADX 週期", group=grp_adx)
+adx_th1 = input.int(20, "ADX 入門門檻 (20)", group=grp_adx)
+adx_th2 = input.int(30, "ADX 強勢門檻 (30)", group=grp_adx)
+
+grp_risk = "🛡️ 風控與停損參數"
+stop_loss_pct = input.float(20.0, "固定停損百分比 (%)", minval=5.0, maxval=30.0, group=grp_risk)
+bias_th1      = input.float(15.0, "20MA 乖離率一級懲罰 (%)", group=grp_risk)
+bias_th2      = input.float(20.0, "20MA 乖離率二級懲罰 (%)", group=grp_risk)
+
+// =============================================================================
+// 2. 技術指標計算 (Technical Calculations)
+// =============================================================================
+// 均線
+ma5  = ta.sma(close, len_ma5)
+ma20 = ta.sma(close, len_ma20)
+ma60 = ta.sma(close, len_ma60)
+
+// 成交量與均量
+vol_ma20  = ta.sma(volume, len_ma20)
+vol_ratio = vol_ma20 > 0 ? (volume / vol_ma20) : 1.0
+
+// ADX & DMI 計算
+[plus_di, minus_di, adx_val] = ta.dmi(adx_len, adx_len)
+
+// SuperTrend (10, 3.0)
+[st_val, st_dir] = ta.supertrend(3.0, 10)
+supertrend_bull  = (st_dir < 0)  // -1 代表 SuperTrend 翻綠做多
+
+// 20MA 乖離率 (%)
+bias_20ma = ma20 > 0 ? ((close - ma20) / ma20) * 100.0 : 0.0
+
+// K 線屬性
+is_bull_k = close > open
+candle_rng = high - low
+upper_shadow = candle_rng > 0 ? (high - math.max(open, close)) / candle_rng : 0.0
+is_stagnant = (vol_ratio > 2.2) and (not is_bull_k or upper_shadow > 0.4)
+
+// 近 20 根 Low 最低點 (支撐防線)
+recent_low20 = ta.lowest(low, 20)
+near_support = (low <= recent_low20 * 1.03) and is_bull_k
+
+// =============================================================================
+// 3. 荳荳 AI Version 6 多因子計分卡 (Scoring System)
+// =============================================================================
+int score = 0
+
+// (1) ADX 趨勢因子 (最高 20 分)
+f_adx = adx_val > adx_th2 ? 20 : (adx_val > adx_th1 ? 10 : 0)
+
+// (2) 均線排列因子 (最高 20 分)
+f_ma = (close > ma5 and ma5 > ma20) ? 20 : ((close > ma20) ? 10 : ((close > ma5) ? 5 : 0))
+
+// (3) 成交量爆量與風控因子 (最高 25 分)
+f_vol = is_stagnant ? 10 : (vol_ratio > 1.2 ? 25 : (vol_ratio > 1.0 ? 15 : 0))
+
+// (4) K線型態與支撐因子 (最高 20 分)
+f_pat = (is_bull_k and near_support) ? 20 : (is_bull_k ? 10 : 0)
+
+// (5) 動能與籌碼代理因子 (最高 25 分)
+f_chip = supertrend_bull ? 25 : (vol_ratio > 1.2 ? 15 : 10)
+
+// (6) 🛡️ 風控：20MA 乖離率懲罰
+int penalty = 0
+if bias_20ma > bias_th2
+    penalty := 15
+else if bias_20ma > bias_th1
+    penalty := 10
+
+// 總分計算 (限制於 0 ~ 100 分)
+if not supertrend_bull
+    score := 30  // 若 SuperTrend 為空頭軌道，強制扣至 30 分安全線
+else
+    raw_score = f_adx + f_ma + f_vol + f_pat + f_chip - penalty
+    score := math.min(100, math.max(0, raw_score))
+
+// =============================================================================
+// 4. 買進訊號與停損價位 (Trading Signal & Risk Control)
+// =============================================================================
+bool is_buy_signal = (score >= min_score) and (score <= max_score) and supertrend_bull
+float stop_loss_price = close * (1.0 - stop_loss_pct / 100.0)
+
+// 避免連續觸發圖表標籤
+bool buy_trigger = is_buy_signal and not is_buy_signal[1]
+
+// =============================================================================
+// 5. 圖表視覺化繪製 (Plotting & Visualization)
+// =============================================================================
+// 均線
+plot(ma5,  "5MA",  color=color.new(color.yellow, 0), linewidth=1)
+plot(ma20, "20MA", color=color.new(color.orange, 0), linewidth=2)
+plot(ma60, "60MA", color=color.new(color.cyan, 0),   linewidth=2)
+
+// SuperTrend 軌道
+plot(st_val, "SuperTrend", color=supertrend_bull ? color.green : color.red, linewidth=2)
+
+// 買進訊號圖示與標籤
+plotshape(buy_trigger, title="荳荳 AI 買進訊號", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
+
+if buy_trigger
+    label_text = "🐸 荳荳 AI Buy\n得分: " + str.tostring(score) + "分\n現價: $" + str.tostring(close, "#.##") + "\n止損: $" + str.tostring(stop_loss_price, "#.##")
+    label.new(bar_index, low * 0.98, label_text, color=color.new(color.green, 10), textcolor=color.white, style=label.style_label_up, size=size.normal)
+
+// =============================================================================
+// 6. 實時選股看板 (Real-Time Dashboard)
+// =============================================================================
+var table board = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 20), border_color=color.gray, border_width=1)
+
+if barstate.islast
+    table.cell(board, 0, 0, "荳荳 AI Version 6 儀表板", text_color=color.orange, text_size=size.small)
+    table.cell(board, 1, 0, "即時狀態", text_color=color.white, text_size=size.small)
+
+    table.cell(board, 0, 1, "當前總分", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 1, str.tostring(score) + " 分", text_color=score >= 70 ? color.green : color.red, text_size=size.small)
+
+    table.cell(board, 0, 2, "黃金甜蜜區 (70-80分)", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 2, is_buy_signal ? "✅ 達標發動" : "❌ 未達標", text_color=is_buy_signal ? color.green : color.gray, text_size=size.small)
+
+    table.cell(board, 0, 3, "ADX 趨勢強度", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 3, str.tostring(adx_val, "#.#") + (adx_val > 20 ? " (強)" : " (弱)"), text_color=adx_val > 20 ? color.green : color.white, text_size=size.small)
+
+    table.cell(board, 0, 4, "爆量倍數 (VMA20)", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 4, str.tostring(vol_ratio, "#.##") + "x", text_color=vol_ratio > 1.2 ? color.green : color.white, text_size=size.small)
+
+    table.cell(board, 0, 5, "20MA 乖離率", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 5, str.tostring(bias_20ma, "+#.##") + "%", text_color=penalty > 0 ? color.red : color.green, text_size=size.small)
+
+    table.cell(board, 0, 6, "建議止損價位 (-20%)", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 6, "$" + str.tostring(stop_loss_price, "#.##"), text_color=color.yellow, text_size=size.small)
+
+// =============================================================================
+// 7. TradingView 警報條件 (Alert Conditions)
+// =============================================================================
+alertcondition(buy_trigger, title="荳荳 AI Version 6 買進訊號", message="🐸【荳荳 AI Version 6】標的 {{ticker}} 現價 ${{close}} 達標 70-80分黃金發動點！建議止損價位: ${{close}} * 0.8")
