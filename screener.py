@@ -1053,13 +1053,13 @@ def update_institutional_history_and_calc_stats(today_date, today_data):
     return stats
 
 
-def run_screener():
-    # 🚀 頻率限制防禦：下午 14:00 ~ 隔日 08:00 期間只在 15:00 和 18:00 執行更新
+def run_screener(force=False):
+    # 🚀 頻率限制防禦：下午 14:00 ~ 隔日 08:00 期間只在 15:00 和 18:00 執行更新 (手動或排程帶 force=True 突破)
     import pandas as pd
     now_taipei = pd.Timestamp.now(tz='Asia/Taipei')
     current_hour = now_taipei.hour
     
-    if current_hour >= 14 or current_hour < 8:
+    if not force and (current_hour >= 14 or current_hour < 8):
         if current_hour not in [15, 18]:
             print(f"⏰ 目前台北時間為 {now_taipei.strftime('%Y-%m-%d %H:%M:%S')} (Hour: {current_hour})")
             print("🚫 處於 14:00 ~ 08:00 限制更新時段，且非指定更新小時 (15:00 或 18:00)，略過本次排程更新。")
@@ -1344,7 +1344,14 @@ def run_screener():
             inst_avg_7d = code_stats["instAvg7D"]
             inst_detail_5d = code_stats["instDetail5D"]
 
-            # 計算 4H 專屬特徵
+            # 新增技術指標 Supertrend 與 DMI
+            supertrend_val = int(latest['supertrend']) if 'supertrend' in latest else 1
+            prev_supertrend_val = int(prev['supertrend']) if 'supertrend' in prev else 1
+            plus_di_val = round(float(latest['plus_di']), 2) if 'plus_di' in latest else 0.0
+            minus_di_val = round(float(latest['minus_di']), 2) if 'minus_di' in latest else 0.0
+            adx_val = round(float(latest['adx']), 2) if 'adx' in latest else 0.0
+
+            # ── 提取 4H 特徵變數 (若無則平滑退回 1D 備用，確保 100% 變數宣告安全) ───
             if not df_4h_calc.empty:
                 latest_4h = df_4h_calc.iloc[-1]
                 vol_4h = int(latest_4h.get('volume', 0))
@@ -1358,6 +1365,40 @@ def run_screener():
                 supertrend_4h = supertrend_val
                 adx_4h = adx_val
                 kline_4h_list = []
+
+            # ── Version 6 雙時框多因子評分 (現場精算，1D 與 4H 獨立維度) ───
+            # 1. 1D 日線得分
+            if supertrend_val == -1:
+                sc_1d = 30
+            else:
+                f_adx = 20 if adx_val > 30 else (10 if adx_val > 20 else 0)
+                f_ma = 20 if (close > ma5_val > ma20_val) else (10 if close > ma20_val else (5 if close > ma5_val else 0))
+                open_p = float(latest['open']) if 'open' in latest else close
+                high_p = float(latest['high']) if 'high' in latest else close
+                low_p  = float(latest['low']) if 'low' in latest else close
+                rng = (high_p - low_p + 1e-9)
+                upper_shadow = (high_p - max(open_p, close)) / rng
+                is_stagnant = (vol_ratio > 2.2 and (close < open_p or upper_shadow > 0.4))
+                f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
+                is_bull_k = close > open_p
+                recent_low = min(c['low'] for c in candles[-20:]) if candles else close
+                near_support = (low_p <= recent_low * 1.03) and is_bull_k
+                f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
+                f_chip = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
+                bias = (close - ma20_val) / ma20_val if ma20_val > 0 else 0
+                penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
+                sc_1d = min(100, max(0, f_adx + f_ma + f_vol + f_pat + f_chip - penalty))
+
+            # 2. 4H 隔日沖得分
+            if supertrend_4h == -1:
+                sc_4h = 30
+            else:
+                f_adx_4h = 20 if adx_4h > 30 else (10 if adx_4h > 20 else 0)
+                f_ma_4h  = 20 if (close > ma5_val > ma20_val) else (10 if close > ma20_val else (5 if close > ma5_val else 0))
+                f_vol_4h = 25 if vol_ratio_4h > 1.2 else (15 if vol_ratio_4h > 1.0 else 0)
+                f_pat_4h = 10
+                f_chip_4h = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
+                sc_4h = min(100, max(0, f_adx_4h + f_ma_4h + f_vol_4h + f_pat_4h + f_chip_4h - penalty))
 
             results.append({
                 "id": symbol, "name": name, "market": market,
@@ -1385,6 +1426,8 @@ def run_screener():
                 "volRatio_4h": vol_ratio_4h,
                 "supertrend_4h": supertrend_4h,
                 "adx_4h": adx_4h,
+                "totalScore": sc_1d,
+                "totalScore_4h": sc_4h,
                 "kline_4h": kline_4h_list,
                 "turnover": turnover_val,
                 "marketCap": market_cap_val, "dailyVol": vol // 1000,
@@ -1722,116 +1765,8 @@ def run_screener():
 
     # 隱私保護：對 results 進行個股機密欄位清理
     # 原則：隱去計算公式與策略邏輯，但保留「結果類」欄位供前端篩選表格顯示
-    # ============================================
-    # 荳荳 AI Version 6 多因子評分計算核心 (1D 與 4H 獨立維度)
-    # ============================================
-    def compute_doudou_multifactor_score(s):
-        st_val = s.get('supertrend', 1)
-        if st_val == -1:
-            return 30
-
-        kline = s.get('kline', [])
-        close_p = s.get('price', 0) or 0
-        if not kline or close_p <= 0:
-            return 70
-
-        last_bar = kline[-1] if kline else {}
-        open_p = last_bar.get('open', close_p)
-        low_p  = last_bar.get('low', close_p)
-        high_p = last_bar.get('high', close_p)
-
-        # 1. ADX 趨勢 (最高 20 分)
-        adx_val = s.get('adx', 0) or 0
-        f_adx   = 20 if adx_val > 30 else (10 if adx_val > 20 else 0)
-
-        # 2. 均線排列 (最高 20 分)
-        ma5_val  = s.get('ma5', close_p) or close_p
-        ma20_val = s.get('ma20', close_p) or close_p
-        f_ma     = 20 if (close_p > ma5_val and ma5_val > ma20_val) else (10 if close_p > ma20_val else (5 if close_p > ma5_val else 0))
-
-        # 3. 爆量與風控 (最高 25 分)
-        vol_ratio = s.get('volRatio', 0) or 0
-        rng = (high_p - low_p + 1e-9)
-        upper_shadow = (high_p - max(open_p, close_p)) / rng
-        is_stagnant = (vol_ratio > 2.2 and (close_p < open_p or upper_shadow > 0.4))
-        f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
-
-        # 4. K線與支撐 (最高 20 分)
-        is_bull_k = close_p > open_p
-        recent_low = min(b.get('low', close_p) for b in kline[-20:]) if len(kline) >= 20 else close_p
-        near_support = (low_p <= recent_low * 1.03) and is_bull_k
-        f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
-
-        # 5. 三大法人籌碼 (最高 25 分)
-        trust_days  = s.get('trustDays', 0) or 0
-        foreign_buy = s.get('foreignNetBuy', 0) or 0
-        inst_5d     = s.get('instSum5D', 0) or 0
-        f_chip = 25 if (trust_days >= 5 or inst_5d > 0) else (15 if (trust_days >= 3 or foreign_buy > 0) else 10)
-
-        # 6. 🛡️ 20MA 乖離率懲罰
-        bias = (close_p - ma20_val) / ma20_val if ma20_val > 0 else 0
-        penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
-
-        raw_sc = f_adx + f_ma + f_vol + f_pat + f_chip - penalty
-        return min(100, max(0, raw_sc))
-
-    def compute_doudou_multifactor_score_4h(s):
-        st_val = s.get('supertrend_4h', 1)
-        if st_val == -1:
-            return 30
-
-        kline_4h = s.get('kline_4h', [])
-        close_p  = s.get('price', 0) or 0
-        if not kline_4h or close_p <= 0:
-            return 70
-
-        last_bar = kline_4h[-1] if kline_4h else {}
-        open_p = last_bar.get('open', close_p)
-        low_p  = last_bar.get('low', close_p)
-        high_p = last_bar.get('high', close_p)
-
-        # 1. 4H ADX 趨勢 (最高 20 分)
-        adx_val = s.get('adx_4h', 0) or 0
-        f_adx   = 20 if adx_val > 30 else (10 if adx_val > 20 else 0)
-
-        # 2. 均線排列 (最高 20 分)
-        ma5_val  = s.get('ma5', close_p) or close_p
-        ma20_val = s.get('ma20', close_p) or close_p
-        f_ma     = 20 if (close_p > ma5_val and ma5_val > ma20_val) else (10 if close_p > ma20_val else (5 if close_p > ma5_val else 0))
-
-        # 3. 4H 爆量與風控 (最高 25 分)
-        vol_ratio = s.get('volRatio_4h', 0) or s.get('volRatio', 0) or 0
-        rng = (high_p - low_p + 1e-9)
-        upper_shadow = (high_p - max(open_p, close_p)) / rng
-        is_stagnant = (vol_ratio > 2.2 and (close_p < open_p or upper_shadow > 0.4))
-        f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
-
-        # 4. 4H K線與支撐 (最高 20 分)
-        is_bull_k = close_p > open_p
-        recent_low = min(b.get('low', close_p) for b in kline_4h[-20:]) if len(kline_4h) >= 20 else close_p
-        near_support = (low_p <= recent_low * 1.03) and is_bull_k
-        f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
-
-        # 5. 三大法人籌碼 (最高 25 分)
-        trust_days  = s.get('trustDays', 0) or 0
-        foreign_buy = s.get('foreignNetBuy', 0) or 0
-        inst_5d     = s.get('instSum5D', 0) or 0
-        f_chip = 25 if (trust_days >= 5 or inst_5d > 0) else (15 if (trust_days >= 3 or foreign_buy > 0) else 10)
-
-        # 6. 🛡️ 20MA 乖離率懲罰
-        bias = (close_p - ma20_val) / ma20_val if ma20_val > 0 else 0
-        penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
-
-        raw_sc = f_adx + f_ma + f_vol + f_pat + f_chip - penalty
-        return min(100, max(0, raw_sc))
-
     cleaned_mock_stocks = []
     for s in results:
-        sc_1d = compute_doudou_multifactor_score(s)
-        sc_4h = compute_doudou_multifactor_score_4h(s)
-        s['totalScore'] = sc_1d
-        s['totalScore_4h'] = sc_4h
-
         cleaned_mock_stocks.append({
             # === 基本識別 ===
             "id": s["id"],
@@ -1847,8 +1782,8 @@ def run_screener():
             "turnover": s.get("turnover"),
             "marketCap": s.get("marketCap"),
             # === Version 6 評分與雙時框核心 ===
-            "totalScore": sc_1d,
-            "totalScore_4h": sc_4h,
+            "totalScore": s.get("totalScore", 70),
+            "totalScore_4h": s.get("totalScore_4h", 70),
             "supertrend": s.get("supertrend", 1),
             "supertrend_4h": s.get("supertrend_4h", 1),
             "adx": s.get("adx", 0),
