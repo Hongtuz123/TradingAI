@@ -1,4 +1,4 @@
-//@version=5
+//@version=6
 indicator("荳荳 AI Version 6 多因子雙時框選股指標 (70-80分黃金甜蜜區)", overlay=true, max_labels_count=500, max_lines_count=500)
 
 // =============================================================================
@@ -99,12 +99,12 @@ float stop_loss_price = close * (1.0 - stop_loss_pct / 100.0)
 bool buy_trigger = is_buy_signal and not is_buy_signal[1]
 
 // =============================================================================
-// 5. 圖表視覺化繪製 (Plotting & Visualization)
+// 5. 圖表視覺化繪製 (Plotting & Visualization in v6)
 // =============================================================================
 // 均線
 plot(ma5,  "5MA",  color=color.new(color.yellow, 0), linewidth=1)
 plot(ma20, "20MA", color=color.new(color.orange, 0), linewidth=2)
-plot(ma60, "60MA", color=color.new(color.cyan, 0),   linewidth=2)
+plot(ma60, "60MA", color=color.new(color.aqua, 0),   linewidth=2)
 
 // SuperTrend 軌道
 plot(st_val, "SuperTrend", color=supertrend_bull ? color.green : color.red, linewidth=2)
@@ -117,7 +117,7 @@ if buy_trigger
     label.new(bar_index, low * 0.98, label_text, color=color.new(color.green, 10), textcolor=color.white, style=label.style_label_up, size=size.normal)
 
 // =============================================================================
-// 6. 實時選股看板 (Real-Time Dashboard)
+// 6. 實時選股看板 (Real-Time Dashboard in v6)
 // =============================================================================
 var table board = table.new(position.top_right, 2, 8, bgcolor=color.new(color.black, 20), border_color=color.gray, border_width=1)
 
