@@ -1878,11 +1878,11 @@ def run_screener(force=False):
     # ----------------------------------------------------
     try:
         from backend.discord_notifier import send_discord_batch_signals
-        import datetime as _dt
-
-        _now_local = _dt.datetime.now()
-        _weekday   = _now_local.weekday()
-        _is_trading_hours = True  # 提供實時觸發與排程
+        # 🎯 精確判定台股開盤交易時段 (週一至週五 09:00 ~ 13:35)
+        _now_taipei = pd.Timestamp.now(tz='Asia/Taipei')
+        _weekday = _now_taipei.weekday()  # 0=週一, 4=週五, 5=週六, 6=週日
+        _hhmm = _now_taipei.hour * 100 + _now_taipei.minute
+        _is_trading_hours = (_weekday <= 4) and (900 <= _hhmm <= 1335)
 
         qualified_stocks_1d = [
             s for s in cleaned_mock_stocks
@@ -1890,9 +1890,9 @@ def run_screener(force=False):
         ]
         qualified_stocks_1d.sort(
             key=lambda x: (
-                0 if 70 <= (x.get("totalScore", 0) or 0) <= 80 else 1,
-                - (x.get("volRatio", 0) or 0),
-                - (x.get("totalScore", 0) or 0)
+                0 if 70 <= (x.get("totalScore", 0) or 0) <= 89 else 1,
+                (x.get("totalScore", 0) or 0),
+                - (x.get("volRatio", 0) or 0)
             )
         )
 
@@ -1902,16 +1902,18 @@ def run_screener(force=False):
         ]
         qualified_stocks_4h.sort(
             key=lambda x: (
-                0 if 70 <= (x.get("totalScore_4h", 0) or 0) <= 80 else 1,
-                - (x.get("volRatio_4h", 0) or x.get("volRatio", 0) or 0),
-                - (x.get("totalScore_4h", 0) or 0)
+                0 if 70 <= (x.get("totalScore_4h", 0) or 0) <= 89 else 1,
+                (x.get("totalScore_4h", 0) or 0),
+                - (x.get("volRatio_4h", 0) or x.get("volRatio", 0) or 0)
             )
         )
 
         scanned_count = len(cleaned_mock_stocks)
         print(f"\n📢 [荳荳 AI 推播引擎] 掃描 {scanned_count} 檔標的，1D 達標 {len(qualified_stocks_1d)} 檔、4H 達標 {len(qualified_stocks_4h)} 檔！")
 
-        if qualified_stocks_1d or qualified_stocks_4h:
+        if not _is_trading_hours:
+            print(f"ℹ️ 目前時間 {_now_taipei.strftime('%H:%M')} 非台股開盤交易時段（週一~週五 09:00~13:35），已完成靜默數據更新，跳過 Discord 推播發送。")
+        elif qualified_stocks_1d or qualified_stocks_4h:
             send_discord_batch_signals(
                 qualified_stocks_1d=qualified_stocks_1d,
                 qualified_stocks_4h=qualified_stocks_4h,
