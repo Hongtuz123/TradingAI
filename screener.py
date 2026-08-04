@@ -1181,23 +1181,30 @@ def run_screener():
     results = []
     price_failed_stocks = []
     
-    print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天)...")
+    print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天日線 + 60天1H小時線)...")
     if tickers:
         try:
             df_all = yf.download(tickers, period='250d', group_by='ticker', threads=20, timeout=15)
         except Exception as e:
-            print(f"❌ 批次下載失敗: {e}")
+            print(f"❌ 日線批次下載失敗: {e}")
             df_all = pd.DataFrame()
+
+        try:
+            df_1h_all = yf.download(tickers, period='60d', interval='1h', group_by='ticker', threads=20, timeout=15)
+        except Exception as e:
+            print(f"❌ 1H K線批次下載失敗: {e}")
+            df_1h_all = pd.DataFrame()
     else:
         df_all = pd.DataFrame()
+        df_1h_all = pd.DataFrame()
 
-    print(f"開始處理下載之歷史資料並計算指標...")
+    print(f"開始處理下載之歷史資料並計算 1D 與 4H 雙時框指標...")
     for idx, (yf_ticker, s) in enumerate(yf_to_stock.items()):
         symbol = s['Code']
         name = s['Name']
         market = s['market']
         
-        # 檢查該 ticker 的資料是否存在與完整
+        # 1. 處理 1D 日線資料
         df_stock = pd.DataFrame()
         try:
             if not df_all.empty:
@@ -1209,6 +1216,26 @@ def run_screener():
             
             if df_stock.empty or len(df_stock) < 20:
                 raise ValueError("歷史資料筆數不足 20 筆或全為 NaN")
+
+            # 2. 處理 4H K線重採樣 (將 1H 資料重採樣為 4H K線)
+            df_4h_calc = pd.DataFrame()
+            try:
+                if not df_1h_all.empty:
+                    if isinstance(df_1h_all.columns, pd.MultiIndex):
+                        if yf_ticker in df_1h_all.columns.levels[0]:
+                            df_1h_stock = df_1h_all[yf_ticker].dropna(subset=['Close'])
+                    else:
+                        df_1h_stock = df_1h_all.dropna(subset=['Close'])
+                    
+                    if not df_1h_stock.empty and len(df_1h_stock) >= 20:
+                        df_1h_rename = df_1h_stock.rename(columns={'Open':'open','High':'high','Low':'low','Close':'close','Volume':'volume'})
+                        df_4h_resampled = df_1h_rename.resample('4h').agg({
+                            'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'
+                        }).dropna()
+                        if len(df_4h_resampled) >= 20:
+                            df_4h_calc = calc_indicators(df_4h_resampled)
+            except Exception:
+                df_4h_calc = pd.DataFrame()
                 
             candles = []
             for dt, row in df_stock.iterrows():
@@ -1317,21 +1344,29 @@ def run_screener():
             inst_avg_7d = code_stats["instAvg7D"]
             inst_detail_5d = code_stats["instDetail5D"]
 
-            # 新增技術指標 Supertrend 與 DMI
-            supertrend_val = int(latest['supertrend']) if 'supertrend' in latest else 1
-            prev_supertrend_val = int(prev['supertrend']) if 'supertrend' in prev else 1
-            plus_di_val = round(float(latest['plus_di']), 2) if 'plus_di' in latest else 0.0
-            minus_di_val = round(float(latest['minus_di']), 2) if 'minus_di' in latest else 0.0
-            adx_val = round(float(latest['adx']), 2) if 'adx' in latest else 0.0
+            # 計算 4H 專屬特徵
+            if not df_4h_calc.empty:
+                latest_4h = df_4h_calc.iloc[-1]
+                vol_4h = int(latest_4h.get('volume', 0))
+                vol_ma20_4h = float(latest_4h.get('vol_ma20', 0))
+                vol_ratio_4h = round(vol_4h / vol_ma20_4h, 2) if vol_ma20_4h > 0 else vol_ratio
+                supertrend_4h = int(latest_4h.get('supertrend', 1)) if 'supertrend' in latest_4h else supertrend_val
+                adx_4h = round(float(latest_4h.get('adx', 0)), 2) if 'adx' in latest_4h else adx_val
+                kline_4h_list = [{'open': row['open'], 'close': row['close'], 'high': row['high'], 'low': row['low']} for _, row in df_4h_calc.tail(20).iterrows()]
+            else:
+                vol_ratio_4h = vol_ratio
+                supertrend_4h = supertrend_val
+                adx_4h = adx_val
+                kline_4h_list = []
 
             results.append({
                 "id": symbol, "name": name, "market": market,
                 "industry": industry_map.get(str(symbol).zfill(4), ''),
                 "price": round(close, 2), "change": round(change_num, 2),
-                "epsYoY": None,  # 將在最後精選 Top 40 中局部下載
-                "eps": eps_val,  # 批量單季 EPS
+                "epsYoY": None,
+                "eps": eps_val,
                 "revYoY": rev_yoy,
-                "roe": roe_val,   # 批量年化 ROE
+                "roe": roe_val,
                 "grossMargin": gross_margin,
                 "debtRatio": debt_ratio,
                 "trustDays": trust_net_buy, 
@@ -1346,7 +1381,12 @@ def run_screener():
                 "plus_di": plus_di_val,
                 "minus_di": minus_di_val,
                 "adx": adx_val,
-                "volRatio": vol_ratio, "turnover": turnover_val,
+                "volRatio": vol_ratio,
+                "volRatio_4h": vol_ratio_4h,
+                "supertrend_4h": supertrend_4h,
+                "adx_4h": adx_4h,
+                "kline_4h": kline_4h_list,
+                "turnover": turnover_val,
                 "marketCap": market_cap_val, "dailyVol": vol // 1000,
                 "type": tech_type,
                 "maBull": ma_bull,
@@ -1682,8 +1722,116 @@ def run_screener():
 
     # 隱私保護：對 results 進行個股機密欄位清理
     # 原則：隱去計算公式與策略邏輯，但保留「結果類」欄位供前端篩選表格顯示
+    # ============================================
+    # 荳荳 AI Version 6 多因子評分計算核心 (1D 與 4H 獨立維度)
+    # ============================================
+    def compute_doudou_multifactor_score(s):
+        st_val = s.get('supertrend', 1)
+        if st_val == -1:
+            return 30
+
+        kline = s.get('kline', [])
+        close_p = s.get('price', 0) or 0
+        if not kline or close_p <= 0:
+            return 70
+
+        last_bar = kline[-1] if kline else {}
+        open_p = last_bar.get('open', close_p)
+        low_p  = last_bar.get('low', close_p)
+        high_p = last_bar.get('high', close_p)
+
+        # 1. ADX 趨勢 (最高 20 分)
+        adx_val = s.get('adx', 0) or 0
+        f_adx   = 20 if adx_val > 30 else (10 if adx_val > 20 else 0)
+
+        # 2. 均線排列 (最高 20 分)
+        ma5_val  = s.get('ma5', close_p) or close_p
+        ma20_val = s.get('ma20', close_p) or close_p
+        f_ma     = 20 if (close_p > ma5_val and ma5_val > ma20_val) else (10 if close_p > ma20_val else (5 if close_p > ma5_val else 0))
+
+        # 3. 爆量與風控 (最高 25 分)
+        vol_ratio = s.get('volRatio', 0) or 0
+        rng = (high_p - low_p + 1e-9)
+        upper_shadow = (high_p - max(open_p, close_p)) / rng
+        is_stagnant = (vol_ratio > 2.2 and (close_p < open_p or upper_shadow > 0.4))
+        f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
+
+        # 4. K線與支撐 (最高 20 分)
+        is_bull_k = close_p > open_p
+        recent_low = min(b.get('low', close_p) for b in kline[-20:]) if len(kline) >= 20 else close_p
+        near_support = (low_p <= recent_low * 1.03) and is_bull_k
+        f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
+
+        # 5. 三大法人籌碼 (最高 25 分)
+        trust_days  = s.get('trustDays', 0) or 0
+        foreign_buy = s.get('foreignNetBuy', 0) or 0
+        inst_5d     = s.get('instSum5D', 0) or 0
+        f_chip = 25 if (trust_days >= 5 or inst_5d > 0) else (15 if (trust_days >= 3 or foreign_buy > 0) else 10)
+
+        # 6. 🛡️ 20MA 乖離率懲罰
+        bias = (close_p - ma20_val) / ma20_val if ma20_val > 0 else 0
+        penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
+
+        raw_sc = f_adx + f_ma + f_vol + f_pat + f_chip - penalty
+        return min(100, max(0, raw_sc))
+
+    def compute_doudou_multifactor_score_4h(s):
+        st_val = s.get('supertrend_4h', 1)
+        if st_val == -1:
+            return 30
+
+        kline_4h = s.get('kline_4h', [])
+        close_p  = s.get('price', 0) or 0
+        if not kline_4h or close_p <= 0:
+            return 70
+
+        last_bar = kline_4h[-1] if kline_4h else {}
+        open_p = last_bar.get('open', close_p)
+        low_p  = last_bar.get('low', close_p)
+        high_p = last_bar.get('high', close_p)
+
+        # 1. 4H ADX 趨勢 (最高 20 分)
+        adx_val = s.get('adx_4h', 0) or 0
+        f_adx   = 20 if adx_val > 30 else (10 if adx_val > 20 else 0)
+
+        # 2. 均線排列 (最高 20 分)
+        ma5_val  = s.get('ma5', close_p) or close_p
+        ma20_val = s.get('ma20', close_p) or close_p
+        f_ma     = 20 if (close_p > ma5_val and ma5_val > ma20_val) else (10 if close_p > ma20_val else (5 if close_p > ma5_val else 0))
+
+        # 3. 4H 爆量與風控 (最高 25 分)
+        vol_ratio = s.get('volRatio_4h', 0) or s.get('volRatio', 0) or 0
+        rng = (high_p - low_p + 1e-9)
+        upper_shadow = (high_p - max(open_p, close_p)) / rng
+        is_stagnant = (vol_ratio > 2.2 and (close_p < open_p or upper_shadow > 0.4))
+        f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
+
+        # 4. 4H K線與支撐 (最高 20 分)
+        is_bull_k = close_p > open_p
+        recent_low = min(b.get('low', close_p) for b in kline_4h[-20:]) if len(kline_4h) >= 20 else close_p
+        near_support = (low_p <= recent_low * 1.03) and is_bull_k
+        f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
+
+        # 5. 三大法人籌碼 (最高 25 分)
+        trust_days  = s.get('trustDays', 0) or 0
+        foreign_buy = s.get('foreignNetBuy', 0) or 0
+        inst_5d     = s.get('instSum5D', 0) or 0
+        f_chip = 25 if (trust_days >= 5 or inst_5d > 0) else (15 if (trust_days >= 3 or foreign_buy > 0) else 10)
+
+        # 6. 🛡️ 20MA 乖離率懲罰
+        bias = (close_p - ma20_val) / ma20_val if ma20_val > 0 else 0
+        penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
+
+        raw_sc = f_adx + f_ma + f_vol + f_pat + f_chip - penalty
+        return min(100, max(0, raw_sc))
+
     cleaned_mock_stocks = []
     for s in results:
+        sc_1d = compute_doudou_multifactor_score(s)
+        sc_4h = compute_doudou_multifactor_score_4h(s)
+        s['totalScore'] = sc_1d
+        s['totalScore_4h'] = sc_4h
+
         cleaned_mock_stocks.append({
             # === 基本識別 ===
             "id": s["id"],
@@ -1695,9 +1843,17 @@ def run_screener():
             "change": s["change"],
             "dailyVol": s["dailyVol"],
             "volRatio": s["volRatio"],
+            "volRatio_4h": s.get("volRatio_4h", s["volRatio"]),
             "turnover": s.get("turnover"),
             "marketCap": s.get("marketCap"),
-            # === 基本面結果值（已計算完成，不含公式）===
+            # === Version 6 評分與雙時框核心 ===
+            "totalScore": sc_1d,
+            "totalScore_4h": sc_4h,
+            "supertrend": s.get("supertrend", 1),
+            "supertrend_4h": s.get("supertrend_4h", 1),
+            "adx": s.get("adx", 0),
+            "adx_4h": s.get("adx_4h", 0),
+            # === 基本面結果值 ===
             "eps": s.get("eps"),
             "epsYoY": s.get("epsYoY"),
             "revYoY": s.get("revYoY"),
@@ -1719,8 +1875,9 @@ def run_screener():
             "dist52W": s.get("dist52W"),
             "rsi14": s.get("rsi14"),
             "type": s.get("type", ""),
-            # === K 線（供前端回測）===
-            "kline": s["kline"]
+            # === K 線 ===
+            "kline": s["kline"],
+            "kline_4h": s.get("kline_4h", [])
         })
 
     json_data = {
@@ -1780,6 +1937,55 @@ def run_screener():
         print("✅ data.json 與 data.js 已自動推送至 GitHub，Vercel 雲端網站將在約 30 秒內同步更新！")
     except Exception as git_err:
         print(f"⚠️  自動 git push 失敗（不影響本機使用）：{git_err}")
+
+    # ----------------------------------------------------
+    # 🚀 荳荳 AI 實時多因子推播引擎 (Discord 呱呱推播 - 1D 與 4H 雙時框獨立精選)
+    # ----------------------------------------------------
+    try:
+        from backend.discord_notifier import send_discord_batch_signals
+        import datetime as _dt
+
+        _now_local = _dt.datetime.now()
+        _weekday   = _now_local.weekday()
+        _is_trading_hours = True  # 提供實時觸發與排程
+
+        qualified_stocks_1d = [
+            s for s in cleaned_mock_stocks
+            if (s.get("totalScore", 0) or 0) >= 70 and s.get("supertrend", 1) != -1
+        ]
+        qualified_stocks_1d.sort(
+            key=lambda x: (
+                0 if 70 <= (x.get("totalScore", 0) or 0) <= 80 else 1,
+                - (x.get("volRatio", 0) or 0),
+                - (x.get("totalScore", 0) or 0)
+            )
+        )
+
+        qualified_stocks_4h = [
+            s for s in cleaned_mock_stocks
+            if (s.get("totalScore_4h", 0) or 0) >= 70 and s.get("supertrend_4h", 1) != -1
+        ]
+        qualified_stocks_4h.sort(
+            key=lambda x: (
+                0 if 70 <= (x.get("totalScore_4h", 0) or 0) <= 80 else 1,
+                - (x.get("volRatio_4h", 0) or x.get("volRatio", 0) or 0),
+                - (x.get("totalScore_4h", 0) or 0)
+            )
+        )
+
+        scanned_count = len(cleaned_mock_stocks)
+        print(f"\n📢 [荳荳 AI 推播引擎] 掃描 {scanned_count} 檔標的，1D 達標 {len(qualified_stocks_1d)} 檔、4H 達標 {len(qualified_stocks_4h)} 檔！")
+
+        if qualified_stocks_1d or qualified_stocks_4h:
+            send_discord_batch_signals(
+                qualified_stocks_1d=qualified_stocks_1d,
+                qualified_stocks_4h=qualified_stocks_4h,
+                scanned_cnt=scanned_count,
+                time_str=now_str
+            )
+            print(f"✅ 已成功發送 1D ({len(qualified_stocks_1d[:10])} 檔) 與 4H ({len(qualified_stocks_4h[:10])} 檔) 雙時框獨立推播卡片！")
+    except Exception as push_err:
+        print(f"⚠️ 推播觸發跳過: {push_err}")
 
 
 if __name__ == "__main__":
