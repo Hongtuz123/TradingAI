@@ -90,16 +90,37 @@ else
     score := math.min(100, math.max(0, raw_score))
 
 // =============================================================================
-// 4. 買進訊號與停損價位 (Trading Signal & Risk Control)
+// 4. 狀態機與極簡動態標籤 (買進 / 加碼買進 / 賣出)
 // =============================================================================
 bool is_buy_signal = (score >= min_score) and (score <= max_score) and supertrend_bull
 float stop_loss_price = close * (1.0 - stop_loss_pct / 100.0)
 
-// 避免連續觸發重複圖表標籤
+// 追蹤持倉狀態
+var bool in_position = false
+var float entry_price = 0.0
+
+// 賣出條件：SuperTrend 翻紅空頭 或 跌破 -20% 停損價
+bool sell_trigger = in_position and (not supertrend_bull or low <= entry_price * (1.0 - stop_loss_pct / 100.0))
+
+if sell_trigger
+    in_position := false
+    label.new(bar_index, high * 1.01, "賣出", color=color.red, textcolor=color.white, style=label.style_label_down, size=size.small)
+
+// 買進 / 加碼買進條件 (訊號發動點)
 bool buy_trigger = is_buy_signal and not is_buy_signal[1]
 
+if buy_trigger and not sell_trigger
+    if not in_position
+        // 第一次開倉建產
+        in_position := true
+        entry_price := close
+        label.new(bar_index, low * 0.99, "買進", color=color.green, textcolor=color.white, style=label.style_label_up, size=size.small)
+    else
+        // 已在持倉狀態中，再次符合發動條件 -> 加碼買進
+        label.new(bar_index, low * 0.99, "加碼買進", color=color.blue, textcolor=color.white, style=label.style_label_up, size=size.small)
+
 // =============================================================================
-// 5. 圖表視覺化繪製 (Plotting & Visualization in v6)
+// 5. 圖表視覺化繪製 (Plotting & Visualization)
 // =============================================================================
 // 均線
 plot(ma5,  "5MA",  color=color.new(color.yellow, 0), linewidth=1)
@@ -108,13 +129,6 @@ plot(ma60, "60MA", color=color.new(color.aqua, 0),   linewidth=2)
 
 // SuperTrend 軌道
 plot(st_val, "SuperTrend", color=supertrend_bull ? color.green : color.red, linewidth=2)
-
-// 買進訊號圖示與標籤
-plotshape(buy_trigger, title="荳荳 AI 買進訊號", style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small)
-
-if buy_trigger
-    label_text = "🐸 荳荳 AI Buy v6\n得分: " + str.tostring(score) + "分\n現價: $" + str.tostring(close, "#.##") + "\n止損: $" + str.tostring(stop_loss_price, "#.##")
-    label.new(bar_index, low * 0.98, label_text, color=color.new(color.green, 10), textcolor=color.white, style=label.style_label_up, size=size.normal)
 
 // =============================================================================
 // 6. 實時選股看板 (Real-Time Dashboard in v6)
@@ -128,17 +142,17 @@ if barstate.islast
     table.cell(board, 0, 1, "當前多因子總分", text_color=color.white, text_size=size.small)
     table.cell(board, 1, 1, str.tostring(score) + " 分", text_color=score >= 70 ? color.green : color.red, text_size=size.small)
 
-    table.cell(board, 0, 2, "70-80分黃金發動點", text_color=color.white, text_size=size.small)
-    table.cell(board, 1, 2, is_buy_signal ? "✅ 觸發發動" : "❌ 未達標", text_color=is_buy_signal ? color.green : color.gray, text_size=size.small)
+    table.cell(board, 0, 2, "持倉狀態", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 2, in_position ? "🟢 持倉中" : "⚪ 空手觀望", text_color=in_position ? color.green : color.gray, text_size=size.small)
 
-    table.cell(board, 0, 3, "ADX 趨勢強度", text_color=color.white, text_size=size.small)
-    table.cell(board, 1, 3, str.tostring(adx_val, "#.#") + (adx_val > 20 ? " (強)" : " (弱)"), text_color=adx_val > 20 ? color.green : color.white, text_size=size.small)
+    table.cell(board, 0, 3, "70-80分黃金發動點", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 3, is_buy_signal ? "✅ 觸發發動" : "❌ 未達標", text_color=is_buy_signal ? color.green : color.gray, text_size=size.small)
 
-    table.cell(board, 0, 4, "爆量倍數 (VMA20)", text_color=color.white, text_size=size.small)
-    table.cell(board, 1, 4, str.tostring(vol_ratio, "#.##") + "x", text_color=vol_ratio > 1.2 ? color.green : color.white, text_size=size.small)
+    table.cell(board, 0, 4, "ADX 趨勢強度", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 4, str.tostring(adx_val, "#.#") + (adx_val > 20 ? " (強)" : " (弱)"), text_color=adx_val > 20 ? color.green : color.white, text_size=size.small)
 
-    table.cell(board, 0, 5, "20MA 乖離率", text_color=color.white, text_size=size.small)
-    table.cell(board, 1, 5, str.tostring(bias_20ma, "+#.##") + "%", text_color=penalty > 0 ? color.red : color.green, text_size=size.small)
+    table.cell(board, 0, 5, "爆量倍數 (VMA20)", text_color=color.white, text_size=size.small)
+    table.cell(board, 1, 5, str.tostring(vol_ratio, "#.##") + "x", text_color=vol_ratio > 1.2 ? color.green : color.white, text_size=size.small)
 
     table.cell(board, 0, 6, "建議止損價位 (-20%)", text_color=color.white, text_size=size.small)
     table.cell(board, 1, 6, "$" + str.tostring(stop_loss_price, "#.##"), text_color=color.yellow, text_size=size.small)
@@ -146,4 +160,6 @@ if barstate.islast
 // =============================================================================
 // 7. TradingView 警報條件 (Alert Conditions)
 // =============================================================================
-alertcondition(buy_trigger, title="荳荳 AI Version 6 買進訊號", message="🐸【荳荳 AI Version 6】標的 {{ticker}} 現價 ${{close}} 達標 70-80分黃金發動點！建議止損價位: ${{close}} * 0.8")
+alertcondition(buy_trigger and not in_position[1], title="荳荳 AI Version 6 買進訊號", message="🐸【荳荳 AI Version 6】標的 {{ticker}} 現價 ${{close}} 觸發【買進】訊號！建議止損價位: ${{close}} * 0.8")
+alertcondition(buy_trigger and in_position[1],     title="荳荳 AI Version 6 加碼買進訊號", message="⚡【荳荳 AI Version 6】標的 {{ticker}} 現價 ${{close}} 觸發【加碼買進】訊號！")
+alertcondition(sell_trigger,                        title="荳荳 AI Version 6 賣出訊號", message="🚨【荳荳 AI Version 6】標的 {{ticker}} 現價 ${{close}} 觸發【賣出】訊號！")
