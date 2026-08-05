@@ -1253,11 +1253,16 @@ def run_screener(force=False):
             latest = df.iloc[-1]
             prev   = df.iloc[-2]
 
-            # 優先用 OpenAPI 的即時收盤價
-            openapi_price = s.get('ClosingPrice') or s.get('Close')
-            try:
-                close = float(openapi_price) if openapi_price and str(openapi_price).replace('.', '').replace('-', '').isdigit() else float(latest['close'])
-            except Exception:
+            # 1. 取得 TWSE/TPEx 官方 OpenAPI 當日最新即時動態 (解決全市場報價變數對應 Bug)
+            m_info = all_market_info.get(str(symbol).zfill(4), {}) or all_market_info.get(str(symbol), {})
+
+            # 2. 確定當前收盤價/最新成交價 close
+            openapi_price_raw = m_info.get('ClosingPrice') or m_info.get('Close')
+            openapi_price_val = safe_float(str(openapi_price_raw).replace(',', '').strip()) if openapi_price_raw else None
+
+            if openapi_price_val and openapi_price_val > 0:
+                close = openapi_price_val
+            else:
                 close = float(latest['close'])
 
             vol         = int(latest['volume'])
@@ -1276,28 +1281,32 @@ def run_screener(force=False):
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 漲跌幅：優先使用 OpenAPI 提供的漲跌額（Change）來計算，最精準
-            # 若 OpenAPI 無漲跌額，再退回 K 線倒數兩筆計算
+            # 3. 漲跌幅 (%)：優先使用官方 Change (漲跌金額) 精算
             try:
-                openapi_change_raw = s.get('Change', '')  # TWSE/OTC 的漲跌額（元，字串）
-                openapi_change_val = safe_float(str(openapi_change_raw).replace('+', '').strip()) if openapi_change_raw else None
+                openapi_change_raw = m_info.get('Change', '')
+                openapi_change_val = None
+                if openapi_change_raw:
+                    clean_change_str = str(openapi_change_raw)
+                    if '>' in clean_change_str and '<' in clean_change_str:
+                        import re
+                        clean_change_str = re.sub(r'<[^>]+>', '', clean_change_str)
+                    clean_change_str = clean_change_str.replace('+', '').replace(',', '').strip()
+                    openapi_change_val = safe_float(clean_change_str)
+
                 if openapi_change_val is not None and close and close > 0:
-                    # 昨收 = 今收 - 漲跌額
                     prev_close_calc = close - openapi_change_val
                     if prev_close_calc > 0:
                         change_num = round((openapi_change_val / prev_close_calc) * 100, 2)
                     else:
                         change_num = 0.0
                 else:
-                    # Fallback：用 K 線倒數兩筆計算
-                    latest_date_str = latest['date']
-                    today_str = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
-                    if latest_date_str == today_str:
-                        prev_close = float(prev['close'])
-                    else:
-                        prev_close = float(latest['close'])
-                    if prev_close > 0:
-                        change_num = round(((close - prev_close) / prev_close) * 100, 2)
+                    # Fallback：嚴格使用日線倒數第二筆 (昨日實質收盤價) 計算
+                    if len(df) >= 2:
+                        prev_close = float(df.iloc[-2]['close'])
+                        if prev_close > 0:
+                            change_num = round(((close - prev_close) / prev_close) * 100, 2)
+                        else:
+                            change_num = 0.0
                     else:
                         change_num = 0.0
             except Exception:
