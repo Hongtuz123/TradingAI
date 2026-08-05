@@ -1870,10 +1870,11 @@ def run_screener(force=False):
             s['sell_reason'] = sell_reason
             sell_signals.append(s)
             del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
-        elif (sc_1d >= 80 or sc_4h >= 80) and vol_r >= 1.5 and last_add_time != now_str[:10]:
-            # 🔵 加碼買進判定：持倉中且分數升至 >= 80分 + 大爆量 >= 1.5x (同天去重)
-            s['add_reason'] = f"強勢突破 (高達 {max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
-            s['display_score'] = max(sc_1d, sc_4h)
+        elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
+            # 🔵 加碼買進判定：持倉中且分數持續達標 >= 70分 (同天去重)
+            max_sc = max(sc_1d, sc_4h)
+            s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + 爆量 {vol_r:.2f}x"
+            s['display_score'] = max_sc
             add_buy_signals.append(s)
             pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
 
