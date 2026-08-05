@@ -1893,8 +1893,9 @@ def run_screener(force=False):
         _hhmm = _now_taipei.hour * 100 + _now_taipei.minute
         _is_trading_hours = (_weekday <= 4) and (900 <= _hhmm <= 1335)
 
-        # 讀取持久化持倉狀態檔 pos_state.json
-        pos_state_path = 'pos_state.json'
+        # 讀取持久化持倉狀態檔 pos_state.json (鎖定絕對路徑，解決排程執行時讀不到歷史持倉導致重複推播)
+        base_dir_pos = os.path.dirname(os.path.abspath(__file__))
+        pos_state_path = os.path.join(base_dir_pos, 'pos_state.json')
         pos_state = {}
         if os.path.exists(pos_state_path):
             try:
@@ -1939,6 +1940,7 @@ def run_screener(force=False):
             elif (sc_1d >= 80 or sc_4h >= 80) and vol_r >= 1.5 and last_add_time != now_str[:10]:
                 # 🔵 加碼買進判定：持倉中且分數升至 >= 80分 + 大爆量 >= 1.5x (同天去重)
                 s['add_reason'] = f"強勢突破 (高達 {max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
+                s['display_score'] = max(sc_1d, sc_4h)
                 add_buy_signals.append(s)
                 pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
 
@@ -1956,15 +1958,33 @@ def run_screener(force=False):
             if is_1d_pass or is_4h_pass:
                 # 若不在持倉中，觸發首次【買進訊號】
                 if sym_id not in pos_state:
-                    s['tf_tag'] = '1D' if is_1d_pass else '4H'
+                    if is_1d_pass and is_4h_pass:
+                        tf_tag = "1D/4H"
+                        disp_sc = sc_1d
+                    elif is_1d_pass:
+                        tf_tag = "1D"
+                        disp_sc = sc_1d
+                    else:
+                        tf_tag = "4H"
+                        disp_sc = sc_4h
+
+                    s['tf_tag'] = tf_tag
+                    s['display_score'] = disp_sc
                     buy_signals.append(s)
                     pos_state[sym_id] = {
                         'entry_price': s.get('price', 0),
                         'entry_time': now_str,
-                        'tf': s['tf_tag']
+                        'tf': tf_tag
                     }
 
-        # 寫回 pos_state.json
+        # 針對買進清單排序：70分最優先 (0 if 70<=sc<=89 else 1)，同分下爆量倍數大者優先
+        buy_signals.sort(key=lambda x: (
+            0 if 70 <= (x.get('display_score', 70)) <= 89 else 1,
+            - (x.get('volRatio', 1.0)),
+            - (x.get('display_score', 70))
+        ))
+
+        # 寫回 pos_state.json (絕對路徑)
         try:
             with open(pos_state_path, 'w', encoding='utf-8') as pf:
                 json.dump(pos_state, pf, ensure_ascii=False, indent=2)

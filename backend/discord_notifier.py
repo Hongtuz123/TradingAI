@@ -24,14 +24,16 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
 
     # 1. 🟢 買進訊號 (首次發動 70-89分)
     if buys:
-        content_lines.append(f"🟢 ───【 買進訊號 (首次發動, 共 {len(buys[:8])} 檔) 】───")
-        for idx, s in enumerate(buys[:8], start=1):
+        top_buys = buys[:10]
+        header_text = f"🟢 ───【 買進訊號 (首次發動, 精選前 {len(top_buys)} 檔) 】───" if len(buys) > 10 else f"🟢 ───【 買進訊號 (首次發動, 共 {len(buys)} 檔) 】───"
+        content_lines.append(header_text)
+        for idx, s in enumerate(top_buys, start=1):
             name_str = f"{s.get('id', '')} {s.get('name', '')}"
             price    = s.get('price', 0)
             chg      = s.get('change', 0)
             chg_str  = f"+{chg}%" if chg >= 0 else f"{chg}%"
             vol_r    = s.get('volRatio', 1.0)
-            score    = s.get('totalScore', 70)
+            score    = s.get('display_score', s.get('totalScore', 70))
             sl_price = round(price * 0.80, 2)
             tf_tag   = s.get('tf_tag', '1D')
 
@@ -42,14 +44,16 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
 
     # 2. 🔵 加碼買進訊號 (持倉中強勢突破/爆量升分)
     if adds:
-        content_lines.append(f"🔵 ───【 加碼買進 (持倉轉強, 共 {len(adds[:8])} 檔) 】───")
-        for idx, s in enumerate(adds[:8], start=1):
+        top_adds = adds[:10]
+        header_text = f"🔵 ───【 加碼買進 (持倉轉強, 精選前 {len(top_adds)} 檔) 】───" if len(adds) > 10 else f"🔵 ───【 加碼買進 (持倉轉強, 共 {len(adds)} 檔) 】───"
+        content_lines.append(header_text)
+        for idx, s in enumerate(top_adds, start=1):
             name_str = f"{s.get('id', '')} {s.get('name', '')}"
             price    = s.get('price', 0)
             chg      = s.get('change', 0)
             chg_str  = f"+{chg}%" if chg >= 0 else f"{chg}%"
             vol_r    = s.get('volRatio', 1.0)
-            score    = s.get('totalScore', 70)
+            score    = s.get('display_score', s.get('totalScore', 70))
             reason   = s.get('add_reason', '分數升至甜蜜區+爆量加強')
 
             content_lines.append(
@@ -59,13 +63,15 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
 
     # 3. 🔴 賣出訊號 (風控停損 / 防禦平倉)
     if sells:
-        content_lines.append(f"🔴 ───【 賣出訊號 (風控平倉, 共 {len(sells[:8])} 檔) 】───")
-        for idx, s in enumerate(sells[:8], start=1):
+        top_sells = sells[:10]
+        header_text = f"🔴 ───【 賣出訊號 (風控平倉, 共 {len(sells)} 檔) 】───"
+        content_lines.append(header_text)
+        for idx, s in enumerate(top_sells, start=1):
             name_str = f"{s.get('id', '')} {s.get('name', '')}"
             price    = s.get('price', 0)
             chg      = s.get('change', 0)
             chg_str  = f"+{chg}%" if chg >= 0 else f"{chg}%"
-            reason   = s.get('sell_reason', 'SuperTrend 翻紅反轉')
+            reason   = s.get('sell_reason', 'SuperTrend 趨勢轉為空頭')
 
             content_lines.append(
                 f"**[賣出 {idx}]** {name_str} ｜ 現價 `${price:,.2f}` ({chg_str}) ｜ 觸發原因：`{reason}`"
