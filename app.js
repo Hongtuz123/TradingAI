@@ -3639,47 +3639,33 @@ function runScreener(isAutoRefresh = false) {
 
 
 
-    s.dynamicScore = score; // 分數轉為百分制評分
-
-
-
+    const v6Score = s.totalScore || s.score || score;
+    s.dynamicScore = v6Score; // 優先採用 Version 6 多因子權威得分
     s.failedConditions = failedConditions;
 
+    const posState = (marketData && marketData.pos_state) || window.posState || {};
+    const isHeld = posState[s.id] !== undefined;
+    s.isHeld = isHeld;
+    s.posInfo = posState[s.id] || null;
 
-
-
-
-
-
-    // 篩選與匹配：評分 >= 最低符合評分（完全尊重滑桿設定，不再強制鎖定 60 分限制）
-
-
-
-    if (s.dynamicScore >= p.minScore && failedConditions.length === 0) {
-
-
-
+    // 🚀 關鍵修復：持倉中的標的 (In Position) 或 符合 Version 6 得分門檻者，100% 納入荳荳清單！
+    if (isHeld || (s.dynamicScore >= p.minScore && failedConditions.length === 0)) {
       currentResults.push(s);
-
-
-
     }
-
-
-
   });
 
+  // 🚀 排序規則：持倉標的 (isHeld) 100% 最優先，其次 70-80分黃金區間，同分下爆量倍數大者優先！
+  currentResults.sort((a, b) => {
+    if (a.isHeld && !b.isHeld) return -1;
+    if (!a.isHeld && b.isHeld) return 1;
+    
+    const aInGold = (a.dynamicScore >= 70 && a.dynamicScore <= 89) ? 1 : 0;
+    const bInGold = (b.dynamicScore >= 70 && b.dynamicScore <= 89) ? 1 : 0;
+    if (aInGold !== bInGold) return bInGold - aInGold;
 
-
-
-
-
-
-  // 排序並過濾白名單（白名單不受篩選器前40檔切片限制，完全獨立呈現符合分數的白名單）
-
-
-
-  currentResults.sort((a, b) => b.dynamicScore - a.dynamicScore);
+    if (b.dynamicScore !== a.dynamicScore) return b.dynamicScore - a.dynamicScore;
+    return (b.volRatio || 0) - (a.volRatio || 0);
+  });
 
 
 
@@ -4067,82 +4053,30 @@ function renderScreenerTable(data) {
 
 
 
+    const heldBadge = s.isHeld ? `<span class="badge" style="background:#22c55e;color:#000;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🟢 持倉中</span>` : '';
+    const slPriceStr = (s.price && s.price > 0) ? `(止損 $${(s.price * 0.80).toFixed(1)})` : '';
+    const statusActionTag = s.isHeld ? `<span style="font-size:10px;color:#22c55e;font-weight:bold;display:block;margin-bottom:2px;">🟢 持倉追蹤中 ${slPriceStr}</span>` : '';
+
     tr.innerHTML = `
-
-
-
-      <td><strong>${s.id}</strong> ${s.name}</td>
-
-
-
+      <td><strong>${s.id}</strong> ${s.name}${heldBadge}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
-
-
-
       <td><strong style="color:var(--warning)">${s.dynamicScore}分</strong></td>
-
-
-
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
-
-
-
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
-
-
-
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
-
-
-
       <td>${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</td>
-
-
-
       <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
-
-
-
       <td>${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</td>
-
-
-
       <td>${s.volRatio}x</td>
-
-
-
       <td>
-
-
-
+        ${statusActionTag}
         <div style="display:flex; gap:6px;">
-
-
-
           <button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">回測</button>
-
-
-
           <button class="btn-link" style="color:var(--warning);" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')">
-
-
-
             ${isStockInPortfolio(s.id) ? '★ 已自選' : '☆ 自選'}
-
-
-
           </button>
-
-
-
         </div>
-
-
-
       </td>
-
-
-
     `;
 
 
