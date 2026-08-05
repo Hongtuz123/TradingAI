@@ -1342,10 +1342,11 @@ def run_screener(force=False):
             turnover_val = None
             market_cap_val = None
             if capital_val and capital_val > 0:
-                # 週轉率 (%) = 當日成交量(股) / (股本(千元) * 100) * 100 = vol / (capital_val * 100) * 100 = vol / capital_val
-                turnover_val = round(vol / capital_val, 2)
-                # 市值 (億) = 收盤價 * (股本(千元) * 100) / 100,000,000 = close * 股本 / 1,000,000
-                market_cap_val = round((close * capital_val) / 1000000, 2)
+                # 週轉率 (%) = 成交量(股) / 總股數(股) * 100
+                # 總股數 = 股本(千元) * 1000 / 面額10 = capital_val * 100
+                turnover_val = round((vol / (capital_val * 100)) * 100, 4)
+                # 市值 (億元) = 收盤價 * 總股數 / 1e8 = close * (capital_val * 100) / 1e8 = close * capital_val / 1_000_000
+                market_cap_val = round((close * capital_val) / 1_000_000, 2)
 
             # 三大法人統計數據
             code_stats = inst_stats.get(symbol, {"instSum5D": 0, "instAvg7D": 0.0, "instDetail5D": [0, 0, 0, 0, 0]})

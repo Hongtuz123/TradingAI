@@ -54,7 +54,6 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
         return True
 
     content_lines = []
-    content_lines.append("🐸 **荳荳 AI Version 6 動態交易訊號推播**\n")
     content_lines.append(
         f"已完成 **{scanned_cnt} 檔** 標的即時掃描。"
         f"本次觸發 🟢**{len(buys)} 筆買進**、🔵**{len(adds)} 筆加碼**、🔴**{len(sells)} 筆賣出**。\n"
@@ -118,11 +117,11 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     embed_color = 0xef4444 if (sells and not buys and not adds) else 0x22c55e
 
     embed = {
-        "title": "🐸 荳荳 AI Version 6 動態交易訊號推播",
+        "title": "🐸 荳荳 AI 動態交易訊號推播（多因子評分系統）",
         "description": full_msg,
         "color": embed_color,
         "footer": {
-            "text": f"🐾 荳荳 AI — 動態訊號狀態機 (買進 / 加碼買進 / 賣出) ｜ {time_str}"
+            "text": f"🐾 荳荳 AI — 多因子風控狀態機 (買進 / 加碼買進 / 賣出) ｜ {time_str}"
         }
     }
 
