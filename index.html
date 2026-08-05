@@ -922,48 +922,29 @@
 
 
 
-          <!-- L2：技術面（可調） -->
-
-
-
+          <!-- L2：Version 6 技術與籌碼指標權重 -->
           <div class="filter-group">
-
-
-
             <div class="filter-group-title">
-
-
-
               <span class="layer-badge layer-2">L2</span>
-
-
-
-              技術指標 (加權 100分)
-
-
-
+              Version 6 多因子指標 (滿分100分)
             </div>
-
-
 
             <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-              <button type="button" class="tech-filter-btn" id="btn_f_above200ma" onclick="toggleTechFilter('above200ma')">股價 > 200MA 且 50MA > 200MA (15分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_stBull" onclick="toggleTechFilter('stBull')">雙 Supertrend 皆多頭 (15分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_dmiBull" onclick="toggleTechFilter('dmiBull')">DMI 多頭 且 ADX > 25 (20分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_trendlineBreak" onclick="toggleTechFilter('trendlineBreak')">突破下降壓力 且 接近前高 (25分)</button>
-              <button type="button" class="tech-filter-btn" id="btn_f_volAboveMa" onclick="toggleTechFilter('volAboveMa')">今日量 > 20日均量 1.5x 且收紅 (25分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_adx">ADX 強勢趨勢 (ADX>25 & DI+>DI-) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_maBull">均線多頭排列 (5MA > 20MA > 60MA) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_volBreak">爆量突破攻擊 (今日量 > 20日均量 1.2x) (+25分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_pattern">K線底層支撐突破 (紅K & 接近20日低點) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_chip">三大法人籌碼集中/連續買超 (+25分)</button>
             </div>
             
-            <!-- S3 說明資訊 -->
+            <!-- Version 6 說明資訊 -->
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 6px;">
-              <span>💡 <strong>S3 評分系統實施中汪！</strong><br>
-              • 核心條件佔 100 分，新增加分項佔 45 分 (包含均線多頭、RS 動能前 20%、RSI 安全區)。<br>
-              • 風控防護扣分最多 35 分 (包含跌破 20MA、RSI 追高、成交萎縮)。<br>
-              • 總分歸一化為 100 分制，預設大於等於 60 分即可進場！</span>
+              <span>💡 <strong>荳荳 AI Version 6 多因子風控系統：</strong><br>
+              • <strong>黃金入場區間：70 - 80 分</strong>（回測勝率與收益最佳）。<br>
+              • <strong>爆量加成</strong>：同分下爆量倍數越大，優先排序越前！<br>
+              • <strong>乖離扣分</strong>：股價與 20MA 乖離 > 20% 扣 15 分。<br>
+              • <strong>SuperTrend 翻紅空頭一票否決 (歸30分)</strong>，觸發賣出平倉！</span>
             </div>
-
-
-
           </div>
 
 

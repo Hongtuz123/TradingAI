@@ -1824,9 +1824,110 @@ def run_screener(force=False):
             "kline_4h": s.get("kline_4h", [])
         })
 
+    # ----------------------------------------------------
+    # 🚀 荳荳 AI 實時動態交易訊號與持倉狀態機計算
+    # ----------------------------------------------------
+    base_dir_pos = os.path.dirname(os.path.abspath(__file__))
+    pos_state_path = os.path.join(base_dir_pos, 'pos_state.json')
+    pos_state = {}
+    if os.path.exists(pos_state_path):
+        try:
+            with open(pos_state_path, 'r', encoding='utf-8') as pf:
+                pos_state = json.load(pf)
+        except Exception:
+            pos_state = {}
+
+    buy_signals     = []
+    add_buy_signals = []
+    sell_signals    = []
+
+    # 建立標的速查表
+    stock_map = {s['id']: s for s in cleaned_mock_stocks}
+
+    # 1. 檢查目前持倉個股是否觸發【賣出訊號】或【加碼買進訊號】
+    currently_held_ids = list(pos_state.keys())
+    for sym_id in currently_held_ids:
+        pos_info = pos_state[sym_id]
+        s = stock_map.get(sym_id)
+        if not s:
+            continue
+        
+        price   = s.get('price', 0)
+        entry_p = pos_info.get('entry_price', price)
+        sc_1d   = s.get('totalScore', 0) or 0
+        sc_4h   = s.get('totalScore_4h', 0) or 0
+        st_1d   = s.get('supertrend', 1)
+        st_4h   = s.get('supertrend_4h', 1)
+        vol_r   = s.get('volRatio', 1.0)
+        last_add_time = pos_info.get('last_add_buy_time', '')
+
+        # 🔴 賣出判定 (最優先保護機制)：任一時框 SuperTrend 翻紅空頭，或是 跌破 -20% 停損價
+        is_st_bear  = (st_1d == -1 or st_4h == -1)
+        is_stop_loss = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
+
+        if is_stop_loss or is_st_bear:
+            sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢轉為空頭"
+            s['sell_reason'] = sell_reason
+            sell_signals.append(s)
+            del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
+        elif (sc_1d >= 80 or sc_4h >= 80) and vol_r >= 1.5 and last_add_time != now_str[:10]:
+            # 🔵 加碼買進判定：持倉中且分數升至 >= 80分 + 大爆量 >= 1.5x (同天去重)
+            s['add_reason'] = f"強勢突破 (高達 {max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
+            s['display_score'] = max(sc_1d, sc_4h)
+            add_buy_signals.append(s)
+            pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
+
+    # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
+    for s in cleaned_mock_stocks:
+        sym_id = s['id']
+        sc_1d = s.get('totalScore', 0) or 0
+        sc_4h = s.get('totalScore_4h', 0) or 0
+        st_1d = s.get('supertrend', 1)
+        st_4h = s.get('supertrend_4h', 1)
+
+        is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1)
+        is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1)
+
+        if is_1d_pass or is_4h_pass:
+            # 若不在持倉中，觸發首次【買進訊號】
+            if sym_id not in pos_state:
+                if is_1d_pass and is_4h_pass:
+                    tf_tag = "1D/4H"
+                    disp_sc = sc_1d
+                elif is_1d_pass:
+                    tf_tag = "1D"
+                    disp_sc = sc_1d
+                else:
+                    tf_tag = "4H"
+                    disp_sc = sc_4h
+
+                s['tf_tag'] = tf_tag
+                s['display_score'] = disp_sc
+                buy_signals.append(s)
+                pos_state[sym_id] = {
+                    'entry_price': s.get('price', 0),
+                    'entry_time': now_str,
+                    'tf': tf_tag
+                }
+
+    # 針對買進清單排序：70分最優先 (0 if 70<=sc<=89 else 1)，同分下爆量倍數大者優先
+    buy_signals.sort(key=lambda x: (
+        0 if 70 <= (x.get('display_score', 70)) <= 89 else 1,
+        - (x.get('volRatio', 1.0)),
+        - (x.get('display_score', 70))
+    ))
+
+    # 寫回 pos_state.json (絕對路徑)
+    try:
+        with open(pos_state_path, 'w', encoding='utf-8') as pf:
+            json.dump(pos_state, pf, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"⚠️ 持倉狀態寫入失敗: {e}")
+
     json_data = {
         "marketData": market_data_dict,
         "rulesConfig": rules,
+        "pos_state": pos_state,
         "rankingsData": rankings_data,
         "broadcastData": broadcast_data,
         "bubbleChartData": bubble_chart_data,
@@ -1883,113 +1984,14 @@ def run_screener(force=False):
         print(f"⚠️  自動 git push 失敗（不影響本機使用）：{git_err}")
 
     # ----------------------------------------------------
-    # 🚀 荳荳 AI 實時動態交易訊號推播引擎 (買進 / 加碼買進 / 賣出 狀態機)
+    # 🚀 荳荳 AI 實時動態交易訊號推播引擎 (Discord 頻道通知)
     # ----------------------------------------------------
     try:
         from backend.discord_notifier import send_discord_signal_state_push
-        # 🎯 精確判定台股開盤交易時段 (週一至週五 09:00 ~ 13:35)
         _now_taipei = pd.Timestamp.now(tz='Asia/Taipei')
-        _weekday = _now_taipei.weekday()  # 0=週一, 4=週五, 5=週六, 6=週日
+        _weekday = _now_taipei.weekday()
         _hhmm = _now_taipei.hour * 100 + _now_taipei.minute
         _is_trading_hours = (_weekday <= 4) and (900 <= _hhmm <= 1335)
-
-        # 讀取持久化持倉狀態檔 pos_state.json (鎖定絕對路徑，解決排程執行時讀不到歷史持倉導致重複推播)
-        base_dir_pos = os.path.dirname(os.path.abspath(__file__))
-        pos_state_path = os.path.join(base_dir_pos, 'pos_state.json')
-        pos_state = {}
-        if os.path.exists(pos_state_path):
-            try:
-                with open(pos_state_path, 'r', encoding='utf-8') as pf:
-                    pos_state = json.load(pf)
-            except Exception:
-                pos_state = {}
-
-        buy_signals     = []
-        add_buy_signals = []
-        sell_signals    = []
-
-        # 建立標的速查表
-        stock_map = {s['id']: s for s in cleaned_mock_stocks}
-
-        # 1. 檢查目前持倉個股是否觸發【賣出訊號】或【加碼買進訊號】
-        currently_held_ids = list(pos_state.keys())
-        for sym_id in currently_held_ids:
-            pos_info = pos_state[sym_id]
-            s = stock_map.get(sym_id)
-            if not s:
-                continue
-            
-            price   = s.get('price', 0)
-            entry_p = pos_info.get('entry_price', price)
-            sc_1d   = s.get('totalScore', 0) or 0
-            sc_4h   = s.get('totalScore_4h', 0) or 0
-            st_1d   = s.get('supertrend', 1)
-            st_4h   = s.get('supertrend_4h', 1)
-            vol_r   = s.get('volRatio', 1.0)
-            last_add_time = pos_info.get('last_add_buy_time', '')
-
-            # 🔴 賣出判定 (最優先保護機制)：任一時框 SuperTrend 翻紅空頭，或是 跌破 -20% 停損價
-            is_st_bear  = (st_1d == -1 or st_4h == -1)
-            is_stop_loss = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
-
-            if is_stop_loss or is_st_bear:
-                sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢轉為空頭"
-                s['sell_reason'] = sell_reason
-                sell_signals.append(s)
-                del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
-            elif (sc_1d >= 80 or sc_4h >= 80) and vol_r >= 1.5 and last_add_time != now_str[:10]:
-                # 🔵 加碼買進判定：持倉中且分數升至 >= 80分 + 大爆量 >= 1.5x (同天去重)
-                s['add_reason'] = f"強勢突破 (高達 {max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
-                s['display_score'] = max(sc_1d, sc_4h)
-                add_buy_signals.append(s)
-                pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
-
-        # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
-        for s in cleaned_mock_stocks:
-            sym_id = s['id']
-            sc_1d = s.get('totalScore', 0) or 0
-            sc_4h = s.get('totalScore_4h', 0) or 0
-            st_1d = s.get('supertrend', 1)
-            st_4h = s.get('supertrend_4h', 1)
-
-            is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1)
-            is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1)
-
-            if is_1d_pass or is_4h_pass:
-                # 若不在持倉中，觸發首次【買進訊號】
-                if sym_id not in pos_state:
-                    if is_1d_pass and is_4h_pass:
-                        tf_tag = "1D/4H"
-                        disp_sc = sc_1d
-                    elif is_1d_pass:
-                        tf_tag = "1D"
-                        disp_sc = sc_1d
-                    else:
-                        tf_tag = "4H"
-                        disp_sc = sc_4h
-
-                    s['tf_tag'] = tf_tag
-                    s['display_score'] = disp_sc
-                    buy_signals.append(s)
-                    pos_state[sym_id] = {
-                        'entry_price': s.get('price', 0),
-                        'entry_time': now_str,
-                        'tf': tf_tag
-                    }
-
-        # 針對買進清單排序：70分最優先 (0 if 70<=sc<=89 else 1)，同分下爆量倍數大者優先
-        buy_signals.sort(key=lambda x: (
-            0 if 70 <= (x.get('display_score', 70)) <= 89 else 1,
-            - (x.get('volRatio', 1.0)),
-            - (x.get('display_score', 70))
-        ))
-
-        # 寫回 pos_state.json (絕對路徑)
-        try:
-            with open(pos_state_path, 'w', encoding='utf-8') as pf:
-                json.dump(pos_state, pf, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"⚠️ 持倉狀態寫入失敗: {e}")
 
         scanned_count = len(cleaned_mock_stocks)
         print(f"\n📢 [荳荳 AI 動態訊號引擎] 掃描 {scanned_count} 檔標的，觸發 🟢買進 {len(buy_signals)} 檔、🔵加碼 {len(add_buy_signals)} 檔、🔴賣出 {len(sell_signals)} 檔！")
