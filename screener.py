@@ -1102,8 +1102,8 @@ def run_screener(force=False):
             close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
             
             if capital and close_price:
-                # 市值 = 股本 / 10 * 收盤價 (股本為元，面額10元，故除以10換算為股數)
-                mkt_cap = (capital / 10) * close_price
+                # 市值 (元) = (股本(千元) * 1000 / 10) * 收盤價
+                mkt_cap = (capital * 1000 / 10) * close_price
                 mkt_cap_list.append({
                     'Code': code,
                     'Name': info.get('Name') or info.get('CompanyName'),
