@@ -4051,21 +4051,22 @@ function renderScreenerTable(data) {
     tr.title = '點擊查看通過的技術指標與規則';
 
     // 區分 🟢 買進 (起漲還沒漲過頭) 與 🔵 加碼買進 (強勢持倉)
-    const isBuySignal = !s.isHeld && s.dynamicScore >= 70;
-    const isAddSignal = s.isHeld;
+    // 修正：當在加碼頁籤 (activeSignalFilter === 'add') 下，或者持倉中/得分 >= 80 時，100% 顯示藍色加碼買進標籤！
+    const isAddSignal = s.isHeld || window.activeSignalFilter === 'add' || s.dynamicScore >= 80;
+    const isBuySignal = !isAddSignal && s.dynamicScore >= 70;
 
     let heldBadge = '';
     let statusActionTag = '';
     const slPriceStr = (s.price && s.price > 0) ? `(止損 $${(s.price * 0.80).toFixed(1)})` : '';
 
     if (isAddSignal) {
-      heldBadge = `<span class="badge" style="background:#3b82f6;color:#fff;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🔵 加碼持倉</span>`;
-      statusActionTag = `<span style="font-size:10px;color:#60a5fa;font-weight:bold;display:block;margin-bottom:2px;">🔵 持倉加碼中 ${slPriceStr}</span>`;
+      heldBadge = `<span class="badge" style="background:#3b82f6;color:#fff;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🔵 加碼買進</span>`;
+      statusActionTag = `<span style="font-size:11px;color:#60a5fa;font-weight:bold;display:block;margin-bottom:2px;">🔵 強勢加碼區 ${s.isHeld ? slPriceStr : ''}</span>`;
     } else if (isBuySignal) {
       heldBadge = `<span class="badge" style="background:#22c55e;color:#000;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🟢 買進發動</span>`;
-      statusActionTag = `<span style="font-size:10px;color:#22c55e;font-weight:bold;display:block;margin-bottom:2px;">🟢 起漲買進區 (${s.tf_tag || '1D'} ${s.dynamicScore}分)</span>`;
+      statusActionTag = `<span style="font-size:11px;color:#22c55e;font-weight:bold;display:block;margin-bottom:2px;">🟢 起漲買進區</span>`;
     } else {
-      statusActionTag = `<span style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;">🟡 觀察關注區</span>`;
+      statusActionTag = `<span style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">🟡 觀察關注區</span>`;
     }
 
     tr.innerHTML = `
