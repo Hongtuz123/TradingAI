@@ -3997,65 +3997,76 @@ window.evaluateManualStock = function() {
 
 
 
+window.activeSignalFilter = 'all';
+
+window.filterBySignalType = function(sigType) {
+  window.activeSignalFilter = sigType;
+  
+  const tabs = {
+    'all': { bg: 'var(--primary)', color: 'white', border: 'none' },
+    'buy': { bg: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid #22c55e' },
+    'add': { bg: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid #3b82f6' }
+  };
+
+  Object.keys(tabs).forEach(t => {
+    const btn = document.getElementById(`sigTab_${t}`);
+    if (btn) {
+      if (t === sigType) {
+        btn.style.opacity = '1';
+        btn.style.transform = 'scale(1.05)';
+        btn.style.boxShadow = '0 0 10px rgba(255,255,255,0.25)';
+      } else {
+        btn.style.opacity = '0.6';
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = 'none';
+      }
+    }
+  });
+
+  applyTechFiltersAndRender();
+};
+
 function renderScreenerTable(data) {
-
-
-
-  document.getElementById('resultCount').innerText = data.length;
-
-
-
-  const tbody = document.getElementById('resultsBody');
-
-
-
-  tbody.innerHTML = '';
-
-
-
-
-
-
-
-  if(data.length === 0) {
-
-
-
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;">無符合條件的標的</td></tr>';
-
-
-
-    return;
-
-
-
+  let filteredData = data;
+  if (window.activeSignalFilter === 'buy') {
+    // 🟢 買進訊號 (還沒漲過頭)：非持倉中，且得分 >= 70
+    filteredData = data.filter(s => !s.isHeld && s.dynamicScore >= 70);
+  } else if (window.activeSignalFilter === 'add') {
+    // 🔵 加碼買進 (強勢持倉)：持倉中，或分數高達 80 分
+    filteredData = data.filter(s => s.isHeld || s.dynamicScore >= 80);
   }
 
+  document.getElementById('resultCount').innerText = filteredData.length;
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
 
+  if (filteredData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px; color: var(--text-muted);">目前無符合此交易訊號分類的標的</td></tr>';
+    return;
+  }
 
-
-
-
-
-  data.forEach(s => {
-
-
-
+  filteredData.forEach(s => {
     const tr = document.createElement('tr');
-
-
-
     tr.style.cursor = 'pointer';
-
-
-
     tr.title = '點擊查看通過的技術指標與規則';
 
+    // 區分 🟢 買進 (起漲還沒漲過頭) 與 🔵 加碼買進 (強勢持倉)
+    const isBuySignal = !s.isHeld && s.dynamicScore >= 70;
+    const isAddSignal = s.isHeld;
 
-
-    const heldBadge = s.isHeld ? `<span class="badge" style="background:#22c55e;color:#000;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🟢 持倉中</span>` : '';
+    let heldBadge = '';
+    let statusActionTag = '';
     const slPriceStr = (s.price && s.price > 0) ? `(止損 $${(s.price * 0.80).toFixed(1)})` : '';
-    const statusActionTag = s.isHeld ? `<span style="font-size:10px;color:#22c55e;font-weight:bold;display:block;margin-bottom:2px;">🟢 持倉追蹤中 ${slPriceStr}</span>` : '';
+
+    if (isAddSignal) {
+      heldBadge = `<span class="badge" style="background:#3b82f6;color:#fff;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🔵 加碼持倉</span>`;
+      statusActionTag = `<span style="font-size:10px;color:#60a5fa;font-weight:bold;display:block;margin-bottom:2px;">🔵 持倉加碼中 ${slPriceStr}</span>`;
+    } else if (isBuySignal) {
+      heldBadge = `<span class="badge" style="background:#22c55e;color:#000;font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🟢 買進發動</span>`;
+      statusActionTag = `<span style="font-size:10px;color:#22c55e;font-weight:bold;display:block;margin-bottom:2px;">🟢 起漲買進區 (${s.tf_tag || '1D'} ${s.dynamicScore}分)</span>`;
+    } else {
+      statusActionTag = `<span style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;">🟡 觀察關注區</span>`;
+    }
 
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}${heldBadge}</td>

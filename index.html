@@ -1196,50 +1196,25 @@
 
 
 
-          <div class="results-header">
-
-
-
-            <h3>篩選結果</h3>
-
-
-
-            <div class="results-meta">
-
-
-
-              <span>共 <strong id="resultCount">0</strong> 檔</span>
-
-
-
-              <select id="resultSort" onchange="sortResults(this.value)">
-
-
-
-                <option value="score">按荳荳評分排序</option>
-
-
-
-                <option value="techType">按技術類型</option>
-
-
-
-                <option value="price">按收盤價</option>
-
-
-
-                <option value="trustDays">按投信當日買超</option>
-
-
-
-              </select>
-
-
-
+          <div class="results-header" style="flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <h3>篩選結果</h3>
+              <div class="signal-filter-tabs" style="display: flex; gap: 6px;">
+                <button type="button" class="sig-tab-btn active" id="sigTab_all" onclick="filterBySignalType('all')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: var(--primary); color: white; border: none; font-weight: bold;">全部標的</button>
+                <button type="button" class="sig-tab-btn" id="sigTab_buy" onclick="filterBySignalType('buy')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid #22c55e; font-weight: bold;">🟢 買進訊號 (起漲未漲過頭)</button>
+                <button type="button" class="sig-tab-btn" id="sigTab_add" onclick="filterBySignalType('add')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid #3b82f6; font-weight: bold;">🔵 加碼買進 (強勢持倉)</button>
+              </div>
             </div>
 
-
-
+            <div class="results-meta">
+              <span>共 <strong id="resultCount">0</strong> 檔</span>
+              <select id="resultSort" onchange="sortResults(this.value)">
+                <option value="score">按荳荳評分排序</option>
+                <option value="techType">按技術類型</option>
+                <option value="price">按收盤價</option>
+                <option value="trustDays">按投信當日買超</option>
+              </select>
+            </div>
           </div>
 
 
