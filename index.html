@@ -922,28 +922,29 @@
 
 
 
-          <!-- L2：Version 6 技術與籌碼指標權重 -->
+          <!-- L2：多因子技術與籌碼指標權重 -->
           <div class="filter-group">
             <div class="filter-group-title">
               <span class="layer-badge layer-2">L2</span>
-              Version 6 多因子指標 (滿分100分)
+              多因子指標 (加權滿分100分)
             </div>
 
             <div class="tech-btn-group" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-              <button type="button" class="tech-filter-btn active" id="btn_f_adx">ADX 強勢趨勢 (ADX > 20~30) (+20分)</button>
-              <button type="button" class="tech-filter-btn active" id="btn_f_maBull">均線多頭排列 (Close > 5MA > 20MA) (+20分)</button>
-              <button type="button" class="tech-filter-btn active" id="btn_f_volBreak">爆量突破攻擊 (成交量 > 20日均量 1.2x) (+25分)</button>
-              <button type="button" class="tech-filter-btn active" id="btn_f_pattern">K線底層支撐突破 (紅K & 接近20日低點) (+20分)</button>
-              <button type="button" class="tech-filter-btn active" id="btn_f_chip">三大法人籌碼集中 / 連續買超 (+25分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_adx">1. ADX 強勢趨勢 (ADX > 20~30) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_maBull">2. 均線多頭排列 (Close > 5MA > 20MA) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_volBreak">3. 爆量突破攻擊 (成交量 > 20日均量 1.2x) (+25分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_pattern">4. K線底層支撐突破 (紅K & 接近20日低點) (+20分)</button>
+              <button type="button" class="tech-filter-btn active" id="btn_f_chip">5. 三大法人籌碼集中 / 連續買超 (+25分)</button>
+              <button type="button" class="tech-filter-btn active" style="border-color: rgba(245,158,11,0.4); color: #f59e0b;" id="btn_f_bias">6. ⚠️ 乖離率過高防護 (偏離 20MA > 20%) (-15分)</button>
+              <button type="button" class="tech-filter-btn active" style="border-color: rgba(239,68,68,0.4); color: #ef4444;" id="btn_f_st">7. 🚫 SuperTrend 空頭一票否決 (歸30分)</button>
             </div>
             
-            <!-- Version 6 說明資訊 -->
+            <!-- 多因子說明資訊 -->
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 6px;">
-              <span>💡 <strong>荳荳 AI Version 6 多因子風控系統：</strong><br>
+              <span>💡 <strong>荳荳 AI 多因子風控系統：</strong><br>
               • <strong>黃金入場區間：70 - 80 分</strong>（回測勝率與收益最佳）。<br>
               • <strong>爆量加成</strong>：同分下爆量倍數越大，優先排序越前！<br>
-              • <strong>乖離扣分</strong>：股價與 20MA 乖離 > 20% 扣 15 分。<br>
-              • <strong>SuperTrend 翻紅空頭一票否決 (歸30分)</strong>，觸發賣出平倉！</span>
+              • <strong>風控保護</strong>：SuperTrend 空頭一票否決，觸發賣出平倉！</span>
             </div>
           </div>
 

@@ -3648,8 +3648,8 @@ function runScreener(isAutoRefresh = false) {
     s.isHeld = isHeld;
     s.posInfo = posState[s.id] || null;
 
-    // 🚀 關鍵修復：持倉中的標的 (In Position) 或 符合 Version 6 得分門檻者，100% 納入荳荳清單！
-    if (isHeld || (s.dynamicScore >= p.minScore && failedConditions.length === 0)) {
+    // 🚀 關鍵修復：持倉中的標的 (In Position) 或 符合多因子得分門檻 (>= p.minScore) 者，100% 全部納入荳荳清單！
+    if (isHeld || s.dynamicScore >= p.minScore) {
       currentResults.push(s);
     }
   });
