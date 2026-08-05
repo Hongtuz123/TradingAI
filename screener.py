@@ -1925,20 +1925,22 @@ def run_screener(force=False):
             st_1d   = s.get('supertrend', 1)
             st_4h   = s.get('supertrend_4h', 1)
             vol_r   = s.get('volRatio', 1.0)
+            last_add_time = pos_info.get('last_add_buy_time', '')
 
-            # 賣出判定：SuperTrend 雙翻紅空頭，或是 跌破 -20% 停損價
-            is_st_bear  = (st_1d == -1 and st_4h == -1)
-            is_stop_loss = (price <= entry_p * 0.80) and (price > 0)
+            # 🔴 賣出判定 (最優先保護機制)：任一時框 SuperTrend 翻紅空頭，或是 跌破 -20% 停損價
+            is_st_bear  = (st_1d == -1 or st_4h == -1)
+            is_stop_loss = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
 
             if is_stop_loss or is_st_bear:
-                sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢翻紅反轉"
+                sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢轉為空頭"
                 s['sell_reason'] = sell_reason
                 sell_signals.append(s)
-                del pos_state[sym_id]  # 移出持倉名單
-            elif (sc_1d >= 75 or sc_4h >= 75) and vol_r >= 1.2:
-                # 加碼判定：已在持倉中，且當前分數 >= 75 且成交量爆量
-                s['add_reason'] = f"分數強勢 ({max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
+                del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
+            elif (sc_1d >= 80 or sc_4h >= 80) and vol_r >= 1.5 and last_add_time != now_str[:10]:
+                # 🔵 加碼買進判定：持倉中且分數升至 >= 80分 + 大爆量 >= 1.5x (同天去重)
+                s['add_reason'] = f"強勢突破 (高達 {max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
                 add_buy_signals.append(s)
+                pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
 
         # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
         for s in cleaned_mock_stocks:
