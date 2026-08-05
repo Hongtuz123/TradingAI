@@ -1883,53 +1883,106 @@ def run_screener(force=False):
         print(f"⚠️  自動 git push 失敗（不影響本機使用）：{git_err}")
 
     # ----------------------------------------------------
-    # 🚀 荳荳 AI 實時多因子推播引擎 (Discord 呱呱推播 - 1D 與 4H 雙時框獨立精選)
+    # 🚀 荳荳 AI 實時動態交易訊號推播引擎 (買進 / 加碼買進 / 賣出 狀態機)
     # ----------------------------------------------------
     try:
-        from backend.discord_notifier import send_discord_batch_signals
+        from backend.discord_notifier import send_discord_signal_state_push
         # 🎯 精確判定台股開盤交易時段 (週一至週五 09:00 ~ 13:35)
         _now_taipei = pd.Timestamp.now(tz='Asia/Taipei')
         _weekday = _now_taipei.weekday()  # 0=週一, 4=週五, 5=週六, 6=週日
         _hhmm = _now_taipei.hour * 100 + _now_taipei.minute
         _is_trading_hours = (_weekday <= 4) and (900 <= _hhmm <= 1335)
 
-        qualified_stocks_1d = [
-            s for s in cleaned_mock_stocks
-            if (s.get("totalScore", 0) or 0) >= 70 and s.get("supertrend", 1) != -1
-        ]
-        qualified_stocks_1d.sort(
-            key=lambda x: (
-                0 if 70 <= (x.get("totalScore", 0) or 0) <= 89 else 1,
-                (x.get("totalScore", 0) or 0),
-                - (x.get("volRatio", 0) or 0)
-            )
-        )
+        # 讀取持久化持倉狀態檔 pos_state.json
+        pos_state_path = 'pos_state.json'
+        pos_state = {}
+        if os.path.exists(pos_state_path):
+            try:
+                with open(pos_state_path, 'r', encoding='utf-8') as pf:
+                    pos_state = json.load(pf)
+            except Exception:
+                pos_state = {}
 
-        qualified_stocks_4h = [
-            s for s in cleaned_mock_stocks
-            if (s.get("totalScore_4h", 0) or 0) >= 70 and s.get("supertrend_4h", 1) != -1
-        ]
-        qualified_stocks_4h.sort(
-            key=lambda x: (
-                0 if 70 <= (x.get("totalScore_4h", 0) or 0) <= 89 else 1,
-                (x.get("totalScore_4h", 0) or 0),
-                - (x.get("volRatio_4h", 0) or x.get("volRatio", 0) or 0)
-            )
-        )
+        buy_signals     = []
+        add_buy_signals = []
+        sell_signals    = []
+
+        # 建立標的速查表
+        stock_map = {s['id']: s for s in cleaned_mock_stocks}
+
+        # 1. 檢查目前持倉個股是否觸發【賣出訊號】或【加碼買進訊號】
+        currently_held_ids = list(pos_state.keys())
+        for sym_id in currently_held_ids:
+            pos_info = pos_state[sym_id]
+            s = stock_map.get(sym_id)
+            if not s:
+                continue
+            
+            price   = s.get('price', 0)
+            entry_p = pos_info.get('entry_price', price)
+            sc_1d   = s.get('totalScore', 0) or 0
+            sc_4h   = s.get('totalScore_4h', 0) or 0
+            st_1d   = s.get('supertrend', 1)
+            st_4h   = s.get('supertrend_4h', 1)
+            vol_r   = s.get('volRatio', 1.0)
+
+            # 賣出判定：SuperTrend 雙翻紅空頭，或是 跌破 -20% 停損價
+            is_st_bear  = (st_1d == -1 and st_4h == -1)
+            is_stop_loss = (price <= entry_p * 0.80) and (price > 0)
+
+            if is_stop_loss or is_st_bear:
+                sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢翻紅反轉"
+                s['sell_reason'] = sell_reason
+                sell_signals.append(s)
+                del pos_state[sym_id]  # 移出持倉名單
+            elif (sc_1d >= 75 or sc_4h >= 75) and vol_r >= 1.2:
+                # 加碼判定：已在持倉中，且當前分數 >= 75 且成交量爆量
+                s['add_reason'] = f"分數強勢 ({max(sc_1d, sc_4h)}分) + 爆量 {vol_r:.2f}x"
+                add_buy_signals.append(s)
+
+        # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
+        for s in cleaned_mock_stocks:
+            sym_id = s['id']
+            sc_1d = s.get('totalScore', 0) or 0
+            sc_4h = s.get('totalScore_4h', 0) or 0
+            st_1d = s.get('supertrend', 1)
+            st_4h = s.get('supertrend_4h', 1)
+
+            is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1)
+            is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1)
+
+            if is_1d_pass or is_4h_pass:
+                # 若不在持倉中，觸發首次【買進訊號】
+                if sym_id not in pos_state:
+                    s['tf_tag'] = '1D' if is_1d_pass else '4H'
+                    buy_signals.append(s)
+                    pos_state[sym_id] = {
+                        'entry_price': s.get('price', 0),
+                        'entry_time': now_str,
+                        'tf': s['tf_tag']
+                    }
+
+        # 寫回 pos_state.json
+        try:
+            with open(pos_state_path, 'w', encoding='utf-8') as pf:
+                json.dump(pos_state, pf, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"⚠️ 持倉狀態寫入失敗: {e}")
 
         scanned_count = len(cleaned_mock_stocks)
-        print(f"\n📢 [荳荳 AI 推播引擎] 掃描 {scanned_count} 檔標的，1D 達標 {len(qualified_stocks_1d)} 檔、4H 達標 {len(qualified_stocks_4h)} 檔！")
+        print(f"\n📢 [荳荳 AI 動態訊號引擎] 掃描 {scanned_count} 檔標的，觸發 🟢買進 {len(buy_signals)} 檔、🔵加碼 {len(add_buy_signals)} 檔、🔴賣出 {len(sell_signals)} 檔！")
 
         if not _is_trading_hours:
-            print(f"ℹ️ 目前時間 {_now_taipei.strftime('%H:%M')} 非台股開盤交易時段（週一~週五 09:00~13:35），已完成靜默數據更新，跳過 Discord 推播發送。")
-        elif qualified_stocks_1d or qualified_stocks_4h:
-            send_discord_batch_signals(
-                qualified_stocks_1d=qualified_stocks_1d,
-                qualified_stocks_4h=qualified_stocks_4h,
+            print(f"ℹ️ 目前時間 {_now_taipei.strftime('%H:%M')} 非台股開盤交易時段（週一~週五 09:00~13:35），已完成靜默持倉狀態更新，跳過 Discord 推播發送。")
+        elif buy_signals or add_buy_signals or sell_signals:
+            send_discord_signal_state_push(
+                buy_signals=buy_signals,
+                add_buy_signals=add_buy_signals,
+                sell_signals=sell_signals,
                 scanned_cnt=scanned_count,
                 time_str=now_str
             )
-            print(f"✅ 已成功發送 1D ({len(qualified_stocks_1d[:10])} 檔) 與 4H ({len(qualified_stocks_4h[:10])} 檔) 雙時框獨立推播卡片！")
+            print(f"✅ 已成功發送【買進 / 加碼買進 / 賣出】三大動態交易訊號至 Discord 頻道！")
     except Exception as push_err:
         print(f"⚠️ 推播觸發跳過: {push_err}")
 
