@@ -1368,11 +1368,13 @@ def run_screener(force=False):
                 vol_ma20_4h = float(latest_4h.get('vol_ma20', 0))
                 vol_ratio_4h = round(vol_4h / vol_ma20_4h, 2) if vol_ma20_4h > 0 else vol_ratio
                 supertrend_4h = int(latest_4h.get('supertrend', 1)) if 'supertrend' in latest_4h else supertrend_val
+                prev_supertrend_4h = int(df_4h_calc.iloc[-2].get('supertrend', 1)) if (len(df_4h_calc) >= 2 and 'supertrend' in df_4h_calc.iloc[-2]) else supertrend_4h
                 adx_4h = round(float(latest_4h.get('adx', 0)), 2) if 'adx' in latest_4h else adx_val
                 kline_4h_list = [{'open': row['open'], 'close': row['close'], 'high': row['high'], 'low': row['low']} for _, row in df_4h_calc.tail(20).iterrows()]
             else:
                 vol_ratio_4h = vol_ratio
                 supertrend_4h = supertrend_val
+                prev_supertrend_4h = prev_supertrend_val
                 adx_4h = adx_val
                 kline_4h_list = []
 
@@ -1435,6 +1437,7 @@ def run_screener(force=False):
                 "volRatio": vol_ratio,
                 "volRatio_4h": vol_ratio_4h,
                 "supertrend_4h": supertrend_4h,
+                "prev_supertrend_4h": prev_supertrend_4h,
                 "adx_4h": adx_4h,
                 "totalScore": sc_1d,
                 "totalScore_4h": sc_4h,
@@ -1887,37 +1890,53 @@ def run_screener(force=False):
         st_1d = s.get('supertrend', 1)
         prev_st_1d = s.get('prev_supertrend', 1)
         st_4h = s.get('supertrend_4h', 1)
+        prev_st_4h = s.get('prev_supertrend_4h', 1)
         price = s.get('price', 0) or 0
-        ma20  = s.get('ma20', price) or price
+        ma20  = s.get('ma20', 0) or 0
 
-        # 🚀 關鍵修復：防止滯後！【買進訊號】必須是 SuperTrend 剛翻綠起爆(Fresh Turn)，或是距離 20MA 乖離 <= 10% (未漲過頭)！
-        bias_20ma = (price - ma20) / ma20 if (price > 0 and ma20 > 0) else 0.0
-        is_fresh_or_near = (prev_st_1d == -1 and st_1d == 1) or (bias_20ma <= 0.10)
+        # 🚀 嚴格起爆防線：
+        # A. 剛翻綠 (Fresh Breakout)：1D 或 4H 最新一根 K 線剛由紅轉綠
+        is_1d_fresh = (st_1d == 1 and prev_st_1d == -1)
+        is_4h_fresh = (st_4h == 1 and prev_st_4h == -1)
 
-        is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1) and is_fresh_or_near
-        is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1) and is_fresh_or_near
+        # B. 近均線 (Near MA20)：僅當能精確計算 ma20 且股價極貼近 20MA (0% ~ 5%) 時成立
+        bias_20ma = (price - ma20) / ma20 if (price > 0 and ma20 > 0) else 999.0
+        is_near_ma = (0.0 <= bias_20ma <= 0.05)
+
+        is_fresh_signal = (is_1d_fresh or is_4h_fresh or is_near_ma)
+
+        is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1)
+        is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1)
 
         if is_1d_pass or is_4h_pass:
-            # 若不在持倉中，觸發首次【買進訊號】
             if sym_id not in pos_state:
-                if is_1d_pass and is_4h_pass:
-                    tf_tag = "1D/4H"
-                    disp_sc = sc_1d
-                elif is_1d_pass:
-                    tf_tag = "1D"
-                    disp_sc = sc_1d
-                else:
-                    tf_tag = "4H"
-                    disp_sc = sc_4h
+                # 只有當 100% 滿足【剛起爆/貼近均線】時，才允許發送 🟢 首次買進訊號
+                if is_fresh_signal:
+                    if is_1d_pass and is_4h_pass:
+                        tf_tag = "1D/4H"
+                        disp_sc = sc_1d
+                    elif is_1d_pass:
+                        tf_tag = "1D"
+                        disp_sc = sc_1d
+                    else:
+                        tf_tag = "4H"
+                        disp_sc = sc_4h
 
-                s['tf_tag'] = tf_tag
-                s['display_score'] = disp_sc
-                buy_signals.append(s)
-                pos_state[sym_id] = {
-                    'entry_price': price,
-                    'entry_time': now_str,
-                    'tf': tf_tag
-                }
+                    s['tf_tag'] = tf_tag
+                    s['display_score'] = disp_sc
+                    buy_signals.append(s)
+                    pos_state[sym_id] = {
+                        'entry_price': price,
+                        'entry_time': now_str,
+                        'tf': tf_tag
+                    }
+                else:
+                    # 🚀 已漲過頭/非剛發動的歷史強勢個股：靜默補入 pos_state 進行持倉追蹤，絕不誤發過期買進！
+                    pos_state[sym_id] = {
+                        'entry_price': price,
+                        'entry_time': now_str,
+                        'tf': "SILENT_INIT"
+                    }
 
     # 1. 針對買進清單排序：100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先！70分 > 75分 > 80分...)
     buy_signals.sort(key=lambda x: (
