@@ -1256,14 +1256,15 @@ def run_screener(force=False):
             # 1. 取得 TWSE/TPEx 官方 OpenAPI 當日最新即時動態 (解決全市場報價變數對應 Bug)
             m_info = all_market_info.get(str(symbol).zfill(4), {}) or all_market_info.get(str(symbol), {})
 
-            # 2. 確定當前收盤價/最新成交價 close
-            openapi_price_raw = m_info.get('ClosingPrice') or m_info.get('Close')
+            # 2. 確定當前收盤價/最新成交價 close (🚀 優先提取盤中即時成交價 TradePrice，避免誤抓昨日歷史收盤價 ClosingPrice)
+            openapi_price_raw = m_info.get('TradePrice') or m_info.get('Trade') or m_info.get('ClosingPrice') or m_info.get('Close')
             openapi_price_val = safe_float(str(openapi_price_raw).replace(',', '').strip()) if openapi_price_raw else None
 
+            latest_close = float(latest['close'])
             if openapi_price_val and openapi_price_val > 0:
                 close = openapi_price_val
             else:
-                close = float(latest['close'])
+                close = latest_close
 
             vol         = int(latest['volume'])
             vol_ma20    = float(latest['vol_ma20'])
