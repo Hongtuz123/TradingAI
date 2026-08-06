@@ -1912,11 +1912,16 @@ def run_screener(force=False):
                     'tf': tf_tag
                 }
 
-    # 針對買進清單排序：70分最優先 (0 if 70<=sc<=89 else 1)，同分下爆量倍數大者優先
+    # 1. 針對買進清單排序：100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先！70分 > 75分 > 80分...)
     buy_signals.sort(key=lambda x: (
-        0 if 70 <= (x.get('display_score', 70)) <= 89 else 1,
-        - (x.get('volRatio', 1.0)),
-        - (x.get('display_score', 70))
+        x.get('display_score', 70),
+        - (x.get('volRatio', 1.0))
+    ))
+
+    # 2. 針對加碼買進清單排序：100% 依據【分數升冪】排序 (70分最優先)
+    add_buy_signals.sort(key=lambda x: (
+        x.get('display_score', 70),
+        - (x.get('volRatio', 1.0))
     ))
 
     # 寫回 pos_state.json (絕對路徑)

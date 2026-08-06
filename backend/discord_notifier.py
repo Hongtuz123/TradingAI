@@ -50,6 +50,12 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     adds  = add_buy_signals or []
     sells = sell_signals or []
 
+    # 🚀 雙重防禦：買進與加碼買進推播 100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先，從小排到大)
+    if buys:
+        buys.sort(key=lambda s: (s.get('display_score', s.get('totalScore', 70)), - (s.get('volRatio', 1.0) or 1.0)))
+    if adds:
+        adds.sort(key=lambda s: (s.get('display_score', s.get('totalScore', 70)), - (s.get('volRatio', 1.0) or 1.0)))
+
     if not buys and not adds and not sells:
         return True
 
