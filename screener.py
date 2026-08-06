@@ -1885,10 +1885,17 @@ def run_screener(force=False):
         sc_1d = s.get('totalScore', 0) or 0
         sc_4h = s.get('totalScore_4h', 0) or 0
         st_1d = s.get('supertrend', 1)
+        prev_st_1d = s.get('prev_supertrend', 1)
         st_4h = s.get('supertrend_4h', 1)
+        price = s.get('price', 0) or 0
+        ma20  = s.get('ma20', price) or price
 
-        is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1)
-        is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1)
+        # 🚀 關鍵修復：防止滯後！【買進訊號】必須是 SuperTrend 剛翻綠起爆(Fresh Turn)，或是距離 20MA 乖離 <= 10% (未漲過頭)！
+        bias_20ma = (price - ma20) / ma20 if (price > 0 and ma20 > 0) else 0.0
+        is_fresh_or_near = (prev_st_1d == -1 and st_1d == 1) or (bias_20ma <= 0.10)
+
+        is_1d_pass = (70 <= sc_1d <= 89) and (st_1d != -1) and is_fresh_or_near
+        is_4h_pass = (70 <= sc_4h <= 89) and (st_4h != -1) and is_fresh_or_near
 
         if is_1d_pass or is_4h_pass:
             # 若不在持倉中，觸發首次【買進訊號】
@@ -1907,7 +1914,7 @@ def run_screener(force=False):
                 s['display_score'] = disp_sc
                 buy_signals.append(s)
                 pos_state[sym_id] = {
-                    'entry_price': s.get('price', 0),
+                    'entry_price': price,
                     'entry_time': now_str,
                     'tf': tf_tag
                 }
