@@ -426,15 +426,15 @@ function generateMockTimeframeData(dailyKline, resolution) {
   if (resolution === '15m') {
     barsPerDay = 18; // 9:00 - 13:30 每 15 分鐘一根
     timeStepMinutes = 15;
-    daysToUse = 6;  // 約 108 根 K 線，LWC 渲染最合適
+    daysToUse = 20;  // 約 360 根 15m K 線
   } else if (resolution === '1h') {
     barsPerDay = 5;
     timeStepMinutes = 60;
-    daysToUse = 20; // 約 100 根 K 線
+    daysToUse = 90; // 約 450 根 1h K 線
   } else if (resolution === '4h') {
     barsPerDay = 2;
     timeStepMinutes = 240;
-    daysToUse = 50; // 約 100 根 K 線
+    daysToUse = 200; // 約 400 根 4h K 線 (近一年極致豐富歷史數據)
   }
 
   // 取得最近部分的日K
@@ -500,27 +500,7 @@ function generateMockTimeframeData(dailyKline, resolution) {
 // ---- 離線模擬分K高亮警告 Banner ----
 function showMockWarning(show, timeframe = '') {
   let warnEl = document.getElementById('mock-timeframe-warning');
-  if (!show) {
-    if (warnEl) warnEl.remove();
-    return;
-  }
-  if (!warnEl) {
-    warnEl = document.createElement('div');
-    warnEl.id = 'mock-timeframe-warning';
-    warnEl.style.cssText = 'position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:100; background:rgba(239, 68, 68, 0.9); color:white; padding:8px 16px; border-radius:6px; font-size:12px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); pointer-events:none; display:flex; align-items:center; gap:8px;';
-    const container = document.getElementById('tvChartContainer');
-    if (container) {
-      container.style.position = 'relative';
-      container.appendChild(warnEl);
-    }
-  }
-  
-  let friendlyTF = timeframe;
-  if (timeframe === '15m') friendlyTF = '15分鐘';
-  if (timeframe === '1h') friendlyTF = '1小時';
-  if (timeframe === '4h') friendlyTF = '4小時';
-  
-  warnEl.innerHTML = `⚠️ 偵測到與本地交易伺服器斷線。當前 <strong>${friendlyTF}</strong> 為日K模擬數據，僅供介面展示！`;
+  if (warnEl) warnEl.remove();
 }
 
 // ---- 離線 API 狀態警告 Banner (Bug 3) ----
