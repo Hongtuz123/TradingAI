@@ -1268,7 +1268,10 @@ def run_screener(force=False):
 
             vol         = int(latest['volume'])
             vol_ma20    = float(latest['vol_ma20'])
-            vol_ratio   = round(vol / vol_ma20, 2) if vol_ma20 > 0 else 0.0
+            if vol == 0 and len(df) >= 2:
+                vol = float(df.iloc[-1]['volume']) or float(df.iloc[-2]['volume']) or 1.0
+            raw_vol_ratio = round(vol / vol_ma20, 2) if vol_ma20 > 0 else 1.0
+            vol_ratio   = max(0.50, raw_vol_ratio) if raw_vol_ratio > 0 else 1.0
             recent_high = float(df['close'].tail(20).max())
 
             # 將 recent_high 加入 latest 供分類函式使用
@@ -1878,7 +1881,8 @@ def run_screener(force=False):
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
             # 🔵 加碼買進判定：持倉中且分數持續達標 >= 70分 (同天去重)
             max_sc = max(sc_1d, sc_4h)
-            s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + 爆量 {vol_r:.2f}x"
+            vol_tag = f"爆量 {vol_r:.2f}x" if vol_r >= 1.0 else f"量能 {max(1.0, vol_r):.2f}x"
+            s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag}"
             s['display_score'] = max_sc
             add_buy_signals.append(s)
             pos_state[sym_id]['last_add_buy_time'] = now_str[:10]

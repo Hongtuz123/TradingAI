@@ -29,9 +29,12 @@ def _fmt_score(sc):
 def _fmt_vol(vr):
     """安全格式化爆量倍數"""
     try:
-        return f"{float(vr):.2f}x"
+        val = float(vr)
+        if val <= 0.0:
+            val = 1.00
+        return f"{val:.2f}x"
     except (TypeError, ValueError):
-        return "?.??x"
+        return "1.00x"
 
 
 def _fmt_price(p):
