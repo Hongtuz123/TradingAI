@@ -1160,6 +1160,10 @@ def run_screener(force=False):
 
         name = s.get('Name', code)
         
+        # 🚫 債券型商品硬性過濾防線 (100% 排除債券/美債/公司債 ETF)
+        if '債' in name or code.endswith('B') or '美債' in name or '公司債' in name:
+            continue
+        
         # 智慧判定市場：OpenAPI 優先，再來以 B 結尾為上櫃，其餘預設上市
         market = 'TSE'
         if code in all_market_info:

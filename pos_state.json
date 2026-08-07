@@ -101,12 +101,6 @@
     "tf": "4H",
     "last_add_buy_time": "2026-08-06"
   },
-  "00981B": {
-    "entry_price": 9.35,
-    "entry_time": "2026-08-05 10:05:37",
-    "tf": "1D",
-    "last_add_buy_time": "2026-08-07"
-  },
   "6530": {
     "entry_price": 74.7,
     "entry_time": "2026-08-05 10:05:37",
@@ -265,12 +259,6 @@
   },
   "7744": {
     "entry_price": 404.5,
-    "entry_time": "2026-08-05 12:40:10",
-    "tf": "4H",
-    "last_add_buy_time": "2026-08-07"
-  },
-  "00719B": {
-    "entry_price": 31.45,
     "entry_time": "2026-08-05 12:40:10",
     "tf": "4H",
     "last_add_buy_time": "2026-08-07"
