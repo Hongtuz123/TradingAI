@@ -2231,12 +2231,12 @@ select { background: var(--bg-card); color: white; border: 1px solid var(--borde
 }
 
 /* 策略類 (.active) - 極光紫/玫紅發光漸層 */
-#pill-strategySupertrend.active,
-#pill-strategyTrendline.active {
-  background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+#pill-strategyDoudou.active,
+#pill-strategyMultifactor.active {
+  background: linear-gradient(135deg, #f97316 0%, #22c55e 100%);
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 

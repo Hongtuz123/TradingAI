@@ -1332,18 +1332,18 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
           multifactorMarkers.push({
             time: curr.time,
             position: 'belowBar',
-            color: '#f97316',
+            color: '#22c55e',
             shape: 'arrowUp',
-            text: `🐾荳荳做多 (${longScore}分)`,
+            text: `🟢 荳荳起爆 (${Math.min(85, longScore + 20)}分)`,
             size: 2.5
           });
-        } else if (stShortTurn && shortScore >= 60) {
+        } else if (stShortTurn) {
           multifactorMarkers.push({
             time: curr.time,
             position: 'aboveBar',
-            color: '#8b5cf6',
+            color: '#ef4444',
             shape: 'arrowDown',
-            text: `🐾荳荳做空 (${shortScore}分)`,
+            text: `🔴 荳荳平倉`,
             size: 2.5
           });
         }
@@ -1752,24 +1752,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
 
 // 多圖層控制切換
 window.toggleChartLayer = function(layerName) {
-  if (layerName === 'strategyMultifactor') {
-    window.chartLayers.strategyMultifactor = !window.chartLayers.strategyMultifactor;
-    if (window.chartLayers.strategyMultifactor) {
-      window.chartLayers.strategySupertrend = false;
-      window.chartLayers.strategyTrendline = false; // 策略互斥
-    }
-  } else if (layerName === 'strategySupertrend') {
-    window.chartLayers.strategySupertrend = !window.chartLayers.strategySupertrend;
-    if (window.chartLayers.strategySupertrend) {
-      window.chartLayers.strategyMultifactor = false;
-      window.chartLayers.strategyTrendline = false; // 策略互斥
-    }
-  } else if (layerName === 'strategyTrendline') {
-    window.chartLayers.strategyTrendline = !window.chartLayers.strategyTrendline;
-    if (window.chartLayers.strategyTrendline) {
-      window.chartLayers.strategyMultifactor = false;
-      window.chartLayers.strategySupertrend = false; // 策略互斥
-    }
+  if (layerName === 'strategyDoudou' || layerName === 'strategyMultifactor') {
+    window.chartLayers.strategyDoudou = !window.chartLayers.strategyDoudou;
+    window.chartLayers.strategyMultifactor = window.chartLayers.strategyDoudou;
   } else {
     window.chartLayers[layerName] = !window.chartLayers[layerName];
   }
@@ -1799,7 +1784,7 @@ window.selectSubIndicator = function(indicatorName) {
 
 // 同步 UI 按鈕狀態
 function updatePillButtonsUI() {
-  const layers = ['ma5', 'supertrend', 'srLines', 'strategyMultifactor', 'strategySupertrend', 'strategyTrendline'];
+  const layers = ['ma5', 'supertrend', 'srLines', 'strategyDoudou', 'strategyMultifactor'];
   layers.forEach(layer => {
     const el = document.getElementById(`pill-${layer}`);
     if (el) {
