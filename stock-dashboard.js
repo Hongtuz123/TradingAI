@@ -1007,10 +1007,13 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       }
     }
 
-    // 將所有計算出來的黃金交叉/特殊型態 marker 收集至全域數組
-    window.allChartMarkers = [];
+    // 🚀 將 RSI超買/超賣與 MACD 金叉/死叉標籤，100% 移至【副圖】繪製，讓主圖維持極致清爽！
     if (customMarkers.length > 0) {
-      window.allChartMarkers.push(...customMarkers);
+      if (window.activeIndicator === 'rsi' && rsiSeries) {
+        LightweightCharts.createSeriesMarkers(rsiSeries, customMarkers);
+      } else if (window.activeIndicator === 'macd' && macdLineSeries) {
+        LightweightCharts.createSeriesMarkers(macdLineSeries, customMarkers);
+      }
     }
 
     // 動態套用 K 棒的著色 (若有白色 K 棒)
