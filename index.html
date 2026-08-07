@@ -1905,6 +1905,19 @@
                   <button onclick="toggleDoudouReportPanel()" style="background:transparent; border:none; color:white; font-size:16px; cursor:pointer;">✕</button>
                 </div>
 
+                <!-- 0. 權威回測基準規範 -->
+                <div style="margin-bottom:14px; background:rgba(15, 23, 42, 0.7); padding:10px; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3);">
+                  <h4 style="margin:0 0 6px 0; font-size:12px; color:#3b82f6; display:flex; align-items:center; gap:4px;">
+                    📅 實證回測基準規範
+                  </h4>
+                  <div style="font-size:11px; color:#cbd5e1; line-height:1.6;">
+                    • <strong>回測時間</strong>：<code>2023/01/01 ~ 2026/08/01</code> (共 3.5 年)<br>
+                    • <strong>回測標的</strong>：全台股合併市值前 500 大標的 (TWSE / TPEx)<br>
+                    • <strong>交易時框</strong>：<code>1D (日線主趨勢) + 4H (四小時起爆)</code><br>
+                    • <strong>風控防線</strong>：SuperTrend 空頭否決 + 70分黃金起爆
+                  </div>
+                </div>
+
                 <!-- 1. 策略核心定位 -->
                 <div style="margin-bottom:14px; background:rgba(30, 41, 59, 0.6); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
                   <h4 style="margin:0 0 6px 0; font-size:12px; color:#60a5fa;">📌 策略總體定位</h4>
@@ -1951,7 +1964,7 @@
                     </div>
                   </div>
                   <div style="font-size:10px; color:#94a3b8; margin-top:8px; text-align:center;">
-                    (回測期間：台股前 500 大標的近 3 年全市場實測)
+                    (回測範圍：2023-2026 全台股前 500 大 1D/4H 實測)
                   </div>
                 </div>
               </div>
