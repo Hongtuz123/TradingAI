@@ -1257,18 +1257,27 @@ def run_screener(force=False):
             latest = df.iloc[-1]
             prev   = df.iloc[-2]
 
-            # 1. 取得 TWSE/TPEx 官方 OpenAPI 當日最新即時動態 (解決全市場報價變數對應 Bug)
+            # 1. 取得 TWSE/TPEx 官方 OpenAPI 當日最新即時動態
             m_info = all_market_info.get(str(symbol).zfill(4), {}) or all_market_info.get(str(symbol), {})
 
-            # 2. 確定當前收盤價/最新成交價 close (🚀 優先提取盤中即時成交價 TradePrice，避免誤抓昨日歷史收盤價 ClosingPrice)
-            openapi_price_raw = m_info.get('TradePrice') or m_info.get('Trade') or m_info.get('ClosingPrice') or m_info.get('Close')
+            # 2. 確定當前收盤價/最新成交價 close (🚀 優先提取 1H/OpenAPI 盤中即時成交價，徹底防止誤用昨日歷史收盤價)
+            openapi_price_raw = m_info.get('ClosingPrice') or m_info.get('TradePrice') or m_info.get('Trade') or m_info.get('Close')
             openapi_price_val = safe_float(str(openapi_price_raw).replace(',', '').strip()) if openapi_price_raw else None
 
-            latest_close = float(latest['close'])
-            if openapi_price_val and openapi_price_val > 0:
-                close = openapi_price_val
+            # 提取 1H K 線當日最新即時盤中價格
+            h1_live_price = None
+            if 'df_1h_stock' in locals() and not df_1h_stock.empty:
+                try:
+                    h1_live_price = float(df_1h_stock.iloc[-1]['Close'])
+                except Exception:
+                    h1_live_price = None
+
+            if h1_live_price and h1_live_price > 0:
+                close = round(h1_live_price, 2)
+            elif openapi_price_val and openapi_price_val > 0:
+                close = round(openapi_price_val, 2)
             else:
-                close = latest_close
+                close = round(float(latest['close']), 2)
 
             vol         = int(latest['volume'])
             vol_ma20    = float(latest['vol_ma20'])
