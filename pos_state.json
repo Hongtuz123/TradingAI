@@ -104,7 +104,8 @@
   "00981B": {
     "entry_price": 9.35,
     "entry_time": "2026-08-05 10:05:37",
-    "tf": "1D"
+    "tf": "1D",
+    "last_add_buy_time": "2026-08-07"
   },
   "6530": {
     "entry_price": 74.7,
@@ -428,7 +429,7 @@
     "entry_price": 329.0,
     "entry_time": "2026-08-06 10:05:55",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-06"
+    "last_add_buy_time": "2026-08-07"
   },
   "2009": {
     "entry_price": 38.45,
@@ -735,5 +736,55 @@
     "entry_time": "2026-08-07 08:05:46",
     "tf": "SILENT_INIT",
     "last_add_buy_time": "2026-08-07"
+  },
+  "1714": {
+    "entry_price": 16.2,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "1731": {
+    "entry_price": 20.85,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "2031": {
+    "entry_price": 40.95,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "8374": {
+    "entry_price": 79.9,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "6642": {
+    "entry_price": 77.0,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "6279": {
+    "entry_price": 120.5,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "2010": {
+    "entry_price": 21.45,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "6441": {
+    "entry_price": 21.35,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "4931": {
+    "entry_price": 218.5,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
+  },
+  "3490": {
+    "entry_price": 29.7,
+    "entry_time": "2026-08-07 10:05:58",
+    "tf": "SILENT_INIT"
   }
 }

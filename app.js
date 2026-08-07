@@ -19183,6 +19183,18 @@ window.renderPortfolioGrid = function() {
 
 };
 
+// 🐾 開啟/切換荳荳 AI 策略介紹與權威回測報告面板
+window.toggleDoudouReportPanel = function() {
+  const panel = document.getElementById('doudouReportPanel');
+  if (panel) {
+    if (panel.style.display === 'none' || !panel.style.display) {
+      panel.style.display = 'block';
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+};
+
 
 
 
