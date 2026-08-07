@@ -788,16 +788,24 @@
   "4961": {
     "entry_price": 167.5,
     "entry_time": "2026-08-07 10:32:05",
-    "tf": "SILENT_INIT"
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
   },
   "8103": {
     "entry_price": 84.5,
     "entry_time": "2026-08-07 10:32:05",
-    "tf": "SILENT_INIT"
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
   },
   "6152": {
     "entry_price": 11.9,
     "entry_time": "2026-08-07 10:32:05",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "8016": {
+    "entry_price": 308.5,
+    "entry_time": "2026-08-07 11:05:54",
     "tf": "SILENT_INIT"
   }
 }
