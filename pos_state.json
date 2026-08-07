@@ -495,7 +495,7 @@
     "entry_price": 107.5,
     "entry_time": "2026-08-06 11:05:50",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-06"
+    "last_add_buy_time": "2026-08-07"
   },
   "3163": {
     "entry_price": 722.0,
@@ -513,7 +513,7 @@
     "entry_price": 462.0,
     "entry_time": "2026-08-06 11:05:50",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-06"
+    "last_add_buy_time": "2026-08-07"
   },
   "00738U": {
     "entry_price": 49.95,
@@ -743,12 +743,6 @@
     "tf": "SILENT_INIT",
     "last_add_buy_time": "2026-08-07"
   },
-  "8374": {
-    "entry_price": 79.9,
-    "entry_time": "2026-08-07 10:05:58",
-    "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-08-07"
-  },
   "6642": {
     "entry_price": 77.0,
     "entry_time": "2026-08-07 10:05:58",
@@ -803,9 +797,50 @@
     "tf": "SILENT_INIT",
     "last_add_buy_time": "2026-08-07"
   },
-  "8016": {
-    "entry_price": 308.5,
-    "entry_time": "2026-08-07 11:05:54",
+  "9941": {
+    "entry_price": 83.8,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "3293": {
+    "entry_price": 792.0,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "2727": {
+    "entry_price": 236.0,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "1476": {
+    "entry_price": 346.0,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "5289": {
+    "entry_price": 1550.0,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "8454": {
+    "entry_price": 283.5,
+    "entry_time": "2026-08-07 12:06:01",
+    "tf": "SILENT_INIT",
+    "last_add_buy_time": "2026-08-07"
+  },
+  "2886": {
+    "entry_price": 51.1,
+    "entry_time": "2026-08-07 13:05:50",
+    "tf": "SILENT_INIT"
+  },
+  "8112": {
+    "entry_price": 90.9,
+    "entry_time": "2026-08-07 13:05:50",
     "tf": "SILENT_INIT"
   }
 }

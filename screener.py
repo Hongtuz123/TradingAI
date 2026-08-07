@@ -1298,34 +1298,19 @@ def run_screener(force=False):
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 3. 漲跌幅 (%)：優先使用官方 Change (漲跌金額) 精算
+            # 3. 漲跌幅 (%)：使用權威標準公式 (當前現價 - 昨日實質收盤價) / 昨日實質收盤價 * 100
             try:
-                openapi_change_raw = m_info.get('Change', '')
-                openapi_change_val = None
-                if openapi_change_raw:
-                    clean_change_str = str(openapi_change_raw)
-                    if '>' in clean_change_str and '<' in clean_change_str:
-                        import re
-                        clean_change_str = re.sub(r'<[^>]+>', '', clean_change_str)
-                    clean_change_str = clean_change_str.replace('+', '').replace(',', '').strip()
-                    openapi_change_val = safe_float(clean_change_str)
+                # 取得昨日實質收盤價 prev_close
+                prev_close = 0.0
+                if len(df) >= 2:
+                    prev_close = float(df.iloc[-2]['close'])
+                elif len(df) == 1:
+                    prev_close = float(df.iloc[-1]['open'])
 
-                if openapi_change_val is not None and close and close > 0:
-                    prev_close_calc = close - openapi_change_val
-                    if prev_close_calc > 0:
-                        change_num = round((openapi_change_val / prev_close_calc) * 100, 2)
-                    else:
-                        change_num = 0.0
+                if prev_close > 0 and close > 0:
+                    change_num = round(((close - prev_close) / prev_close) * 100, 2)
                 else:
-                    # Fallback：嚴格使用日線倒數第二筆 (昨日實質收盤價) 計算
-                    if len(df) >= 2:
-                        prev_close = float(df.iloc[-2]['close'])
-                        if prev_close > 0:
-                            change_num = round(((close - prev_close) / prev_close) * 100, 2)
-                        else:
-                            change_num = 0.0
-                    else:
-                        change_num = 0.0
+                    change_num = 0.0
             except Exception:
                 change_num = 0.0
 
