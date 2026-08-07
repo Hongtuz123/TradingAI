@@ -1006,9 +1006,10 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       }
     }
 
-    // 將所有計算出來的黃金交叉/特殊型態 marker 加上
+    // 將所有計算出來的黃金交叉/特殊型態 marker 收集至全域數組
+    window.allChartMarkers = [];
     if (customMarkers.length > 0) {
-      LightweightCharts.createSeriesMarkers(candleSeries, customMarkers);
+      window.allChartMarkers.push(...customMarkers);
     }
 
     // 動態套用 K 棒的著色 (若有白色 K 棒)
@@ -1347,7 +1348,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       }
 
       if (multifactorMarkers.length > 0) {
-        LightweightCharts.createSeriesMarkers(candleSeries, multifactorMarkers);
+        if (!window.allChartMarkers) window.allChartMarkers = [];
+        window.allChartMarkers.push(...multifactorMarkers);
       }
     }
     // ---- 策略 A: Super-Trend 策略 ----
@@ -1729,6 +1731,17 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
         summaryEl.style.display = 'none';
       }
       trendlineSeries.setData([]);
+    }
+
+    // 🚀 最終一次性渲染所有收集的 Markers (包含 RSI/MACD 與 🟢荳荳起爆/🔴荳荳平倉，絕不覆蓋洗掉！)
+    if (window.allChartMarkers && window.allChartMarkers.length > 0) {
+      window.allChartMarkers.sort((a, b) => {
+        if (typeof a.time === 'string' && typeof b.time === 'string') {
+          return a.time.localeCompare(b.time);
+        }
+        return (a.time || 0) - (b.time || 0);
+      });
+      LightweightCharts.createSeriesMarkers(candleSeries, window.allChartMarkers);
     }
 
     mainChart.timeScale().fitContent();
