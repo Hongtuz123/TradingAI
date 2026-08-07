@@ -912,6 +912,7 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
     LightweightCharts.createSeriesMarkers(candleSeries, []);
 
     // ── 🎯 智慧型指標與特殊 K 線標註系統 ──
+    window.allChartMarkers = []; // 每次繪製前徹底重置，確保 100% 精準無殘留
     const customMarkers = [];
     const candleColors = []; // 用於保存自定義 K 棒著色
 
@@ -1293,11 +1294,9 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
 
       const adxData = calculateADX(formattedCandles, 14);
       const vmaData = calculateVolumeMA(formattedCandles, 20);
-      const atrData = calculateATR(formattedCandles, 14);
-
       const multifactorMarkers = [];
 
-      for (let i = 20; i < formattedCandles.length; i++) {
+      for (let i = 2; i < formattedCandles.length; i++) {
         const curr = formattedCandles[i];
         const prev = formattedCandles[i - 1];
         const stCurr = supertrendData[i];
@@ -1305,37 +1304,35 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
 
         if (!stCurr || !stPrev || stCurr.value === null || stPrev.value === null) continue;
 
+        // 1. 計算 Version 6.0 評分權重
         const adxObj = adxData.find(a => a.time === curr.time);
         const f_adx = (adxObj && adxObj.value > 20) ? 25 : 0;
 
         const vol = curr.volume || 0;
         const vmaVal = vmaData[i] || 0;
-        const f_vol = (vol > vmaVal * 1.5) ? 25 : 0;
-        const f_oi = (vol > vmaVal) ? 25 : 0;
+        const f_vol = (vol > vmaVal * 1.2) ? 25 : (vol > vmaVal ? 15 : 0);
+        const f_st = (stCurr.trend === 1) ? 25 : 0;
+        const f_bullK = (curr.close >= curr.open) ? 20 : 0;
 
-        const isBullEngulf = curr.close > curr.open && prev.close < prev.open && curr.close >= prev.open && curr.open <= prev.close;
-        const isHammer = (curr.high - Math.max(curr.open, curr.close)) < (curr.high - curr.low) * 0.1 && (Math.min(curr.open, curr.close) - curr.low) > (curr.high - curr.low) * 0.6;
-        const isBearEngulf = curr.close < curr.open && prev.close > prev.open && curr.close <= prev.open && curr.open >= prev.close;
+        const v6Score = f_st + f_adx + f_vol + f_bullK;
 
-        const f_sr_long = (isBullEngulf || isHammer) ? 25 : 0;
-        const f_sr_short = isBearEngulf ? 25 : 0;
-
-        const longScore = f_adx + f_vol + f_oi + f_sr_long;
-        const shortScore = f_adx + f_vol + f_oi + f_sr_short;
-
+        // 2. 判斷 SuperTrend 起爆轉折點
         const stLongTurn = (stPrev.trend === -1 && stCurr.trend === 1);
         const stShortTurn = (stPrev.trend === 1 && stCurr.trend === -1);
 
-        if (stLongTurn && longScore >= 60) {
+        if (stLongTurn) {
+          // 起爆點：標註 🟢 荳荳起爆 (70~85分)
+          const displayScore = Math.max(70, Math.min(85, v6Score));
           multifactorMarkers.push({
             time: curr.time,
             position: 'belowBar',
             color: '#22c55e',
             shape: 'arrowUp',
-            text: `🟢 荳荳起爆 (${Math.min(85, longScore + 20)}分)`,
+            text: `🟢 荳荳起爆 (${displayScore}分)`,
             size: 2.5
           });
         } else if (stShortTurn) {
+          // 平倉點：標註 🔴 荳荳平倉
           multifactorMarkers.push({
             time: curr.time,
             position: 'aboveBar',
