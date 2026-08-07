@@ -4027,13 +4027,56 @@ window.filterBySignalType = function(sigType) {
 };
 
 function renderScreenerTable(data) {
-  let filteredData = data;
+  let filteredData = [...data];
+
+  // 🚀 關鍵 UI 排序優化：點選「買進訊號」或「加碼買進」頁籤時，優先將該類別標的【全數置頂排最上方】，內部依據【分數升冪 (70分最優先)】排序！
+  filteredData.sort((a, b) => {
+    const scoreA = a.dynamicScore || a.totalScore || 0;
+    const scoreB = b.dynamicScore || b.totalScore || 0;
+
+    const isAddA = a.isHeld || scoreA >= 80;
+    const isBuyA = !isAddA && scoreA >= 70;
+
+    const isAddB = b.isHeld || scoreB >= 80;
+    const isBuyB = !isAddB && scoreB >= 70;
+
+    if (window.activeSignalFilter === 'buy') {
+      // 🟢「買進訊號」視圖：買進標的優先置頂，內部按分數升冪 (70分 -> 75分 -> 80分...)
+      if (isBuyA && !isBuyB) return -1;
+      if (!isBuyA && isBuyB) return 1;
+      if (isBuyA && isBuyB) return scoreA - scoreB;
+    } else if (window.activeSignalFilter === 'add') {
+      // 🔵「加碼買進」視圖：加碼標的優先置頂，內部按分數升冪
+      if (isAddA && !isAddB) return -1;
+      if (!isAddA && isAddB) return 1;
+      if (isAddA && isAddB) return scoreA - scoreB;
+    } else {
+      // 🌐「全部標的」視圖：買進/加碼標的優先置頂，買進優先於加碼，內部按分數升冪
+      const hasSigA = isBuyA || isAddA;
+      const hasSigB = isBuyB || isAddB;
+      if (hasSigA && !hasSigB) return -1;
+      if (!hasSigA && hasSigB) return 1;
+      if (hasSigA && hasSigB) {
+        if (isBuyA && !isBuyB) return -1;
+        if (!isBuyA && isBuyB) return 1;
+        return scoreA - scoreB;
+      }
+    }
+    // 預設 Fallback: 按分數降冪
+    return scoreB - scoreA;
+  });
+
   if (window.activeSignalFilter === 'buy') {
-    // 🟢 買進訊號 (還沒漲過頭)：非持倉中，且得分 >= 70
-    filteredData = data.filter(s => !s.isHeld && s.dynamicScore >= 70);
+    filteredData = filteredData.filter(s => {
+      const sc = s.dynamicScore || s.totalScore || 0;
+      const isAdd = s.isHeld || sc >= 80;
+      return !isAdd && sc >= 70;
+    });
   } else if (window.activeSignalFilter === 'add') {
-    // 🔵 加碼買進 (強勢持倉)：持倉中，或分數高達 80 分
-    filteredData = data.filter(s => s.isHeld || s.dynamicScore >= 80);
+    filteredData = filteredData.filter(s => {
+      const sc = s.dynamicScore || s.totalScore || 0;
+      return s.isHeld || sc >= 80;
+    });
   }
 
   document.getElementById('resultCount').innerText = filteredData.length;
