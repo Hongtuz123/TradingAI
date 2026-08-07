@@ -5,15 +5,14 @@ let currentChartSymbol = null;
 let currentLWChart = null;
 let currentLWDashChart = null;
 
-// 全域同步圖層疊加狀態物件 ( ma5, supertrend, srLines 預設開啟 )
+// 全域同步圖層疊加狀態物件 ( ma5, supertrend, srLines, strategyDoudou 預設開啟 )
 if (window.chartLayers === undefined) {
   window.chartLayers = {
     ma5: true,
     supertrend: false,
     srLines: true,
-    strategyMultifactor: true, // 預設開啟荳荳多因子爆發指標
-    strategySupertrend: false,
-    strategyTrendline: false,
+    strategyDoudou: true,       // 🐾 荳荳指標 (Version 6 70-80 分指標) 預設開啟
+    strategyMultifactor: true,  // 同步開啟
     subIndicator: 'rsi'
   };
 }
@@ -21,15 +20,13 @@ if (window.chartLayers === undefined) {
 // 橋接原有的單選全域變數，確保相容性
 Object.defineProperty(window, 'activeStrategy', {
   get() {
-    if (window.chartLayers.strategyMultifactor) return 'multifactor';
-    if (window.chartLayers.strategySupertrend) return 'supertrend';
-    if (window.chartLayers.strategyTrendline) return 'trendline';
+    if (window.chartLayers.strategyDoudou || window.chartLayers.strategyMultifactor) return 'multifactor';
     return 'none';
   },
   set(val) {
-    window.chartLayers.strategyMultifactor = (val === 'multifactor');
-    window.chartLayers.strategySupertrend = (val === 'supertrend');
-    window.chartLayers.strategyTrendline = (val === 'trendline');
+    const isMulti = (val === 'multifactor');
+    window.chartLayers.strategyDoudou = isMulti;
+    window.chartLayers.strategyMultifactor = isMulti;
   },
   configurable: true
 });
@@ -1289,8 +1286,8 @@ function renderLWChart(containerId, klineData, height = 260, resolution = '1D') 
       });
     }
 
-    // ---- 策略 C: 🐾 荳荳多因子爆發王牌策略 (DouDou AI Multifactor Master) ----
-    if (window.activeStrategy === 'multifactor') {
+    // ---- 策略 C: 🐾 荳荳指標 (Version 6 黃金 70-80 分指標) ----
+    if (window.chartLayers.strategyDoudou || window.chartLayers.strategyMultifactor || window.activeStrategy === 'multifactor') {
       trendlineSeries.setData([]);
 
       const adxData = calculateADX(formattedCandles, 14);
