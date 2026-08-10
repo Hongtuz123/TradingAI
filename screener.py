@@ -1854,6 +1854,9 @@ def run_screener(force=False):
     currently_held_ids = list(pos_state.keys())
     for sym_id in currently_held_ids:
         pos_info = pos_state[sym_id]
+        # BUG 2 修復：跳過 CLOSED 個股，避免誤觸加碼訊號
+        if pos_info.get('status') == 'CLOSED':
+            continue
         s = stock_map.get(sym_id)
         if not s:
             continue
@@ -1864,7 +1867,7 @@ def run_screener(force=False):
         sc_4h   = s.get('totalScore_4h', 0) or 0
         st_1d   = s.get('supertrend', 1)
         st_4h   = s.get('supertrend_4h', 1)
-        vol_r   = s.get('volRatio', 1.0)
+        vol_r   = abs(float(s.get('volRatio', 1.0) or 1.0))  # BUG 3 修復：取 abs() 防負數異常
         last_add_time = pos_info.get('last_add_buy_time', '')
 
         # 🔴 賣出判定 (最優先保護機制)：任一時框 SuperTrend 翻紅空頭，或是 跌破 -20% 停損價

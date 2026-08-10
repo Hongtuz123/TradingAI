@@ -168,6 +168,11 @@ window.reloadDataJson = async function() {
 
 
 
+    } else if (currentActiveView === 'screener') {
+
+      // BUG 5 修復：停在荳荳清單頁時，data.json 刷新後自動重渲染
+      if (typeof renderDoudouScreenerList === 'function') renderDoudouScreenerList();
+
     }
 
 
