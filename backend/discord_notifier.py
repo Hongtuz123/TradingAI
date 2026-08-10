@@ -71,7 +71,8 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
 
     def _get_vol_ratio(s):
         try:
-            return float(s.get('volRatio', 1.0) or 1.0)
+            # 確保爆量倍數取絕對值，避免異常負號影響次要降冪排序
+            return abs(float(s.get('volRatio', 1.0) or 1.0))
         except (TypeError, ValueError):
             return 1.0
 

@@ -1961,7 +1961,7 @@ def run_screener(force=False):
 
     def _get_vol_ratio(s):
         try:
-            return float(s.get('volRatio', 1.0) or 1.0)
+            return abs(float(s.get('volRatio', 1.0) or 1.0))
         except (TypeError, ValueError):
             return 1.0
 
