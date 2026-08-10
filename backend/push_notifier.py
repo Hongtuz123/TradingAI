@@ -1,0 +1,117 @@
+import requests
+import os
+
+# OneSignal 配置 (可透過環境變數 ONESIGNAL_APP_ID 與 ONESIGNAL_REST_KEY 覆寫)
+ONESIGNAL_APP_ID = os.environ.get(
+    "ONESIGNAL_APP_ID",
+    "b82e2578-d45e-4e4d-b94f-onesignal-doudou-ai"
+)
+ONESIGNAL_REST_KEY = os.environ.get(
+    "ONESIGNAL_REST_KEY",
+    "os_api_key_doudou_trading_ai"
+)
+
+ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications"
+
+
+def get_tradingview_url(symbol_code, market="TSE"):
+    """自動配對 TradingView 專屬 Deep Link (支援手機原生 TradingView App 自動喚起)"""
+    symbol_code = str(symbol_code).strip()
+    prefix = "TPEX" if str(market).upper() == "OTC" else "TWSE"
+    return f"https://www.tradingview.com/chart/?symbol={prefix}:{symbol_code}"
+
+
+def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_signals=None, scanned_cnt=0, time_str=""):
+    """
+    📱 Phase 3: 荳荳 AI 後端手機 PWA 系統原生推播發送器 (OneSignal REST API)
+    發送包含 TradingView Deep Link 的手機鎖屏推播通知
+    """
+    buys = buy_signals or []
+    adds = add_buy_signals or []
+    sells = sell_signals or []
+
+    # 🚀 硬性成交量防線與分數升冪排序 (70分起爆甜蜜點優先，同分爆量降冪)
+    def _get_sort_score(s):
+        sc = s.get('display_score') or s.get('totalScore') or s.get('totalScore_4h') or 70
+        try: return float(sc)
+        except (TypeError, ValueError): return 70.0
+
+    def _get_vol_ratio(s):
+        try: return abs(float(s.get('volRatio', 1.0) or 1.0))
+        except (TypeError, ValueError): return 1.0
+
+    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= 300]
+    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= 300]
+
+    buys.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
+    adds.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
+
+    if not buys and not adds and not sells:
+        return True
+
+    # 優先發送最高優質的 🟢 買進訊號，無買進則發送 🔵 加碼訊號
+    target_stock = None
+    sig_type = "買進"
+    sig_emoji = "🟢"
+
+    if buys:
+        target_stock = buys[0]
+        sig_type = "買進訊號"
+        sig_emoji = "🟢"
+    elif adds:
+        target_stock = adds[0]
+        sig_type = "加碼買進"
+        sig_emoji = "🔵"
+    elif sells:
+        target_stock = sells[0]
+        sig_type = "賣出平倉"
+        sig_emoji = "🔴"
+
+    if not target_stock:
+        return True
+
+    code = target_stock.get('id', '')
+    name = target_stock.get('name', '')
+    market = target_stock.get('market', 'TSE')
+    price = target_stock.get('price', 0)
+    change = target_stock.get('change', 0)
+    score = int(_get_sort_score(target_stock))
+    vol_r = _get_vol_ratio(target_stock)
+    chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
+    tv_url = get_tradingview_url(code, market)
+
+    push_title = f"{sig_emoji} [荳荳 AI {sig_type}] {code} {name} ({score}分)"
+    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 爆量 {vol_r:.2f}x ｜ 點擊直達 TradingView 原生 K 線！"
+
+    payload = {
+        "app_id": ONESIGNAL_APP_ID,
+        "included_segments": ["Subscribed Users"],
+        "headings": {"en": push_title, "zh": push_title},
+        "contents": {"en": push_body, "zh": push_body},
+        "url": tv_url,
+        "web_url": tv_url,
+        "app_url": tv_url,
+        "data": {
+            "symbol": code,
+            "market": market,
+            "score": score,
+            "url": tv_url
+        }
+    }
+
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": f"Basic {ONESIGNAL_REST_KEY}"
+    }
+
+    try:
+        res = requests.post(ONESIGNAL_API_URL, json=payload, headers=headers, timeout=10)
+        if res.status_code in (200, 202):
+            print(f"📱 ✅ [Phase 3 手機推播] 成功向 OneSignal 發送推播: {push_title}")
+            return True
+        else:
+            print(f"📱 ℹ️ [Phase 3 手機推播] OneSignal Payload 已就緒 ({push_title}) — HTTP {res.status_code}")
+            return False
+    except Exception as e:
+        print(f"📱 ⚠️ [Phase 3 手機推播] 發送異常 (不影響數據運算): {e}")
+        return False

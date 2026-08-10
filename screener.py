@@ -2081,6 +2081,19 @@ def run_screener(force=False):
                 time_str=now_str
             )
             print(f"✅ 已成功發送【買進 / 加碼買進 / 賣出】三大動態交易訊號至 Discord 頻道！")
+
+            # 📱 Phase 3: PWA 手機原生系統推播對接 (OneSignal Deep Link)
+            try:
+                from backend.push_notifier import send_pwa_push_notification
+                send_pwa_push_notification(
+                    buy_signals=buy_signals,
+                    add_buy_signals=add_buy_signals,
+                    sell_signals=sell_signals,
+                    scanned_cnt=scanned_count,
+                    time_str=now_str
+                )
+            except Exception as pwa_err:
+                print(f"📱 ⚠️ PWA 手機原生推播觸發跳過: {pwa_err}")
     except Exception as push_err:
         print(f"⚠️ 推播觸發跳過: {push_err}")
 
