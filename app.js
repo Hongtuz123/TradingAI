@@ -19243,9 +19243,110 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then((reg) => {
         console.log('🌱 [荳荳 AI PWA] Service Worker 註冊成功:', reg.scope);
+        checkPushPermissionStatus();
       })
       .catch((err) => {
         console.warn('⚠️ [荳荳 AI PWA] Service Worker 註冊失敗:', err);
       });
   });
+}
+
+// 🔗 產生 TradingView 專屬 Deep Link (支援手機原生 TradingView App 自動喚起)
+window.getTradingViewDeepLink = function(symbolCode, market) {
+  symbolCode = String(symbolCode || '2330').trim();
+  market = String(market || 'TSE').toUpperCase();
+  let prefix = (market === 'OTC') ? 'TPEX' : 'TWSE';
+  return `https://www.tradingview.com/chart/?symbol=${prefix}:${symbolCode}`;
+};
+
+// 🔔 檢查並更新推播按鈕狀態
+function checkPushPermissionStatus() {
+  const btn = document.getElementById('pwaPushBtn');
+  if (!btn) return;
+  if (!('Notification' in window)) {
+    btn.innerHTML = '<span>🔔 瀏覽器不支援</span>';
+    btn.style.opacity = '0.5';
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    btn.innerHTML = '<span>🟢 推播已啟用</span>';
+    btn.style.background = 'rgba(34, 197, 94, 0.25)';
+    btn.style.borderColor = 'rgba(34, 197, 94, 0.6)';
+    btn.style.color = '#4ade80';
+  } else if (Notification.permission === 'denied') {
+    btn.innerHTML = '<span>🚫 推播已封鎖</span>';
+    btn.style.background = 'rgba(239, 68, 68, 0.2)';
+    btn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+    btn.style.color = '#f87171';
+  }
+}
+
+// 🔔 切換與請求手機系統推播權限
+window.togglePushNotification = function() {
+  if (!('Notification' in window)) {
+    alert('您的手機/瀏覽器未支援系統 Notification 推播功能！');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    alert('✅ 手機系統推播通知已在運作中！點擊「⚡️ 測試跳轉 TV」可進行發送與 TradingView 跳轉測試。');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    alert('⚠️ 系統推播權限已被封鎖。請在手機「設定」->「通知」或瀏覽器網址列鎖頭處取消封鎖後重試。');
+    return;
+  }
+
+  Notification.requestPermission().then((permission) => {
+    checkPushPermissionStatus();
+    if (permission === 'granted') {
+      alert('🎉 成功啟用手機推播通知！當盤中觸發買進起爆訊號時將發送系統推播。');
+      testTradingViewDeepLink('2330', 'TSE');
+    }
+  });
+};
+
+// ⚡️ 測試推播通知發送並跳轉 TradingView
+window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
+  const tvUrl = getTradingViewDeepLink(symbolCode, market);
+
+  if (!('Notification' in window)) {
+    window.open(tvUrl, '_blank');
+    return;
+  }
+
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission().then((permission) => {
+      checkPushPermissionStatus();
+      if (permission === 'granted') {
+        sendTestNotification(symbolCode, tvUrl);
+      } else {
+        window.open(tvUrl, '_blank');
+      }
+    });
+  } else {
+    sendTestNotification(symbolCode, tvUrl);
+  }
+};
+
+function sendTestNotification(code, tvUrl) {
+  const title = `🟢 [荳荳 AI 買進訊號] ${code} 台積電 (80分)`;
+  const options = {
+    body: '現價 $1,050.00 (+2.44%) ｜ 爆量 2.85x ｜ 觸發 1D/4H 起爆甜蜜點！點擊直達 TradingView',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
+    data: { url: tvUrl },
+    vibrate: [100, 50, 100]
+  };
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.showNotification(title, options);
+    });
+  } else {
+    const n = new Notification(title, options);
+    n.onclick = function(e) {
+      e.preventDefault();
+      window.open(tvUrl, '_blank');
+      n.close();
+    };
+  }
 }
