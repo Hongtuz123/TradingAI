@@ -1941,17 +1941,28 @@ def run_screener(force=False):
                         'tf': "SILENT_INIT"
                     }
 
+    def _get_sort_score(s):
+        sc = s.get('display_score')
+        if sc is None:
+            sc = s.get('totalScore')
+        if sc is None:
+            sc = s.get('totalScore_4h')
+        try:
+            return float(sc)
+        except (TypeError, ValueError):
+            return 70.0
+
+    def _get_vol_ratio(s):
+        try:
+            return float(s.get('volRatio', 1.0) or 1.0)
+        except (TypeError, ValueError):
+            return 1.0
+
     # 1. 針對買進清單排序：100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先！70分 > 75分 > 80分...)
-    buy_signals.sort(key=lambda x: (
-        x.get('display_score', 70),
-        - (x.get('volRatio', 1.0))
-    ))
+    buy_signals.sort(key=lambda x: (_get_sort_score(x), -_get_vol_ratio(x)))
 
     # 2. 針對加碼買進清單排序：100% 依據【分數升冪】排序 (70分最優先)
-    add_buy_signals.sort(key=lambda x: (
-        x.get('display_score', 70),
-        - (x.get('volRatio', 1.0))
-    ))
+    add_buy_signals.sort(key=lambda x: (_get_sort_score(x), -_get_vol_ratio(x)))
 
     # 寫回 pos_state.json (絕對路徑)
     try:

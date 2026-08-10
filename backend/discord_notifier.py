@@ -53,11 +53,28 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     adds  = add_buy_signals or []
     sells = sell_signals or []
 
-    # 🚀 雙重防禦：買進與加碼買進推播 100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先，從小排到大)
+    def _get_sort_score(s):
+        sc = s.get('display_score')
+        if sc is None:
+            sc = s.get('totalScore')
+        if sc is None:
+            sc = s.get('totalScore_4h')
+        try:
+            return float(sc)
+        except (TypeError, ValueError):
+            return 70.0
+
+    def _get_vol_ratio(s):
+        try:
+            return float(s.get('volRatio', 1.0) or 1.0)
+        except (TypeError, ValueError):
+            return 1.0
+
+    # 🚀 雙重防禦：買進與加碼買進推播 100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先，從小排到大)，同分時依【爆量倍數降冪】(從大排到小)
     if buys:
-        buys.sort(key=lambda s: (s.get('display_score', s.get('totalScore', 70)), - (s.get('volRatio', 1.0) or 1.0)))
+        buys.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
     if adds:
-        adds.sort(key=lambda s: (s.get('display_score', s.get('totalScore', 70)), - (s.get('volRatio', 1.0) or 1.0)))
+        adds.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
 
     if not buys and not adds and not sells:
         return True
