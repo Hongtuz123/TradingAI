@@ -19261,24 +19261,26 @@ window.getTradingViewDeepLink = function(symbolCode, market) {
 
 // 🔔 檢查並更新推播按鈕狀態
 function checkPushPermissionStatus() {
-  const btn = document.getElementById('pwaPushBtn');
-  if (!btn) return;
-  if (!('Notification' in window)) {
-    btn.innerHTML = '<span>🔔 瀏覽器不支援</span>';
-    btn.style.opacity = '0.5';
-    return;
-  }
-  if (Notification.permission === 'granted') {
-    btn.innerHTML = '<span>🟢 推播已啟用</span>';
-    btn.style.background = 'rgba(34, 197, 94, 0.25)';
-    btn.style.borderColor = 'rgba(34, 197, 94, 0.6)';
-    btn.style.color = '#4ade80';
-  } else if (Notification.permission === 'denied') {
-    btn.innerHTML = '<span>🚫 推播已封鎖</span>';
-    btn.style.background = 'rgba(239, 68, 68, 0.2)';
-    btn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-    btn.style.color = '#f87171';
-  }
+  const btns = document.querySelectorAll('#pwaPushBtn, button[onclick="togglePushNotification()"]');
+  if (!btns || !btns.length) return;
+  btns.forEach(btn => {
+    if (!('Notification' in window)) {
+      btn.innerHTML = '<span>🔔 瀏覽器不支援</span>';
+      btn.style.opacity = '0.5';
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      btn.innerHTML = '<span>🟢 推播已啟用</span>';
+      btn.style.background = 'rgba(34, 197, 94, 0.25)';
+      btn.style.borderColor = 'rgba(34, 197, 94, 0.6)';
+      btn.style.color = '#4ade80';
+    } else if (Notification.permission === 'denied') {
+      btn.innerHTML = '<span>🚫 推播已封鎖</span>';
+      btn.style.background = 'rgba(239, 68, 68, 0.2)';
+      btn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+      btn.style.color = '#f87171';
+    }
+  });
 }
 
 // 🔔 切換與請求手機系統推播權限
