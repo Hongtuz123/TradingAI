@@ -2955,3 +2955,22 @@ body {
     font-size: 12px !important;
   }
 }
+
+/* 📱 PWA 獨立全螢幕 App (Standalone) 邊界與 Safe Area 適應 */
+@media all and (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* 讓圖表與輸入框仍然允許選取文字與輸入 */
+  input, textarea, table, .chart-container {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+}

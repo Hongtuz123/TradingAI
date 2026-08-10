@@ -19237,3 +19237,15 @@ window.closeDogReminder = function(event) {
 
 
 
+// 📱 PWA Service Worker 自動註冊機制
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => {
+        console.log('🌱 [荳荳 AI PWA] Service Worker 註冊成功:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('⚠️ [荳荳 AI PWA] Service Worker 註冊失敗:', err);
+      });
+  });
+}
