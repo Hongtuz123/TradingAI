@@ -1885,13 +1885,17 @@ def run_screener(force=False):
             pos_state[sym_id]['exit_time'] = now_str
             pos_state[sym_id]['sell_reason'] = sell_reason
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
-            # 🔵 加碼買進判定：持倉中且分數持續達標 >= 70分 (同天去重)
-            # 🚀 量能硬性門檻：當日成交量必須 ≥ 300 張才允許形成加碼推播
+            # 🔵 加碼買進硬性強勢門檻：當日成交量 ≥ 300 張 ＋ 爆量倍數 ≥ 1.2x ＋ 三大法人淨買超 > 0
             daily_vol_sheets = s.get('dailyVol', 0) or 0
-            if daily_vol_sheets >= 300:
+            fn_buy = s.get('foreignNetBuy', 0) or 0
+            tr_buy = s.get('trustDays', 0) or 0
+            dl_buy = s.get('dealerDays', 0) or 0
+            total_inst = fn_buy + tr_buy + dl_buy
+
+            if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                 max_sc = max(sc_1d, sc_4h)
-                vol_tag = f"爆量 {vol_r:.2f}x" if vol_r >= 1.0 else f"量能 {max(1.0, vol_r):.2f}x"
-                s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag}"
+                vol_tag = f"爆量 {vol_r:.2f}x"
+                s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag} + 法人買超 {total_inst}張"
                 s['display_score'] = max_sc
                 s['signal_status'] = 'ADD'
                 add_buy_signals.append(s)
@@ -1916,6 +1920,11 @@ def run_screener(force=False):
         prev_st_4h = s.get('prev_supertrend_4h', 1)
         price = s.get('price', 0) or 0
         ma20  = s.get('ma20', 0) or 0
+        vol_r = abs(float(s.get('volRatio', 1.0) or 1.0))
+        fn_buy = s.get('foreignNetBuy', 0) or 0
+        tr_buy = s.get('trustDays', 0) or 0
+        dl_buy = s.get('dealerDays', 0) or 0
+        total_inst = fn_buy + tr_buy + dl_buy
 
         # 🚀 嚴格起爆防線：
         # A. 剛翻綠 (Fresh Breakout)：1D 或 4H 最新一根 K 線剛由紅轉綠
@@ -1933,7 +1942,8 @@ def run_screener(force=False):
 
         if is_1d_pass or is_4h_pass:
             if sym_id not in pos_state:
-                # 只有當 100% 滿足【剛起爆/貼近均線】才允許記錄；當【當日成交量 ≥ 300 張】時發送 🟢 買進推播
+                # 只有當 100% 滿足【剛起爆/貼近均線】才允許記錄；
+                # 🚀 買進推播門檻：【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
                 if is_fresh_signal:
                     if is_1d_pass and is_4h_pass:
                         tf_tag = "1D/4H"
@@ -1950,7 +1960,7 @@ def run_screener(force=False):
                     s['signal_status'] = 'BUY'
                     
                     daily_vol_sheets = s.get('dailyVol', 0) or 0
-                    if daily_vol_sheets >= 300:
+                    if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                         buy_signals.append(s)
 
                     pos_state[sym_id] = {

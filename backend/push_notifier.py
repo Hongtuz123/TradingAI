@@ -40,8 +40,17 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         try: return abs(float(s.get('volRatio', 1.0) or 1.0))
         except (TypeError, ValueError): return 1.0
 
-    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= 300]
-    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= 300]
+    def _is_qualified(s):
+        vol_v = (s.get('dailyVol', 9999) or 0) >= 300
+        vol_r = _get_vol_ratio(s) >= 1.2
+        fn = s.get('foreignNetBuy', 0) or 0
+        tr = s.get('trustDays', 0) or 0
+        dl = s.get('dealerDays', 0) or 0
+        inst_buy = (fn + tr + dl) > 0
+        return vol_v and vol_r and inst_buy
+
+    buys = [s for s in buys if _is_qualified(s)]
+    adds = [s for s in adds if _is_qualified(s)]
 
     buys.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
     adds.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))

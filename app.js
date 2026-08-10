@@ -19316,7 +19316,6 @@ window.filterBySignalType = function(type) {
   if (activeBtn) {
     activeBtn.classList.add('active');
     if (type === 'all') { activeBtn.style.background = 'var(--primary)'; activeBtn.style.color = 'white'; }
-    else if (type === 'elite') { activeBtn.style.background = 'rgba(249,115,22,0.2)'; activeBtn.style.color = '#f97316'; }
     else if (type === 'buy') { activeBtn.style.background = 'rgba(34,197,94,0.2)'; activeBtn.style.color = '#4ade80'; }
     else if (type === 'add') { activeBtn.style.background = 'rgba(59,130,246,0.2)'; activeBtn.style.color = '#60a5fa'; }
     else if (type === 'hold') { activeBtn.style.background = 'rgba(245,158,11,0.2)'; activeBtn.style.color = '#fbbf24'; }
@@ -19324,16 +19323,6 @@ window.filterBySignalType = function(type) {
   }
   renderDoudouScreenerList();
 };
-
-// 🚀 精英強勢條件判定器 (使用者指定門檻：1. 爆量 >= 1.2x  2. 三大法人單日買超 > 0)
-function isEliteStock(s) {
-  const volR = s.volRatio || 1.0;
-  const foreignNet = s.foreignNetBuy || 0;
-  const trustDays = s.trustDays || 0;
-  const dealerDays = s.dealerDays || 0;
-  const totalInstNet = foreignNet + trustDays + dealerDays;
-  return (volR >= 1.2) && (totalInstNet > 0);
-}
 
 window.renderDoudouScreenerList = function() {
   const body = document.getElementById('resultsBody');
@@ -19360,9 +19349,7 @@ window.renderDoudouScreenerList = function() {
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     const status = isClosed ? 'CLOSED' : (s.signal_status || 'HOLD');
 
-    if (window.currentSignalFilter === 'elite') {
-      return !isClosed && isEliteStock(s);
-    } else if (window.currentSignalFilter === 'buy') {
+    if (window.currentSignalFilter === 'buy') {
       return status === 'BUY';
     } else if (window.currentSignalFilter === 'add') {
       return status === 'ADD';
@@ -19384,13 +19371,12 @@ window.renderDoudouScreenerList = function() {
   });
 
   // 4. 總數精確對齊與核對
-  let buyCnt = 0, addCnt = 0, holdCnt = 0, closedCnt = 0, eliteCnt = 0;
+  let buyCnt = 0, addCnt = 0, holdCnt = 0, closedCnt = 0;
   heldStocks.forEach(s => {
     const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     if (isClosed) closedCnt++;
     else {
-      if (isEliteStock(s)) eliteCnt++;
       if (s.signal_status === 'BUY') buyCnt++;
       else if (s.signal_status === 'ADD') addCnt++;
       else holdCnt++;
@@ -19400,7 +19386,7 @@ window.renderDoudouScreenerList = function() {
   const totalHolding = buyCnt + addCnt + holdCnt;
 
   if (countEl) {
-    countEl.innerHTML = `<strong>${filtered.length}</strong> 檔 (持倉 <strong>${totalHolding}</strong> 檔 ｜ 🔥精英 <strong>${eliteCnt}</strong> ｜ 🟢買進 <strong>${buyCnt}</strong> ｜ 🔵加碼 <strong>${addCnt}</strong> ｜ 🟡持倉 <strong>${holdCnt}</strong> ｜ 🔴3日賣出 <strong>${closedCnt}</strong>)`;
+    countEl.innerHTML = `<strong>${filtered.length}</strong> 档 (持倉 <strong>${totalHolding}</strong> 檔 ｜ 🟢買進 <strong>${buyCnt}</strong> ｜ 🔵加碼 <strong>${addCnt}</strong> ｜ 🟡持倉 <strong>${holdCnt}</strong> ｜ 🔴3日賣出 <strong>${closedCnt}</strong>)`;
   }
 
   if (filtered.length === 0) {
