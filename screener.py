@@ -1874,8 +1874,16 @@ def run_screener(force=False):
         if is_stop_loss or is_st_bear:
             sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢轉為空頭"
             s['sell_reason'] = sell_reason
+            s['exit_price'] = price
+            s['exit_time'] = now_str
+            s['signal_status'] = 'CLOSED'
             sell_signals.append(s)
-            del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
+            
+            # 更新 pos_state 記錄為平倉狀態 (保留 3 天供前台與推播追蹤)
+            pos_state[sym_id]['status'] = 'CLOSED'
+            pos_state[sym_id]['exit_price'] = price
+            pos_state[sym_id]['exit_time'] = now_str
+            pos_state[sym_id]['sell_reason'] = sell_reason
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
             # 🔵 加碼買進判定：持倉中且分數持續達標 >= 70分 (同天去重)
             # 🚀 量能硬性門檻：當日成交量必須 ≥ 300 張才允許形成加碼推播
@@ -1885,8 +1893,17 @@ def run_screener(force=False):
                 vol_tag = f"爆量 {vol_r:.2f}x" if vol_r >= 1.0 else f"量能 {max(1.0, vol_r):.2f}x"
                 s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag}"
                 s['display_score'] = max_sc
+                s['signal_status'] = 'ADD'
                 add_buy_signals.append(s)
             pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
+
+    # 清理 pos_state 中超過 3 天的 CLOSED 歷史賣出紀錄
+    cutoff_date = (pd.Timestamp.now() - pd.Timedelta(days=3)).strftime('%Y-%m-%d')
+    for sym_id, pos_info in list(pos_state.items()):
+        if pos_info.get('status') == 'CLOSED':
+            exit_t = str(pos_info.get('exit_time', ''))[:10]
+            if exit_t and exit_t < cutoff_date:
+                del pos_state[sym_id]
 
     # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
     for s in cleaned_mock_stocks:
@@ -1930,6 +1947,7 @@ def run_screener(force=False):
 
                     s['tf_tag'] = tf_tag
                     s['display_score'] = disp_sc
+                    s['signal_status'] = 'BUY'
                     
                     daily_vol_sheets = s.get('dailyVol', 0) or 0
                     if daily_vol_sheets >= 300:
@@ -1938,14 +1956,16 @@ def run_screener(force=False):
                     pos_state[sym_id] = {
                         'entry_price': price,
                         'entry_time': now_str,
-                        'tf': tf_tag
+                        'tf': tf_tag,
+                        'status': 'HOLD'
                     }
                 else:
                     # 🚀 已漲過頭/非剛發動的歷史強勢個股：靜默補入 pos_state 進行持倉追蹤，絕不誤發過期買進！
                     pos_state[sym_id] = {
                         'entry_price': price,
                         'entry_time': now_str,
-                        'tf': "SILENT_INIT"
+                        'tf': "SILENT_INIT",
+                        'status': 'HOLD'
                     }
 
     def _get_sort_score(s):
