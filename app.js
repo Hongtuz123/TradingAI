@@ -19330,23 +19330,98 @@ window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
 
 function sendTestNotification(code, tvUrl) {
   const title = `🟢 [荳荳 AI 買進訊號] ${code} 台積電 (80分)`;
+  const bodyText = '現價 $1,050.00 (+2.44%) ｜ 爆量 2.85x ｜ 觸發 1D/4H 起爆甜蜜點！點擊直達 TradingView';
+
+  // 1. 彈出高顏值畫面內部動態推播卡片 (100% 確保任何手機/瀏覽器都能看見與點擊跳轉)
+  showInAppPushToast(title, bodyText, tvUrl);
+
+  // 2. 觸發手機/系統原生層層推播 (Service Worker + Notification 雙備份)
   const options = {
-    body: '現價 $1,050.00 (+2.44%) ｜ 爆量 2.85x ｜ 觸發 1D/4H 起爆甜蜜點！點擊直達 TradingView',
+    body: bodyText,
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
     data: { url: tvUrl },
     vibrate: [100, 50, 100]
   };
 
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then((reg) => {
-      reg.showNotification(title, options);
+      if (reg && reg.showNotification) {
+        reg.showNotification(title, options).catch(err => {
+          console.warn('SW notification fallback:', err);
+          try { new Notification(title, options); } catch(e){}
+        });
+      }
+    }).catch(() => {
+      try { new Notification(title, options); } catch(e){}
     });
   } else {
-    const n = new Notification(title, options);
-    n.onclick = function(e) {
-      e.preventDefault();
-      window.open(tvUrl, '_blank');
-      n.close();
-    };
+    try {
+      const n = new Notification(title, options);
+      n.onclick = function(e) {
+        e.preventDefault();
+        window.open(tvUrl, '_blank');
+        n.close();
+      };
+    } catch(e) {}
   }
+}
+
+// 📱 畫面上方內建動態推播卡片 (In-App Toast)
+function showInAppPushToast(title, body, url) {
+  let toastContainer = document.getElementById('pwaToastContainer');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'pwaToastContainer';
+    toastContainer.style.cssText = `
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      width: 90%;
+      max-width: 420px;
+      pointer-events: auto;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: rgba(15, 23, 42, 0.92);
+    border: 1.5px solid #22c55e;
+    box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: #f8fafc;
+    cursor: pointer;
+    margin-bottom: 8px;
+    animation: pwaToastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s ease;
+  `;
+
+  card.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+      <span style="font-weight: 700; font-size: 14px; color: #4ade80;">${title}</span>
+      <span style="font-size: 11px; background: rgba(34, 197, 94, 0.2); color: #86efac; padding: 2px 6px; border-radius: 4px;">手勢點擊跳轉 📈</span>
+    </div>
+    <div style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">${body}</div>
+  `;
+
+  card.onclick = function() {
+    window.open(url, '_blank');
+    card.remove();
+  };
+
+  toastContainer.appendChild(card);
+
+  // 8 秒後自動平滑淡出移除
+  setTimeout(() => {
+    if (card.parentNode) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(-10px)';
+      setTimeout(() => card.remove(), 250);
+    }
+  }, 8000);
 }
