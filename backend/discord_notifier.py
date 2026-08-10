@@ -53,6 +53,11 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     adds  = add_buy_signals or []
     sells = sell_signals or []
 
+    # 🚀 成交量硬性防線：當日成交張數 < 300 張者不形成推播
+    MIN_DAILY_VOL = 300
+    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL]
+    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL]
+
     def _get_sort_score(s):
         sc = s.get('display_score')
         if sc is None:

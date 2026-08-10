@@ -1878,11 +1878,14 @@ def run_screener(force=False):
             del pos_state[sym_id]  # 🔴 立刻移出持倉名單，100% 無時限發送賣出推播
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
             # 🔵 加碼買進判定：持倉中且分數持續達標 >= 70分 (同天去重)
-            max_sc = max(sc_1d, sc_4h)
-            vol_tag = f"爆量 {vol_r:.2f}x" if vol_r >= 1.0 else f"量能 {max(1.0, vol_r):.2f}x"
-            s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag}"
-            s['display_score'] = max_sc
-            add_buy_signals.append(s)
+            # 🚀 量能硬性門檻：當日成交量必須 ≥ 300 張才允許形成加碼推播
+            daily_vol_sheets = s.get('dailyVol', 0) or 0
+            if daily_vol_sheets >= 300:
+                max_sc = max(sc_1d, sc_4h)
+                vol_tag = f"爆量 {vol_r:.2f}x" if vol_r >= 1.0 else f"量能 {max(1.0, vol_r):.2f}x"
+                s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag}"
+                s['display_score'] = max_sc
+                add_buy_signals.append(s)
             pos_state[sym_id]['last_add_buy_time'] = now_str[:10]
 
     # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
@@ -1913,7 +1916,7 @@ def run_screener(force=False):
 
         if is_1d_pass or is_4h_pass:
             if sym_id not in pos_state:
-                # 只有當 100% 滿足【剛起爆/貼近均線】時，才允許發送 🟢 首次買進訊號
+                # 只有當 100% 滿足【剛起爆/貼近均線】才允許記錄；當【當日成交量 ≥ 300 張】時發送 🟢 買進推播
                 if is_fresh_signal:
                     if is_1d_pass and is_4h_pass:
                         tf_tag = "1D/4H"
@@ -1927,7 +1930,11 @@ def run_screener(force=False):
 
                     s['tf_tag'] = tf_tag
                     s['display_score'] = disp_sc
-                    buy_signals.append(s)
+                    
+                    daily_vol_sheets = s.get('dailyVol', 0) or 0
+                    if daily_vol_sheets >= 300:
+                        buy_signals.append(s)
+
                     pos_state[sym_id] = {
                         'entry_price': price,
                         'entry_time': now_str,
