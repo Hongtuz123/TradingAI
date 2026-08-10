@@ -19242,8 +19242,11 @@ function checkPushPermissionStatus() {
   if (!btns || !btns.length) return;
   btns.forEach(btn => {
     if (!('Notification' in window)) {
-      btn.innerHTML = '<span>🔔 瀏覽器不支援</span>';
-      btn.style.opacity = '0.5';
+      btn.innerHTML = '<span>📱 請加入主畫面啟用</span>';
+      btn.style.opacity = '0.9';
+      btn.style.background = 'rgba(249, 115, 22, 0.2)';
+      btn.style.borderColor = 'rgba(249, 115, 22, 0.5)';
+      btn.style.color = '#fb923c';
       return;
     }
     if (Notification.permission === 'granted') {
@@ -19263,7 +19266,7 @@ function checkPushPermissionStatus() {
 // 🔔 切換與請求手機系統推播權限
 window.togglePushNotification = function() {
   if (!('Notification' in window)) {
-    alert('您的手機/瀏覽器未支援系統 Notification 推播功能！');
+    alert('📱 iPhone / iOS 系統安全機制提醒：\n\nSafari 網頁模式下系統預設關閉推播。請將本網頁「加入主畫面」後，從手機桌面的【荳荳 AI 柴犬 App】打開，即可開啟系統推播功能！');
     return;
   }
   if (Notification.permission === 'granted') {
