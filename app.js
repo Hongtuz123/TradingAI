@@ -119,25 +119,11 @@ window.reloadDataJson = async function() {
 
 
     marketData = data.marketData || {};
-
-
-
     rulesConfig = data.rulesConfig || {};
-
-
-
     mockStocks = data.mockStocks || [];
-
-
-
+    window.posState = data.pos_state || {};
     window.rankingsData = data.rankingsData || {};
-
-
-
     window.broadcastData = data.broadcastData || {};
-
-
-
     window.bubbleChartData = data.bubbleChartData || {};
 
 
@@ -559,25 +545,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     marketData = data.marketData || {};
-
-
-
     rulesConfig = data.rulesConfig || {};
-
-
-
     mockStocks = data.mockStocks || [];
-
-
-
+    window.posState = data.pos_state || {};
     window.rankingsData = data.rankingsData || {};
-
-
-
     window.broadcastData = data.broadcastData || {};
-
-
-
     window.bubbleChartData = data.bubbleChartData || {};
 
 
@@ -19346,6 +19318,7 @@ window.filterBySignalType = function(type) {
     if (type === 'all') { activeBtn.style.background = 'var(--primary)'; activeBtn.style.color = 'white'; }
     else if (type === 'buy') { activeBtn.style.background = 'rgba(34,197,94,0.2)'; activeBtn.style.color = '#4ade80'; }
     else if (type === 'add') { activeBtn.style.background = 'rgba(59,130,246,0.2)'; activeBtn.style.color = '#60a5fa'; }
+    else if (type === 'hold') { activeBtn.style.background = 'rgba(245,158,11,0.2)'; activeBtn.style.color = '#fbbf24'; }
     else if (type === 'closed') { activeBtn.style.background = 'rgba(239,68,68,0.2)'; activeBtn.style.color = '#f87171'; }
   }
   renderDoudouScreenerList();
@@ -19356,15 +19329,23 @@ window.renderDoudouScreenerList = function() {
   const countEl = document.getElementById('resultCount');
   if (!body) return;
 
-  const posState = (window.marketData && window.marketData.pos_state) ? window.marketData.pos_state : {};
-  const heldIds = new Set(Object.keys(posState));
+  // 🚀 萬無一失posState讀取邏輯
+  const posState = (window.posState) || (window.marketData && window.marketData.pos_state) || {};
+  const posKeys = Object.keys(posState);
+  
+  // 建立標準化 ID 對照集合 (同時支援 "2330" 與 "009816")
+  const heldIds = new Set();
+  posKeys.forEach(k => {
+    heldIds.add(String(k).trim());
+    if (String(k).length < 4) heldIds.add(String(k).zfill(4));
+  });
 
   // 1. 嚴格限定：只取在 posState 中 (持倉/近3日賣出) 的個股，100% 排除普通未開倉個股！
-  let heldStocks = (mockStocks || []).filter(s => heldIds.has(s.id));
+  let heldStocks = (mockStocks || []).filter(s => heldIds.has(String(s.id).trim()));
 
   // 2. 依照所選 Tab 進行二次精準過濾
   let filtered = heldStocks.filter(s => {
-    const posInfo = posState[s.id] || {};
+    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     const status = isClosed ? 'CLOSED' : (s.signal_status || 'HOLD');
 
@@ -19372,6 +19353,8 @@ window.renderDoudouScreenerList = function() {
       return status === 'BUY';
     } else if (window.currentSignalFilter === 'add') {
       return status === 'ADD';
+    } else if (window.currentSignalFilter === 'hold') {
+      return status === 'HOLD' || (!isClosed && status !== 'BUY' && status !== 'ADD');
     } else if (window.currentSignalFilter === 'closed') {
       return status === 'CLOSED';
     }
@@ -19390,25 +19373,28 @@ window.renderDoudouScreenerList = function() {
   // 4. 總數精確對齊與核對
   let buyCnt = 0, addCnt = 0, holdCnt = 0, closedCnt = 0;
   heldStocks.forEach(s => {
-    const posInfo = posState[s.id] || {};
-    if (posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED') closedCnt++;
+    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
+    const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
+    if (isClosed) closedCnt++;
     else if (s.signal_status === 'BUY') buyCnt++;
     else if (s.signal_status === 'ADD') addCnt++;
     else holdCnt++;
   });
 
+  const totalHolding = buyCnt + addCnt + holdCnt;
+
   if (countEl) {
-    countEl.innerHTML = `<strong>${filtered.length}</strong> 檔 (持倉 ${buyCnt + addCnt + holdCnt} 檔 ｜ 🟢買進 ${buyCnt} ｜ 🔵加碼 ${addCnt} ｜ 🔴3日賣出 ${closedCnt})`;
+    countEl.innerHTML = `<strong>${filtered.length}</strong> 檔 (持倉 <strong>${totalHolding}</strong> 檔 ｜ 🟢買進 <strong>${buyCnt}</strong> ｜ 🔵加碼 <strong>${addCnt}</strong> ｜ 🟡持倉 <strong>${holdCnt}</strong> ｜ 🔴3日賣出 <strong>${closedCnt}</strong>)`;
   }
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合該篩選類別的持倉/賣出個股汪！🐶</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合該類別的持倉/賣出個股汪！🐶</td></tr>`;
     return;
   }
 
   // 5. 表格動態渲染
   body.innerHTML = filtered.map(s => {
-    const posInfo = posState[s.id] || {};
+    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     const tagBg = isClosed ? '#ef4444' : (s.signal_status === 'BUY' ? '#22c55e' : (s.signal_status === 'ADD' ? '#3b82f6' : '#f59e0b'));
     const tagText = isClosed ? '🔴 3日賣出' : (s.signal_status === 'BUY' ? '🟢 買進' : (s.signal_status === 'ADD' ? '🔵 加碼' : '🟡 持倉中'));
