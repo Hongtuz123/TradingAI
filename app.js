@@ -19236,6 +19236,31 @@ window.getTradingViewDeepLink = function(symbolCode, market) {
   return `https://www.tradingview.com/chart/?symbol=${prefix}:${symbolCode}`;
 };
 
+// 📱 智慧喚起原生 TradingView App (如未安裝自動開啟網頁版)
+window.openTradingViewAppOrWeb = function(symbolCode = '2330', market = 'TSE') {
+  symbolCode = String(symbolCode || '2330').trim();
+  market = String(market || 'TSE').toUpperCase();
+  let prefix = (market === 'OTC') ? 'TPEX' : 'TWSE';
+
+  const webUrl = `https://www.tradingview.com/chart/?symbol=${prefix}:${symbolCode}`;
+  const appScheme = `tradingview://chart?symbol=${prefix}:${symbolCode}`;
+
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    const start = Date.now();
+    window.location.href = appScheme;
+
+    setTimeout(function() {
+      if (Date.now() - start < 1500) {
+        window.open(webUrl, '_blank');
+      }
+    }, 600);
+  } else {
+    window.open(webUrl, '_blank');
+  }
+};
+
 // 🔔 檢查並更新推播按鈕狀態
 function checkPushPermissionStatus() {
   const btns = document.querySelectorAll('#pwaPushBtn, button[onclick="togglePushNotification()"]');
@@ -19299,9 +19324,9 @@ window.togglePushNotification = function() {
 };
 
 // ⚡️ 發送測試推播通知並跳轉 TradingView
-window.sendTestNotification = function(symbolCode = '2330', tvUrl = '') {
+window.sendTestNotification = function(symbolCode = '2330', tvUrl = '', market = 'TSE') {
   if (!tvUrl) {
-    tvUrl = getTradingViewDeepLink(symbolCode, 'TSE');
+    tvUrl = getTradingViewDeepLink(symbolCode, market);
   }
 
   const title = `🟢 荳荳 AI 訊號測試：${symbolCode} 台積電`;
@@ -19318,29 +19343,28 @@ window.sendTestNotification = function(symbolCode = '2330', tvUrl = '') {
         vibrate: [200, 100, 200],
         tag: 'doudou-test-push'
       });
-      // 為預防通知彈窗被系統阻擋，直接開啟 TV 連結
-      window.open(tvUrl, '_blank');
+      openTradingViewAppOrWeb(symbolCode, market);
     }).catch(() => {
-      _fallbackNotification(title, body, tvUrl);
+      _fallbackNotification(title, body, symbolCode, market);
     });
   } else if ('Notification' in window && Notification.permission === 'granted') {
-    _fallbackNotification(title, body, tvUrl);
+    _fallbackNotification(title, body, symbolCode, market);
   } else {
-    window.open(tvUrl, '_blank');
+    openTradingViewAppOrWeb(symbolCode, market);
   }
 };
 
-function _fallbackNotification(title, body, tvUrl) {
+function _fallbackNotification(title, body, symbolCode, market) {
   try {
     const n = new Notification(title, {
       body: body,
       icon: './apple-touch-icon.png'
     });
     n.onclick = function() {
-      window.open(tvUrl, '_blank');
+      openTradingViewAppOrWeb(symbolCode, market);
     };
   } catch(e) {}
-  window.open(tvUrl, '_blank');
+  openTradingViewAppOrWeb(symbolCode, market);
 }
 
 // ⚡️ 測試推播通知發送並跳轉 TradingView
@@ -19348,17 +19372,17 @@ window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
   const tvUrl = getTradingViewDeepLink(symbolCode, market);
 
   if (!('Notification' in window)) {
-    window.open(tvUrl, '_blank');
+    openTradingViewAppOrWeb(symbolCode, market);
     return;
   }
 
   if (Notification.permission !== 'granted') {
     Notification.requestPermission().then((permission) => {
       checkPushPermissionStatus();
-      sendTestNotification(symbolCode, tvUrl);
+      sendTestNotification(symbolCode, tvUrl, market);
     });
   } else {
-    sendTestNotification(symbolCode, tvUrl);
+    sendTestNotification(symbolCode, tvUrl, market);
   }
 };
 
