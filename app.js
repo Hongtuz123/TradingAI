@@ -19298,6 +19298,51 @@ window.togglePushNotification = function() {
   });
 };
 
+// ⚡️ 發送測試推播通知並跳轉 TradingView
+window.sendTestNotification = function(symbolCode = '2330', tvUrl = '') {
+  if (!tvUrl) {
+    tvUrl = getTradingViewDeepLink(symbolCode, 'TSE');
+  }
+
+  const title = `🟢 荳荳 AI 訊號測試：${symbolCode} 台積電`;
+  const body = `已成功連結推播系統！點擊此處跳轉 TradingView 查看 ${symbolCode} K線圖 📈`;
+  const icon = './apple-touch-icon.png';
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body: body,
+        icon: icon,
+        badge: icon,
+        data: { url: tvUrl },
+        vibrate: [200, 100, 200],
+        tag: 'doudou-test-push'
+      });
+      // 為預防通知彈窗被系統阻擋，直接開啟 TV 連結
+      window.open(tvUrl, '_blank');
+    }).catch(() => {
+      _fallbackNotification(title, body, tvUrl);
+    });
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    _fallbackNotification(title, body, tvUrl);
+  } else {
+    window.open(tvUrl, '_blank');
+  }
+};
+
+function _fallbackNotification(title, body, tvUrl) {
+  try {
+    const n = new Notification(title, {
+      body: body,
+      icon: './apple-touch-icon.png'
+    });
+    n.onclick = function() {
+      window.open(tvUrl, '_blank');
+    };
+  } catch(e) {}
+  window.open(tvUrl, '_blank');
+}
+
 // ⚡️ 測試推播通知發送並跳轉 TradingView
 window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
   const tvUrl = getTradingViewDeepLink(symbolCode, market);
@@ -19310,11 +19355,7 @@ window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
   if (Notification.permission !== 'granted') {
     Notification.requestPermission().then((permission) => {
       checkPushPermissionStatus();
-      if (permission === 'granted') {
-        sendTestNotification(symbolCode, tvUrl);
-      } else {
-        window.open(tvUrl, '_blank');
-      }
+      sendTestNotification(symbolCode, tvUrl);
     });
   } else {
     sendTestNotification(symbolCode, tvUrl);
