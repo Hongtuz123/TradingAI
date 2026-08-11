@@ -4420,15 +4420,15 @@
       "trust": 0,
       "dealer": 0
     },
-    "1443": {
-      "foreign": 0,
-      "trust": 0,
-      "dealer": 0
-    },
     "2432": {
       "foreign": -3,
       "trust": 0,
       "dealer": 3
+    },
+    "1443": {
+      "foreign": 0,
+      "trust": 0,
+      "dealer": 0
     },
     "3266": {
       "foreign": 0,

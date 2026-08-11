@@ -19414,20 +19414,27 @@ window.renderDoudouScreenerList = function() {
   const countEl = document.getElementById('resultCount');
   if (!body) return;
 
-  // 🚀 萬無一失posState讀取邏輯
   const posState = (window.posState) || (window.marketData && window.marketData.pos_state) || {};
   const posKeys = Object.keys(posState);
-  
-  // 建立標準化 ID 對照集合 (同時支援 "2330" 與 "009816")
+
+  // 取得台灣時間的今日日期字串 (YYYY-MM-DD)
+  const todayTaipei = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+  // 建立持倉與訊號速查集合
   const heldIds = new Set();
   posKeys.forEach(k => {
     heldIds.add(String(k).trim());
-    if (String(k).length < 4) heldIds.add(String(k).zfill(4));
+    if (String(k).length < 4) heldIds.add(String(k).padStart(4, '0'));
   });
 
-  // 1. 嚴格限定：只取在 posState 中 (持倉/近3日賣出) 且符合「1.2X交易量」及「日均交易>=300張」的個股！
+  // 1. 嚴格限定：取在 posState 中 (持倉/近3日賣出) 或今日有發動買進/加碼訊號，且符合「1.2X交易量」及「日均交易>=300張」的個股！
   let heldStocks = (mockStocks || []).filter(s => {
-    if (!heldIds.has(String(s.id).trim())) return false;
+    const sId = String(s.id).trim();
+    const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
+    const isPos = heldIds.has(sId);
+    const isNewSignal = s.signal_status === 'BUY' || s.signal_status === 'ADD' || s.is_buy_signal;
+
+    if (!isPos && !isNewSignal) return false;
     
     // 💡 1.2X 交易量過濾
     const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
@@ -19446,29 +19453,32 @@ window.renderDoudouScreenerList = function() {
     return dVol >= 300;
   });
 
-  // 2. 依照所選 Tab 進行二次精準過濾 (當日 BUY/ADD 當日顯示，隔天 T+1 自動歸入「持倉中」)
-  const todayStr = (new Date()).toISOString().slice(0, 10);
-
-  let filtered = heldStocks.filter(s => {
-    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
-    const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
+  // 2. 依照當日訊號與 T+1 交易日時間戳，進行狀態精確計算：
+  heldStocks.forEach(s => {
+    const sId = String(s.id).trim();
+    const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
+    const rawStatus = posInfo.status || s.signal_status || 'HOLD';
+    const isClosed = rawStatus === 'CLOSED';
     
-    const entryDate = String(posInfo.entry_time || s.entry_time || '').slice(0, 10);
-    const lastAddDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
+    const entryDate = String(posInfo.entry_time || s.entry_time || s.entry_date || '').slice(0, 10);
+    const addDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
     
     let status = 'HOLD';
     if (isClosed) {
       status = 'CLOSED';
-    } else if (entryDate === todayStr && s.signal_status === 'BUY') {
-      status = 'BUY';
-    } else if (lastAddDate === todayStr && s.signal_status === 'ADD') {
-      status = 'ADD';
+    } else if (rawStatus === 'BUY' || s.signal_status === 'BUY' || (entryDate === todayTaipei && entryDate !== '')) {
+      status = 'BUY'; // 當天發動買進
+    } else if (rawStatus === 'ADD' || s.signal_status === 'ADD' || (addDate === todayTaipei && addDate !== '')) {
+      status = 'ADD'; // 當天發動加碼
     } else {
-      // 隔天 (T+1) 及以後自動轉入「持倉中」
-      status = 'HOLD';
+      status = 'HOLD'; // 隔天 (T+1) 及以後自動轉入「持倉中」
     }
     s.calcStatus = status;
+  });
 
+  // 3. 依照所選 Tab 進行過濾
+  let filtered = heldStocks.filter(s => {
+    const status = s.calcStatus || 'HOLD';
     if (window.currentSignalFilter === 'buy') {
       return status === 'BUY';
     } else if (window.currentSignalFilter === 'add') {
@@ -19482,7 +19492,7 @@ window.renderDoudouScreenerList = function() {
     return true;
   });
 
-  // 3. 排序：分數升冪 (起漲甜蜜點優先)，同分時爆量倍數降冪
+  // 4. 排序：分數升冪 (起漲甜蜜點優先)，同分時爆量倍數降冪
   filtered.sort((a, b) => {
     const scA = a.display_score || a.totalScore || 70;
     const scB = b.display_score || b.totalScore || 70;
@@ -19490,23 +19500,14 @@ window.renderDoudouScreenerList = function() {
     return (b.volRatio || 1.0) - (a.volRatio || 1.0);
   });
 
-  // 4. 總數精確對齊與核對 (依 T+1 轉持倉邏輯進行日統計)
+  // 5. 總數精確對齊與核對 (依 T+1 轉持倉邏輯進行日統計)
   let buyCnt = 0, addCnt = 0, holdCnt = 0, closedCnt = 0;
   heldStocks.forEach(s => {
-    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
-    const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
-    const entryDate = String(posInfo.entry_time || s.entry_time || '').slice(0, 10);
-    const lastAddDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
-
-    if (isClosed) {
-      closedCnt++;
-    } else if (entryDate === todayStr && s.signal_status === 'BUY') {
-      buyCnt++;
-    } else if (lastAddDate === todayStr && s.signal_status === 'ADD') {
-      addCnt++;
-    } else {
-      holdCnt++;
-    }
+    const status = s.calcStatus || 'HOLD';
+    if (status === 'CLOSED') closedCnt++;
+    else if (status === 'BUY') buyCnt++;
+    else if (status === 'ADD') addCnt++;
+    else holdCnt++;
   });
 
   const totalHolding = buyCnt + addCnt + holdCnt;
@@ -19520,14 +19521,12 @@ window.renderDoudouScreenerList = function() {
     return;
   }
 
-  // 5. 表格動態渲染 (無冗字標籤：買進、加碼、賣出(3日內)、持倉中，T+1 自動歸入持倉中)
+  // 6. 表格動態渲染 (無冗字標籤：買進、加碼、賣出(3日內)、持倉中，T+1 自動歸入持倉中)
   body.innerHTML = filtered.map(s => {
-    const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
-    const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     const status = s.calcStatus || 'HOLD';
 
-    const tagBg = isClosed ? '#ef4444' : (status === 'BUY' ? '#22c55e' : (status === 'ADD' ? '#3b82f6' : '#f59e0b'));
-    const tagText = isClosed ? '賣出(3日內)' : (status === 'BUY' ? '買進' : (status === 'ADD' ? '加碼' : '持倉中'));
+    const tagBg = status === 'CLOSED' ? '#ef4444' : (status === 'BUY' ? '#22c55e' : (status === 'ADD' ? '#3b82f6' : '#f59e0b'));
+    const tagText = status === 'CLOSED' ? '賣出(3日內)' : (status === 'BUY' ? '買進' : (status === 'ADD' ? '加碼' : '持倉中'));
     const scoreVal = s.display_score || s.totalScore || 70;
     const chgColor = s.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
     const chgSign = s.change >= 0 ? '+' : '';

@@ -1970,7 +1970,7 @@ def run_screener(force=False):
                         'entry_price': price,
                         'entry_time': now_str,
                         'tf': tf_tag,
-                        'status': 'HOLD'
+                        'status': 'BUY'
                     }
                 else:
                     # 🚀 已漲過頭/非剛發動的歷史強勢個股：靜默補入 pos_state 進行持倉追蹤，絕不誤發過期買進！
