@@ -37,22 +37,19 @@
 
 
 
-  <!-- OneSignal PWA Push Notification SDK -->
+  <!-- OneSignal PWA Push Notification SDK v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-        notifyButton: {
-          enable: true,
-          position: 'bottom-right'
-        },
-        allowLocalhostAsSecureOrigin: true
-      });
-      // 自動嘗試註冊/請求權限
-      if (OneSignal.Notifications && OneSignal.Notifications.permission === false) {
-        try { OneSignal.Notifications.requestPermission(); } catch(e) {}
+      try {
+        await OneSignal.init({
+          appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
+          allowLocalhostAsSecureOrigin: true
+        });
+        console.log("OneSignal v16 Init Success");
+      } catch(err) {
+        console.error("OneSignal Init Error:", err);
       }
     });
   </script>

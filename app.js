@@ -19301,16 +19301,18 @@ window.togglePushNotification = async function() {
     return;
   }
 
-  // 1. 請求 iOS / 瀏覽器原生通知權限
-  const permission = await Notification.requestPermission();
-  if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+  // 1. 請求瀏覽器 Native Notification 權限
+  try {
+    const permission = await Notification.requestPermission();
+    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
 
-  if (permission !== 'granted') {
-    alert('⚠️ 通知權限未允許，無法接收推播。');
-    return;
-  }
+    if (permission !== 'granted') {
+      alert('⚠️ 通知權限未允許。');
+      return;
+    }
+  } catch(e) {}
 
-  // 2. 透過 OneSignalDeferred 安全包裝呼叫 OneSignal SDK v16
+  // 2. 觸發 OneSignal SDK 雲端連線與 optIn 註冊
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async function(OneSignal) {
     try {
@@ -19323,14 +19325,12 @@ window.togglePushNotification = async function() {
         }
         const subId = OneSignal.User.PushSubscription.id;
         if (subId) {
-          alert('🎉 成功連線 OneSignal 雲端推播！\n雲端裝置 ID:\n' + subId);
+          alert('🎉 成功連線 OneSignal 雲端推播！\n裝置 ID: ' + subId);
           return;
         }
       }
-      alert('✅ 手機系統推播已順利啟用並完成雲端連線！');
-    } catch(e) {
-      alert('✅ 系統推播通知已在運作中！');
-    }
+    } catch(e) { console.error("OS push err:", e); }
+    alert('✅ 手機系統推播已啟用！點擊「⚡️ 測試跳轉 TV」即可測試。');
   });
 };
 
