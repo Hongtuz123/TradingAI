@@ -1,4 +1,8 @@
 // 荳荳 AI 智能選股 — PWA Service Worker
+try {
+  importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
+} catch (e) {}
+
 const CACHE_NAME = 'doudou-ai-cache-v2.4';
 const ASSETS_TO_CACHE = [
   './',
