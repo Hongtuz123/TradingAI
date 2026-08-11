@@ -19338,7 +19338,9 @@ window.togglePushNotification = async function() {
       try {
         await OneSignalInstance.init({
           appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-          allowLocalhostAsSecureOrigin: true
+          allowLocalhostAsSecureOrigin: true,
+          serviceWorkerPath: "sw.js",
+          serviceWorkerParam: { scope: "/" }
         });
         window._os = OneSignalInstance;
         console.log('[OneSignal] Dynamic Init OK');

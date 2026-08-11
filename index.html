@@ -39,12 +39,13 @@
 
   <script id="onesignal-sdk-script" src="./OneSignalSDK.page.js" defer></script>
   <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       try {
         await OneSignal.init({
           appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-          allowLocalhostAsSecureOrigin: true
+          allowLocalhostAsSecureOrigin: true,
+          serviceWorkerPath: "sw.js",
+          serviceWorkerParam: { scope: "/" }
         });
         // ★ 儲存 reference，供 button handler 直接使用
         window._os = OneSignal;
