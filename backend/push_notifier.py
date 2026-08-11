@@ -15,10 +15,10 @@ ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications"
 
 
 def get_tradingview_url(symbol_code, market="TSE"):
-    """自動配對 TradingView 專屬 Deep Link (支援手機原生 TradingView App 自動喚起)"""
+    """自動配對 TradingView 專屬 Deep Link (支援手機原生 TradingView App 自動喚起精準股票標的)"""
     symbol_code = str(symbol_code).strip()
     prefix = "TPEX" if str(market).upper() == "OTC" else "TWSE"
-    return f"https://www.tradingview.com/chart/?symbol={prefix}:{symbol_code}"
+    return f"tradingview://symbol/{prefix}:{symbol_code}"
 
 
 def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_signals=None, scanned_cnt=0, time_str=""):
@@ -65,7 +65,7 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
 
     if buys:
         target_stock = buys[0]
-        sig_type = "買進訊號"
+        sig_type = "買進起爆"
         sig_emoji = "🟢"
     elif adds:
         target_stock = adds[0]
@@ -73,7 +73,7 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         sig_emoji = "🔵"
     elif sells:
         target_stock = sells[0]
-        sig_type = "賣出平倉"
+        sig_type = "獲利平倉"
         sig_emoji = "🔴"
 
     if not target_stock:
@@ -87,24 +87,27 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     score = int(_get_sort_score(target_stock))
     vol_r = _get_vol_ratio(target_stock)
     chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
-    tv_url = get_tradingview_url(code, market)
+    
+    prefix = "TPEX" if str(market).upper() == "OTC" else "TWSE"
+    tv_app_url = f"tradingview://symbol/{prefix}:{code}"
+    tv_web_url = f"https://www.tradingview.com/chart/?symbol={prefix}:{code}"
 
     push_title = f"{sig_emoji} [荳荳 AI {sig_type}] {code} {name} ({score}分)"
-    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 爆量 {vol_r:.2f}x ｜ 點擊直達 TradingView 原生 K 線！"
+    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 爆量 {vol_r:.2f}x ｜ 點擊直達 TradingView App！"
 
     payload = {
         "app_id": ONESIGNAL_APP_ID,
         "included_segments": ["Subscribed Users"],
         "headings": {"en": push_title, "zh": push_title},
         "contents": {"en": push_body, "zh": push_body},
-        "url": tv_url,
-        "web_url": tv_url,
-        "app_url": tv_url,
+        "url": tv_app_url,
+        "web_url": tv_web_url,
+        "app_url": tv_app_url,
         "data": {
             "symbol": code,
             "market": market,
             "score": score,
-            "url": tv_url
+            "url": tv_app_url
         }
     }
 

@@ -1,5 +1,5 @@
 // 荳荳 AI 智能選股 — PWA Service Worker
-const CACHE_NAME = 'doudou-ai-cache-v2.3';
+const CACHE_NAME = 'doudou-ai-cache-v2.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -59,9 +59,9 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   let payload = {
     title: '🟢 荳荳 AI 動態交易訊號',
-    body: '觸發最新買進/加碼訊號，點擊查看標的圖表！',
+    body: '觸發最新買進/加碼訊號，點擊直達 TradingView App！',
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
-    data: { url: 'https://www.tradingview.com' }
+    data: { url: 'tradingview://symbol/TWSE:2330' }
   };
 
   if (event.data) {
@@ -79,7 +79,7 @@ self.addEventListener('push', (event) => {
     data: payload.data,
     vibrate: [100, 50, 100],
     actions: [
-      { action: 'open_tv', title: '📈 TradingView K線' }
+      { action: 'open_tv', title: '📈 TradingView App' }
     ]
   };
 
@@ -88,23 +88,22 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// 點擊通知跳轉至 TradingView 或指定網址
+// 點擊通知跳轉至 TradingView App
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) 
-    ? event.notification.data.url 
-    : 'https://www.tradingview.com';
+  
+  let targetUrl = 'tradingview://symbol/TWSE:2330';
+  if (event.notification.data && event.notification.data.url) {
+    targetUrl = event.notification.data.url;
+  } else if (event.notification.data && event.notification.data.symbol) {
+    const sym = event.notification.data.symbol;
+    const mkt = (event.notification.data.market || 'TSE').toUpperCase() === 'OTC' ? 'TPEX' : 'TWSE';
+    targetUrl = `tradingview://symbol/${mkt}:${sym}`;
+  }
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === targetUrl && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
+    clients.openWindow(targetUrl).catch(() => {
+      clients.openWindow('https://www.tradingview.com');
     })
   );
 });
