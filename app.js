@@ -19289,8 +19289,8 @@ function checkPushPermissionStatus() {
   });
 }
 
-// 🔔 切換與請求手機系統推播權限 (精準對接 OneSignal SDK v16)
-window.togglePushNotification = async function() {
+// 🔔 切換與請求手機系統推播權限 (精準對接 OneSignal SDK v16 & iOS Safari)
+window.togglePushNotification = function() {
   if (!('Notification' in window)) {
     alert('📱 iPhone / iOS 系統安全機制提醒：\n\nSafari 網頁模式下系統預設關閉推播。請將本網頁「加入主畫面」後，從手機桌面的【荳荳 AI 柴犬 App】打開，即可開啟系統推播功能！');
     return;
@@ -19301,36 +19301,45 @@ window.togglePushNotification = async function() {
     return;
   }
 
-  // 1. 請求瀏覽器 Native Notification 權限
-  try {
-    const permission = await Notification.requestPermission();
+  // 🚀 同步立即反饋，防範 iOS WebKit 異步中斷
+  alert('🚀 正在同步 OneSignal 雲端推播權限與裝置 Token...');
+
+  // 安全跨版本相容 Notification.requestPermission (相容傳統 Callback 與現代 Promise)
+  function safeRequestPermission(cb) {
+    try {
+      let isCalled = false;
+      const done = (p) => { if (!isCalled) { isCalled = true; cb(p); } };
+      const res = Notification.requestPermission(done);
+      if (res && typeof res.then === 'function') {
+        res.then(done).catch(() => done(Notification.permission));
+      }
+    } catch(e) {
+      cb(Notification.permission || 'granted');
+    }
+  }
+
+  safeRequestPermission(function(perm) {
     if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
 
-    if (permission !== 'granted') {
-      alert('⚠️ 通知權限未允許。');
-      return;
-    }
-  } catch(e) {}
-
-  // 2. 觸發 OneSignal SDK 雲端連線與 optIn 註冊
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(async function(OneSignal) {
-    try {
-      if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
-        await OneSignal.Notifications.requestPermission();
-      }
-      if (OneSignal.User && OneSignal.User.PushSubscription) {
-        if (OneSignal.User.PushSubscription.optIn) {
-          await OneSignal.User.PushSubscription.optIn();
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(OneSignal) {
+      try {
+        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+          await OneSignal.Notifications.requestPermission();
         }
-        const subId = OneSignal.User.PushSubscription.id;
-        if (subId) {
-          alert('🎉 成功連線 OneSignal 雲端推播！\n裝置 ID: ' + subId);
-          return;
+        if (OneSignal.User && OneSignal.User.PushSubscription) {
+          if (OneSignal.User.PushSubscription.optIn) {
+            await OneSignal.User.PushSubscription.optIn();
+          }
+          const subId = OneSignal.User.PushSubscription.id;
+          if (subId) {
+            alert('🎉 成功連線 OneSignal 雲端推播！\n裝置 ID: ' + subId);
+            return;
+          }
         }
-      }
-    } catch(e) { console.error("OS push err:", e); }
-    alert('✅ 手機系統推播已啟用！點擊「⚡️ 測試跳轉 TV」即可測試。');
+      } catch(e) { console.error("OS push err:", e); }
+      alert('✅ 系統推播權限完成對接！點擊「⚡️ 測試跳轉 TV」即可測試。');
+    });
   });
 };
 
