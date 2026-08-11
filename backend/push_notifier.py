@@ -111,9 +111,11 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         }
     }
 
+    # OneSignal 新版 REST Key (os_v2_app_ 開頭) 需使用 "Key" 前綴，舊版才用 "Basic"
+    auth_prefix = "Key" if ONESIGNAL_REST_KEY.startswith("os_v2_app_") else "Basic"
     headers = {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": f"Basic {ONESIGNAL_REST_KEY}"
+        "Authorization": f"{auth_prefix} {ONESIGNAL_REST_KEY}"
     }
 
     try:
@@ -122,7 +124,8 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
             print(f"📱 ✅ [Phase 3 手機推播] 成功向 OneSignal 發送推播: {push_title}")
             return True
         else:
-            print(f"📱 ℹ️ [Phase 3 手機推播] OneSignal Payload 已就緒 ({push_title}) — HTTP {res.status_code}")
+            # 印出完整錯誤 body 方便除錯 (例如 401 / 400 的原因)
+            print(f"📱 ❌ [Phase 3 手機推播] OneSignal 回傳錯誤 HTTP {res.status_code}: {res.text[:500]}")
             return False
     except Exception as e:
         print(f"📱 ⚠️ [Phase 3 手機推播] 發送異常 (不影響數據運算): {e}")
