@@ -19446,18 +19446,35 @@ window.renderDoudouScreenerList = function() {
     return dVol >= 300;
   });
 
-  // 2. 依照所選 Tab 進行二次精準過濾
+  // 2. 依照所選 Tab 進行二次精準過濾 (當日 BUY/ADD 當日顯示，隔天 T+1 自動歸入「持倉中」)
+  const todayStr = (new Date()).toISOString().slice(0, 10);
+
   let filtered = heldStocks.filter(s => {
     const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
-    const status = isClosed ? 'CLOSED' : (s.signal_status || 'HOLD');
+    
+    const entryDate = String(posInfo.entry_time || s.entry_time || '').slice(0, 10);
+    const lastAddDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
+    
+    let status = 'HOLD';
+    if (isClosed) {
+      status = 'CLOSED';
+    } else if (entryDate === todayStr && s.signal_status === 'BUY') {
+      status = 'BUY';
+    } else if (lastAddDate === todayStr && s.signal_status === 'ADD') {
+      status = 'ADD';
+    } else {
+      // 隔天 (T+1) 及以後自動轉入「持倉中」
+      status = 'HOLD';
+    }
+    s.calcStatus = status;
 
     if (window.currentSignalFilter === 'buy') {
       return status === 'BUY';
     } else if (window.currentSignalFilter === 'add') {
       return status === 'ADD';
     } else if (window.currentSignalFilter === 'hold') {
-      return status === 'HOLD' || (!isClosed && status !== 'BUY' && status !== 'ADD');
+      return status === 'HOLD';
     } else if (window.currentSignalFilter === 'closed') {
       return status === 'CLOSED';
     }
@@ -19473,16 +19490,22 @@ window.renderDoudouScreenerList = function() {
     return (b.volRatio || 1.0) - (a.volRatio || 1.0);
   });
 
-  // 4. 總數精確對齊與核對
+  // 4. 總數精確對齊與核對 (依 T+1 轉持倉邏輯進行日統計)
   let buyCnt = 0, addCnt = 0, holdCnt = 0, closedCnt = 0;
   heldStocks.forEach(s => {
     const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
-    if (isClosed) closedCnt++;
-    else {
-      if (s.signal_status === 'BUY') buyCnt++;
-      else if (s.signal_status === 'ADD') addCnt++;
-      else holdCnt++;
+    const entryDate = String(posInfo.entry_time || s.entry_time || '').slice(0, 10);
+    const lastAddDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
+
+    if (isClosed) {
+      closedCnt++;
+    } else if (entryDate === todayStr && s.signal_status === 'BUY') {
+      buyCnt++;
+    } else if (lastAddDate === todayStr && s.signal_status === 'ADD') {
+      addCnt++;
+    } else {
+      holdCnt++;
     }
   });
 
@@ -19497,12 +19520,14 @@ window.renderDoudouScreenerList = function() {
     return;
   }
 
-  // 5. 表格動態渲染 (無冗字標籤：買進、加碼、賣出(3日內)、持倉中)
+  // 5. 表格動態渲染 (無冗字標籤：買進、加碼、賣出(3日內)、持倉中，T+1 自動歸入持倉中)
   body.innerHTML = filtered.map(s => {
     const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
-    const tagBg = isClosed ? '#ef4444' : (s.signal_status === 'BUY' ? '#22c55e' : (s.signal_status === 'ADD' ? '#3b82f6' : '#f59e0b'));
-    const tagText = isClosed ? '賣出(3日內)' : (s.signal_status === 'BUY' ? '買進' : (s.signal_status === 'ADD' ? '加碼' : '持倉中'));
+    const status = s.calcStatus || 'HOLD';
+
+    const tagBg = isClosed ? '#ef4444' : (status === 'BUY' ? '#22c55e' : (status === 'ADD' ? '#3b82f6' : '#f59e0b'));
+    const tagText = isClosed ? '賣出(3日內)' : (status === 'BUY' ? '買進' : (status === 'ADD' ? '加碼' : '持倉中'));
     const scoreVal = s.display_score || s.totalScore || 70;
     const chgColor = s.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
     const chgSign = s.change >= 0 ? '+' : '';
