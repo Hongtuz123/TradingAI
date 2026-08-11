@@ -100,7 +100,6 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         "included_segments": ["Subscribed Users"],
         "headings": {"en": push_title, "zh": push_title},
         "contents": {"en": push_body, "zh": push_body},
-        "url": tv_app_url,
         "web_url": tv_web_url,
         "app_url": tv_app_url,
         "data": {
