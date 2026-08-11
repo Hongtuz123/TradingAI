@@ -19290,54 +19290,67 @@ function checkPushPermissionStatus() {
 }
 
 // 🔔 切換與請求手機系統推播權限 (精準對接 OneSignal SDK v16 & iOS Safari)
-window.togglePushNotification = function() {
+window.togglePushNotification = async function() {
+  // 即時 Toast 反饋（非阻塞）
+  function _toast(msg) {
+    let t = document.getElementById('_pushToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_pushToast';
+      t.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.92);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;z-index:99999;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._tid);
+    t._tid = setTimeout(() => { t.style.display = 'none'; }, 4000);
+  }
+
   if (!('Notification' in window)) {
-    alert('📱 iPhone / iOS 系統安全機制提醒：\n\nSafari 網頁模式下系統預設關閉推播。請將本網頁「加入主畫面」後，從手機桌面的【荳荳 AI 柴犬 App】打開，即可開啟系統推播功能！');
+    _toast('📱 請先將網頁「加入主畫面」後從桌面 App 圖示開啟，才能啟用系統推播！');
     return;
   }
 
   if (Notification.permission === 'denied') {
-    alert('⚠️ 系統推播權限已被封鎖。請在手機「設定」->「通知」或瀏覽器網址列鎖頭處取消封鎖後重試。');
+    _toast('⚠️ 推播已被封鎖，請至手機設定 → 通知 解除封鎖後重試。');
     return;
   }
 
-  // 安全跨版本相容 Notification.requestPermission (相容傳統 Callback 與現代 Promise)
-  function safeRequestPermission(cb) {
+  _toast('🔄 正在與 OneSignal 雲端同步...');
+
+  // 直接操作已初始化的 window.OneSignal（不用 Deferred，SDK 已 ready）
+  const os = window.OneSignal;
+  if (os) {
     try {
-      let isCalled = false;
-      const done = (p) => { if (!isCalled) { isCalled = true; cb(p); } };
-      const res = Notification.requestPermission(done);
-      if (res && typeof res.then === 'function') {
-        res.then(done).catch(() => done(Notification.permission));
+      // 確保通知權限已允許
+      if (os.Notifications) {
+        const perm = await os.Notifications.requestPermission();
       }
+      // 執行 optIn 讓 OneSignal 向雲端註冊此裝置 Token
+      if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
+        await os.User.PushSubscription.optIn();
+      }
+      const subId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
+      if (subId) {
+        _toast('🎉 成功！已連線 OneSignal 雲端推播系統！');
+        if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+        return;
+      }
+      _toast('✅ 推播系統已啟用！收市後即開始接收盤中選股訊號推播。');
     } catch(e) {
-      cb(Notification.permission || 'granted');
+      console.error('OneSignal optIn err:', e);
+      _toast('⚠️ 推播同步遇到問題，請確認網路連線後重試。');
+    }
+  } else {
+    // OneSignal SDK 尚未載入，改用原生 Notification API
+    try {
+      const perm = await Notification.requestPermission();
+      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+      _toast(perm === 'granted' ? '✅ 系統通知已允許！請稍候片刻再點擊一次以完成雲端綁定。' : '⚠️ 通知權限未允許。');
+    } catch(e) {
+      _toast('⚠️ 無法請求通知權限。');
     }
   }
-
-  safeRequestPermission(function(perm) {
-    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function(OneSignal) {
-      try {
-        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
-          await OneSignal.Notifications.requestPermission();
-        }
-        if (OneSignal.User && OneSignal.User.PushSubscription) {
-          if (OneSignal.User.PushSubscription.optIn) {
-            await OneSignal.User.PushSubscription.optIn();
-          }
-          const subId = OneSignal.User.PushSubscription.id;
-          if (subId) {
-            alert('🎉 成功連線 OneSignal 雲端推播！\n裝置 ID: ' + subId);
-            return;
-          }
-        }
-      } catch(e) { console.error("OS push err:", e); }
-      alert('✅ 系統推播權限完成對接！點擊「⚡️ 測試跳轉 TV」即可測試。');
-    });
-  });
 };
 
 // ⚡️ 發送測試推播通知並跳轉 TradingView
