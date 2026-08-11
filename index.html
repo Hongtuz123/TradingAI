@@ -46,9 +46,15 @@
         appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
         safari_web_id: "web.onesignal.auto.1b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
         notifyButton: {
-          enable: false,
+          enable: true,
+          position: 'bottom-right'
         },
+        allowLocalhostAsSecureOrigin: true
       });
+      // 自動嘗試註冊/請求權限
+      if (OneSignal.Notifications && OneSignal.Notifications.permission === false) {
+        try { OneSignal.Notifications.requestPermission(); } catch(e) {}
+      }
     });
   </script>
 
