@@ -147,7 +147,7 @@
     "entry_price": 117.5,
     "entry_time": "2026-08-05 10:31:11",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-07"
+    "last_add_buy_time": "2026-08-11"
   },
   "6265": {
     "entry_price": 49.3,
@@ -1510,35 +1510,95 @@
     "entry_price": 484.0,
     "entry_time": "2026-08-11 13:06:35",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
   },
   "2383": {
     "entry_price": 5485.0,
     "entry_time": "2026-08-11 13:06:35",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
   },
   "1236": {
     "entry_price": 25.45,
     "entry_time": "2026-08-11 13:06:35",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
   },
   "5443": {
     "entry_price": 107.0,
     "entry_time": "2026-08-11 13:06:35",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
   },
   "3363": {
     "entry_price": 610.0,
     "entry_time": "2026-08-11 13:06:35",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
   },
   "1519": {
     "entry_price": 701.0,
     "entry_time": "2026-08-11 13:06:35",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-11"
+  },
+  "6245": {
+    "entry_price": 87.7,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "4590": {
+    "entry_price": 89.9,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "2633": {
+    "entry_price": 25.8,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3219": {
+    "entry_price": 72.6,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "4438": {
+    "entry_price": 61.5,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3206": {
+    "entry_price": 34.8,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3048": {
+    "entry_price": 58.9,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "6683": {
+    "entry_price": 1260.0,
+    "entry_time": "2026-08-11 15:06:29",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "4906": {
+    "entry_price": 36.0,
+    "entry_time": "2026-08-11 15:06:29",
     "tf": "SILENT_INIT",
     "status": "HOLD"
   }

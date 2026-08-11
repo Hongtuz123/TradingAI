@@ -3,7 +3,7 @@ try {
   importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
 } catch (e) {}
 
-const CACHE_NAME = 'doudou-ai-cache-v2.4';
+const CACHE_NAME = 'doudou-ai-cache-v2.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
