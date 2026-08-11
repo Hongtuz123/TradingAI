@@ -46,17 +46,27 @@ self.addEventListener('fetch', (event) => {
   // 只處理 GET 請求
   if (event.request.method !== 'GET') return;
   
-  // API 或動態數據一律網路優先
-  const url = event.request.url;
-  if (url.includes('/api/') || url.includes('data.js') || url.includes('data.json')) {
+  try {
+    const url = new URL(event.request.url);
+    // 關鍵修正：只攔截本站同源請求。外部 CDN 如 OneSignal 等一律不予攔截，讓瀏覽器原生處理
+    if (url.origin !== self.location.origin) {
+      return;
+    }
+
+    // API 或動態數據一律網路優先
+    if (url.pathname.includes('/api/') || url.pathname.includes('data.js') || url.pathname.includes('data.json')) {
+      return;
+    }
+
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+  } catch (e) {
+    // 預防 URL 解析失敗時的安全退路
     return;
   }
-
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
-  );
 });
 
 // 推播通知監聽 (預留給 Phase 2/3)

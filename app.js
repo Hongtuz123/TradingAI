@@ -19318,11 +19318,38 @@ window.togglePushNotification = async function() {
 
   _toast('🔄 正在與 OneSignal 雲端同步...');
 
-  // 三層 fallback 取得 OneSignal 實例（含最多 5 秒輪詢等待）
+  // 三層 fallback 取得 OneSignal 實例（含動態載入自我修復）
   let os = window._os || window.OneSignal;
   if (!os) {
-    _toast('⏳ 等待 SDK 就緒...');
-    for (let i = 0; i < 10; i++) {
+    _toast('⏳ 正在修復並載入推播組件...');
+    
+    // 確保 script 節點存在
+    let scriptNode = document.getElementById('onesignal-sdk-script');
+    if (!scriptNode) {
+      scriptNode = document.createElement('script');
+      scriptNode.id = 'onesignal-sdk-script';
+      scriptNode.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      document.head.appendChild(scriptNode);
+    }
+    
+    // 主動推入初始化任務
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(OneSignalInstance) {
+      try {
+        await OneSignalInstance.init({
+          appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
+          allowLocalhostAsSecureOrigin: true
+        });
+        window._os = OneSignalInstance;
+        console.log('[OneSignal] Dynamic Init OK');
+      } catch(err) {
+        window._osInitError = err.message || String(err);
+        console.error('[OneSignal] Dynamic Init Error:', err);
+      }
+    });
+
+    // 輪詢等待最多 8 秒 (16 * 500ms)
+    for (let i = 0; i < 16; i++) {
       await new Promise(r => setTimeout(r, 500));
       os = window._os || window.OneSignal;
       if (os) break;
