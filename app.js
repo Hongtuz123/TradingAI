@@ -19243,7 +19243,8 @@ window.openTradingViewAppOrWeb = function(symbolCode = '2330', market = 'TSE') {
   let prefix = (market === 'OTC') ? 'TPEX' : 'TWSE';
 
   const webUrl = `https://www.tradingview.com/chart/?symbol=${prefix}:${symbolCode}`;
-  const appScheme = `tradingview://chart?symbol=${prefix}:${symbolCode}`;
+  // 🎯 TradingView App 載入特定股票代號的最精準 Scheme 格式
+  const appScheme = `tradingview://symbol/${prefix}:${symbolCode}`;
 
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
