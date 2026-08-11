@@ -49,8 +49,9 @@
         });
         // ★ 儲存 reference，供 button handler 直接使用
         window._os = OneSignal;
-        console.log('[OneSignal] Init OK, _os ready');
+        console.log('[OneSignal] Init OK, _os ready, id:', OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.id);
       } catch(err) {
+        window._osInitError = err.message || String(err);
         console.error('[OneSignal] Init Error:', err);
       }
     });

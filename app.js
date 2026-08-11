@@ -19318,8 +19318,16 @@ window.togglePushNotification = async function() {
 
   _toast('🔄 正在與 OneSignal 雲端同步...');
 
-  // 三層 fallback 取得 OneSignal 實例
-  const os = window._os || window.OneSignal;
+  // 三層 fallback 取得 OneSignal 實例（含最多 5 秒輪詢等待）
+  let os = window._os || window.OneSignal;
+  if (!os) {
+    _toast('⏳ 等待 SDK 就緒...');
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 500));
+      os = window._os || window.OneSignal;
+      if (os) break;
+    }
+  }
 
   async function _doOptIn(os) {
     try {
@@ -19345,13 +19353,10 @@ window.togglePushNotification = async function() {
   if (os) {
     await _doOptIn(os);
   } else {
-    // SDK 尚未 ready → 用 OneSignalDeferred.push（SDK ready 後立即執行）
-    _toast('🔄 SDK 載入中，請稍候...');
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function(osInstance) {
-      window._os = osInstance; // 補存 ref
-      await _doOptIn(osInstance);
-    });
+    const swState = navigator.serviceWorker ? 'SW有' : 'SW無';
+    const notifState = 'Notification' in window ? Notification.permission : '不支援';
+    const initErr = window._osInitError ? ('錯誤:' + window._osInitError.slice(0, 30)) : '未初始化';
+    _toast('❌ SDK失敗(' + swState + '|通知:' + notifState + '|' + initErr + ')');
   }
 };
 
