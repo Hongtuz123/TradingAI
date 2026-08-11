@@ -19301,9 +19301,6 @@ window.togglePushNotification = function() {
     return;
   }
 
-  // 🚀 同步立即反饋，防範 iOS WebKit 異步中斷
-  alert('🚀 正在同步 OneSignal 雲端推播權限與裝置 Token...');
-
   // 安全跨版本相容 Notification.requestPermission (相容傳統 Callback 與現代 Promise)
   function safeRequestPermission(cb) {
     try {
