@@ -3,7 +3,7 @@ try {
   importScripts('./OneSignalSDK.sw.js');
 } catch (e) {}
 
-const CACHE_NAME = 'doudou-ai-cache-v2.6';
+const CACHE_NAME = 'doudou-ai-cache-v2.7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,7 +13,8 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './OneSignalSDKWorker.js',
   './OneSignalSDK.sw.js',
-  './OneSignalSDK.page.js'
+  './OneSignalSDK.page.js',
+  './OneSignalSDK.page.es6.js'
 ];
 
 // 安裝服務工作線程
