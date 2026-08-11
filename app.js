@@ -19328,7 +19328,7 @@ window.togglePushNotification = async function() {
     if (!scriptNode) {
       scriptNode = document.createElement('script');
       scriptNode.id = 'onesignal-sdk-script';
-      scriptNode.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      scriptNode.src = './OneSignalSDK.page.js';
       document.head.appendChild(scriptNode);
     }
     
