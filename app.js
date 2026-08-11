@@ -19303,15 +19303,23 @@ window.togglePushNotification = function() {
         if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
           await OneSignal.Notifications.requestPermission();
         }
-        if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
-          await OneSignal.User.PushSubscription.optIn();
+        if (OneSignal.User && OneSignal.User.PushSubscription) {
+          if (OneSignal.User.PushSubscription.optIn) {
+            await OneSignal.User.PushSubscription.optIn();
+          }
+          const subId = OneSignal.User.PushSubscription.id;
+          const isOpt = OneSignal.User.PushSubscription.optedIn;
+          if (subId) {
+            alert('🎉 成功連線 OneSignal 雲端推播！\n裝置訂閱 ID: ' + subId);
+            return;
+          }
         }
       });
     }
   } catch(e) { console.error("OneSignal err:", e); }
 
   if (Notification.permission === 'granted') {
-    alert('✅ 手機系統推播通知已在運作中並完成 OneSignal 註冊！點擊「⚡️ 測試跳轉 TV」可進行測試。');
+    alert('✅ 手機系統推播權限已允許！正在向 OneSignal 雲端同步裝置 ID，請稍候 3 秒後重試。');
     return;
   }
   if (Notification.permission === 'denied') {
