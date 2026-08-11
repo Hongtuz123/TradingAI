@@ -19290,50 +19290,45 @@ function checkPushPermissionStatus() {
 }
 
 // 🔔 切換與請求手機系統推播權限
-window.togglePushNotification = function() {
+window.togglePushNotification = async function() {
   if (!('Notification' in window)) {
     alert('📱 iPhone / iOS 系統安全機制提醒：\n\nSafari 網頁模式下系統預設關閉推播。請將本網頁「加入主畫面」後，從手機桌面的【荳荳 AI 柴犬 App】打開，即可開啟系統推播功能！');
     return;
   }
 
-  // 同步觸發 OneSignal SDK v16 訂閱與 optIn 註冊流程
-  try {
-    if (window.OneSignalDeferred) {
-      window.OneSignalDeferred.push(async function(OneSignal) {
-        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
-          await OneSignal.Notifications.requestPermission();
-        }
-        if (OneSignal.User && OneSignal.User.PushSubscription) {
-          if (OneSignal.User.PushSubscription.optIn) {
-            await OneSignal.User.PushSubscription.optIn();
-          }
-          const subId = OneSignal.User.PushSubscription.id;
-          const isOpt = OneSignal.User.PushSubscription.optedIn;
-          if (subId) {
-            alert('🎉 成功連線 OneSignal 雲端推播！\n裝置訂閱 ID: ' + subId);
-            return;
-          }
-        }
-      });
-    }
-  } catch(e) { console.error("OneSignal err:", e); }
-
-  if (Notification.permission === 'granted') {
-    alert('✅ 手機系統推播權限已允許！正在向 OneSignal 雲端同步裝置 ID，請稍候 3 秒後重試。');
-    return;
-  }
   if (Notification.permission === 'denied') {
     alert('⚠️ 系統推播權限已被封鎖。請在手機「設定」->「通知」或瀏覽器網址列鎖頭處取消封鎖後重試。');
     return;
   }
 
-  Notification.requestPermission().then((permission) => {
-    checkPushPermissionStatus();
-    if (permission === 'granted') {
-      alert('🎉 成功啟用手機推播通知！當盤中觸發買進起爆訊號時將發送系統推播。');
-      testTradingViewDeepLink('2330', 'TSE');
+  // 🚀 同步與 OneSignal SDK v16 對接並取得雲端 Subscribed ID
+  try {
+    const os = window.OneSignal;
+    if (os) {
+      if (os.Notifications && os.Notifications.requestPermission) {
+        await os.Notifications.requestPermission();
+      }
+      if (os.User && os.User.PushSubscription) {
+        if (os.User.PushSubscription.optIn) {
+          await os.User.PushSubscription.optIn();
+        }
+        const subId = os.User.PushSubscription.id;
+        if (subId) {
+          alert('🎉 成功連線 OneSignal 雲端推播！\n雲端裝置 ID: ' + subId);
+          if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+          return;
+        }
+      }
     }
-  });
+  } catch(e) {
+    console.error("OneSignal optIn err:", e);
+  }
+
+  const permission = await Notification.requestPermission();
+  if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+  if (permission === 'granted') {
+    alert('🎉 已允許手機通知權限！請再點擊一次此按鈕以完成 OneSignal 雲端裝置綁定。');
+  }
 };
 
 // ⚡️ 發送測試推播通知並跳轉 TradingView
