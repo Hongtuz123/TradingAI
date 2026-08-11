@@ -1,5 +1,5 @@
 // 荳荳 AI 智能選股 — PWA Service Worker
-const CACHE_NAME = 'doudou-ai-cache-v1';
+const CACHE_NAME = 'doudou-ai-cache-v2.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
