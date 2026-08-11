@@ -19295,25 +19295,29 @@ window.togglePushNotification = function() {
     alert('📱 iPhone / iOS 系統安全機制提醒：\n\nSafari 網頁模式下系統預設關閉推播。請將本網頁「加入主畫面」後，從手機桌面的【荳荳 AI 柴犬 App】打開，即可開啟系統推播功能！');
     return;
   }
+
+  // 同步觸發 OneSignal SDK v16 訂閱與 optIn 註冊流程
+  try {
+    if (window.OneSignalDeferred) {
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+          await OneSignal.Notifications.requestPermission();
+        }
+        if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
+          await OneSignal.User.PushSubscription.optIn();
+        }
+      });
+    }
+  } catch(e) { console.error("OneSignal err:", e); }
+
   if (Notification.permission === 'granted') {
-    alert('✅ 手機系統推播通知已在運作中！點擊「⚡️ 測試跳轉 TV」可進行發送與 TradingView 跳轉測試。');
+    alert('✅ 手機系統推播通知已在運作中並完成 OneSignal 註冊！點擊「⚡️ 測試跳轉 TV」可進行測試。');
     return;
   }
   if (Notification.permission === 'denied') {
     alert('⚠️ 系統推播權限已被封鎖。請在手機「設定」->「通知」或瀏覽器網址列鎖頭處取消封鎖後重試。');
     return;
   }
-
-  // 同步觸發 OneSignal SDK 訂閱流程
-  try {
-    if (window.OneSignalDeferred) {
-      window.OneSignalDeferred.push(function(OneSignal) {
-        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
-          OneSignal.Notifications.requestPermission();
-        }
-      });
-    }
-  } catch(e) {}
 
   Notification.requestPermission().then((permission) => {
     checkPushPermissionStatus();
