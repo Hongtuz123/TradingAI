@@ -19425,8 +19425,26 @@ window.renderDoudouScreenerList = function() {
     if (String(k).length < 4) heldIds.add(String(k).zfill(4));
   });
 
-  // 1. 嚴格限定：只取在 posState 中 (持倉/近3日賣出) 的個股，100% 排除普通未開倉個股！
-  let heldStocks = (mockStocks || []).filter(s => heldIds.has(String(s.id).trim()));
+  // 1. 嚴格限定：只取在 posState 中 (持倉/近3日賣出) 且符合「1.2X交易量」及「日均交易>=300張」的個股！
+  let heldStocks = (mockStocks || []).filter(s => {
+    if (!heldIds.has(String(s.id).trim())) return false;
+    
+    // 💡 1.2X 交易量過濾
+    const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
+    if (vr < 1.2) return false;
+
+    // 💡 日均交易 300 張以上過濾
+    const dVol = (() => {
+      if (s.dailyVol !== undefined && s.dailyVol !== null) return parseFloat(s.dailyVol);
+      if (s.kline && s.kline.length >= 20) {
+        const last20sum = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
+        return Math.round((last20sum / 20) / 1000);
+      }
+      return 300; // 預設通過
+    })();
+
+    return dVol >= 300;
+  });
 
   // 2. 依照所選 Tab 進行二次精準過濾
   let filtered = heldStocks.filter(s => {
@@ -19443,7 +19461,7 @@ window.renderDoudouScreenerList = function() {
     } else if (window.currentSignalFilter === 'closed') {
       return status === 'CLOSED';
     }
-    // 'all': 全監控清單 (持倉 + 3日內賣出)
+    // 'all': 全監控清單
     return true;
   });
 
@@ -19471,20 +19489,20 @@ window.renderDoudouScreenerList = function() {
   const totalHolding = buyCnt + addCnt + holdCnt;
 
   if (countEl) {
-    countEl.innerHTML = `<strong>${filtered.length}</strong> 档 (持倉 <strong>${totalHolding}</strong> 檔 ｜ 🟢買進 <strong>${buyCnt}</strong> ｜ 🔵加碼 <strong>${addCnt}</strong> ｜ 🟡持倉 <strong>${holdCnt}</strong> ｜ 🔴3日賣出 <strong>${closedCnt}</strong>)`;
+    countEl.innerHTML = `<strong>${filtered.length}</strong> 檔 (買進 <strong>${buyCnt}</strong> ｜ 加碼 <strong>${addCnt}</strong> ｜ 賣出(3日內) <strong>${closedCnt}</strong> ｜ 持倉中 <strong>${holdCnt}</strong>)`;
   }
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合該類別的持倉/賣出個股汪！🐶</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合 1.2X 交易量與 300 張日均量門檻的個股</td></tr>`;
     return;
   }
 
-  // 5. 表格動態渲染
+  // 5. 表格動態渲染 (無冗字標籤：買進、加碼、賣出(3日內)、持倉中)
   body.innerHTML = filtered.map(s => {
     const posInfo = posState[s.id] || posState[String(s.id).zfill(4)] || {};
     const isClosed = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     const tagBg = isClosed ? '#ef4444' : (s.signal_status === 'BUY' ? '#22c55e' : (s.signal_status === 'ADD' ? '#3b82f6' : '#f59e0b'));
-    const tagText = isClosed ? '🔴 3日賣出' : (s.signal_status === 'BUY' ? '🟢 買進' : (s.signal_status === 'ADD' ? '🔵 加碼' : '🟡 持倉中'));
+    const tagText = isClosed ? '賣出(3日內)' : (s.signal_status === 'BUY' ? '買進' : (s.signal_status === 'ADD' ? '加碼' : '持倉中'));
     const scoreVal = s.display_score || s.totalScore || 70;
     const chgColor = s.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
     const chgSign = s.change >= 0 ? '+' : '';
@@ -19503,7 +19521,7 @@ window.renderDoudouScreenerList = function() {
         <td>${s.trustDays || 0}張</td>
         <td>${s.foreignNetBuy || 0}張</td>
         <td>${s.dealerDays || 0}張</td>
-        <td>${s.volRatio ? s.volRatio.toFixed(2) + 'x' : '1.00x'}</td>
+        <td>${s.volRatio ? parseFloat(s.volRatio).toFixed(2) + 'x' : '1.00x'}</td>
         <td>
           <button class="btn-secondary" style="padding:2px 6px; font-size:11px;" onclick="switchView('chart'); loadTVChartFromScreener('${s.id}')">📈 K線</button>
         </td>
