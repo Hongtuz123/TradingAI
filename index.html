@@ -47,9 +47,11 @@
           appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
           allowLocalhostAsSecureOrigin: true
         });
-        console.log("OneSignal v16 Init Success");
+        // ★ 儲存 reference，供 button handler 直接使用
+        window._os = OneSignal;
+        console.log('[OneSignal] Init OK, _os ready');
       } catch(err) {
-        console.error("OneSignal Init Error:", err);
+        console.error('[OneSignal] Init Error:', err);
       }
     });
   </script>

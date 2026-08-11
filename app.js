@@ -19289,7 +19289,7 @@ function checkPushPermissionStatus() {
   });
 }
 
-// 🔔 切換與請求手機系統推播權限 (精準對接 OneSignal SDK v16 & iOS Safari)
+// 🔔 切換與請求手機系統推播權限 (OneSignal SDK v16 三層 fallback)
 window.togglePushNotification = async function() {
   // 即時 Toast 反饋（非阻塞）
   function _toast(msg) {
@@ -19318,38 +19318,40 @@ window.togglePushNotification = async function() {
 
   _toast('🔄 正在與 OneSignal 雲端同步...');
 
-  // 直接操作已初始化的 window.OneSignal（不用 Deferred，SDK 已 ready）
-  const os = window.OneSignal;
-  if (os) {
+  // 三層 fallback 取得 OneSignal 實例
+  const os = window._os || window.OneSignal;
+
+  async function _doOptIn(os) {
     try {
-      // 確保通知權限已允許
-      if (os.Notifications) {
-        const perm = await os.Notifications.requestPermission();
+      if (os.Notifications && os.Notifications.requestPermission) {
+        await os.Notifications.requestPermission();
       }
-      // 執行 optIn 讓 OneSignal 向雲端註冊此裝置 Token
       if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
         await os.User.PushSubscription.optIn();
       }
       const subId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
       if (subId) {
-        _toast('🎉 成功！已連線 OneSignal 雲端推播系統！');
-        if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-        return;
+        _toast('🎉 成功！已連線 OneSignal 雲端推播！裝置 ID: ' + subId.slice(0,8) + '...');
+      } else {
+        _toast('✅ 推播系統已啟用！收市後即開始接收盤中選股訊號推播。');
       }
-      _toast('✅ 推播系統已啟用！收市後即開始接收盤中選股訊號推播。');
+      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
     } catch(e) {
       console.error('OneSignal optIn err:', e);
-      _toast('⚠️ 推播同步遇到問題，請確認網路連線後重試。');
+      _toast('⚠️ 推播同步遇到問題：' + e.message);
     }
+  }
+
+  if (os) {
+    await _doOptIn(os);
   } else {
-    // OneSignal SDK 尚未載入，改用原生 Notification API
-    try {
-      const perm = await Notification.requestPermission();
-      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-      _toast(perm === 'granted' ? '✅ 系統通知已允許！請稍候片刻再點擊一次以完成雲端綁定。' : '⚠️ 通知權限未允許。');
-    } catch(e) {
-      _toast('⚠️ 無法請求通知權限。');
-    }
+    // SDK 尚未 ready → 用 OneSignalDeferred.push（SDK ready 後立即執行）
+    _toast('🔄 SDK 載入中，請稍候...');
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.OneSignalDeferred.push(async function(osInstance) {
+      window._os = osInstance; // 補存 ref
+      await _doOptIn(osInstance);
+    });
   }
 };
 
