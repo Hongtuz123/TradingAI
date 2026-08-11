@@ -4,11 +4,11 @@ import os
 # OneSignal 配置 (可透過環境變數 ONESIGNAL_APP_ID 與 ONESIGNAL_REST_KEY 覆寫)
 ONESIGNAL_APP_ID = os.environ.get(
     "ONESIGNAL_APP_ID",
-    "b82e2578-d45e-4e4d-b94f-onesignal-doudou-ai"
+    "5691aeec-82c3-445f-b89a-0fb2a593a51d"
 )
 ONESIGNAL_REST_KEY = os.environ.get(
     "ONESIGNAL_REST_KEY",
-    "os_api_key_doudou_trading_ai"
+    "os_v2_app_k2i253ecyncf7oe2b6zkle5fduhyiuevwdyuhguk2rpntu5yqmi6wtb2zd46fig752rwyb7a35vhtlb3yh77c72bkwuovrz5hyvpewy"
 )
 
 ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications"

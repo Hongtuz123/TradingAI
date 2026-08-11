@@ -19278,6 +19278,17 @@ window.togglePushNotification = function() {
     return;
   }
 
+  // 同步觸發 OneSignal SDK 訂閱流程
+  try {
+    if (window.OneSignalDeferred) {
+      window.OneSignalDeferred.push(function(OneSignal) {
+        if (OneSignal.Notifications && OneSignal.Notifications.requestPermission) {
+          OneSignal.Notifications.requestPermission();
+        }
+      });
+    }
+  } catch(e) {}
+
   Notification.requestPermission().then((permission) => {
     checkPushPermissionStatus();
     if (permission === 'granted') {

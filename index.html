@@ -37,6 +37,21 @@
 
 
 
+  <!-- OneSignal PWA Push Notification SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
+        safari_web_id: "web.onesignal.auto.1b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
+        notifyButton: {
+          enable: false,
+        },
+      });
+    });
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 
 
