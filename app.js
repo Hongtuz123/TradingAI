@@ -19360,22 +19360,63 @@ window.togglePushNotification = async function() {
 
   async function _doOptIn(os) {
     try {
-      if (os.Notifications && os.Notifications.requestPermission) {
-        await os.Notifications.requestPermission();
+      // 1. 檢查通知權限 (若已允許則免重複調用 requestPermission 避免 iOS 懸掛)
+      _toast('🔄 1/3 檢查系統權限...');
+      if (Notification.permission !== 'granted') {
+        if (os.Notifications && os.Notifications.requestPermission) {
+          // 加上 3 秒超時保護
+          await Promise.race([
+            os.Notifications.requestPermission(),
+            new Promise(resolve => setTimeout(resolve, 3000))
+          ]);
+        }
       }
+
+      // 2. 等待 Service Worker 完全接管，避免發送訊息時 Pending
+      _toast('🔄 2/3 連線推播背景元件...');
+      if (navigator.serviceWorker) {
+        try {
+          await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise(resolve => setTimeout(resolve, 2000))
+          ]);
+        } catch(swErr) {
+          console.warn('SW ready wait timed out or failed:', swErr);
+        }
+      }
+
+      // 3. 執行 OneSignal optIn 註冊並加入 4 秒強制超時保護
+      _toast('🔄 3/3 向雲端伺服器註冊裝置...');
       if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
-        await os.User.PushSubscription.optIn();
+        await Promise.race([
+          os.User.PushSubscription.optIn(),
+          new Promise(resolve => setTimeout(resolve, 4000))
+        ]);
       }
+
+      // 4. 取得註冊結果
       const subId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
       if (subId) {
-        _toast('🎉 成功！已連線 OneSignal 雲端推播！裝置 ID: ' + subId.slice(0,8) + '...');
+        _toast('🎉 成功！已連線 OneSignal 雲端推播！');
+        console.log('[OneSignal] OptIn success. SubID:', subId);
       } else {
-        _toast('✅ 推播系統已啟用！收市後即開始接收盤中選股訊號推播。');
+        // 沒有拿到 subId，可能還在非同步寫入中，再次輪詢讀取
+        let polledId = null;
+        for (let i = 0; i < 6; i++) {
+          await new Promise(r => setTimeout(r, 500));
+          polledId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
+          if (polledId) break;
+        }
+        if (polledId) {
+          _toast('🎉 成功！已連線 OneSignal 雲端推播！');
+        } else {
+          _toast('✅ 推播服務就緒！若未收到測試推播，請滑掉App重開即可。');
+        }
       }
       if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
     } catch(e) {
       console.error('OneSignal optIn err:', e);
-      _toast('⚠️ 推播同步遇到問題：' + e.message);
+      _toast('⚠️ 同步失敗：' + (e.message || String(e)).slice(0, 30));
     }
   }
 
