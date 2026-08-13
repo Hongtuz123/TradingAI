@@ -1302,10 +1302,14 @@ def run_screener(force=False):
             try:
                 # 取得昨日實質收盤價 prev_close
                 prev_close = 0.0
+                today_taipei = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
                 if len(df) >= 2:
-                    prev_close = float(df.iloc[-2]['close'])
+                    if latest['date'] >= today_taipei:
+                        prev_close = float(df.iloc[-2]['close'])
+                    else:
+                        prev_close = float(df.iloc[-1]['close'])
                 elif len(df) == 1:
-                    prev_close = float(df.iloc[-1]['open'])
+                    prev_close = float(df.iloc[-1]['close'])
 
                 if prev_close > 0 and close > 0:
                     change_num = round(((close - prev_close) / prev_close) * 100, 2)
