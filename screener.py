@@ -1188,13 +1188,13 @@ def run_screener(force=False):
     print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天日線 + 60天1H小時線)...")
     if tickers:
         try:
-            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=20, timeout=15)
+            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=True, progress=False, timeout=15)
         except Exception as e:
             print(f"❌ 日線批次下載失敗: {e}")
             df_all = pd.DataFrame()
 
         try:
-            df_1h_all = yf.download(tickers, period='60d', interval='1h', group_by='ticker', threads=20, timeout=15)
+            df_1h_all = yf.download(tickers, period='60d', interval='1h', group_by='ticker', threads=True, progress=False, timeout=15)
         except Exception as e:
             print(f"❌ 1H K線批次下載失敗: {e}")
             df_1h_all = pd.DataFrame()

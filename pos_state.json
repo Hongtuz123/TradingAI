@@ -87,7 +87,7 @@
     "entry_price": 332.0,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-12"
+    "last_add_buy_time": "2026-08-13"
   },
   "4441": {
     "entry_price": 178.5,
@@ -171,7 +171,7 @@
     "entry_price": 2600.0,
     "entry_time": "2026-08-05 11:05:32",
     "tf": "4H",
-    "last_add_buy_time": "2026-08-06"
+    "last_add_buy_time": "2026-08-13"
   },
   "2489": {
     "entry_price": 30.1,
@@ -639,7 +639,7 @@
     "entry_price": 151.5,
     "entry_time": "2026-08-06 15:06:23",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-08-12"
+    "last_add_buy_time": "2026-08-13"
   },
   "6274": {
     "entry_price": 1530.0,
@@ -651,7 +651,7 @@
     "entry_price": 1060.0,
     "entry_time": "2026-08-06 18:05:48",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-08-11"
+    "last_add_buy_time": "2026-08-13"
   },
   "2015": {
     "entry_price": 63.5,
@@ -1042,7 +1042,7 @@
     "entry_price": 55.3,
     "entry_time": "2026-08-10 10:06:27",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-08-12"
+    "last_add_buy_time": "2026-08-13"
   },
   "1605": {
     "entry_price": 37.3,
@@ -1485,7 +1485,7 @@
     "entry_time": "2026-08-11 12:06:18",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-08-12"
+    "last_add_buy_time": "2026-08-13"
   },
   "2436": {
     "entry_price": 67.4,
@@ -2195,7 +2195,8 @@
     "entry_price": 222.0,
     "entry_time": "2026-08-12 18:07:07",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
   },
   "6124": {
     "entry_price": 27.55,
@@ -2304,17 +2305,182 @@
     "entry_price": 19.65,
     "entry_time": "2026-08-13 09:26:20",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
   },
   "9933": {
     "entry_price": 42.05,
     "entry_time": "2026-08-13 09:26:20",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
   },
   "4976": {
     "entry_price": 36.65,
     "entry_time": "2026-08-13 09:26:20",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "8464": {
+    "entry_price": 368.5,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "2739": {
+    "entry_price": 36.0,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "3631": {
+    "entry_price": 36.85,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "3044": {
+    "entry_price": 491.5,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "1525": {
+    "entry_price": 66.5,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "8080": {
+    "entry_price": 29.45,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "2428": {
+    "entry_price": 263.5,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "6546": {
+    "entry_price": 67.0,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "3052": {
+    "entry_price": 11.15,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "7819": {
+    "entry_price": 37.95,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "5475": {
+    "entry_price": 154.0,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "8147": {
+    "entry_price": 124.0,
+    "entry_time": "2026-08-13 10:07:40",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-08-13"
+  },
+  "8046": {
+    "entry_price": 1235.0,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "1904": {
+    "entry_price": 24.95,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "2605": {
+    "entry_price": 31.85,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "4566": {
+    "entry_price": 78.1,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "6937": {
+    "entry_price": 303.0,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3675": {
+    "entry_price": 282.5,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "1726": {
+    "entry_price": 77.8,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "6244": {
+    "entry_price": 26.05,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3406": {
+    "entry_price": 610.0,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3707": {
+    "entry_price": 66.8,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3537": {
+    "entry_price": 57.5,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "8289": {
+    "entry_price": 49.4,
+    "entry_time": "2026-08-13 10:48:26",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "2643": {
+    "entry_price": 61.1,
+    "entry_time": "2026-08-13 10:48:26",
     "tf": "SILENT_INIT",
     "status": "HOLD"
   }
