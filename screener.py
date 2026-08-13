@@ -119,6 +119,49 @@ def load_all_market_info():
     return all_listed
 
 
+def is_mainboard_common_stock(stock):
+    """
+    判斷標的是否為【上市/上櫃之標準普通股】
+    - 市場類別 market 必須為 TSE (上市) 或 OTC (上櫃)
+    - 代碼格式必須為 4 位純數字 (排除 00 ETF, 01 受益憑證, 02 ETN, 03-08 權證, 91 TDR, 債券等)
+    """
+    if not stock or not isinstance(stock, dict):
+        return False
+    market = str(stock.get("market", "")).upper()
+    if market not in ("TSE", "OTC"):
+        return False
+    
+    code = str(stock.get("id", stock.get("Code", ""))).strip()
+    if not (len(code) == 4 and code.isdigit()):
+        return False
+    
+    # 排除非普通股前綴
+    if code.startswith(("00", "01", "02", "03", "04", "05", "06", "07", "08", "91")):
+        return False
+        
+    return True
+
+
+def get_top_400_market_cap_codes(stocks_list):
+    """
+    從全量股票中篩選【上市/上櫃普通股】，並依據市值 (或估算市值) 降冪排序，取出前 400 大代碼集合
+    """
+    valid_stocks = [s for s in stocks_list if is_mainboard_common_stock(s)]
+    
+    def _calc_cap_val(s):
+        cap = s.get("marketCap")
+        if cap is not None and cap > 0:
+            return float(cap)
+        # fallback: 依據當日價格 * 當日成交量(張) * 1000 之成交規模估算
+        price = float(s.get("price", 0) or 0)
+        vol = float(s.get("dailyVol", 0) or 0)
+        return price * vol * 1000
+        
+    valid_stocks.sort(key=_calc_cap_val, reverse=True)
+    top_400 = valid_stocks[:400]
+    return {str(s.get("id") or s.get("Code")).strip() for s in top_400}
+
+
 def get_sector_streak_days_py(sector_name, streak_type, sec_history):
     if not sec_history or not isinstance(sec_history, list):
         return 1
@@ -1836,7 +1879,11 @@ def run_screener(force=False):
 
     # ----------------------------------------------------
     # 🚀 荳荳 AI 實時動態交易訊號與持倉狀態機計算
+    # 限制推播與買賣訊號僅針對「市值前 400 大上市上櫃普通股」
     # ----------------------------------------------------
+    top_400_codes = get_top_400_market_cap_codes(cleaned_mock_stocks)
+    print(f"📊 [推播精選池] 已成功篩選上市上櫃 Top 400 市值強棒 (共 {len(top_400_codes)} 檔代碼)。")
+
     base_dir_pos = os.path.dirname(os.path.abspath(__file__))
     pos_state_path = os.path.join(base_dir_pos, 'pos_state.json')
     pos_state = {}
@@ -1892,14 +1939,14 @@ def run_screener(force=False):
             pos_state[sym_id]['exit_time'] = now_str
             pos_state[sym_id]['sell_reason'] = sell_reason
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
-            # 🔵 加碼買進硬性強勢門檻：當日成交量 ≥ 300 張 ＋ 爆量倍數 ≥ 1.2x ＋ 三大法人淨買超 > 0
+            # 🔵 加碼買進硬性強勢門檻：必須屬於【市值前 400 大上市上櫃普通股】＋ 當日成交量 ≥ 300 張 ＋ 爆量倍數 ≥ 1.2x ＋ 三大法人淨買超 > 0
             daily_vol_sheets = s.get('dailyVol', 0) or 0
             fn_buy = s.get('foreignNetBuy', 0) or 0
             tr_buy = s.get('trustDays', 0) or 0
             dl_buy = s.get('dealerDays', 0) or 0
             total_inst = fn_buy + tr_buy + dl_buy
 
-            if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
+            if (sym_id in top_400_codes) and is_mainboard_common_stock(s) and daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                 max_sc = max(sc_1d, sc_4h)
                 vol_tag = f"爆量 {vol_r:.2f}x"
                 s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag} + 法人買超 {total_inst}張"
@@ -1916,7 +1963,7 @@ def run_screener(force=False):
             if exit_t and exit_t < cutoff_date:
                 del pos_state[sym_id]
 
-    # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動)
+    # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動，僅限 Top 400 上市上櫃普通股)
     for s in cleaned_mock_stocks:
         sym_id = s['id']
         sc_1d = s.get('totalScore', 0) or 0
@@ -1949,9 +1996,9 @@ def run_screener(force=False):
 
         if is_1d_pass or is_4h_pass:
             if sym_id not in pos_state:
-                # 只有當 100% 滿足【剛起爆/貼近均線】才允許記錄；
-                # 🚀 買進推播門檻：【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
-                if is_fresh_signal:
+                # 只有當 100% 滿足【剛起爆/貼近均線】＋【市值前 400 大上市上櫃普通股】才允許記錄與發送買進訊號；
+                # 🚀 買進推播門檻：【Top 400 上市上櫃】＋【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
+                if is_fresh_signal and (sym_id in top_400_codes) and is_mainboard_common_stock(s):
                     daily_vol_sheets = s.get('dailyVol', 0) or 0
                     if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                         if is_1d_pass and is_4h_pass:

@@ -41,6 +41,16 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         except (TypeError, ValueError): return 1.0
 
     def _is_qualified(s):
+        code = str(s.get('id', s.get('Code', ''))).strip()
+        market = str(s.get('market', '')).upper()
+        # 🛡️ 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之 4 位純數字普通個股 (排除興櫃、債券、權證、ETF 等)
+        if market not in ('TSE', 'OTC'):
+            return False
+        if not (len(code) == 4 and code.isdigit()):
+            return False
+        if code.startswith(('00', '01', '02', '03', '04', '05', '06', '07', '08', '91')):
+            return False
+
         vol_v = (s.get('dailyVol', 9999) or 0) >= 300
         vol_r = _get_vol_ratio(s) >= 1.2
         fn = s.get('foreignNetBuy', 0) or 0

@@ -53,10 +53,22 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     adds  = add_buy_signals or []
     sells = sell_signals or []
 
-    # 🚀 成交量硬性防線：當日成交張數 < 300 張者不形成推播
+    # 🚀 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之 4 位純數字普通個股 (排除興櫃、債券、權證、ETF 等)
+    def _is_mainboard_common(s):
+        code = str(s.get('id', s.get('Code', ''))).strip()
+        market = str(s.get('market', '')).upper()
+        if market not in ('TSE', 'OTC'):
+            return False
+        if not (len(code) == 4 and code.isdigit()):
+            return False
+        if code.startswith(('00', '01', '02', '03', '04', '05', '06', '07', '08', '91')):
+            return False
+        return True
+
+    # 🚀 成交量硬性防線與上市上櫃防線
     MIN_DAILY_VOL = 300
-    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL]
-    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL]
+    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_mainboard_common(s)]
+    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_mainboard_common(s)]
 
     def _get_sort_score(s):
         sc = s.get('display_score')
