@@ -1952,30 +1952,29 @@ def run_screener(force=False):
                 # 只有當 100% 滿足【剛起爆/貼近均線】才允許記錄；
                 # 🚀 買進推播門檻：【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
                 if is_fresh_signal:
-                    if is_1d_pass and is_4h_pass:
-                        tf_tag = "1D/4H"
-                        disp_sc = sc_1d
-                    elif is_1d_pass:
-                        tf_tag = "1D"
-                        disp_sc = sc_1d
-                    else:
-                        tf_tag = "4H"
-                        disp_sc = sc_4h
-
-                    s['tf_tag'] = tf_tag
-                    s['display_score'] = disp_sc
-                    s['signal_status'] = 'BUY'
-                    
                     daily_vol_sheets = s.get('dailyVol', 0) or 0
                     if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
+                        if is_1d_pass and is_4h_pass:
+                            tf_tag = "1D/4H"
+                            disp_sc = sc_1d
+                        elif is_1d_pass:
+                            tf_tag = "1D"
+                            disp_sc = sc_1d
+                        else:
+                            tf_tag = "4H"
+                            disp_sc = sc_4h
+
+                        s['tf_tag'] = tf_tag
+                        s['display_score'] = disp_sc
+                        s['signal_status'] = 'BUY'
                         buy_signals.append(s)
 
-                    pos_state[sym_id] = {
-                        'entry_price': price,
-                        'entry_time': now_str,
-                        'tf': tf_tag,
-                        'status': 'BUY'
-                    }
+                        pos_state[sym_id] = {
+                            'entry_price': price,
+                            'entry_time': now_str,
+                            'tf': tf_tag,
+                            'status': 'BUY'
+                        }
                 else:
                     # 🚀 已漲過頭/非剛發動的歷史強勢個股：靜默補入 pos_state 進行持倉追蹤，絕不誤發過期買進！
                     pos_state[sym_id] = {

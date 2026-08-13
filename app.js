@@ -19533,7 +19533,7 @@ window.renderDoudouScreenerList = function() {
     if (String(k).length < 4) heldIds.add(String(k).padStart(4, '0'));
   });
 
-  // 1. 嚴格限定：取在 posState 中 (持倉/近3日賣出) 或今日有發動買進/加碼訊號，且符合「1.2X交易量」及「日均交易>=300張」的個股！
+  // 1. 嚴格限定：取在 posState 中 (持倉/近3日賣出) 或今日有發動買進/加碼訊號，且符合「70分以上」、「1.2X交易量」及「日均交易>=300張」的個股！
   let heldStocks = (mockStocks || []).filter(s => {
     const sId = String(s.id).trim();
     const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
@@ -19542,21 +19542,22 @@ window.renderDoudouScreenerList = function() {
 
     if (!isPos && !isNewSignal) return false;
     
-    // 🚀 關鍵修復：已持倉（isPos）或賣出訊號（CLOSED）的個股即使今日量縮，也必須 100% 呈現，避免無故蒸發！
+    // 🚀 關鍵修復：新發動訊號必須硬性符合 70分以上 + 1.2X 量能比 + 300張日均量
     const isClosedSignal = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
     if (!isPos && !isClosedSignal) {
-      // 💡 1.2X 交易量過濾
       const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
       if (vr < 1.2) return false;
 
-      // 💡 日均交易 300 張以上過濾
+      const sc = s.display_score || s.totalScore || s.totalScore_4h || s.dynamicScore || s.score || 0;
+      if (sc < 70) return false;
+
       const dVol = (() => {
         if (s.dailyVol !== undefined && s.dailyVol !== null) return parseFloat(s.dailyVol);
         if (s.kline && s.kline.length >= 20) {
           const last20sum = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
           return Math.round((last20sum / 20) / 1000);
         }
-        return 300; // 預設通過
+        return 300;
       })();
 
       if (dVol < 300) return false;
@@ -19565,7 +19566,7 @@ window.renderDoudouScreenerList = function() {
     return true;
   });
 
-  // 2. 依照當日訊號與 T+1 交易日時間戳，進行狀態精確計算：
+  // 2. 依照當日訊號與 T+1 交易日時間戳，進行狀態精確計算 (發動買進/加碼必須硬性滿足 70分 + 1.2X爆量 + 300張日均量)：
   heldStocks.forEach(s => {
     const sId = String(s.id).trim();
     const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
@@ -19574,16 +19575,29 @@ window.renderDoudouScreenerList = function() {
     
     const entryDate = String(posInfo.entry_time || s.entry_time || s.entry_date || '').slice(0, 10);
     const addDate = String(posInfo.last_add_buy_time || posInfo.last_add_time || '').slice(0, 10);
+
+    const sc = s.display_score || s.totalScore || s.totalScore_4h || s.dynamicScore || s.score || 0;
+    const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
+    const dVol = (() => {
+      if (s.dailyVol !== undefined && s.dailyVol !== null) return parseFloat(s.dailyVol);
+      if (s.kline && s.kline.length >= 20) {
+        const last20sum = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
+        return Math.round((last20sum / 20) / 1000);
+      }
+      return 300;
+    })();
+
+    const satisfiesBuyMetrics = (sc >= 70) && (vr >= 1.2) && (dVol >= 300);
     
     let status = 'HOLD';
     if (isClosed) {
       status = 'CLOSED';
-    } else if (rawStatus === 'BUY' || s.signal_status === 'BUY' || (entryDate === todayTaipei && entryDate !== '')) {
-      status = 'BUY'; // 當天發動買進
-    } else if (rawStatus === 'ADD' || s.signal_status === 'ADD' || (addDate === todayTaipei && addDate !== '')) {
-      status = 'ADD'; // 當天發動加碼
+    } else if ((rawStatus === 'BUY' || s.signal_status === 'BUY' || (entryDate === todayTaipei && entryDate !== '')) && satisfiesBuyMetrics) {
+      status = 'BUY'; // 當天發動買進 (必須硬性符合 70分 + 1.2X爆量 + 300張日均量)
+    } else if ((rawStatus === 'ADD' || s.signal_status === 'ADD' || (addDate === todayTaipei && addDate !== '')) && satisfiesBuyMetrics) {
+      status = 'ADD'; // 當天發動加碼 (必須硬性符合 70分 + 1.2X爆量 + 300張日均量)
     } else {
-      status = 'HOLD'; // 隔天 (T+1) 及以後自動轉入「持倉中」
+      status = 'HOLD'; // 未完全達發動指標者或 T+1 隔天及以後，自動轉入「持倉中」監控
     }
     s.calcStatus = status;
   });
@@ -19606,8 +19620,8 @@ window.renderDoudouScreenerList = function() {
 
   // 4. 排序：分數升冪 (起漲甜蜜點優先)，同分時爆量倍數降冪
   filtered.sort((a, b) => {
-    const scA = a.display_score || a.totalScore || 70;
-    const scB = b.display_score || b.totalScore || 70;
+    const scA = a.display_score || a.totalScore || a.totalScore_4h || a.dynamicScore || 70;
+    const scB = b.display_score || b.totalScore || b.totalScore_4h || b.dynamicScore || 70;
     if (scA !== scB) return scA - scB;
     return (b.volRatio || 1.0) - (a.volRatio || 1.0);
   });
@@ -19629,7 +19643,7 @@ window.renderDoudouScreenerList = function() {
   }
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合 1.2X 交易量與 300 張日均量門檻的個股</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合 70分以上、1.2X 交易量與 300 張日均量門檻的個股</td></tr>`;
     return;
   }
 
@@ -19639,7 +19653,7 @@ window.renderDoudouScreenerList = function() {
 
     const tagBg = status === 'CLOSED' ? '#ef4444' : (status === 'BUY' ? '#22c55e' : (status === 'ADD' ? '#3b82f6' : '#f59e0b'));
     const tagText = status === 'CLOSED' ? '賣出(3日內)' : (status === 'BUY' ? '買進' : (status === 'ADD' ? '加碼' : '持倉中'));
-    const scoreVal = s.display_score || s.totalScore || 70;
+    const scoreVal = s.display_score || s.totalScore || s.totalScore_4h || s.dynamicScore || s.score || '--';
     const chgColor = s.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
     const chgSign = s.change >= 0 ? '+' : '';
 
