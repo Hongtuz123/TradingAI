@@ -19542,21 +19542,27 @@ window.renderDoudouScreenerList = function() {
 
     if (!isPos && !isNewSignal) return false;
     
-    // 💡 1.2X 交易量過濾
-    const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
-    if (vr < 1.2) return false;
+    // 🚀 關鍵修復：已持倉（isPos）或賣出訊號（CLOSED）的個股即使今日量縮，也必須 100% 呈現，避免無故蒸發！
+    const isClosedSignal = posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED';
+    if (!isPos && !isClosedSignal) {
+      // 💡 1.2X 交易量過濾
+      const vr = parseFloat(s.volRatio || s.volume_ratio || 1.0);
+      if (vr < 1.2) return false;
 
-    // 💡 日均交易 300 張以上過濾
-    const dVol = (() => {
-      if (s.dailyVol !== undefined && s.dailyVol !== null) return parseFloat(s.dailyVol);
-      if (s.kline && s.kline.length >= 20) {
-        const last20sum = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
-        return Math.round((last20sum / 20) / 1000);
-      }
-      return 300; // 預設通過
-    })();
+      // 💡 日均交易 300 張以上過濾
+      const dVol = (() => {
+        if (s.dailyVol !== undefined && s.dailyVol !== null) return parseFloat(s.dailyVol);
+        if (s.kline && s.kline.length >= 20) {
+          const last20sum = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
+          return Math.round((last20sum / 20) / 1000);
+        }
+        return 300; // 預設通過
+      })();
 
-    return dVol >= 300;
+      if (dVol < 300) return false;
+    }
+
+    return true;
   });
 
   // 2. 依照當日訊號與 T+1 交易日時間戳，進行狀態精確計算：
@@ -19594,8 +19600,8 @@ window.renderDoudouScreenerList = function() {
     } else if (window.currentSignalFilter === 'closed') {
       return status === 'CLOSED';
     }
-    // 'all': 全監控清單
-    return true;
+    // 🚀 關鍵修復：「全部」標籤必須是另外四個標籤所加起來的總和聯集，不額外做過濾
+    return status === 'BUY' || status === 'ADD' || status === 'HOLD' || status === 'CLOSED';
   });
 
   // 4. 排序：分數升冪 (起漲甜蜜點優先)，同分時爆量倍數降冪
