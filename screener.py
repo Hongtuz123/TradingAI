@@ -1258,23 +1258,50 @@ def run_screener(force=False):
     price_failed_stocks = []
     
     print(f"開始批次下載 {len(tickers)} 檔標的歷史資料 (250天日線 + 60天1H小時線)...")
+    df_all_list = []
+    df_1h_list = []
+    chunk_size = 60
+    total_chunks = (len(tickers) + chunk_size - 1) // chunk_size if tickers else 0
+
     if tickers:
+        for i in range(0, len(tickers), chunk_size):
+            chunk = tickers[i:i + chunk_size]
+            chunk_idx = i // chunk_size + 1
+            print(f"  📥 [歷史資料下載 {chunk_idx}/{total_chunks}] 正在獲取第 {i+1}~{min(i+len(chunk), len(tickers))} 檔標的行情 (進度: {int((chunk_idx/total_chunks)*100)}%)...")
+            
+            # 日線 250 天
+            try:
+                d_chunk = yf.download(chunk, period='250d', group_by='ticker', threads=True, progress=False, timeout=15)
+                if d_chunk is not None and not d_chunk.empty:
+                    df_all_list.append(d_chunk)
+            except Exception as e:
+                print(f"    ⚠️ 第 {chunk_idx} 批日線下載警告: {e}")
+
+            # 1H K線 60 天
+            try:
+                h_chunk = yf.download(chunk, period='60d', interval='1h', group_by='ticker', threads=True, progress=False, timeout=15)
+                if h_chunk is not None and not h_chunk.empty:
+                    df_1h_list.append(h_chunk)
+            except Exception as e:
+                print(f"    ⚠️ 第 {chunk_idx} 批 1H K線下載警告: {e}")
+
+        # 合併所有批次資料
         try:
-            df_all = yf.download(tickers, period='250d', group_by='ticker', threads=True, progress=False, timeout=15)
+            df_all = pd.concat(df_all_list, axis=1) if df_all_list else pd.DataFrame()
         except Exception as e:
-            print(f"❌ 日線批次下載失敗: {e}")
+            print(f"⚠️ 合併日線失敗: {e}")
             df_all = pd.DataFrame()
 
         try:
-            df_1h_all = yf.download(tickers, period='60d', interval='1h', group_by='ticker', threads=True, progress=False, timeout=15)
+            df_1h_all = pd.concat(df_1h_list, axis=1) if df_1h_list else pd.DataFrame()
         except Exception as e:
-            print(f"❌ 1H K線批次下載失敗: {e}")
+            print(f"⚠️ 合併 1H K線失敗: {e}")
             df_1h_all = pd.DataFrame()
     else:
         df_all = pd.DataFrame()
         df_1h_all = pd.DataFrame()
 
-    print(f"開始處理下載之歷史資料並計算 1D 與 4H 雙時框指標...")
+    print(f"✅ 歷史行情下載完成！開始處理歷史資料並計算 1D 與 4H 雙時框指標...")
     for idx, (yf_ticker, s) in enumerate(yf_to_stock.items()):
         symbol = s['Code']
         name = s['Name']
