@@ -119,35 +119,50 @@ def load_all_market_info():
     return all_listed
 
 
-def is_mainboard_common_stock(stock):
+def is_valid_stock_or_etf(stock):
     """
-    判斷標的是否為【上市/上櫃之標準普通股】
-    - 市場類別 market 必須為 TSE (上市) 或 OTC (上櫃)
-    - 代碼格式必須為 4 位純數字 (排除 00 ETF, 01 受益憑證, 02 ETN, 03-08 權證, 91 TDR, 債券等)
+    判斷標的是否為【上市/上櫃之股票或股票型 ETF】
+    - 市場類別 market 必須為 TSE (上市) 或 OTC (上櫃)，排除興櫃
+    - 排除債券型商品 (名稱含'債'、'美債'、'公司債'或代碼以 B 結尾)
+    - 排除權證 (03-08)、ETN (02)、TDR (91)、受益憑證 (01) 等
+    - 保留 4 位純數字普通股 (如 2330) 與 00 開頭之股票型 ETF (如 0050, 0056, 00878, 00919, 00929 等)
     """
     if not stock or not isinstance(stock, dict):
         return False
     market = str(stock.get("market", "")).upper()
     if market not in ("TSE", "OTC"):
         return False
-    
+
     code = str(stock.get("id", stock.get("Code", ""))).strip()
-    if not (len(code) == 4 and code.isdigit()):
+    name = str(stock.get("name", stock.get("Name", stock.get("CompanyName", "")))).strip()
+
+    # 🚫 排除債券型商品
+    if "債" in name or code.upper().endswith("B"):
         return False
-    
-    # 排除非普通股前綴
-    if code.startswith(("00", "01", "02", "03", "04", "05", "06", "07", "08", "91")):
+
+    # 🚫 排除權證、ETN、TDR 等非股票型商品
+    if code.startswith(("01", "02", "03", "04", "05", "06", "07", "08", "91")):
         return False
-        
-    return True
+
+    # ✅ 允許 4 位普通股 (如 2330) 或 00 開頭之股票型 ETF (4~6位純數字)
+    if code.isdigit():
+        if len(code) == 4:
+            return True
+        if code.startswith("00") and len(code) in (5, 6):
+            return True
+
+    return False
+
+# 保留向下相容別名
+is_mainboard_common_stock = is_valid_stock_or_etf
 
 
-def get_top_400_market_cap_codes(stocks_list):
+def get_top_500_market_cap_codes(stocks_list):
     """
-    從全量股票中篩選【上市/上櫃普通股】，並依據市值 (或估算市值) 降冪排序，取出前 400 大代碼集合
+    從全量標的中篩選【上市/上櫃普通股與股票型 ETF (排除債券與興櫃)】，並依據市值 (或估算市值) 降冪排序，取出前 500 大代碼集合
     """
-    valid_stocks = [s for s in stocks_list if is_mainboard_common_stock(s)]
-    
+    valid_stocks = [s for s in stocks_list if is_valid_stock_or_etf(s)]
+
     def _calc_cap_val(s):
         cap = s.get("marketCap")
         if cap is not None and cap > 0:
@@ -156,10 +171,13 @@ def get_top_400_market_cap_codes(stocks_list):
         price = float(s.get("price", 0) or 0)
         vol = float(s.get("dailyVol", 0) or 0)
         return price * vol * 1000
-        
+
     valid_stocks.sort(key=_calc_cap_val, reverse=True)
-    top_400 = valid_stocks[:400]
-    return {str(s.get("id") or s.get("Code")).strip() for s in top_400}
+    top_500 = valid_stocks[:500]
+    return {str(s.get("id") or s.get("Code")).strip() for s in top_500}
+
+# 保留向下相容別名
+get_top_400_market_cap_codes = get_top_500_market_cap_codes
 
 
 def get_sector_streak_days_py(sector_name, streak_type, sec_history):
@@ -1132,48 +1150,59 @@ def run_screener(force=False):
     # 1. 批量抓取官方 OpenAPI 基本面數據 (營收YoY、毛利率、負債比、股本)
     openapi_fund = fetch_openapi_fundamentals()
     
-    # 2. 計算全台股「合併市值前 500 名」
+    # 2. 計算全台股「合併市值前 500 名」（保留上市櫃普通股與股票型 ETF，排除美債/債券與興櫃）
     mkt_cap_list = []
     for code, info in all_market_info.items():
-        # 過濾權證與非普通股 (代碼長度為 4 或 5 且開頭為數字，容納 0050 等)
-        if (len(code) == 4 or len(code) == 5) and code.isdigit():
-            # 取得股本 (以元為單位)
-            fund_data = openapi_fund.get(code, {})
-            capital = fund_data.get('capital')
+        market = info.get('market', 'TSE')
+        name = info.get('Name') or info.get('CompanyName') or ''
+        
+        # 標的檢核：必須為上市/上櫃普通股或股票型 ETF (排除債券、興櫃、權證)
+        stock_dict = {'Code': code, 'Name': name, 'market': market}
+        if not is_valid_stock_or_etf(stock_dict):
+            continue
+
+        # 取得股本 (以元為單位)
+        fund_data = openapi_fund.get(code, {})
+        capital = fund_data.get('capital')
+        
+        # 取得昨日收盤價
+        close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
+        
+        mkt_cap = 0.0
+        if capital and close_price:
+            # 市值 (元) = (股本(千元) * 1000 / 10) * 收盤價
+            mkt_cap = (capital * 1000 / 10) * close_price
+        elif close_price:
+            # 針對 ETF 或查無股本者，依據當日成交規模估算
+            vol = safe_float(info.get('TradeVolume') or info.get('Volume') or 0)
+            mkt_cap = close_price * vol * 1000
             
-            # 取得昨日收盤價
-            close_price = safe_float(info.get('ClosingPrice') or info.get('Close'))
-            
-            if capital and close_price:
-                # 市值 (元) = (股本(千元) * 1000 / 10) * 收盤價
-                mkt_cap = (capital * 1000 / 10) * close_price
-                mkt_cap_list.append({
-                    'Code': code,
-                    'Name': info.get('Name') or info.get('CompanyName'),
-                    'mkt_cap': mkt_cap
-                })
+        if mkt_cap > 0:
+            mkt_cap_list.append({
+                'Code': code,
+                'Name': name,
+                'market': market,
+                'mkt_cap': mkt_cap
+            })
     
-    # 依市值降序排列，取前 1000 大切片以解決 Vercel 100MB 部署限制，但自選股依然會加入
+    # 依市值降序排列，嚴格取前 500 大
     mkt_cap_list.sort(key=lambda x: x['mkt_cap'], reverse=True)
-    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name']} for item in mkt_cap_list[:1000]]
-    print(f"📊 成功篩選出合併市值前 1000 大個股 (最大: {mkt_cap_list[0]['Name']} - 市值: {mkt_cap_list[0]['mkt_cap']/1e8:.1f}億)！")
+    top_500_stocks = [{'Code': item['Code'], 'Name': item['Name'], 'market': item['market']} for item in mkt_cap_list[:500]]
+    max_stock_name = mkt_cap_list[0]['Name'] if mkt_cap_list else 'N/A'
+    max_stock_cap = (mkt_cap_list[0]['mkt_cap'] / 1e8) if mkt_cap_list else 0
+    print(f"📊 成功篩選出上市櫃合併市值前 500 大標的 (最大: {max_stock_name} - 市值: {max_stock_cap:.1f}億)！")
     
-    # 3. 讀取 CSV 作為自選觀察清單與前 500 大合併去重
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(base_dir, "股票分析清單.csv")
-    csv_stocks = read_stock_list_from_csv(csv_path)
-    
-    # 合併去重邏輯
+    # 3. 確保自選觀察名單 (WATCHLIST) 必定納入，前 500 大標的合併去重
     final_stocks_map = {item['Code']: item for item in top_500_stocks}
     added_count = 0
-    for s in csv_stocks:
-        code = s['Code']
+    for w in WATCHLIST:
+        code = w['Code']
         if code not in final_stocks_map:
-            final_stocks_map[code] = s
+            final_stocks_map[code] = w
             added_count += 1
             
     csv_stocks = list(final_stocks_map.values())
-    print(f"🔗 合併完成！前 500 大股票加上 CSV 專屬自選股，共計分析 {len(csv_stocks)} 檔標的 (額外疊加自選: {added_count} 檔)！")
+    print(f"🔗 標的池建立完成！市值前 500 大標的加上自選股，共計分析 {len(csv_stocks)} 檔標的 (額外疊加自選: {added_count} 檔)！")
         
     print("下載三大法人當日買賣超資料...")
     today_date, inst_today = fetch_institutional_data()
@@ -1879,10 +1908,10 @@ def run_screener(force=False):
 
     # ----------------------------------------------------
     # 🚀 荳荳 AI 實時動態交易訊號與持倉狀態機計算
-    # 限制推播與買賣訊號僅針對「市值前 400 大上市上櫃普通股」
+    # 限制推播與買賣訊號僅針對「市值前 500 大上市上櫃普通股與股票型 ETF」
     # ----------------------------------------------------
-    top_400_codes = get_top_400_market_cap_codes(cleaned_mock_stocks)
-    print(f"📊 [推播精選池] 已成功篩選上市上櫃 Top 400 市值強棒 (共 {len(top_400_codes)} 檔代碼)。")
+    top_500_codes = get_top_500_market_cap_codes(cleaned_mock_stocks)
+    print(f"📊 [推播精選池] 已成功篩選上市上櫃 Top 500 市值強棒 (共 {len(top_500_codes)} 檔代碼)。")
 
     base_dir_pos = os.path.dirname(os.path.abspath(__file__))
     pos_state_path = os.path.join(base_dir_pos, 'pos_state.json')
@@ -1939,14 +1968,14 @@ def run_screener(force=False):
             pos_state[sym_id]['exit_time'] = now_str
             pos_state[sym_id]['sell_reason'] = sell_reason
         elif (sc_1d >= 70 or sc_4h >= 70) and last_add_time != now_str[:10]:
-            # 🔵 加碼買進硬性強勢門檻：必須屬於【市值前 400 大上市上櫃普通股】＋ 當日成交量 ≥ 300 張 ＋ 爆量倍數 ≥ 1.2x ＋ 三大法人淨買超 > 0
+            # 🔵 加碼買進硬性強勢門檻：必須屬於【市值前 500 大上市上櫃普通股/ETF】＋ 當日成交量 ≥ 300 張 ＋ 爆量倍數 ≥ 1.2x ＋ 三大法人淨買超 > 0
             daily_vol_sheets = s.get('dailyVol', 0) or 0
             fn_buy = s.get('foreignNetBuy', 0) or 0
             tr_buy = s.get('trustDays', 0) or 0
             dl_buy = s.get('dealerDays', 0) or 0
             total_inst = fn_buy + tr_buy + dl_buy
 
-            if (sym_id in top_400_codes) and is_mainboard_common_stock(s) and daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
+            if (sym_id in top_500_codes) and is_valid_stock_or_etf(s) and daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                 max_sc = max(sc_1d, sc_4h)
                 vol_tag = f"爆量 {vol_r:.2f}x"
                 s['add_reason'] = f"持倉強勢續抱 (高達 {max_sc}分) + {vol_tag} + 法人買超 {total_inst}張"
@@ -1963,7 +1992,7 @@ def run_screener(force=False):
             if exit_t and exit_t < cutoff_date:
                 del pos_state[sym_id]
 
-    # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動，僅限 Top 400 上市上櫃普通股)
+    # 2. 檢查全市場符合 70-89 分的標的，觸發【買進訊號】(首次發動，僅限 Top 500 上市上櫃普通股/ETF)
     for s in cleaned_mock_stocks:
         sym_id = s['id']
         sc_1d = s.get('totalScore', 0) or 0
@@ -1996,9 +2025,9 @@ def run_screener(force=False):
 
         if is_1d_pass or is_4h_pass:
             if sym_id not in pos_state:
-                # 只有當 100% 滿足【剛起爆/貼近均線】＋【市值前 400 大上市上櫃普通股】才允許記錄與發送買進訊號；
-                # 🚀 買進推播門檻：【Top 400 上市上櫃】＋【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
-                if is_fresh_signal and (sym_id in top_400_codes) and is_mainboard_common_stock(s):
+                # 只有當 100% 滿足【剛起爆/貼近均線】＋【市值前 500 大上市上櫃普通股/ETF】才允許記錄與發送買進訊號；
+                # 🚀 買進推播門檻：【Top 500 上市上櫃】＋【當日成交量 ≥ 300 張】＋【爆量倍數 ≥ 1.2x】＋【三大法人淨買超 > 0】
+                if is_fresh_signal and (sym_id in top_500_codes) and is_valid_stock_or_etf(s):
                     daily_vol_sheets = s.get('dailyVol', 0) or 0
                     if daily_vol_sheets >= 300 and vol_r >= 1.2 and total_inst > 0:
                         if is_1d_pass and is_4h_pass:

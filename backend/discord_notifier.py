@@ -53,22 +53,28 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     adds  = add_buy_signals or []
     sells = sell_signals or []
 
-    # 🚀 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之 4 位純數字普通個股 (排除興櫃、債券、權證、ETF 等)
-    def _is_mainboard_common(s):
+    # 🚀 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股與股票型 ETF (排除興櫃、債券、權證等)
+    def _is_valid_target(s):
         code = str(s.get('id', s.get('Code', ''))).strip()
         market = str(s.get('market', '')).upper()
+        name = str(s.get('name', s.get('Name', ''))).strip()
         if market not in ('TSE', 'OTC'):
             return False
-        if not (len(code) == 4 and code.isdigit()):
+        # 排除債券型商品 (無論名稱或代碼以 B 結尾)
+        if '債' in name or code.upper().endswith('B'):
             return False
-        if code.startswith(('00', '01', '02', '03', '04', '05', '06', '07', '08', '91')):
+        # 排除權證、ETN、TDR 等
+        if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
             return False
-        return True
+        # 允許 4 位普通股或 00 開頭之股票型 ETF (4~6位純數字)
+        if code.isdigit() and (len(code) == 4 or (code.startswith('00') and len(code) in (4, 5, 6))):
+            return True
+        return False
 
     # 🚀 成交量硬性防線與上市上櫃防線
     MIN_DAILY_VOL = 300
-    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_mainboard_common(s)]
-    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_mainboard_common(s)]
+    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_valid_target(s)]
+    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_valid_target(s)]
 
     def _get_sort_score(s):
         sc = s.get('display_score')

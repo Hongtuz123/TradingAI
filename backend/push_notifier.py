@@ -43,12 +43,18 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     def _is_qualified(s):
         code = str(s.get('id', s.get('Code', ''))).strip()
         market = str(s.get('market', '')).upper()
-        # 🛡️ 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之 4 位純數字普通個股 (排除興櫃、債券、權證、ETF 等)
+        name = str(s.get('name', s.get('Name', ''))).strip()
+        # 🛡️ 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股與股票型 ETF (排除興櫃、債券、權證等)
         if market not in ('TSE', 'OTC'):
             return False
-        if not (len(code) == 4 and code.isdigit()):
+        # 排除債券型商品 (無論名稱或代碼以 B 結尾)
+        if '債' in name or code.upper().endswith('B'):
             return False
-        if code.startswith(('00', '01', '02', '03', '04', '05', '06', '07', '08', '91')):
+        # 排除權證、ETN、TDR 等
+        if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
+            return False
+        # 允許 4 位普通股或 00 開頭之股票型 ETF (4~6位純數字)
+        if not (code.isdigit() and (len(code) == 4 or (code.startswith('00') and len(code) in (5, 6)))):
             return False
 
         vol_v = (s.get('dailyVol', 9999) or 0) >= 300
