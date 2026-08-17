@@ -107,11 +107,10 @@ def load_all_market_info():
                 if code and code.isdigit() and len(code) >= 4:
                     vol  = r.get('Volume') or r.get('TradeVolume') or 0
                     name = r.get('CompanyName') or r.get('Name')
-                    close = r.get('Close') or r.get('ClosingPrice')
-                    change = r.get('Change') or ''
+                    open_price = r.get('Open') or r.get('OpeningPrice')
                     all_listed[code] = {
                         'Code': code, 'Name': name, 'TradeVolume': vol,
-                        'ClosingPrice': close, 'Change': change, 'market': 'OTC'
+                        'ClosingPrice': close, 'OpeningPrice': open_price, 'Change': change, 'market': 'OTC'
                     }
     except Exception as e:
         print(f'OTC 抓取失敗: {e}')
@@ -1397,11 +1396,30 @@ def run_screener(force=False):
             close_high = bool((close - float(latest['low'])) / (float(latest['high']) - float(latest['low']) + 0.0001) > 0.8)
             ma20_rising = bool(latest['ma20_rising'])
 
-            # 3. 漲跌幅 (%)：使用權威標準公式 (當前現價 - 昨日實質收盤價) / 昨日實質收盤價 * 100
+            # 3. 漲跌幅 (%)：早上 09:00 開盤時段優先以今日「開盤價格 (Open)」起算；開盤前或無開盤價時 fallback 至昨日收盤價 (Prev Close)
             try:
+                today_taipei = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
+                
+                # 取得今日開盤價 today_open
+                today_open = None
+                openapi_open_raw = m_info.get('OpeningPrice') or m_info.get('Open')
+                if openapi_open_raw:
+                    today_open = safe_float(str(openapi_open_raw).replace(',', '').strip())
+
+                if (not today_open or today_open <= 0) and 'df_1h_stock' in locals() and not df_1h_stock.empty:
+                    try:
+                        df_today_1h = df_1h_stock[df_1h_stock.index.strftime('%Y-%m-%d') == today_taipei]
+                        if not df_today_1h.empty:
+                            today_open = safe_float(df_today_1h.iloc[0]['Open'])
+                    except Exception:
+                        pass
+
+                if (not today_open or today_open <= 0) and len(df) >= 1:
+                    if latest['date'] >= today_taipei:
+                        today_open = safe_float(latest['open'])
+
                 # 取得昨日實質收盤價 prev_close
                 prev_close = 0.0
-                today_taipei = pd.Timestamp.now(tz='Asia/Taipei').strftime('%Y-%m-%d')
                 if len(df) >= 2:
                     if latest['date'] >= today_taipei:
                         prev_close = float(df.iloc[-2]['close'])
@@ -1410,7 +1428,10 @@ def run_screener(force=False):
                 elif len(df) == 1:
                     prev_close = float(df.iloc[-1]['close'])
 
-                if prev_close > 0 and close > 0:
+                # 優先使用今日開盤價計算漲跌幅 (開盤價起算)
+                if today_open and today_open > 0 and close > 0:
+                    change_num = round(((close - today_open) / today_open) * 100, 2)
+                elif prev_close > 0 and close > 0:
                     change_num = round(((close - prev_close) / prev_close) * 100, 2)
                 else:
                     change_num = 0.0
