@@ -1,10 +1,37 @@
-import requests
 import os
+from pathlib import Path
+import requests
 
-DISCORD_WEBHOOK_URL = os.environ.get(
-    "TW_STOCK_DISCORD_WEBHOOK",
-    "https://discord.com/api/webhooks/1531109521446011032/FkhYvYokdxRobnATSkkpfamBJKBEseiBmg-viPKyKvKqb7_93U5_y3Cvn4i8LgRKxj15"
-)
+
+def _load_local_env():
+    """自動自專案根目錄載入 .env.local 或 .env 中的環境變數（線下專用，嚴禁上傳 GitHub）"""
+    base_dir = Path(__file__).resolve().parent.parent
+    for env_name in [".env.local", ".env"]:
+        env_file = base_dir / env_name
+        if env_file.exists():
+            try:
+                with open(env_file, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            k = k.strip()
+                            v = v.strip().strip('"').strip("'")
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+            except Exception:
+                pass
+
+
+_load_local_env()
+
+
+def get_discord_webhook_url():
+    """動態取得 Discord Webhook URL"""
+    return os.environ.get("TW_STOCK_DISCORD_WEBHOOK", "").strip()
+
+
+DISCORD_WEBHOOK_URL = get_discord_webhook_url()
 
 EMBED_DESC_LIMIT = 4000  # Discord embed description 上限 4096，保留 96 字元緩衝
 
@@ -180,8 +207,13 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
         "embeds": [embed]
     }
 
+    webhook_url = get_discord_webhook_url()
+    if not webhook_url:
+        print("⚠️ 未偵測到 TW_STOCK_DISCORD_WEBHOOK 設定，跳過 Discord 推播（請於線下 .env.local 設置）。")
+        return False
+
     try:
-        res = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
+        res = requests.post(webhook_url, json=payload, timeout=10)
         return res.status_code in (200, 204)
     except Exception as e:
         print(f"❌ Discord 訊號推播發送失敗: {e}")
