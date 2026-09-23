@@ -164,7 +164,7 @@ if barstate.islast
     table.cell(board, 0, 4, "> 300張成交量", text_color=color.white, text_size=size.small)
     table.cell(board, 1, 4, pass_min_volume ? "✅ 流動性足夠" : "❌ 量太冷清 (<300張)", text_color=pass_min_volume ? color.green : color.red, text_size=size.small)
 
-    table.cell(board, 0, 5, "70-80分黃金發動點", text_color=color.white, text_size=size.small)
+    table.cell(board, 0, 5, "70-8黃金發動點", text_color=color.white, text_size=size.small)
     table.cell(board, 1, 5, is_buy_signal ? "✅ 觸發發動" : "❌ 未達標", text_color=is_buy_signal ? color.green : color.gray, text_size=size.small)
 
     table.cell(board, 0, 6, "ADX 趨勢強度", text_color=color.white, text_size=size.small)
