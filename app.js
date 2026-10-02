@@ -729,8 +729,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-
-
+    // 🐾 頁面載入完成後獨立順暢觸發荳荳氣象播報彈窗 (延遲 500ms，徹底與族群點擊解耦)
+    setTimeout(() => {
+      if (typeof renderPostmarketSummary === 'function') {
+        renderPostmarketSummary();
+      }
+    }, 500);
   } catch (err) {
 
 
@@ -15335,25 +15339,10 @@ function renderPostmarketSummary() {
 
 
         <span style="font-weight:700; color:var(--primary); font-size:14px;">📈 大盤風向播報：</span><br>
-
-
-
         <span style="display:inline-block; margin-top:4px;">
-
-
-
-          台股大盤目前：${twTrend} (市場健康度: <strong style="color:white;">${twTotalScore}</strong> 分)<br>
-
-
-
-          美股大盤目前：${usTrend} (市場健康度: <strong style="color:white;">${usTotalScore}</strong> 分)
-
-
-
+          台股大盤目前：${twTrend}<br>
+          美股大盤目前：${usTrend}
         </span>
-
-
-
       </div>
 
 
@@ -15470,34 +15459,11 @@ function renderPostmarketSummary() {
 
 
 
-    <div style="display:flex; justify-content:center; gap:16px; margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
-
-
-
-      <button class="btn-primary" onclick="petDoudou()" style="padding: 10px 20px; font-size: 13px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
-
-
-
-        🐾 摸摸荳荳頭 (知道了汪)
-
-
-
-      </button>
-
-
-
-      <button class="btn-primary" onclick="giveDoudouCan()" style="padding: 10px 20px; font-size: 13px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border: none; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
-
-
-
+    <!-- 互動選項按鈕 (唯一選項：給荳荳罐頭) -->
+    <div style="display:flex; justify-content:center; margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+      <button class="btn-primary" onclick="giveDoudouCan()" style="padding: 12px 36px; font-size: 15px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border: none; box-shadow: 0 4px 18px rgba(236, 72, 153, 0.45); cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
         🥫 給荳荳罐頭 (獎勵你汪)
-
-
-
       </button>
-
-
-
     </div>
 
 
@@ -16271,13 +16237,6 @@ function renderRankings() {
 
 
   container.innerHTML = listHTML || '<p style="color:var(--text-muted);padding:10px;">查無排行資料</p>';
-
-
-
-  if (typeof renderPostmarketSummary === 'function') renderPostmarketSummary();
-
-
-
 }
 
 

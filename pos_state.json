@@ -253,7 +253,7 @@
     "entry_price": 252.5,
     "entry_time": "2026-08-05 15:05:33",
     "tf": "4H",
-    "last_add_buy_time": "2026-09-29"
+    "last_add_buy_time": "2026-10-02"
   },
   "6292": {
     "entry_price": 57.6,
@@ -541,7 +541,7 @@
     "entry_price": 168.0,
     "entry_time": "2026-08-06 18:05:48",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "2535": {
     "entry_price": 93.0,
@@ -888,7 +888,7 @@
     "entry_price": 945.0,
     "entry_time": "2026-08-10 11:06:37",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-09-24"
+    "last_add_buy_time": "2026-10-02"
   },
   "3264": {
     "entry_price": 226.0,
@@ -1544,7 +1544,7 @@
     "entry_time": "2026-08-12 13:06:56",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "6205": {
     "entry_price": 63.8,
@@ -1649,7 +1649,7 @@
     "entry_time": "2026-08-12 15:07:17",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-21"
+    "last_add_buy_time": "2026-10-02"
   },
   "1565": {
     "entry_price": 96.5,
@@ -1718,7 +1718,7 @@
     "entry_time": "2026-08-12 18:07:07",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-08-13"
+    "last_add_buy_time": "2026-10-02"
   },
   "4540": {
     "entry_price": 60.4,
@@ -1822,7 +1822,7 @@
     "entry_time": "2026-08-13 08:07:17",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-29"
+    "last_add_buy_time": "2026-10-02"
   },
   "4576": {
     "entry_price": 227.0,
@@ -1913,7 +1913,7 @@
     "entry_time": "2026-08-13 10:07:40",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-30"
+    "last_add_buy_time": "2026-10-02"
   },
   "1525": {
     "entry_price": 66.5,
@@ -2880,7 +2880,7 @@
     "entry_time": "2026-08-16 08:05:53",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "00934": {
     "entry_price": 29.1,
@@ -2914,15 +2914,21 @@
     "entry_price": 48.45,
     "entry_time": "2026-08-17 13:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-09-21"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-09-21",
+    "exit_price": 46.05,
+    "exit_time": "2026-10-02 15:05:52",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "2845": {
     "entry_price": 13.55,
     "entry_time": "2026-08-17 13:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-09-18"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-09-18",
+    "exit_price": 12.9,
+    "exit_time": "2026-10-02 15:05:52",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "3016": {
     "entry_price": 107.0,
@@ -2978,7 +2984,7 @@
     "entry_time": "2026-08-17 18:05:56",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-29"
+    "last_add_buy_time": "2026-10-02"
   },
   "1504": {
     "entry_price": 71.8,
@@ -3054,7 +3060,7 @@
     "entry_time": "2026-08-18 15:06:12",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-23"
+    "last_add_buy_time": "2026-10-02"
   },
   "2801": {
     "entry_price": 23.85,
@@ -3350,7 +3356,7 @@
     "entry_time": "2026-08-27 15:06:14",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "00946": {
     "entry_price": 15.55,
@@ -3385,7 +3391,7 @@
     "entry_time": "2026-08-28 18:06:04",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-16"
+    "last_add_buy_time": "2026-10-02"
   },
   "1312": {
     "entry_price": 14.05,
@@ -3511,7 +3517,7 @@
     "entry_time": "2026-09-01 12:05:58",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-30"
+    "last_add_buy_time": "2026-10-02"
   },
   "00692": {
     "entry_price": 92.85,
@@ -3546,7 +3552,7 @@
     "entry_time": "2026-09-01 18:06:09",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-14"
+    "last_add_buy_time": "2026-10-02"
   },
   "3055": {
     "entry_price": 129.0,
@@ -3588,7 +3594,7 @@
     "entry_time": "2026-09-02 10:06:08",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-29"
+    "last_add_buy_time": "2026-10-02"
   },
   "00901": {
     "entry_price": 46.22,
@@ -3933,7 +3939,7 @@
     "entry_time": "2026-09-17 13:05:57",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "00930": {
     "entry_price": 24.17,
@@ -4027,7 +4033,7 @@
     "entry_time": "2026-09-18 18:05:43",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-09-21"
+    "last_add_buy_time": "2026-10-02"
   },
   "7827": {
     "entry_price": 160.0,
@@ -4125,7 +4131,7 @@
     "entry_time": "2026-09-21 18:05:45",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "6443": {
     "entry_price": 28.05,
@@ -4307,7 +4313,7 @@
     "entry_time": "2026-09-26 08:05:38",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "009820": {
     "entry_price": 10.4,
@@ -4388,7 +4394,7 @@
     "entry_time": "2026-09-29 13:05:53",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-02"
   },
   "00924": {
     "entry_price": 33.59,
@@ -4616,6 +4622,19 @@
   "1711": {
     "entry_price": 43.0,
     "entry_time": "2026-10-02 13:05:44",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-02"
+  },
+  "7711": {
+    "entry_price": 610.0,
+    "entry_time": "2026-10-02 18:05:38",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3028": {
+    "entry_price": 63.2,
+    "entry_time": "2026-10-02 18:05:38",
     "tf": "SILENT_INIT",
     "status": "HOLD"
   }
