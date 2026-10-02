@@ -776,34 +776,22 @@ let currentActiveView = 'dashboard';
 
 
 function switchView(viewId) {
-
-
-
   currentActiveView = viewId;
-
-
-
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn, .m-nav-btn').forEach(b => b.classList.remove('active'));
 
+  const targetView = document.getElementById(`view-${viewId}`);
+  if (targetView) targetView.classList.add('active');
 
+  document.querySelectorAll(`.nav-btn[data-view="${viewId}"], .m-nav-btn[data-view="${viewId}"]`).forEach(btn => {
+    btn.classList.add('active');
+  });
 
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-
-
-  
-
-
-
-  document.getElementById(`view-${viewId}`).classList.add('active');
-
-
-
-  const btn = document.querySelector(`.nav-btn[data-view="${viewId}"]`);
-
-
-
-  if (btn) btn.classList.add('active');
+  // 切換時平滑回到最頂部，提升操作順滑感
+  const mainCont = document.querySelector('.main-container');
+  if (mainCont) {
+    mainCont.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
 
 

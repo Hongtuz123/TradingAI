@@ -65,7 +65,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=61" />
+  <link rel="stylesheet" href="style.css?v=62" />
 
 
 
@@ -126,20 +126,9 @@
 
 
     <nav class="topbar-nav">
-
-
-
       <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
-
-
-
         <span class="nav-icon">⊞</span> 儀表板
-
-
-
       </button>
-
-
 
       <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
         <span class="nav-icon">🐕</span> 荳荳清單
@@ -149,12 +138,16 @@
         <span class="nav-icon">📈</span> K線圖
       </button>
 
-      <!-- 📱 手機版高能防護：直接嵌於導覽列末端，100% 不被裁切 -->
-      <button id="pwaPushBtn" class="nav-btn" onclick="togglePushNotification()" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #4ade80;" title="點擊啟用手機系統原生推播通知">
+      <button class="nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
+        <span class="nav-icon">⭐</span> 自選觀察
+      </button>
+
+      <!-- 📱 手機版高能防護：快捷推播操作按鈕 -->
+      <button id="pwaPushBtn" class="nav-btn pwa-quick-btn" onclick="togglePushNotification()" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #4ade80;" title="點擊啟用手機系統原生推播通知">
         <span class="nav-icon">🔔</span> 啟用推播
       </button>
 
-      <button id="pwaTvTestBtn" class="nav-btn" onclick="testTradingViewDeepLink()" style="background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.5); color: #fb923c;" title="測試推播通知並跳轉至 TradingView 台積電 K 線圖">
+      <button id="pwaTvTestBtn" class="nav-btn pwa-quick-btn" onclick="testTradingViewDeepLink()" style="background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.5); color: #fb923c;" title="測試推播通知並跳轉至 TradingView 台積電 K 線圖">
         <span class="nav-icon">⚡️</span> 測試跳轉 TV
       </button>
     </nav>
@@ -2262,24 +2255,29 @@
 
   </footer>
 
-
-
-
-
-
+  <!-- 📱 行動端專屬底部原生導航欄 (Mobile Bottom Tab Bar) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="m-nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+      <span class="m-nav-icon">⊞</span>
+      <span class="m-nav-label">儀表板</span>
+    </button>
+    <button class="m-nav-btn" data-view="screener" onclick="switchView('screener')">
+      <span class="m-nav-icon">🐕</span>
+      <span class="m-nav-label">荳荳選股</span>
+    </button>
+    <button class="m-nav-btn" data-view="chart" onclick="switchView('chart')">
+      <span class="m-nav-icon">📈</span>
+      <span class="m-nav-label">K線圖</span>
+    </button>
+    <button class="m-nav-btn" data-view="portfolio" onclick="switchView('portfolio')">
+      <span class="m-nav-icon">⭐</span>
+      <span class="m-nav-label">自選追蹤</span>
+    </button>
+  </nav>
 
   <!-- 腳本 -->
-
-
-
-  <script src="app.js?v=61"></script>
-
-
-
-  <script src="stock-dashboard.js?v=61"></script>
-
-
-
+  <script src="app.js?v=62"></script>
+  <script src="stock-dashboard.js?v=62"></script>
 </body>
 
 
