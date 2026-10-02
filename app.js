@@ -951,27 +951,130 @@ function switchView(viewId) {
 
 
 function initDashboard() {
-
-
-
   const badge = document.getElementById('marketStatusBadge');
-
-
-
   const text = document.getElementById('marketStatusText');
+  const updateTime = (marketData.lastUpdate || '').replace(/-/g, '/') || '2026/10/02';
+  const lastTimeEl = document.getElementById('lastUpdateTime');
+  if (lastTimeEl) lastTimeEl.innerText = updateTime;
 
+  // ── 🎯 使用者專屬 3 大市場健康度指標計算 (置頂安全執行) ───────────────
+  function getPctColorClass(pct) {
+    if (pct > 1.0) {
+      return { color: '#22c55e', bg: 'rgba(34, 197, 94, 0.18)', border: 'rgba(34, 197, 94, 0.45)', text: '綠色 (漲>1%)', level: 'green' };
+    }
+    if (pct < -1.0) {
+      return { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.18)', border: 'rgba(239, 68, 68, 0.45)', text: '紅色 (跌>1%)', level: 'red' };
+    }
+    return { color: '#eab308', bg: 'rgba(234, 179, 8, 0.18)', border: 'rgba(234, 179, 8, 0.45)', text: '黃色 (±1%內)', level: 'yellow' };
+  }
 
+  // 1. 🇹🇼 台股前一日加權指數 (漲>1%綠色、跌>1%紅色、±1%黃色)
+  const twList = marketData.tw_indices || (marketData.marketData && marketData.marketData.tw_indices) || [];
+  const twii = twList.find(i => i.label && i.label.includes('加權')) || twList[0] || {};
+  const twiiPct = twii.pct_chg !== undefined ? twii.pct_chg : 0;
+  const twiiClose = twii.close ? (typeof twii.close === 'number' ? twii.close.toLocaleString() : twii.close) : '--';
+  const twiiInfo = getPctColorClass(twiiPct);
 
-  const updateTime = marketData.lastUpdate.replace(/-/g, '/');
+  const hpTwStatus = document.getElementById('hpTwStatus');
+  const hpTwClose = document.getElementById('hpTwClose');
+  const hpTwChg = document.getElementById('hpTwChg');
+  if (hpTwStatus) {
+    hpTwStatus.innerText = twiiInfo.text;
+    hpTwStatus.style.color = twiiInfo.color;
+  }
+  if (hpTwClose) hpTwClose.innerText = twiiClose;
+  if (hpTwChg) {
+    hpTwChg.innerText = `${twiiPct >= 0 ? '+' : ''}${twiiPct.toFixed(2)}%`;
+    hpTwChg.style.color = twiiInfo.color;
+    hpTwChg.style.background = twiiInfo.bg;
+    hpTwChg.style.border = `1px solid ${twiiInfo.border}`;
+  }
 
+  // 2. 🇺🇸 美股主要指數 (DJI, S&P 500, Nasdaq, SOX) 漲>1%綠色、跌>1%紅色、±1%黃色
+  const usList = marketData.us_indices || (marketData.marketData && marketData.marketData.us_indices) || [];
+  const targetUS = [
+    { key: 'DJI', name: '道瓊 DJI', match: ['道瓊', 'DJI'] },
+    { key: 'SPX', name: 'S&P 500', match: ['S&P', '500'] },
+    { key: 'IXIC', name: '那斯達克 Nasdaq', match: ['那斯達克', 'Nasdaq', '100'] },
+    { key: 'SOX', name: '費半 SOX', match: ['費半', 'SOX'] }
+  ];
 
+  const hpUsGrid = document.getElementById('hpUsGrid');
+  if (hpUsGrid) {
+    hpUsGrid.innerHTML = targetUS.map(t => {
+      const found = usList.find(idx => t.match.some(m => idx.label && idx.label.includes(m))) || { pct_chg: 0, close: '--' };
+      const pct = found.pct_chg !== undefined ? found.pct_chg : 0;
+      const cInfo = getPctColorClass(pct);
+      const closeStr = found.close ? (typeof found.close === 'number' ? found.close.toLocaleString() : found.close) : '--';
+      return `
+        <div style="background:rgba(15,23,42,0.85); border:1px solid ${cInfo.border}; border-radius:8px; padding:6px 10px; display:flex; flex-direction:column; gap:3px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#e2e8f0;">${t.name}</span>
+            <span style="font-size:10px; font-weight:800; color:${cInfo.color};">${cInfo.level === 'green' ? '🟢 綠' : cInfo.level === 'red' ? '🔴 紅' : '🟡 黃'}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
+            <span style="font-size:10px; color:#64748b;">${closeStr}</span>
+            <span style="font-size:12px; font-weight:800; color:${cInfo.color};">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
-  document.getElementById('lastUpdateTime').innerText = updateTime;
+  // 3. ⚡ 台股恐慌指數 (VIX): XX  [恐慌 / 良好 / 普通]
+  const vixItem = usList.find(idx => idx.label && idx.label.includes('VIX'));
+  const vixVal = vixItem && vixItem.close !== null && vixItem.close !== undefined ? vixItem.close : 15.92;
+  
+  let vixLevelText = '良好';
+  let vixColor = '#22c55e'; // < 20 良好 (綠色)
+  let vixTagBg = 'rgba(34, 197, 94, 0.18)';
+  let vixBorder = 'rgba(34, 197, 94, 0.45)';
 
+  if (vixVal > 30) {
+    vixLevelText = '恐慌';
+    vixColor = '#ef4444'; // > 30 恐慌 (紅色)
+    vixTagBg = 'rgba(239, 68, 68, 0.18)';
+    vixBorder = 'rgba(239, 68, 68, 0.45)';
+  } else if (vixVal >= 20) {
+    vixLevelText = '普通';
+    vixColor = '#eab308'; // 20~30 普通 (黃色)
+    vixTagBg = 'rgba(234, 179, 8, 0.18)';
+    vixBorder = 'rgba(234, 179, 8, 0.45)';
+  }
 
+  const hpVixVal = document.getElementById('hpVixVal');
+  const hpVixLevel = document.getElementById('hpVixLevel');
+  const hpVixTag = document.getElementById('hpVixTag');
+  if (hpVixVal) hpVixVal.innerText = (typeof vixVal === 'number' ? vixVal.toFixed(2) : vixVal);
+  if (hpVixLevel) {
+    hpVixLevel.innerText = vixLevelText;
+    hpVixLevel.style.color = vixColor;
+  }
+  if (hpVixTag) {
+    hpVixTag.innerText = vixLevelText;
+    hpVixTag.style.color = vixColor;
+    hpVixTag.style.background = vixTagBg;
+    hpVixTag.style.border = `1px solid ${vixBorder}`;
+    hpVixTag.style.padding = '2px 8px';
+    hpVixTag.style.borderRadius = '6px';
+  }
 
+  // 4. 頂部按鈕狀態標籤與呼吸燈 (依加權指數與 VIX 同步)
+  const quickBadge = document.getElementById('healthQuickBadge');
+  const beaconDot = document.getElementById('headerHealthBeacon');
+  if (quickBadge) {
+    quickBadge.innerText = `加權 ${twiiPct >= 0 ? '+' : ''}${twiiPct.toFixed(2)}%`;
+    quickBadge.style.color = twiiInfo.color;
+    quickBadge.style.background = twiiInfo.bg;
+    quickBadge.style.borderColor = twiiInfo.border;
+  }
+  if (beaconDot) {
+    beaconDot.style.background = twiiInfo.color;
+    beaconDot.style.boxShadow = `0 0 10px ${twiiInfo.color}`;
+  }
 
-
+  const hpUpdateTime = document.getElementById('hpUpdateTime');
+  if (hpUpdateTime) hpUpdateTime.innerText = `資料時間：${updateTime}`;
 
 
   // ── 輔助函數 ──────────────────────────────────────────
@@ -1208,30 +1311,7 @@ function initDashboard() {
 
   document.getElementById('twIndicators').innerHTML = twHTML;
 
-  // 更新微型健康度 ICON 按鈕與 Popover
-  const healthBriefText = document.getElementById('healthBriefText');
-  if (healthBriefText) {
-    const isBull = twTotalScore >= 60;
-    healthBriefText.innerHTML = `市場：<strong style="color:${twColor};">${isBull ? '偏多 📈' : '偏空 📉'} (${twRating})</strong>`;
-  }
-  const healthPopoverContent = document.getElementById('healthPopoverContent');
-  if (healthPopoverContent) {
-    healthPopoverContent.innerHTML = `
-      <div style="font-size:12px;display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:#94a3b8;">台股總體評分：</span>
-          <span style="color:${twColor};font-weight:700;">${twTotalScore >= 60 ? '偏多 📈' : '偏空 📉'} (${twTotalScore}分 · ${twRating})</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:#94a3b8;">美股總體評分：</span>
-          <span style="color:${usColor};font-weight:700;">${usTotalScore >= 60 ? '偏多 📈' : '偏空 📉'} (${usTotalScore}分 · ${usRating})</span>
-        </div>
-        <div style="font-size:11px;color:#64748b;margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
-          資料時間：${updateTime}
-        </div>
-      </div>
-    `;
-  }
+// [Removed error block]
 
 
 
@@ -1665,125 +1745,6 @@ function initDashboard() {
 
 
   
-  // ── 🎯 使用者專屬 3 大市場健康度指標計算 ────────────────────
-  function getPctColorClass(pct) {
-    if (pct > 1.0) {
-      return { color: '#22c55e', bg: 'rgba(34, 197, 94, 0.18)', border: 'rgba(34, 197, 94, 0.45)', text: '綠色 (漲>1%)', level: 'green' };
-    }
-    if (pct < -1.0) {
-      return { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.18)', border: 'rgba(239, 68, 68, 0.45)', text: '紅色 (跌>1%)', level: 'red' };
-    }
-    return { color: '#eab308', bg: 'rgba(234, 179, 8, 0.18)', border: 'rgba(234, 179, 8, 0.45)', text: '黃色 (±1%內)', level: 'yellow' };
-  }
-
-  // 1. 🇹🇼 台股前一日加權指數 (漲>1%綠色、跌>1%紅色、±1%黃色)
-  const twii = (marketData.tw_indices || []).find(i => i.label && i.label.includes('加權')) || (marketData.tw_indices || [])[0] || {};
-  const twiiPct = twii.pct_chg !== undefined ? twii.pct_chg : 0;
-  const twiiClose = twii.close ? (typeof twii.close === 'number' ? twii.close.toLocaleString() : twii.close) : '--';
-  const twiiInfo = getPctColorClass(twiiPct);
-
-  const hpTwStatus = document.getElementById('hpTwStatus');
-  const hpTwClose = document.getElementById('hpTwClose');
-  const hpTwChg = document.getElementById('hpTwChg');
-  if (hpTwStatus) {
-    hpTwStatus.innerText = twiiInfo.text;
-    hpTwStatus.style.color = twiiInfo.color;
-  }
-  if (hpTwClose) hpTwClose.innerText = twiiClose;
-  if (hpTwChg) {
-    hpTwChg.innerText = `${twiiPct >= 0 ? '+' : ''}${twiiPct.toFixed(2)}%`;
-    hpTwChg.style.color = twiiInfo.color;
-    hpTwChg.style.background = twiiInfo.bg;
-    hpTwChg.style.border = `1px solid ${twiiInfo.border}`;
-  }
-
-  // 2. 🇺🇸 美股主要指數 (DJI, S&P 500, Nasdaq, SOX) 漲>1%綠色、跌>1%紅色、±1%黃色
-  const usList = marketData.us_indices || [];
-  const targetUS = [
-    { key: 'DJI', name: '道瓊 DJI', match: ['道瓊', 'DJI'] },
-    { key: 'SPX', name: 'S&P 500', match: ['S&P', '500'] },
-    { key: 'IXIC', name: '那斯達克 Nasdaq', match: ['那斯達克', 'Nasdaq', '100'] },
-    { key: 'SOX', name: '費半 SOX', match: ['費半', 'SOX'] }
-  ];
-
-  const hpUsGrid = document.getElementById('hpUsGrid');
-  if (hpUsGrid) {
-    hpUsGrid.innerHTML = targetUS.map(t => {
-      const found = usList.find(idx => t.match.some(m => idx.label && idx.label.includes(m))) || { pct_chg: 0, close: '--' };
-      const pct = found.pct_chg !== undefined ? found.pct_chg : 0;
-      const cInfo = getPctColorClass(pct);
-      const closeStr = found.close ? (typeof found.close === 'number' ? found.close.toLocaleString() : found.close) : '--';
-      return `
-        <div style="background:rgba(15,23,42,0.85); border:1px solid ${cInfo.border}; border-radius:8px; padding:6px 10px; display:flex; flex-direction:column; gap:3px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:700; color:#e2e8f0;">${t.name}</span>
-            <span style="font-size:10px; font-weight:800; color:${cInfo.color};">${cInfo.level === 'green' ? '🟢 綠' : cInfo.level === 'red' ? '🔴 紅' : '🟡 黃'}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
-            <span style="font-size:10px; color:#64748b;">${closeStr}</span>
-            <span style="font-size:12px; font-weight:800; color:${cInfo.color};">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // 3. ⚡ 台股恐慌指數 (VIX): XX  [恐慌 / 良好 / 普通]
-  // 數值 > 30: 恐慌 (紅) | 數值 < 20: 良好 (綠) | 20~30: 普通 (黃)
-  const vixItem = usList.find(idx => idx.label && idx.label.includes('VIX'));
-  const vixVal = vixItem && vixItem.close !== null && vixItem.close !== undefined ? vixItem.close : 15.92;
-  
-  let vixLevelText = '良好';
-  let vixColor = '#22c55e'; // < 20 良好 (綠色)
-  let vixTagBg = 'rgba(34, 197, 94, 0.18)';
-  let vixBorder = 'rgba(34, 197, 94, 0.45)';
-
-  if (vixVal > 30) {
-    vixLevelText = '恐慌';
-    vixColor = '#ef4444'; // > 30 恐慌 (紅色)
-    vixTagBg = 'rgba(239, 68, 68, 0.18)';
-    vixBorder = 'rgba(239, 68, 68, 0.45)';
-  } else if (vixVal >= 20) {
-    vixLevelText = '普通';
-    vixColor = '#eab308'; // 20~30 普通 (黃色)
-    vixTagBg = 'rgba(234, 179, 8, 0.18)';
-    vixBorder = 'rgba(234, 179, 8, 0.45)';
-  }
-
-  const hpVixVal = document.getElementById('hpVixVal');
-  const hpVixLevel = document.getElementById('hpVixLevel');
-  const hpVixTag = document.getElementById('hpVixTag');
-  if (hpVixVal) hpVixVal.innerText = (typeof vixVal === 'number' ? vixVal.toFixed(2) : vixVal);
-  if (hpVixLevel) {
-    hpVixLevel.innerText = vixLevelText;
-    hpVixLevel.style.color = vixColor;
-  }
-  if (hpVixTag) {
-    hpVixTag.innerText = vixLevelText;
-    hpVixTag.style.color = vixColor;
-    hpVixTag.style.background = vixTagBg;
-    hpVixTag.style.border = `1px solid ${vixBorder}`;
-    hpVixTag.style.padding = '2px 8px';
-    hpVixTag.style.borderRadius = '6px';
-  }
-
-  // 4. 頂部按鈕狀態標籤與呼吸燈 (依加權指數與 VIX 同步)
-  const quickBadge = document.getElementById('healthQuickBadge');
-  const beaconDot = document.getElementById('headerHealthBeacon');
-  if (quickBadge) {
-    quickBadge.innerText = `加權 ${twiiPct >= 0 ? '+' : ''}${twiiPct.toFixed(2)}%`;
-    quickBadge.style.color = twiiInfo.color;
-    quickBadge.style.background = twiiInfo.bg;
-    quickBadge.style.borderColor = twiiInfo.border;
-  }
-  if (beaconDot) {
-    beaconDot.style.background = twiiInfo.color;
-    beaconDot.style.boxShadow = `0 0 10px ${twiiInfo.color}`;
-  }
-
-  const hpUpdateTime = document.getElementById('hpUpdateTime');
-  if (hpUpdateTime) hpUpdateTime.innerText = `資料時間：${updateTime}`;
-
   // 2. 美股評分系統 (直接對接後端 0 - 100 分)
 
 
@@ -3299,7 +3260,7 @@ function runScreener(isAutoRefresh = false) {
 
 
 
-  document.getElementById('scoreThresholdDisplay').innerText = p.minScore;
+  const scoreDisplayEl = document.getElementById('scoreThresholdDisplay'); if (scoreDisplayEl) scoreDisplayEl.innerText = p.minScore;
 
 
 
@@ -13323,13 +13284,12 @@ function renderSectorFlowMap() {
 
   container.innerHTML = '';
 
-  // 1. 資料來源：嚴格限定為進入「荳荳清單」的標的
-  let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) 
-    ? [...currentResults] 
-    : (typeof mockStocks !== 'undefined' ? mockStocks.filter(s => (s.dynamicScore || s.totalScore) >= 60) : []);
-
-  if (stocks.length === 0 && typeof mockStocks !== 'undefined') {
-    stocks = mockStocks.slice(0, 30);
+  // 1. 資料來源：進入「荳荳清單」的標的，若尚未完成計算則即時取用庫存標的
+  let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) ? [...currentResults] : [];
+  if (stocks.length === 0 && typeof mockStocks !== 'undefined' && mockStocks.length > 0) {
+    // 即時篩選多因子評分良好之標的，確保開場雷達必定滿載目標光點
+    stocks = mockStocks.filter(s => (s.dynamicScore || s.totalScore || 70) >= 60);
+    if (stocks.length === 0) stocks = mockStocks.slice(0, 35);
   }
 
   // 顏色與象限分類

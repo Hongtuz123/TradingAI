@@ -65,7 +65,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=67" />
+  <link rel="stylesheet" href="style.css?v=68" />
 
 
 
@@ -127,7 +127,7 @@
 
     <nav class="topbar-nav">
       <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
-        <span class="nav-icon">⊞</span> 戰術儀表
+        <span class="nav-icon">🎯</span> 指標雷達
       </button>
 
       <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
@@ -135,7 +135,7 @@
       </button>
 
       <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
-        <span class="nav-icon">📖</span> 策略手冊
+        <span class="nav-icon">🐕</span> 荳荳指標
       </button>
 
       <!-- 📱 快捷推播啟用按鈕 -->
@@ -263,7 +263,8 @@
               </div>
 
               <!-- 保留隱藏的 legacy DOM 元素以防舊 JS 引用報錯 -->
-              <div style="display:none;" id="twIndicators"></div>
+              <div style="display:none;" id="scoreThresholdDisplay"></div>
+<div style="display:none;" id="twIndicators"></div>
               <div style="display:none;" id="usIndicators"></div>
               <div style="display:none;" id="volIndicator"></div>
               <div style="display:none;" id="twMarketScoreBadge"></div>
@@ -282,7 +283,7 @@
         </div>
       </div>
 
-      <!-- 🎯 戰術雷達掃描儀 (Tactical Radar Display) -->
+      <!-- 🎯 指標雷達掃描儀 (Tactical Radar Display) -->
       <div class="flow-bubble-full flow-map-panel tactical-radar-panel">
         <div class="panel-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
@@ -523,7 +524,7 @@
 
 
 
-        <!-- ======================== 策略手冊與量化回測說明視圖 ======================== -->
+        <!-- ======================== 荳荳指標 · 量化體系與策略回測說明視圖 ======================== -->
     <section class="view" id="view-chart">
       <div class="strategy-handbook-container" style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
         
@@ -882,22 +883,22 @@
   <!-- 📱 行動端專屬底部原生導航欄 (Mobile Bottom Tab Bar) -->
   <nav class="mobile-bottom-nav" id="mobileBottomNav">
     <button class="m-nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
-      <span class="m-nav-icon">⊞</span>
-      <span class="m-nav-label">戰術儀表</span>
+      <span class="m-nav-icon">🎯</span>
+      <span class="m-nav-label">指標雷達</span>
     </button>
     <button class="m-nav-btn" data-view="screener" onclick="switchView('screener')">
       <span class="m-nav-icon">🐕</span>
       <span class="m-nav-label">荳荳選股</span>
     </button>
     <button class="m-nav-btn" data-view="chart" onclick="switchView('chart')">
-      <span class="m-nav-icon">📖</span>
-      <span class="m-nav-label">策略手冊</span>
+      <span class="m-nav-icon">🐕</span>
+      <span class="m-nav-label">荳荳指標</span>
     </button>
   </nav>
 
   <!-- 腳本 -->
-  <script src="app.js?v=67"></script>
-  <script src="stock-dashboard.js?v=67"></script>
+  <script src="app.js?v=68"></script>
+  <script src="stock-dashboard.js?v=68"></script>
 </body>
 
 
