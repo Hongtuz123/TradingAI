@@ -65,7 +65,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=68" />
+  <link rel="stylesheet" href="style.css?v=69" />
 
 
 
@@ -310,7 +310,6 @@
 
         <!-- 科技雷達動畫視窗 -->
         <div class="radar-viewport" style="position:relative; width:100%; border-radius:12px; overflow:hidden;">
-          <div class="radar-sweep-beam"></div>
           <div class="flow-map-container" id="sectorTreeMap" style="min-height:540px; height:calc(100vh - 240px);">
             <!-- 由 JS 動態繪製荳荳清單標的氣泡 -->
           </div>
@@ -524,92 +523,302 @@
 
 
 
-        <!-- ======================== 荳荳指標 · 量化體系與策略回測說明視圖 ======================== -->
+                <!-- ======================== 荳荳指標 · 量化體系與策略資料流視圖 ======================== -->
     <section class="view" id="view-chart">
-      <div class="strategy-handbook-container" style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding-bottom: 30px;">
+      <div class="quant-pipeline-wrapper">
         
-        <!-- 手冊頂部 Banner -->
-        <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div>
-              <h2 style="font-size: 22px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; margin: 0;">
-                <span>📖</span> 荳荳 AI 五層量化指標與戰術回測手冊
-              </h2>
-              <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px; margin-bottom: 0;">全自動化後端多時框回測與即時量化模型，提供高勝率選股結論與嚴格風控紀律，無需手動盯盤！</p>
+        <!-- 頂部金融科技 Header -->
+        <div class="pipeline-header-card">
+          <div class="pipeline-header-left">
+            <div class="pipeline-title-row">
+              <span class="pipeline-badge-terminal">QUANT ENGINE v4.2</span>
+              <h2 class="pipeline-main-title">🐾 荳荳 AI 多因子量化選股資料流 (Data Pipeline)</h2>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; font-weight: 700; padding: 6px 12px; border-radius: 8px; font-size: 12px;">🎯 系統回測勝率：68.4%</span>
-              <span class="badge" style="background: rgba(249, 115, 22, 0.2); color: var(--primary); border: 1px solid var(--primary); font-weight: 700; padding: 6px 12px; border-radius: 8px; font-size: 12px;">⚖️ 平均盈虧比：2.8 : 1</span>
+            <p class="pipeline-subtitle">
+              深度整合交易所即時行情、三大法人籌碼、基本面財報與多時框趨勢演算法，透過 4 階管線全自動萃取高勝率交易標的。
+            </p>
+          </div>
+          <div class="pipeline-header-metrics">
+            <div class="p-metric-item">
+              <span class="p-metric-label">數據延遲 (Latency)</span>
+              <span class="p-metric-val green">&lt; 120ms</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">全市場硬濾率</span>
+              <span class="p-metric-val orange">86.5%</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">五年回測勝率</span>
+              <span class="p-metric-val green">68.4%</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">平均盈虧比 (R:R)</span>
+              <span class="p-metric-val purple">2.8 : 1</span>
             </div>
           </div>
         </div>
 
-        <!-- 五層指標核心卡片 Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+        <!-- 🚀 4 階架構資料流導覽圖 (Flow Diagram) -->
+        <div class="pipeline-flowchart">
+
+          <!-- STAGE 01: 多源數據攝取 -->
+          <div class="flow-stage-card stage-1">
+            <div class="stage-tag">STAGE 01</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">📡</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">多源數據攝取</h3>
+                <span class="stage-sub">Data Ingestion Layer</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <ul class="stage-source-list">
+                <li>
+                  <span class="src-badge">TWSE/TPEX</span>
+                  <div class="src-info">
+                    <strong>台股即時逐筆與K線</strong>
+                    <span class="src-detail">Tick/1m/4h/1D 全行情串流</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">INSTITUTION</span>
+                  <div class="src-info">
+                    <strong>三大法人籌碼匯流</strong>
+                    <span class="src-detail">外資、投信、自營商連買天數與庫存</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">MOPS</span>
+                  <div class="src-info">
+                    <strong>財務基本面快照</strong>
+                    <span class="src-detail">月營收 YoY、季 EPS、營業利益率</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">TDCC</span>
+                  <div class="src-info">
+                    <strong>集保大戶持股結構</strong>
+                    <span class="src-detail">400張/1000張大戶集中度週頻更新</span>
+                  </div>
+                </li>
+              </ul>
+              <div class="stage-action-box">
+                ⚡ 執行清洗：除權息還原平滑 ｜ 異質數據戳記對齊 ｜ 排除殭屍與冷門無效報價
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">結構化清洗流</span>
+          </div>
+
+          <!-- STAGE 02: 一級硬濾網門檻 -->
+          <div class="flow-stage-card stage-2">
+            <div class="stage-tag">STAGE 02</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🛡️</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">一級硬門檻過濾</h3>
+                <span class="stage-sub">Hard Gate Filtering</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="gate-grid">
+                <div class="gate-item">
+                  <div class="gate-item-title">💧 流動性安全閥</div>
+                  <p class="gate-desc">上市櫃市值 &gt; 50 億且 5 日日均量 &gt; 1,000 張，剔除滑價過大與主力易操縱的小型殭屍股。</p>
+                </div>
+                <div class="gate-item">
+                  <div class="gate-item-title">⚖️ 財務底線過濾</div>
+                  <p class="gate-desc">近季 EPS &gt; 0，堅決排除全額交割、處置警示與財務虧損體質惡化之投機地雷標的。</p>
+                </div>
+                <div class="gate-item">
+                  <div class="gate-item-title">🌐 大盤環境濾網</div>
+                  <p class="gate-desc">結合台股加權 20MA、美股四指及 VIX 恐慌值，若處空頭風暴期，自動調高評分觸發門檻防守。</p>
+                </div>
+              </div>
+              <div class="stage-stat-footer">
+                <span>全市場 1,800+ 檔標的</span>
+                <span class="filter-arrow">➔ 濃縮篩出 ➔</span>
+                <strong class="highlight-blue">前 15% 機構級股票池</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">合格股票矩陣</span>
+          </div>
+
+          <!-- STAGE 03: 五維多因子量化評分 -->
+          <div class="flow-stage-card stage-3">
+            <div class="stage-tag">STAGE 03</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🧮</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">多因子量化評分引擎</h3>
+                <span class="stage-sub">Multi-Factor Engine (0~100分)</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="factor-formula-banner">
+                Score = (L1 × 25%) + (L2 × 30%) + (L3 × 20%) + (L4 × 15%) + (L5 × 10%)
+              </div>
+              
+              <div class="factor-weight-stack">
+                <!-- L2: 30% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l2">L2 價格量能 (30%)</span>
+                    <span class="factor-logic">爆量突破倍數 &ge; 1.25x ｜ 帶量站上 20MA 與頸線攻擊角</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 30%; background: #3b82f6;"></div></div>
+                </div>
+                <!-- L1: 25% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l1">L1 籌碼集中 (25%)</span>
+                    <span class="factor-logic">外資+投信連續買超天數 ｜ 董監大戶持股連續 3 週淨增</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 25%; background: #10b981;"></div></div>
+                </div>
+                <!-- L3: 20% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l3">L3 趨勢共振 (20%)</span>
+                    <span class="factor-logic">1D 日線波段 + 4H 盤中 Supertrend 雙時框同步金叉偏多</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 20%; background: #f59e0b;"></div></div>
+                </div>
+                <!-- L4: 15% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l4">L4 基本動能 (15%)</span>
+                    <span class="factor-logic">近月營收 YoY 實質增長 &gt; 15% ｜ 本益比與 PEG 位階處安全區</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 15%; background: #ec4899;"></div></div>
+                </div>
+                <!-- L5: 10% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l5">L5 族群共振 (10%)</span>
+                    <span class="factor-logic">細產業次族群資金淨流入領先 ｜ 同板塊領頭羊率先漲停</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 10%; background: #8b5cf6;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">綜合加權結論</span>
+          </div>
+
+          <!-- STAGE 04: 終端訊號決策與風控 -->
+          <div class="flow-stage-card stage-4">
+            <div class="stage-tag">STAGE 04</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🎯</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">戰術分級與鐵血風控</h3>
+                <span class="stage-sub">Execution & Risk Discipline</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="signal-tier-list">
+                <!-- 70-85 -->
+                <div class="signal-tier-card tier-sweet">
+                  <div class="tier-top">
+                    <span class="tier-score">70 ~ 84 分</span>
+                    <span class="tier-tag green">★ 起漲甜蜜點 (黃金區間)</span>
+                  </div>
+                  <p class="tier-desc">底部築底完成「首次帶量突破」，下檔貼緊 20MA（停損僅 3%~5%），向上盈虧比超過 3:1，為勝率最高的關鍵進場點。</p>
+                </div>
+                <!-- 85+ -->
+                <div class="signal-tier-card tier-strong">
+                  <div class="tier-top">
+                    <span class="tier-score">85 ~ 100 分</span>
+                    <span class="tier-tag blue">🚀 強勢噴出 (不追高/加碼)</span>
+                  </div>
+                  <p class="tier-desc">多頭趨勢最強，若已脫離成本區不建議重倉追價，適合已有底單者沿 5MA 移動停利或小部位順勢操作。</p>
+                </div>
+                <!-- 60-69 -->
+                <div class="signal-tier-card tier-watch">
+                  <div class="tier-top">
+                    <span class="tier-score">60 ~ 69 分</span>
+                    <span class="tier-tag yellow">👁️ 潛伏監控區 (等待催化劑)</span>
+                  </div>
+                  <p class="tier-desc">籌碼或營收底子扎實但尚未放量攻擊，納入雷達四象限「量縮整理」密切追蹤放量訊號。</p>
+                </div>
+                <!-- 停損 -->
+                <div class="signal-tier-card tier-stoploss">
+                  <div class="tier-top">
+                    <span class="tier-score">跌破 20MA / Supertrend 翻空</span>
+                    <span class="tier-tag red">🛡️ 鐵血風控立即離場</span>
+                  </div>
+                  <p class="tier-desc">一旦收盤價跌破防守線，系統後台即刻標註 EXIT 狀態。嚴格截斷虧損、讓利潤奔跑，確保資本長期複利。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 🧪 互動式量化情境即時試算模擬器 (Quant Simulator) -->
+        <div class="quant-sim-card">
+          <div class="sim-header">
+            <div>
+              <h4 class="sim-title">⚡ 互動式量化因子情境模擬 (Factor Simulator)</h4>
+              <p class="sim-sub">點擊下方經典實戰情境，即時觀測五維因子權重計算與系統最後給予的評分判定：</p>
+            </div>
+            <div class="sim-preset-btns">
+              <button class="sim-btn active" onclick="applyQuantScenario('breakout')">🚀 2330 台積電型態起爆 (甜蜜點)</button>
+              <button class="sim-btn" onclick="applyQuantScenario('inst_buy')">🔥 投信法人連三買重倉 (強攻)</button>
+              <button class="sim-btn" onclick="applyQuantScenario('fake_rally')">⚠️ 無量弱勢誘多 (過濾淘汰)</button>
+            </div>
+          </div>
           
-          <!-- L1 -->
-          <div class="strategy-card" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <span style="background: #ec4899; color: white; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;">L1</span>
-              <h3 style="font-size: 15px; color: white; margin: 0;">基本面安全閥門檻</h3>
-            </div>
-            <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6; margin: 0;">
-              • 僅篩選上市櫃<strong>市值前 500 大</strong>具備充裕流動性標的。<br>
-              • 嚴格剔除單季虧損 (EPS &le; 0) 與營收崩跌之殭屍股，保證進場個股本質安全。
-            </p>
-          </div>
-
-          <!-- L2 -->
-          <div class="strategy-card" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <span style="background: #3b82f6; color: white; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;">L2</span>
-              <h3 style="font-size: 15px; color: white; margin: 0;">營收動能與爆量起爆</h3>
-            </div>
-            <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6; margin: 0;">
-              • 監控近月營收 YoY 實質增長。<br>
-              • 量能爆發倍數 (Volume Ratio &ge; 1.25x) 且帶長紅棒突破，確保資金主力真金白銀進駐。
-            </p>
-          </div>
-
-          <!-- L3 -->
-          <div class="strategy-card" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <span style="background: #10b981; color: white; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;">L3</span>
-              <h3 style="font-size: 15px; color: white; margin: 0;">三大法人籌碼集中度</h3>
-            </div>
-            <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6; margin: 0;">
-              • 深度追蹤外資、投信與自營商買賣超天數。<br>
-              • 連續買超天數 &ge; 2~3 天且大戶籌碼比率居高，跟隨法人順勢推升。
-            </p>
-          </div>
-
-          <!-- L4 -->
-          <div class="strategy-card" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <span style="background: #f59e0b; color: white; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;">L4</span>
-              <h3 style="font-size: 15px; color: white; margin: 0;">雙時框 Supertrend 趨勢共振</h3>
-            </div>
-            <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6; margin: 0;">
-              • 結合 1D (日線波段) 與 4H (即時趨勢) 雙時框訊號。<br>
-              • 唯有當雙時框同步翻多且貼近 20MA (月線) 時發出訊號，杜絕追高風險。
-            </p>
-          </div>
-
-          <!-- L5 -->
-          <div class="strategy-card" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 18px; grid-column: 1 / -1;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-              <span style="background: #8b5cf6; color: white; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px;">L5 &amp; 風控</span>
-              <h3 style="font-size: 15px; color: white; margin: 0;">70~85 分起漲甜蜜點與鐵血防守紀律</h3>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; font-size: 12.5px; color: #cbd5e1; line-height: 1.6;">
-              <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px; border-left: 3px solid #10b981;">
-                <strong style="color: #4ade80;">🎯 為什麼鎖定 70~85 分？</strong><br>
-                分數達 70~75 代表形態剛從空方打底完成「首次突破翻多」，此時進場停損距離極近（下檔 20MA 防守約 -3%~-5%），上方空間巨大；反之 90 分以上通常已連噴數根，風險報酬比嚴重惡化，系統原則上不建議追價。
+          <div class="sim-body" id="simDemoContainer">
+            <div class="sim-factors-col">
+              <div class="sim-item">
+                <span class="sim-item-name">L1 籌碼因子 (25%)</span>
+                <span class="sim-item-val" id="sim-v-l1">23.5 分</span>
               </div>
-              <div style="background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 8px; border-left: 3px solid #ef4444;">
-                <strong style="color: #f87171;">🛡️ 嚴格停損出場紀律</strong><br>
-                進場後，若收盤跌破 20MA 或雙時框 Supertrend 翻空，後端系統會立即觸發 🔴賣出 (EXIT) 狀態，並記錄出場時間與原因。不凹單、不大賠，保障長期複利成長！
+              <div class="sim-item">
+                <span class="sim-item-name">L2 量能動能 (30%)</span>
+                <span class="sim-item-val" id="sim-v-l2">26.0 分</span>
               </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L3 趨勢共振 (20%)</span>
+                <span class="sim-item-val" id="sim-v-l3">17.0 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L4 基本營收 (15%)</span>
+                <span class="sim-item-val" id="sim-v-l4">12.0 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L5 族群效應 (10%)</span>
+                <span class="sim-item-val" id="sim-v-l5">7.5 分</span>
+              </div>
+            </div>
+
+            <div class="sim-result-col">
+              <div class="sim-total-box">
+                <span class="sim-total-label">總合量化評分</span>
+                <div class="sim-score-num" id="simTotalScore" style="color: #4ade80;">86.0 <span style="font-size:16px;">分</span></div>
+                <div class="sim-status-pill green" id="simStatusPill">起漲甜蜜點 ｜ 建議依訊號佈局</div>
+              </div>
+              <p class="sim-summary-text" id="simSummaryText">
+                突破 20MA 長紅放量 1.6 倍，外資投信同步站在買方且雙時框 Supertrend 翻多。停損點緊依 20MA (-3.5%)，具備機構級高盈虧比！
+              </p>
             </div>
           </div>
         </div>
@@ -897,7 +1106,8 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="app.js?v=68"></script>
+  <script src="data.js?v=69"></script>
+  <script src="app.js?v=69"></script>
   <script src="stock-dashboard.js?v=68"></script>
 </body>
 

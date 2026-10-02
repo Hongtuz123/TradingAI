@@ -153,19 +153,24 @@ window.reloadDataJson = async function() {
 
 
 
-    console.log('[App] Refreshing market data (data.json) asynchronously...');
+    console.log('[App] Loading market data...');
+    let data = null;
+    try {
+      const response = await fetch('data.json?t=' + Date.now());
+      if (response.ok) {
+        data = await response.json();
+      }
+    } catch (fetchErr) {
+      console.warn('[App] fetch data.json encountered error, checking static fallback...', fetchErr);
+    }
 
+    // 🛡️ 雙重保險：若 fetch 失敗或為離線/file協議，直接無縫使用 static data.js
+    if (!data && typeof marketData !== 'undefined' && marketData) {
+      console.log('[App] Utilizing static window.marketData fallback successfully!');
+      data = marketData;
+    }
 
-
-    const response = await fetch('data.json?t=' + Date.now());
-
-
-
-    if (!response.ok) throw new Error('Network response was not ok');
-
-
-
-    const data = await response.json();
+    if (!data) throw new Error('No available market data source found');
 
 
 
@@ -580,19 +585,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    console.log('[App] Fetching market data (data.json) asynchronously...');
+    console.log('[App] Loading market data...');
+    let data = null;
+    try {
+      const response = await fetch('data.json?t=' + Date.now());
+      if (response.ok) {
+        data = await response.json();
+      }
+    } catch (fetchErr) {
+      console.warn('[App] fetch data.json encountered error, checking static fallback...', fetchErr);
+    }
 
+    // 🛡️ 雙重保險：若 fetch 失敗或為離線/file協議，直接無縫使用 static data.js
+    if (!data && typeof marketData !== 'undefined' && marketData) {
+      console.log('[App] Utilizing static window.marketData fallback successfully!');
+      data = marketData;
+    }
 
-
-    const response = await fetch('data.json?t=' + Date.now());
-
-
-
-    if (!response.ok) throw new Error('Network response was not ok');
-
-
-
-    const data = await response.json();
+    if (!data) throw new Error('No available market data source found');
 
 
 
@@ -4245,7 +4255,7 @@ function renderScreenerTable(data) {
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}${heldBadge}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
-      <td><strong style="color:var(--warning)">${s.dynamicScore}分</strong></td>
+      <td><strong style="color:var(--warning)">${s.dynamicScore || s.totalScore || s.score || 70}分</strong></td>
       <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
@@ -4256,7 +4266,7 @@ function renderScreenerTable(data) {
       <td>
         ${statusActionTag}
         <div style="display:flex; gap:6px;">
-          <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:10px;padding:2px 6px;border-radius:4px;">評分: ${s.dynamicScore || s.totalScore}分</span>
+          <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:10px;padding:2px 6px;border-radius:4px;">評分: ${s.dynamicScore || s.totalScore || s.score || 70}分</span>
         </div>
       </td>
     `;
@@ -4347,7 +4357,7 @@ function renderScreenerTable(data) {
 
 
 
-      alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore} 分 (滿分100)\n\n🟢 通過的技術指標與加分項：\n${passedStr}\n\n🔴 扣分防護觸發：\n${penaltyStr}\n\n⚠️ 未符合的 L2 技術指標：\n${failedL2Str}\n\n🔴 未符合的過濾/資金門檻：\n${failedStr}\n\n${advice}`);
+      alert(`【${s.id} ${s.name}】\n荳荳評分：${s.dynamicScore || s.totalScore || s.score || 70} 分 (滿分100)\n\n🟢 通過的技術指標與加分項：\n${passedStr}\n\n🔴 扣分防護觸發：\n${penaltyStr}\n\n⚠️ 未符合的 L2 技術指標：\n${failedL2Str}\n\n🔴 未符合的過濾/資金門檻：\n${failedStr}\n\n${advice}`);
 
 
 
@@ -13278,78 +13288,95 @@ window.changeBubbleAxisMode = function() {
 // =============================================
 // 🎯 荳花漲跌區塊偵測 · 戰術雷達（只針對荳荳清單標的）
 // =============================================
+// =============================================
+// 🎯 荳花漲跌區塊偵測 · 指標雷達（高靈敏度四象限戰術散佈）
+// =============================================
 function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
   if (!container) return;
 
   container.innerHTML = '';
 
-  // 1. 資料來源：進入「荳荳清單」的標的，若尚未完成計算則即時取用庫存標的
+  // 1. 資料來源：進入「荳荳清單」的標的，若無則即時取用庫存優選標的
   let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) ? [...currentResults] : [];
   if (stocks.length === 0 && typeof mockStocks !== 'undefined' && mockStocks.length > 0) {
-    // 即時篩選多因子評分良好之標的，確保開場雷達必定滿載目標光點
-    stocks = mockStocks.filter(s => (s.dynamicScore || s.totalScore || 70) >= 60);
-    if (stocks.length === 0) stocks = mockStocks.slice(0, 35);
+    stocks = mockStocks.filter(s => (s.dynamicScore || s.totalScore || s.score || 70) >= 60);
+    if (stocks.length === 0) stocks = mockStocks.slice(0, 45);
+  }
+  // 🛡️ 雙重保底：若仍然為空，從全域 marketData 取得
+  if (stocks.length === 0 && typeof marketData !== 'undefined' && marketData && marketData.mockStocks) {
+    stocks = marketData.mockStocks.slice(0, 45);
   }
 
-  // 顏色與象限分類
+  // 顏色與象限定義
   const COLOR_MAP = {
-    major: '#ef4444',   // Q1 右上：主力爆買
-    bottom: '#3b82f6',  // Q2 左上：資金入場
-    retreat: '#10b981', // Q3 左下：量縮流出
-    rotate: '#eab308'   // Q4 右下：買力下降
+    major: '#ef4444',   // Q1 右上：主力爆買 (籌碼強 + 價格漲)
+    bottom: '#3b82f6',  // Q2 左上：資金進駐 (剛起爆反彈)
+    retreat: '#10b981', // Q3 左下：量縮整理 (洗盤拉回)
+    rotate: '#eab308'   // Q4 右下：買力降溫 (籌碼在但壓回)
   };
 
   const LABEL_MAP = {
     major: '🔴 主力爆買',
-    bottom: '🔵 資金入場',
-    retreat: '🟢 量縮流出',
-    rotate: '🟡 買力下降'
+    bottom: '🔵 資金進駐',
+    retreat: '🟢 量縮整理',
+    rotate: '🟡 買力降溫'
   };
 
+  // 幾何尺寸
+  const W = container.clientWidth || 920;
+  const H = Math.max(540, Math.min(680, window.innerHeight - 250));
+  const ML = 55, MR = 45, MT = 40, MB = 45;
+  const PW = W - ML - MR;
+  const PH = H - MT - MB;
+  const centerX = ML + PW / 2;
+  const centerY = MT + PH / 2;
+
+  // 核心坐標映射函數 (解決數值過大擠壓在中心的大坑)
+  // X 軸：使用對稱 Log 平滑法人買賣超 (張) 與 5日漲幅，限制在 [-4.5, +4.5]
+  function getXNorm(s) {
+    const net = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 120);
+    if (net === 0) return 0;
+    const sign = net > 0 ? 1 : -1;
+    const abs = Math.abs(net);
+    // log10(1 + abs/150)：150張約0.3，1500張約1.0，15000張約2.0，15萬張約3.0
+    const val = sign * Math.log10(1 + abs / 150) * 1.35;
+    return Math.max(-4.5, Math.min(4.5, val));
+  }
+
+  // Y 軸：標準化當日漲跌幅 (%)，中心為 0%，限制在 [-9.5%, +9.5%]
+  function getYNorm(s) {
+    const chg = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    return Math.max(-9.5, Math.min(9.5, chg));
+  }
+
   function getStockCategory(s) {
-    const x = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5);
-    const y = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    const x = getXNorm(s);
+    const y = getYNorm(s);
     if (x >= 0 && y >= 0) return 'major';
     if (x < 0 && y >= 0) return 'bottom';
     if (x < 0 && y < 0) return 'retreat';
     return 'rotate';
   }
 
-  // 幾何尺寸設定
-  const W = container.clientWidth || 900;
-  const H = Math.max(560, Math.min(680, window.innerHeight * 0.65));
-  const ML = 50, MR = 40, MT = 40, MB = 45;
-  const PW = W - ML - MR;
-  const PH = H - MT - MB;
-  const centerX = ML + PW / 2;
-  const centerY = MT + PH / 2;
-
-  // 計算 X 與 Y 軸的極限範圍
-  const xValues = stocks.map(s => Math.abs(s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5)));
-  const yValues = stocks.map(s => Math.abs(s.liveChange !== undefined ? s.liveChange : (s.change || 0)));
-  const maxX = Math.max(...xValues, 10);
-  const maxY = Math.max(...yValues, 5);
-
-  const X_LIMIT = Math.max(10, Math.ceil(maxX * 1.15));
-  const Y_LIMIT = Math.max(5, Math.ceil(maxY * 1.15));
-
-  function toSvgX(v) {
-    const ratio = (v + X_LIMIT) / (X_LIMIT * 2);
-    return ML + Math.min(Math.max(ratio, 0.05), 0.95) * PW;
+  function toSvgX(xNorm) {
+    // xNorm 範圍 [-4.5, +4.5]
+    const ratio = (xNorm + 4.5) / 9.0;
+    return ML + Math.min(Math.max(ratio, 0.04), 0.96) * PW;
   }
 
-  function toSvgY(v) {
-    const ratio = (v + Y_LIMIT) / (Y_LIMIT * 2);
-    return MT + (1 - Math.min(Math.max(ratio, 0.05), 0.95)) * PH;
+  function toSvgY(yNorm) {
+    // yNorm 範圍 [-9.5, +9.5]，注意 SVG Y 軸往下為正
+    const ratio = (yNorm + 9.5) / 19.0;
+    return MT + (1 - Math.min(Math.max(ratio, 0.04), 0.96)) * PH;
   }
 
-  // 建立雷達外層包裝容器（支援 CSS 掃描光錐）
+  // 建立雷達外層容器
   const radarWrapper = document.createElement('div');
   radarWrapper.className = 'radar-display-wrapper';
-  radarWrapper.style.cssText = 'position:relative; width:100%; height:' + H + 'px; overflow:hidden; border-radius:12px; background:radial-gradient(circle at center, #0f172a 0%, #020617 100%); border:1px solid rgba(59,130,246,0.25); box-shadow:0 8px 32px rgba(0,0,0,0.6);';
+  radarWrapper.style.cssText = 'position:relative; width:100%; height:' + H + 'px; overflow:hidden; border-radius:12px; background:radial-gradient(circle at 50% 50%, #0a1128 0%, #020617 100%); border:1px solid rgba(56,189,248,0.3); box-shadow:0 12px 40px rgba(0,0,0,0.7);';
 
-  // 旋轉掃描光束元素
+  // 旋轉掃描錐形光束
   const sweepBeam = document.createElement('div');
   sweepBeam.className = 'radar-sweep-beam';
   radarWrapper.appendChild(sweepBeam);
@@ -13376,34 +13403,34 @@ function renderSectorFlowMap() {
       cy: centerY,
       r: maxRadius * factor,
       fill: 'none',
-      stroke: 'rgba(59, 130, 246, 0.15)',
+      stroke: 'rgba(56, 189, 248, 0.16)',
       'stroke-width': factor === 1.0 ? '1.5' : '1',
       'stroke-dasharray': factor === 1.0 ? 'none' : '4,4'
     }));
   });
 
   // 2. 四象限區域淺色漸層背景
-  svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.03)' })); // Q1
-  svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.03)' })); // Q2
-  svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.03)' })); // Q3
-  svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.03)' })); // Q4
+  svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.035)' })); // Q1
+  svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.035)' })); // Q2
+  svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.035)' })); // Q3
+  svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.035)' })); // Q4
 
   // 3. 戰術十字螢光準星軸線
-  svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(59, 130, 246, 0.4)', 'stroke-width': '1.5' }));
-  svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(59, 130, 246, 0.4)', 'stroke-width': '1.5' }));
+  svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(56, 189, 248, 0.45)', 'stroke-width': '1.5' }));
+  svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(56, 189, 248, 0.45)', 'stroke-width': '1.5' }));
 
   // 4. 四象限戰術浮雕標籤
-  const qStyle = 'font-size:11px; font-weight:800; letter-spacing:1px; user-select:none; opacity:0.85;';
-  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + 20, 'text-anchor': 'end', fill: '#ef4444', style: qStyle }, '【主力爆買 ZONE】'));
-  svg.appendChild(el('text', { x: ML + 15, y: MT + 20, 'text-anchor': 'start', fill: '#3b82f6', style: qStyle }, '【資金入場 ZONE】'));
-  svg.appendChild(el('text', { x: ML + 15, y: MT + PH - 12, 'text-anchor': 'start', fill: '#10b981', style: qStyle }, '【量縮流出 ZONE】'));
-  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + PH - 12, 'text-anchor': 'end', fill: '#eab308', style: qStyle }, '【買力下降 ZONE】'));
+  const qStyle = 'font-size:11px; font-weight:800; letter-spacing:1px; user-select:none; opacity:0.9;';
+  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + 22, 'text-anchor': 'end', fill: '#ef4444', style: qStyle }, '【主力爆買 ZONE】'));
+  svg.appendChild(el('text', { x: ML + 15, y: MT + 22, 'text-anchor': 'start', fill: '#3b82f6', style: qStyle }, '【資金進駐 ZONE】'));
+  svg.appendChild(el('text', { x: ML + 15, y: MT + PH - 14, 'text-anchor': 'start', fill: '#10b981', style: qStyle }, '【量縮整理 ZONE】'));
+  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + PH - 14, 'text-anchor': 'end', fill: '#eab308', style: qStyle }, '【買力降溫 ZONE】'));
 
   // 5. 坐標軸刻度文字說明
-  svg.appendChild(el('text', { x: centerX, y: H - 8, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '10', 'font-weight': '600' }, '← 近5日籌碼動量 / 法人累計 (張) →'));
+  svg.appendChild(el('text', { x: centerX, y: H - 8, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10', 'font-weight': '700' }, '← 近5日籌碼動量 / 法人累計買賣超 (張) →'));
   
   const yLabelGroup = el('g', { transform: `translate(14, ${centerY}) rotate(-90)` });
-  yLabelGroup.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '10', 'font-weight': '600' }, '← 當日漲跌幅 (%) →'));
+  yLabelGroup.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10', 'font-weight': '700' }, '← 當日漲跌幅 (%) →'));
   svg.appendChild(yLabelGroup);
 
   // 6. Tooltip 元素準備
@@ -13411,22 +13438,22 @@ function renderSectorFlowMap() {
   if (!tooltip) {
     tooltip = document.createElement('div');
     tooltip.id = 'bubbleTooltip';
-    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.96);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:10px 14px;min-width:210px;box-shadow:0 12px 30px rgba(0,0,0,0.8);font-size:12px;color:white;';
+    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:99999;background:rgba(11,19,43,0.96);border:1px solid rgba(56,189,248,0.4);border-radius:10px;padding:12px 16px;min-width:220px;box-shadow:0 16px 40px rgba(0,0,0,0.85);font-size:12px;color:white;backdrop-filter:blur(10px);';
     document.body.appendChild(tooltip);
   }
 
-  // 7. 渲染每檔荳荳清單個股的雷達目標光點 (Blip)
-  stocks.forEach(s => {
+  // 7. 渲染每檔標的的目標發光點 (均勻散佈)
+  stocks.forEach((s, idx) => {
     const cat = getStockCategory(s);
     if (typeof activeBubbleFilters !== 'undefined' && !activeBubbleFilters[cat]) return;
 
     const color = COLOR_MAP[cat];
-    const xVal = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5);
-    const yVal = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    const xNorm = getXNorm(s);
+    const yNorm = getYNorm(s);
 
-    const x = toSvgX(xVal);
-    const y = toSvgY(yVal);
-    const r = Math.min(16, Math.max(8, 7 + Math.sqrt(s.volRatio || 1) * 3));
+    const x = toSvgX(xNorm);
+    const y = toSvgY(yNorm);
+    const r = Math.min(14, Math.max(7, 6 + Math.sqrt(s.volRatio || 1) * 2.8));
 
     const blipG = el('g', { class: 'radar-blip-item', style: 'cursor:pointer;' });
 
@@ -13436,7 +13463,7 @@ function renderSectorFlowMap() {
       fill: 'none',
       stroke: color,
       'stroke-width': '1.5',
-      opacity: '0.4',
+      opacity: '0.45',
       class: 'radar-blip-pulse'
     });
     blipG.appendChild(pulseRing);
@@ -13445,10 +13472,9 @@ function renderSectorFlowMap() {
     const coreDot = el('circle', {
       cx: x, cy: y, r: r,
       fill: color,
-      opacity: '0.85',
+      opacity: '0.88',
       stroke: '#ffffff',
-      'stroke-width': '1.5',
-      style: 'transition: transform 0.2s, opacity 0.2s;'
+      'stroke-width': '1.5'
     });
     blipG.appendChild(coreDot);
 
@@ -13456,7 +13482,7 @@ function renderSectorFlowMap() {
     const label = el('text', {
       x: x, y: y - r - 4,
       'text-anchor': 'middle',
-      fill: '#ffffff',
+      fill: '#f8fafc',
       'font-size': '10',
       'font-weight': '700',
       'text-shadow': '0 2px 4px rgba(0,0,0,0.9)',
@@ -13466,29 +13492,30 @@ function renderSectorFlowMap() {
 
     // Hover 互動
     blipG.addEventListener('mouseenter', (e) => {
-      pulseRing.setAttribute('opacity', '0.9');
-      pulseRing.setAttribute('r', (r + 9).toString());
+      pulseRing.setAttribute('opacity', '1');
+      pulseRing.setAttribute('r', (r + 8).toString());
       coreDot.setAttribute('opacity', '1');
 
       const catLabel = LABEL_MAP[cat];
       const changeVal = (s.liveChange !== undefined ? s.liveChange : s.change) || 0;
-      const changeColor = changeVal >= 0 ? 'var(--up-color, #ef4444)' : 'var(--down-color, #10b981)';
+      const changeColor = changeVal >= 0 ? '#ef4444' : '#10b981';
       const instSumText = s.instSum5D !== undefined ? `${s.instSum5D >= 0 ? '+' : ''}${s.instSum5D}張` : '--';
+      const scoreVal = s.dynamicScore || s.totalScore || s.score || 70;
 
       tooltip.innerHTML = `
         <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
           <span>${s.id} ${s.name}</span>
-          <span style="font-size:10px;padding:1px 5px;background:rgba(255,255,255,0.1);border-radius:3px;color:#fff;">${catLabel}</span>
+          <span style="font-size:10px;padding:2px 6px;background:rgba(255,255,255,0.12);border-radius:4px;color:#fff;">${catLabel}</span>
         </div>
-        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:8px;">
+        <div style="display:grid;grid-template-columns:auto auto;gap:4px 12px;font-size:11px;margin-bottom:8px;">
           <span style="color:#94a3b8;">現價 / 漲跌幅</span><span style="color:${changeColor};font-weight:700;">$${s.livePrice || s.price} (${changeVal >= 0 ? '+' : ''}${changeVal}%)</span>
-          <span style="color:#94a3b8;">多因子量化評分</span><span style="color:#f59e0b;font-weight:700;">${s.dynamicScore || s.totalScore}分</span>
+          <span style="color:#94a3b8;">多因子量化評分</span><span style="color:#f59e0b;font-weight:700;">${scoreVal}分</span>
           <span style="color:#94a3b8;">5日法人籌碼</span><span style="color:#fff;font-weight:600;">${instSumText}</span>
           <span style="color:#94a3b8;">當日成交量比</span><span style="color:#fff;font-weight:600;">${s.volRatio || 1}x</span>
           <span style="color:#94a3b8;">所屬產業</span><span style="color:#cbd5e1;">${s.industry || '一般'}</span>
         </div>
-        <div style="border-top:1px dashed rgba(255,255,255,0.1);padding-top:6px;font-size:10px;color:#94a3b8;text-align:center;">
-          💡 點擊可於荳荳清單聚焦此標的
+        <div style="border-top:1px dashed rgba(255,255,255,0.12);padding-top:6px;font-size:10px;color:#38bdf8;text-align:center;">
+          💡 點擊切換至荳荳清單聚焦此標的
         </div>
       `;
       tooltip.style.display = 'block';
@@ -13502,7 +13529,7 @@ function renderSectorFlowMap() {
     });
 
     blipG.addEventListener('mouseleave', () => {
-      pulseRing.setAttribute('opacity', '0.4');
+      pulseRing.setAttribute('opacity', '0.45');
       pulseRing.setAttribute('r', (r + 5).toString());
       tooltip.style.display = 'none';
     });
@@ -19310,3 +19337,62 @@ function showInAppPushToast(title, body, url) {
     }
   }, 8000);
 }
+
+
+// ==========================================
+// 🐾 荳荳 AI 互動式量化情境模擬器 (Factor Simulator)
+// ==========================================
+window.applyQuantScenario = function(type) {
+  // 切換按鈕 active 樣式
+  const btns = document.querySelectorAll('.sim-btn');
+  btns.forEach(btn => btn.classList.remove('active'));
+  if (event && event.target) {
+    event.target.classList.add('active');
+  }
+
+  const vL1 = document.getElementById('sim-v-l1');
+  const vL2 = document.getElementById('sim-v-l2');
+  const vL3 = document.getElementById('sim-v-l3');
+  const vL4 = document.getElementById('sim-v-l4');
+  const vL5 = document.getElementById('sim-v-l5');
+  const scoreNum = document.getElementById('simTotalScore');
+  const statusPill = document.getElementById('simStatusPill');
+  const summaryText = document.getElementById('simSummaryText');
+
+  if (!vL1 || !scoreNum) return;
+
+  if (type === 'breakout') {
+    vL1.innerText = '21.5 分';
+    vL2.innerText = '27.5 分';
+    vL3.innerText = '18.0 分';
+    vL4.innerText = '13.0 分';
+    vL5.innerText = '8.0 分';
+    scoreNum.innerHTML = '88.0 <span style="font-size:16px;">分</span>';
+    scoreNum.style.color = '#4ade80';
+    statusPill.className = 'sim-status-pill green';
+    statusPill.innerText = '🟢 起漲甜蜜點 ｜ 建議依訊號佈局';
+    summaryText.innerText = '帶量長紅突破 20MA 與整理頸線，成交量放大 1.6 倍，外資首度翻多進駐。下檔貼近 20MA (停損僅 -3.5%)，具備極佳盈虧比！';
+  } else if (type === 'inst_buy') {
+    vL1.innerText = '25.0 分';
+    vL2.innerText = '29.0 分';
+    vL3.innerText = '19.5 分';
+    vL4.innerText = '14.5 分';
+    vL5.innerText = '9.0 分';
+    scoreNum.innerHTML = '97.0 <span style="font-size:16px;">分</span>';
+    scoreNum.style.color = '#60a5fa';
+    statusPill.className = 'sim-status-pill blue';
+    statusPill.innerText = '🔵 強勢主升段 ｜ 移動停利續抱';
+    summaryText.innerText = '投信與外資連續 3 天擴大買超，雙時框 (1D+4H) Supertrend 全面翻多，資金板塊共振強烈。已有庫存者可持股續抱，空手者嚴禁追價！';
+  } else if (type === 'fake_rally') {
+    vL1.innerText = '8.0 分';
+    vL2.innerText = '11.0 分';
+    vL3.innerText = '9.0 分';
+    vL4.innerText = '7.0 分';
+    vL5.innerText = '4.0 分';
+    scoreNum.innerHTML = '39.0 <span style="font-size:16px;">分</span>';
+    scoreNum.style.color = '#f87171';
+    statusPill.className = 'sim-status-pill red';
+    statusPill.innerText = '🔴 無量弱勢誘多 ｜ 系統阻斷過濾';
+    summaryText.innerText = '量能萎縮且未站上 20MA，籌碼面主力實為淨賣出。觸發一級硬濾網與弱勢門檻直接淘汰，避免投資人誤入無量誘多陷阱。';
+  }
+};
