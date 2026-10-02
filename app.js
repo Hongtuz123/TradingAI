@@ -16,6 +16,36 @@ let mockStocks = [];
 
 let currentResults = [];
 
+// =============================================
+// 荳荳清單 Hashtag 與搜尋即時過濾邏輯
+// =============================================
+window.activeHashtag = 'all';
+window.screenerSearchQuery = '';
+
+window.filterByHashtag = function(tag, btn) {
+  window.activeHashtag = tag;
+  document.querySelectorAll('.hashtag-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (typeof applyTechFiltersAndRender === 'function') {
+    applyTechFiltersAndRender();
+  }
+};
+
+window.handleScreenerSearch = function(query) {
+  window.screenerSearchQuery = (query || '').trim().toLowerCase();
+  if (typeof applyTechFiltersAndRender === 'function') {
+    applyTechFiltersAndRender();
+  }
+};
+
+window.toggleHealthSummaryPopover = function() {
+  const popover = document.getElementById('healthSummaryPopover');
+  if (!popover) return;
+  const isHidden = popover.style.display === 'none' || !popover.style.display;
+  popover.style.display = isHidden ? 'block' : 'none';
+};
+
+
 
 
 let currentWhitelist = [];
@@ -1152,6 +1182,32 @@ function initDashboard() {
 
 
   document.getElementById('twIndicators').innerHTML = twHTML;
+
+  // 更新微型健康度 ICON 按鈕與 Popover
+  const healthBriefText = document.getElementById('healthBriefText');
+  if (healthBriefText) {
+    const isBull = twTotalScore >= 60;
+    healthBriefText.innerHTML = `市場：<strong style="color:${twColor};">${isBull ? '偏多 📈' : '偏空 📉'} (${twRating})</strong>`;
+  }
+  const healthPopoverContent = document.getElementById('healthPopoverContent');
+  if (healthPopoverContent) {
+    healthPopoverContent.innerHTML = `
+      <div style="font-size:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#94a3b8;">台股總體評分：</span>
+          <span style="color:${twColor};font-weight:700;">${twTotalScore >= 60 ? '偏多 📈' : '偏空 📉'} (${twTotalScore}分 · ${twRating})</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#94a3b8;">美股總體評分：</span>
+          <span style="color:${usColor};font-weight:700;">${usTotalScore >= 60 ? '偏多 📈' : '偏空 📉'} (${usTotalScore}分 · ${usRating})</span>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;">
+          資料時間：${updateTime}
+        </div>
+      </div>
+    `;
+  }
+
 
 
 
@@ -2968,57 +3024,55 @@ window.toggleTechFilter = function(filterKey) {
 
 
 window.applyTechFiltersAndRender = function() {
-
-
-
   let filtered = [...currentResults];
-
-
-
+  if (filtered.length === 0 && typeof mockStocks !== 'undefined' && mockStocks.length > 0) {
+    filtered = mockStocks.filter(s => (s.dynamicScore || s.totalScore) >= 60);
+  }
   
-
-
-
-  // 如果有啟用 any 技術指標快速過濾按鈕，則進行 AND 複選過濾
-
-
-
-  if (activeTechFilters.length > 0) {
-
-
-
-    filtered = filtered.filter(s => {
-
-
-
-      return activeTechFilters.every(filterKey => {
-
-
-
-        return s.passedL2Flags && s.passedL2Flags[filterKey];
-
-
-
-      });
-
-
-
-    });
-
-
-
+  // 1. Hashtag 分類過濾
+  if (window.activeHashtag && window.activeHashtag !== 'all') {
+    if (window.activeHashtag === 'strong_sector') {
+      const strongList = window.rankingsData?.strong || [];
+      filtered = filtered.filter(s => strongList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change >= 2.0)));
+    } else if (window.activeHashtag === 'weak_sector') {
+      const weakList = window.rankingsData?.weak || [];
+      filtered = filtered.filter(s => weakList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change < 0)));
+    } else if (window.activeHashtag === 'hot_vol') {
+      const hotList = window.rankingsData?.hot || [];
+      const hotIds = new Set(hotList.map(item => item.id));
+      filtered = filtered.filter(s => hotIds.has(s.id) || (s.volRatio >= 1.5) || (s.dailyVol >= 3000));
+    } else if (window.activeHashtag === 'inst_buy') {
+      const instList = window.rankingsData?.inst || [];
+      const instIds = new Set(instList.map(item => item.id));
+      filtered = filtered.filter(s => instIds.has(s.id) || (s.instSum5D > 0) || (s.foreignNetBuy > 0) || (s.trustDays > 0));
+    } else if (window.activeHashtag === 'bottom_dip') {
+      const dipList = window.rankingsData?.dip || [];
+      const dipIds = new Set(dipList.map(item => item.id));
+      filtered = filtered.filter(s => dipIds.has(s.id) || (s.rsi14 <= 50) || (s.dist52W <= 10) || (s.change > 0 && s.change <= 2.5));
+    }
   }
 
+  // 2. 搜尋股票代號或名稱過濾
+  if (window.screenerSearchQuery) {
+    const q = window.screenerSearchQuery;
+    filtered = filtered.filter(s => {
+      const idMatch = s.id && s.id.toLowerCase().includes(q);
+      const nameMatch = s.name && s.name.toLowerCase().includes(q);
+      const indMatch = s.industry && s.industry.toLowerCase().includes(q);
+      return idMatch || nameMatch || indMatch;
+    });
+  }
 
-
+  // 如果有啟用技術指標快速過濾按鈕
+  if (typeof activeTechFilters !== 'undefined' && activeTechFilters.length > 0) {
+    filtered = filtered.filter(s => {
+      return activeTechFilters.every(filterKey => {
+        return s.passedL2Flags && s.passedL2Flags[filterKey];
+      });
+    });
+  }
   
-
-
-
   renderScreenerTable(filtered);
-
-
-
 };
 
 
@@ -4095,10 +4149,7 @@ function renderScreenerTable(data) {
       <td>
         ${statusActionTag}
         <div style="display:flex; gap:6px;">
-          <button class="btn-link" onclick="event.stopPropagation(); openChart('${s.id}')">回測</button>
-          <button class="btn-link" style="color:var(--warning);" onclick="event.stopPropagation(); toggleStockPortfolio('${s.id}')">
-            ${isStockInPortfolio(s.id) ? '★ 已自選' : '☆ 自選'}
-          </button>
+          <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:10px;padding:2px 6px;border-radius:4px;">評分: ${s.dynamicScore || s.totalScore}分</span>
         </div>
       </td>
     `;
@@ -13117,748 +13168,258 @@ window.changeBubbleAxisMode = function() {
 
 
 
+// =============================================
+// 🎯 荳花漲跌區塊偵測 · 戰術雷達（只針對荳荳清單標的）
+// =============================================
 function renderSectorFlowMap() {
-
   const container = document.getElementById('sectorTreeMap');
-
   if (!container) return;
-
-
-
-  // 讀取上一次的平移，以防滾輪重繪時位置跳回原點 (Bug 修正)
-
-  const prevSvg = container.querySelector('svg');
-
-  let panX = prevSvg ? parseFloat(prevSvg.getAttribute('data-pan-x') || '0') : 0;
-
-  let panY = prevSvg ? parseFloat(prevSvg.getAttribute('data-pan-y') || '0') : 0;
-
-
-
-  // 🐾 效能優化：隨鼠 Tooltip rAF 快取變數與更新函數
-
-  let lastTooltipX = 0;
-
-  let lastTooltipY = 0;
-
-  let tooltipTicking = false;
-
-
-
-  function updateTooltipPosition() {
-
-    const tooltip = document.getElementById('bubbleTooltip');
-
-    if (!tooltip) return;
-
-    const x = Math.min(lastTooltipX + 16, window.innerWidth - 260);
-
-    const y = Math.max(10, lastTooltipY - 10);
-
-    tooltip.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-
-    tooltipTicking = false;
-
-  }
-
-  
 
   container.innerHTML = '';
 
+  // 1. 資料來源：嚴格限定為進入「荳荳清單」的標的
+  let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) 
+    ? [...currentResults] 
+    : (typeof mockStocks !== 'undefined' ? mockStocks.filter(s => (s.dynamicScore || s.totalScore) >= 60) : []);
 
-
-  // 直接拿 Python 端預算好之氣泡圖產業資料，零前端運算！
-
-  const sectors = window.bubbleChartData?.sectors || [];
-
-
-
-  // 顏色分類映射：主力爆買(紅)/資金入場(藍)/量縮流出(綠)/買力下降(黃)
-
-  const COLOR_MAP = {
-
-    major: '#ef4444',   // 第一象限 (右上)：主力爆買
-
-    bottom: '#3b82f6',  // 第二象限 (左上)：資金入場
-
-    retreat: '#10b981', // 第三象限 (左下)：量縮流出
-
-    rotate: '#eab308'   // 第四象限 (右下)：買力下降
-
-  };
-
-
-
-  function getCategory(g) {
-
-    const x = g.netFlow5D || 0;
-
-    const y = g.netFlow || 0;
-
-    if (x >= 0 && y >= 0) return 'major';    // 第一象限：主力爆買
-
-    if (x < 0 && y >= 0) return 'bottom';    // 第二象限：資金入場
-
-    if (x < 0 && y < 0) return 'retreat';    // 第三象限：量縮流出
-
-    return 'rotate';                         // 第四象限 (x >= 0 && y < 0)：買力下降
-
+  if (stocks.length === 0 && typeof mockStocks !== 'undefined') {
+    stocks = mockStocks.slice(0, 30);
   }
 
+  // 顏色與象限分類
+  const COLOR_MAP = {
+    major: '#ef4444',   // Q1 右上：主力爆買
+    bottom: '#3b82f6',  // Q2 左上：資金入場
+    retreat: '#10b981', // Q3 左下：量縮流出
+    rotate: '#eab308'   // Q4 右下：買力下降
+  };
 
+  const LABEL_MAP = {
+    major: '🔴 主力爆買',
+    bottom: '🔵 資金入場',
+    retreat: '🟢 量縮流出',
+    rotate: '🟡 買力下降'
+  };
 
-  // 幾何範圍與變換函數
+  function getStockCategory(s) {
+    const x = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5);
+    const y = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
+    if (x >= 0 && y >= 0) return 'major';
+    if (x < 0 && y >= 0) return 'bottom';
+    if (x < 0 && y < 0) return 'retreat';
+    return 'rotate';
+  }
 
-  const W = container.clientWidth || 800;
+  // 幾何尺寸設定
+  const W = container.clientWidth || 900;
+  const H = Math.max(560, Math.min(680, window.innerHeight * 0.65));
+  const ML = 50, MR = 40, MT = 40, MB = 45;
+  const PW = W - ML - MR;
+  const PH = H - MT - MB;
+  const centerX = ML + PW / 2;
+  const centerY = MT + PH / 2;
 
-  const H = 620;
+  // 計算 X 與 Y 軸的極限範圍
+  const xValues = stocks.map(s => Math.abs(s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5)));
+  const yValues = stocks.map(s => Math.abs(s.liveChange !== undefined ? s.liveChange : (s.change || 0)));
+  const maxX = Math.max(...xValues, 10);
+  const maxY = Math.max(...yValues, 5);
 
-  const ML = 58, MR = 18, MT = 22, MB = 42;
+  const X_LIMIT = Math.max(10, Math.ceil(maxX * 1.15));
+  const Y_LIMIT = Math.max(5, Math.ceil(maxY * 1.15));
 
-  const PW = W - ML - MR, PH = H - MT - MB;
-
-
-
-  let X_AXIS_LABEL = '← 近 5 日累計資金淨流量 (億元) →';
-
-  let Y_AXIS_LABEL = '← 當日資金淨流量 (億元) →';
-
-
-
-  // 尋找最大絕對值以進行對稱對齊中軸 0 (防禦 NaN 與 Infinity)
-
-  let maxX = Math.max(...sectors.map(g => Math.abs(g.netFlow5D || 0)).filter(v => !isNaN(v)), 1);
-
-  let maxY = Math.max(...sectors.map(g => Math.abs(g.netFlow || 0)).filter(v => !isNaN(v)), 1);
-
-  if (isNaN(maxX) || !isFinite(maxX)) maxX = 1;
-
-  if (isNaN(maxY) || !isFinite(maxY)) maxY = 1;
-
-
-
-  // 讀取全域縮放倍率，實現軸極限重繪縮放
-
-  const zoomFactor = window.bubbleChartZoomFactor || 1.0;
-
-  const X_LIMIT = Math.max(0.5, Math.ceil(maxX * 1.15) * zoomFactor);
-
-  const Y_LIMIT = Math.max(0.5, Math.ceil(maxY * 1.15) * zoomFactor);
-
-
-
-  const toSvgX = function(v) {
-
+  function toSvgX(v) {
     const ratio = (v + X_LIMIT) / (X_LIMIT * 2);
+    return ML + Math.min(Math.max(ratio, 0.05), 0.95) * PW;
+  }
 
-    return ML + Math.min(Math.max(ratio, 0.08), 0.92) * PW;
-
-  };
-
-  const toSvgY = function(v) {
-
+  function toSvgY(v) {
     const ratio = (v + Y_LIMIT) / (Y_LIMIT * 2);
+    return MT + (1 - Math.min(Math.max(ratio, 0.05), 0.95)) * PH;
+  }
 
-    return MT + (1 - Math.min(Math.max(ratio, 0.08), 0.92)) * PH;
+  // 建立雷達外層包裝容器（支援 CSS 掃描光錐）
+  const radarWrapper = document.createElement('div');
+  radarWrapper.className = 'radar-display-wrapper';
+  radarWrapper.style.cssText = 'position:relative; width:100%; height:' + H + 'px; overflow:hidden; border-radius:12px; background:radial-gradient(circle at center, #0f172a 0%, #020617 100%); border:1px solid rgba(59,130,246,0.25); box-shadow:0 8px 32px rgba(0,0,0,0.6);';
 
-  };
+  // 旋轉掃描光束元素
+  const sweepBeam = document.createElement('div');
+  sweepBeam.className = 'radar-sweep-beam';
+  radarWrapper.appendChild(sweepBeam);
 
-
-
-  const centerX = toSvgX(0);
-
-  const centerY = toSvgY(0);
-
-
-
-  const xStep = Math.round(X_LIMIT / 2);
-
-  const xLabels = [-X_LIMIT, -xStep, 0, xStep, X_LIMIT];
-
-
-
-  const yStep = Math.round(Y_LIMIT / 2);
-
-  const yLabels = [-Y_LIMIT, -yStep, 0, yStep, Y_LIMIT];
-
-
-
+  // SVG 畫布
   const ns = 'http://www.w3.org/2000/svg';
-
   const svg = document.createElementNS(ns, 'svg');
-
   svg.setAttribute('width', W);
-
   svg.setAttribute('height', H);
-
-  svg.style.cssText = 'display:block;overflow:hidden;border-radius:8px;background:rgba(15,23,42,0.3);';
-
-
-
-  // 設置縮放與拖曳的初始資料屬性
-
-  svg.setAttribute('data-pan-x', panX.toString());
-
-  svg.setAttribute('data-pan-y', panY.toString());
-
-
+  svg.style.cssText = 'position:relative; z-index:2; display:block; width:100%; height:100%;';
 
   function el(tag, attrs, text) {
-
     const e = document.createElementNS(ns, tag);
-
     Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
-
     if (text !== undefined) e.textContent = text;
-
     return e;
-
   }
 
-
-
-  // 坐標軸、格線與刻度（留在最外層固定不動）
-
-  svg.appendChild(el('rect', { x: ML, y: MT, width: PW, height: PH, fill: 'rgba(15,23,42,0.5)', rx: '8' }));
-
-
-
-  // 繪製背景格線 (X 軸)
-
-  xLabels.forEach(v => {
-
-    svg.appendChild(el('line', { x1: toSvgX(v), y1: MT, x2: toSvgX(v), y2: MT + PH, stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
-
+  // 1. 同心圓測距環 (Radar Range Rings)
+  const maxRadius = Math.min(PW, PH) / 2;
+  [0.25, 0.5, 0.75, 1.0].forEach(factor => {
+    svg.appendChild(el('circle', {
+      cx: centerX,
+      cy: centerY,
+      r: maxRadius * factor,
+      fill: 'none',
+      stroke: 'rgba(59, 130, 246, 0.15)',
+      'stroke-width': factor === 1.0 ? '1.5' : '1',
+      'stroke-dasharray': factor === 1.0 ? 'none' : '4,4'
+    }));
   });
 
+  // 2. 四象限區域淺色漸層背景
+  svg.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.03)' })); // Q1
+  svg.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.03)' })); // Q2
+  svg.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.03)' })); // Q3
+  svg.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.03)' })); // Q4
 
+  // 3. 戰術十字螢光準星軸線
+  svg.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(59, 130, 246, 0.4)', 'stroke-width': '1.5' }));
+  svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(59, 130, 246, 0.4)', 'stroke-width': '1.5' }));
 
-  // 繪製背景格線 (Y 軸)
+  // 4. 四象限戰術浮雕標籤
+  const qStyle = 'font-size:11px; font-weight:800; letter-spacing:1px; user-select:none; opacity:0.85;';
+  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + 20, 'text-anchor': 'end', fill: '#ef4444', style: qStyle }, '【主力爆買 ZONE】'));
+  svg.appendChild(el('text', { x: ML + 15, y: MT + 20, 'text-anchor': 'start', fill: '#3b82f6', style: qStyle }, '【資金入場 ZONE】'));
+  svg.appendChild(el('text', { x: ML + 15, y: MT + PH - 12, 'text-anchor': 'start', fill: '#10b981', style: qStyle }, '【量縮流出 ZONE】'));
+  svg.appendChild(el('text', { x: ML + PW - 15, y: MT + PH - 12, 'text-anchor': 'end', fill: '#eab308', style: qStyle }, '【買力下降 ZONE】'));
 
-  yLabels.forEach(v => {
+  // 5. 坐標軸刻度文字說明
+  svg.appendChild(el('text', { x: centerX, y: H - 8, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '10', 'font-weight': '600' }, '← 近5日籌碼動量 / 法人累計 (張) →'));
+  
+  const yLabelGroup = el('g', { transform: `translate(14, ${centerY}) rotate(-90)` });
+  yLabelGroup.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '10', 'font-weight': '600' }, '← 當日漲跌幅 (%) →'));
+  svg.appendChild(yLabelGroup);
 
-    svg.appendChild(el('line', { x1: ML, y1: toSvgY(v), x2: ML + PW, y2: toSvgY(v), stroke: 'rgba(255,255,255,0.04)', 'stroke-width': '1' }));
-
-  });
-
-
-
-  // X 軸刻度文字
-
-  xLabels.forEach(v => {
-
-    const text = (v > 0 ? '+' : '') + v + '億';
-
-    svg.appendChild(el('text', { x: toSvgX(v), y: MT + PH + 13, 'text-anchor': 'middle', fill: '#64748b', 'font-size': '9' }, text));
-
-  });
-
-
-
-  // Y 軸刻度文字
-
-  yLabels.forEach(v => {
-
-    const text = (v > 0 ? '+' : '') + v + '億';
-
-    svg.appendChild(el('text', { x: ML - 6, y: toSvgY(v) + 3.5, 'text-anchor': 'end', fill: '#64748b', 'font-size': '9' }, text));
-
-  });
-
-
-
-  // 軸標題
-
-  svg.appendChild(el('text', { x: ML + PW / 2, y: H - 4, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, X_AXIS_LABEL));
-
-
-
-  const yG = document.createElementNS(ns, 'g');
-
-  yG.setAttribute('transform', 'translate(13,' + (MT + PH / 2) + ') rotate(-90)');
-
-  yG.appendChild(el('text', { x: 0, y: 0, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': '10' }, Y_AXIS_LABEL));
-
-  svg.appendChild(yG);
-
-
-
-  // 建立縮放與平移容器 mainG
-
-  const mainG = el('g', { id: 'bubble-transform-group' });
-
-  mainG.setAttribute('transform', `translate(${panX}, ${panY})`);
-
-  svg.appendChild(mainG);
-
-
-
-  // 象限背景色
-
-  mainG.appendChild(el('rect', { x: centerX, y: MT, width: ML + PW - centerX, height: centerY - MT, fill: 'rgba(239,68,68,0.04)', rx: '4' })); // Q1
-
-  mainG.appendChild(el('rect', { x: ML, y: MT, width: centerX - ML, height: centerY - MT, fill: 'rgba(59,130,246,0.04)', rx: '4' })); // Q2
-
-  mainG.appendChild(el('rect', { x: ML, y: centerY, width: centerX - ML, height: MT + PH - centerY, fill: 'rgba(16,185,129,0.04)', rx: '4' })); // Q3
-
-  mainG.appendChild(el('rect', { x: centerX, y: centerY, width: ML + PW - centerX, height: MT + PH - centerY, fill: 'rgba(234,179,8,0.04)', rx: '4' })); // Q4
-
-
-
-  // 中心虛線
-
-  mainG.appendChild(el('line', { x1: centerX, y1: MT, x2: centerX, y2: MT + PH, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
-
-  mainG.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(255,255,255,0.18)', 'stroke-width': '1.5', 'stroke-dasharray': '4,4' }));
-
-
-
+  // 6. Tooltip 元素準備
   let tooltip = document.getElementById('bubbleTooltip');
-
   if (!tooltip) {
-
     tooltip = document.createElement('div');
-
     tooltip.id = 'bubbleTooltip';
-
-    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.97);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;min-width:190px;max-width:250px;box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:12px;color:white;left:0;top:0;transform:translate3d(0,0,0);';
-
+    tooltip.style.cssText = 'position:fixed;pointer-events:none;display:none;z-index:9999;background:rgba(15,23,42,0.96);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:10px 14px;min-width:210px;box-shadow:0 12px 30px rgba(0,0,0,0.8);font-size:12px;color:white;';
     document.body.appendChild(tooltip);
-
   }
 
-
-
-  const maxVol = Math.max(...sectors.map(g => g.totalVol), 1);
-
-
-
-  // 繪製泡泡
-
-  sectors.forEach(g => {
-
-    const cat = getCategory(g);
-
-    if (!activeBubbleFilters[cat]) return;
+  // 7. 渲染每檔荳荳清單個股的雷達目標光點 (Blip)
+  stocks.forEach(s => {
+    const cat = getStockCategory(s);
+    if (typeof activeBubbleFilters !== 'undefined' && !activeBubbleFilters[cat]) return;
 
     const color = COLOR_MAP[cat];
+    const xVal = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 2.5);
+    const yVal = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
 
+    const x = toSvgX(xVal);
+    const y = toSvgY(yVal);
+    const r = Math.min(16, Math.max(8, 7 + Math.sqrt(s.volRatio || 1) * 3));
 
+    const blipG = el('g', { class: 'radar-blip-item', style: 'cursor:pointer;' });
 
-    const x = toSvgX(g.netFlow5D || 0);
+    // 雷達微脈衝光暈環
+    const pulseRing = el('circle', {
+      cx: x, cy: y, r: r + 5,
+      fill: 'none',
+      stroke: color,
+      'stroke-width': '1.5',
+      opacity: '0.4',
+      class: 'radar-blip-pulse'
+    });
+    blipG.appendChild(pulseRing);
 
-    const y = toSvgY(g.netFlow || 0);
+    // 核心光點
+    const coreDot = el('circle', {
+      cx: x, cy: y, r: r,
+      fill: color,
+      opacity: '0.85',
+      stroke: '#ffffff',
+      'stroke-width': '1.5',
+      style: 'transition: transform 0.2s, opacity 0.2s;'
+    });
+    blipG.appendChild(coreDot);
 
-    const r = Math.max(10, Math.min(50, 10 + Math.sqrt(g.totalVol / maxVol) * 40));
-
-
-
-    const bubbleGroup = el('g', { class: 'bubble-item-group', style: 'cursor:pointer;' });
-
-
-
-    const glow = el('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: color, 'stroke-width': '1.5', opacity: '0.25' });
-
-    bubbleGroup.appendChild(glow);
-
-
-
-    const circle = el('circle', { cx: x, cy: y, r, fill: color, opacity: '0.5', style: 'transition:opacity 0.15s, r 0.15s;' });
-
-    bubbleGroup.appendChild(circle);
-
-
-
-    const shortName = g.name.length > 5 ? g.name.slice(0, 4) + '…' : g.name;
-
+    // 股票代號標籤
     const label = el('text', {
+      x: x, y: y - r - 4,
+      'text-anchor': 'middle',
+      fill: '#ffffff',
+      'font-size': '10',
+      'font-weight': '700',
+      'text-shadow': '0 2px 4px rgba(0,0,0,0.9)',
+      style: 'pointer-events:none; user-select:none;'
+    }, `${s.id} ${s.name}`);
+    blipG.appendChild(label);
 
-      x, y: y + 1, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
+    // Hover 互動
+    blipG.addEventListener('mouseenter', (e) => {
+      pulseRing.setAttribute('opacity', '0.9');
+      pulseRing.setAttribute('r', (r + 9).toString());
+      coreDot.setAttribute('opacity', '1');
 
-      fill: 'rgba(0,0,0,0.85)', 'font-size': r >= 24 ? '10' : '8',
-
-      'font-weight': '700', style: 'pointer-events:none;user-select:none;'
-
-    }, shortName);
-
-    bubbleGroup.appendChild(label);
-
-
-
-    bubbleGroup.addEventListener('mouseenter', (e) => {
-
-      if (mainG.lastChild !== bubbleGroup) {
-
-        mainG.appendChild(bubbleGroup);
-
-      }
-
-      circle.setAttribute('opacity', '1');
-
-      circle.setAttribute('r', (r + 3).toString());
-
-      glow.setAttribute('opacity', '0.55');
-
-
-
-      const catLabel = cat === 'major' ? '🔴 主力爆買' : cat === 'bottom' ? '🔵 資金入場' : cat === 'retreat' ? '🟢 量縮流出' : '🟡 買力下降';
-
-      const top3 = [...g.stocks].sort((a, b) => (b.volRatio || 0) - (a.volRatio || 0)).slice(0, 3);
-
-      const stockTags = top3.map(s => '<span style="background:rgba(255,255,255,0.07);border-radius:4px;padding:1px 6px;font-size:10px;white-space:nowrap;">' + s.id + ' ' + s.name + '</span>').join(' ');
-
-
-
-      const capB = (g.totalVol / 1e8).toFixed(1);
-
-      const flowText = g.netFlow >= 0 ? `+${g.netFlow.toFixed(2)}億` : `${g.netFlow.toFixed(2)}億`;
-
-      const flow5DText = g.netFlow5D >= 0 ? `+${g.netFlow5D.toFixed(2)}億` : `${g.netFlow5D.toFixed(2)}億`;
-
-
+      const catLabel = LABEL_MAP[cat];
+      const changeVal = (s.liveChange !== undefined ? s.liveChange : s.change) || 0;
+      const changeColor = changeVal >= 0 ? 'var(--up-color, #ef4444)' : 'var(--down-color, #10b981)';
+      const instSumText = s.instSum5D !== undefined ? `${s.instSum5D >= 0 ? '+' : ''}${s.instSum5D}張` : '--';
 
       tooltip.innerHTML = `
-
-        <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:7px;">${g.name} <span style="font-size:11px;font-weight:500;color:#94a3b8;">(${catLabel})</span></div>
-
-        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:7px;">
-
-          <span style="color:#94a3b8;">漲跌幅</span><span style="color:${g.avgChange >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${g.avgChange >= 0 ? '+' : ''}${g.avgChange.toFixed(2)}%</span>
-
-          <span style="color:#94a3b8;">當日資金淨流入</span><span style="color:${g.netFlow >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${flowText}</span>
-
-          <span style="color:#94a3b8;">5日累計淨流入</span><span style="color:${g.netFlow5D >= 0 ? 'var(--up-color)' : 'var(--down-color)'};font-weight:700;">${flow5DText}</span>
-
-          <span style="color:#94a3b8;">估算當日成交額</span><span style="color:#f59e0b;font-weight:700;">${capB}億</span>
-
-          <span style="color:#94a3b8;">成分股</span><span style="color:white;">${g.stocks.length}檔</span>
-
+        <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+          <span>${s.id} ${s.name}</span>
+          <span style="font-size:10px;padding:1px 5px;background:rgba(255,255,255,0.1);border-radius:3px;color:#fff;">${catLabel}</span>
         </div>
-
-        <div style="font-size:9px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">領頭股</div>
-
-        <div style="display:flex;flex-wrap:wrap;gap:3px;">${stockTags}</div>
-
+        <div style="display:grid;grid-template-columns:auto auto;gap:3px 12px;font-size:11px;margin-bottom:8px;">
+          <span style="color:#94a3b8;">現價 / 漲跌幅</span><span style="color:${changeColor};font-weight:700;">$${s.livePrice || s.price} (${changeVal >= 0 ? '+' : ''}${changeVal}%)</span>
+          <span style="color:#94a3b8;">多因子量化評分</span><span style="color:#f59e0b;font-weight:700;">${s.dynamicScore || s.totalScore}分</span>
+          <span style="color:#94a3b8;">5日法人籌碼</span><span style="color:#fff;font-weight:600;">${instSumText}</span>
+          <span style="color:#94a3b8;">當日成交量比</span><span style="color:#fff;font-weight:600;">${s.volRatio || 1}x</span>
+          <span style="color:#94a3b8;">所屬產業</span><span style="color:#cbd5e1;">${s.industry || '一般'}</span>
+        </div>
+        <div style="border-top:1px dashed rgba(255,255,255,0.1);padding-top:6px;font-size:10px;color:#94a3b8;text-align:center;">
+          💡 點擊可於荳荳清單聚焦此標的
+        </div>
       `;
-
-      lastTooltipX = e.clientX;
-
-      lastTooltipY = e.clientY;
-
-      const xPos = Math.min(lastTooltipX + 16, window.innerWidth - 260);
-
-      const yPos = Math.max(10, lastTooltipY - 10);
-
-      tooltip.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-
       tooltip.style.display = 'block';
-
+      tooltip.style.left = (Math.min(e.clientX + 16, window.innerWidth - 240)) + 'px';
+      tooltip.style.top = (Math.max(15, e.clientY - 20)) + 'px';
     });
 
-
-
-    bubbleGroup.addEventListener('mousemove', e => {
-
-      lastTooltipX = e.clientX;
-
-      lastTooltipY = e.clientY;
-
-      if (!tooltipTicking) {
-
-        requestAnimationFrame(updateTooltipPosition);
-
-        tooltipTicking = true;
-
-      }
-
+    blipG.addEventListener('mousemove', (e) => {
+      tooltip.style.left = (Math.min(e.clientX + 16, window.innerWidth - 240)) + 'px';
+      tooltip.style.top = (Math.max(15, e.clientY - 20)) + 'px';
     });
 
-
-
-    bubbleGroup.addEventListener('mouseleave', () => {
-
-      circle.setAttribute('opacity', '0.5');
-
-      circle.setAttribute('r', r.toString());
-
-      glow.setAttribute('opacity', '0.25');
-
+    blipG.addEventListener('mouseleave', () => {
+      pulseRing.setAttribute('opacity', '0.4');
+      pulseRing.setAttribute('r', (r + 5).toString());
       tooltip.style.display = 'none';
-
     });
 
+    // 點擊事件：不跳轉 K 線，改為在荳荳清單聚焦
+    blipG.addEventListener('click', () => {
+      tooltip.style.display = 'none';
+      switchView('screener');
+      const searchInput = document.getElementById('screenerSearchInput');
+      if (searchInput) {
+        searchInput.value = s.id;
+        if (typeof handleScreenerSearch === 'function') {
+          handleScreenerSearch(s.id);
+        }
+      }
+    });
 
-
-    bubbleGroup.addEventListener('click', () => openSectorDetailModal(g.name, g.stocks, g.avgChange));
-
-    mainG.appendChild(bubbleGroup);
-
+    svg.appendChild(blipG);
   });
 
-
-
-  // -------------------------------------------------------------
-
-  // Zoom & Pan 手勢事件綁定 (採用軸極限重繪縮放，防止氣泡等比例變形)
-
-  // -------------------------------------------------------------
-
-  let isDragging = false;
-
-  let startX = 0;
-
-  let startY = 0;
-
-
-
-  function updateTransform() {
-
-    mainG.setAttribute('transform', `translate(${panX}, ${panY})`);
-
-    svg.setAttribute('data-pan-x', panX.toString());
-
-    svg.setAttribute('data-pan-y', panY.toString());
-
-  }
-
-
-
-  // 滾輪修改 X/Y 軸極限範圍 (縮放倍率限制 0.05x 至 10.0x)
-
-  svg.addEventListener('wheel', e => {
-
-    e.preventDefault();
-
-    const factor = e.deltaY < 0 ? 0.82 : 1.22;
-
-    window.bubbleChartZoomFactor = Math.max(0.05, Math.min(10.0, (window.bubbleChartZoomFactor || 1.0) * factor));
-
-    renderSectorFlowMap();
-
-  }, { passive: false });
-
-
-
-  // 拖曳平移 (僅平移 mainG 位置)
-
-  svg.addEventListener('mousedown', e => {
-
-    isDragging = true;
-
-    svg.style.cursor = 'grabbing';
-
-    startX = e.clientX - panX;
-
-    startY = e.clientY - panY;
-
-  });
-
-
-
-  window.addEventListener('mousemove', e => {
-
-    if (!isDragging) return;
-
-    panX = e.clientX - startX;
-
-    panY = e.clientY - startY;
-
-    updateTransform();
-
-  });
-
-
-
-  window.addEventListener('mouseup', () => {
-
-    if (isDragging) {
-
-      isDragging = false;
-
-      svg.style.cursor = 'default';
-
-    }
-
-  });
-
-
-
-  container.appendChild(svg);
-
+  radarWrapper.appendChild(svg);
+  container.appendChild(radarWrapper);
 }
-
-
-
-
-
-
-
-// -------------------------------------------------------------
-
-
-
-// 全域縮放平移控制函數
-
-
-
-// -------------------------------------------------------------
-
-
-
-window.zoomSectorBubble = function(factor) {
-
-
-
-  const mainG = document.getElementById('bubble-transform-group');
-
-
-
-  const svg = mainG ? mainG.ownerSVGElement : null;
-
-
-
-  if (!mainG || !svg) return;
-
-
-
-  
-
-
-
-  let zoom = parseFloat(svg.getAttribute('data-zoom') || '1.0');
-
-
-
-  let panX = parseFloat(svg.getAttribute('data-pan-x') || '0');
-
-
-
-  let panY = parseFloat(svg.getAttribute('data-pan-y') || '0');
-
-
-
-  
-
-
-
-  const prevZoom = zoom;
-
-
-
-  zoom = Math.max(0.5, Math.min(5.0, zoom * factor));
-
-
-
-  
-
-
-
-  const W = svg.clientWidth || 800;
-
-
-
-  const H = 620;
-
-
-
-  const cX = W / 2;
-
-
-
-  const cY = H / 2;
-
-
-
-  
-
-
-
-  panX = cX - (cX - panX) * (zoom / prevZoom);
-
-
-
-  panY = cY - (cY - panY) * (zoom / prevZoom);
-
-
-
-  
-
-
-
-  svg.setAttribute('data-zoom', zoom.toString());
-
-
-
-  svg.setAttribute('data-pan-x', panX.toString());
-
-
-
-  svg.setAttribute('data-pan-y', panY.toString());
-
-
-
-  mainG.setAttribute('transform', `translate(${panX}, ${panY}) scale(${zoom})`);
-
-
-
-};
-
-
-
-
-
-
-
-window.resetSectorBubble = function() {
-
-
-
-  const mainG = document.getElementById('bubble-transform-group');
-
-
-
-  const svg = mainG ? mainG.ownerSVGElement : null;
-
-
-
-  if (!mainG || !svg) return;
-
-
-
-  
-
-
-
-  svg.setAttribute('data-zoom', '1.0');
-
-
-
-  svg.setAttribute('data-pan-x', '0');
-
-
-
-  svg.setAttribute('data-pan-y', '0');
-
-
-
-  mainG.setAttribute('transform', 'translate(0, 0) scale(1.0)');
-
-
-
-};
-
-
-
-
-
-
-
-
-
-
-
-// 彈出產業詳細成分股及產業簡介之 Modal
-
 
 
 function openSectorDetailModal(sectorName, stocks, avgChange) {
@@ -16326,53 +15887,15 @@ function loadChart(stock) {
 
 
 function openChart(id) {
-
-
-
-  const stock = mockStocks.find(s => s.id === id);
-
-
-
-  if (stock) {
-
-
-
-    currentChartSymbol = stock.id; // 提前設定以防止 switchView 載入預設股票 2330
-
-
-
-    switchView('chart');
-
-
-
-    // 300ms 讓分頁切換的 CSS display 完全生效後再渲染
-
-
-
-    setTimeout(() => {
-
-
-
-      if (typeof window.loadTVChart === 'function') {
-
-
-
-        window.loadTVChart(stock);
-
-
-
-      }
-
-
-
-    }, 300);
-
-
-
+  // 使用者需求：拿掉所有 K 線圖跳轉，改為在荳荳清單中聚焦該標的
+  switchView('screener');
+  const searchInput = document.getElementById('screenerSearchInput');
+  if (searchInput) {
+    searchInput.value = id;
+    if (typeof handleScreenerSearch === 'function') {
+      handleScreenerSearch(id);
+    }
   }
-
-
-
 }
 
 

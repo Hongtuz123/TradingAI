@@ -3232,3 +3232,166 @@ body {
 }
 
 
+
+
+/* ========================================================
+   🎯 戰術雷達掃描動畫與四象限偵測樣式
+   ======================================================== */
+.radar-display-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 50%, #0b1329 0%, #030712 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), inset 0 0 60px rgba(59, 130, 246, 0.08);
+}
+
+/* 順時針 360° 旋轉漸層光錐雷達掃描光束 */
+.radar-sweep-beam {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 1;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(59, 130, 246, 0.25) 0deg,
+    rgba(16, 185, 129, 0.12) 30deg,
+    rgba(249, 115, 22, 0.04) 50deg,
+    transparent 65deg,
+    transparent 360deg
+  );
+  animation: radarSweep 7s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes radarSweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 雷達目標光點微脈衝動畫 */
+.radar-blip-pulse {
+  animation: blipPulse 2.4s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes blipPulse {
+  0% {
+    stroke-width: 1.5;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    stroke-width: 3;
+    opacity: 0.05;
+  }
+}
+
+.radar-blip-item:hover text {
+  fill: #38bdf8 !important;
+  font-weight: 900 !important;
+  font-size: 11px !important;
+}
+
+/* ========================================================
+   🏷️ 荳荳清單 Hashtags 晶片標籤列
+   ======================================================== */
+.hashtags-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.hashtag-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hashtag-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
+}
+
+.hashtag-chip.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  border-color: #ea580c;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ========================================================
+   🩺 市場健康度微型收合 Popover 樣式
+   ======================================================== */
+.radar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.radar-action-btn:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+}
+
+.health-summary-popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 280px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  padding: 14px 16px;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+/* 策略手冊卡片效果 */
+.strategy-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.strategy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border-color: rgba(249, 115, 22, 0.3) !important;
+}
