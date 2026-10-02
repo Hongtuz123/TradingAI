@@ -3031,21 +3031,22 @@ window.applyTechFiltersAndRender = function() {
   
   // 1. Hashtag 分類過濾
   if (window.activeHashtag && window.activeHashtag !== 'all') {
-    if (window.activeHashtag === 'strong_sector') {
+    const tag = window.activeHashtag;
+    if (tag === 'strong' || tag === 'strong_sector') {
       const strongList = window.rankingsData?.strong || [];
       filtered = filtered.filter(s => strongList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change >= 2.0)));
-    } else if (window.activeHashtag === 'weak_sector') {
+    } else if (tag === 'weak' || tag === 'weak_sector') {
       const weakList = window.rankingsData?.weak || [];
       filtered = filtered.filter(s => weakList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change < 0)));
-    } else if (window.activeHashtag === 'hot_vol') {
+    } else if (tag === 'hot' || tag === 'hot_vol') {
       const hotList = window.rankingsData?.hot || [];
       const hotIds = new Set(hotList.map(item => item.id));
       filtered = filtered.filter(s => hotIds.has(s.id) || (s.volRatio >= 1.5) || (s.dailyVol >= 3000));
-    } else if (window.activeHashtag === 'inst_buy') {
+    } else if (tag === 'inst' || tag === 'inst_buy') {
       const instList = window.rankingsData?.inst || [];
       const instIds = new Set(instList.map(item => item.id));
       filtered = filtered.filter(s => instIds.has(s.id) || (s.instSum5D > 0) || (s.foreignNetBuy > 0) || (s.trustDays > 0));
-    } else if (window.activeHashtag === 'bottom_dip') {
+    } else if (tag === 'dip' || tag === 'bottom_dip') {
       const dipList = window.rankingsData?.dip || [];
       const dipIds = new Set(dipList.map(item => item.id));
       filtered = filtered.filter(s => dipIds.has(s.id) || (s.rsi14 <= 50) || (s.dist52W <= 10) || (s.change > 0 && s.change <= 2.5));
