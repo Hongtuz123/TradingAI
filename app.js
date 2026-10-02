@@ -19,6 +19,16 @@ let currentResults = [];
 // =============================================
 // 荳荳清單 Hashtag 與搜尋即時過濾邏輯
 // =============================================
+
+// 🎯 統一智能搜尋與健檢連動
+window.handleUnifiedSearch = function(val) {
+  const manualInput = document.getElementById('screenerManualInput');
+  if (manualInput) manualInput.value = val;
+  if (typeof handleScreenerSearch === 'function') {
+    handleScreenerSearch(val);
+  }
+};
+
 window.activeHashtag = 'all';
 window.screenerSearchQuery = '';
 
@@ -13339,16 +13349,15 @@ function renderSectorFlowMap() {
     rotate: '🟡 買力降溫'
   };
 
-  // 幾何尺寸 (RWD 自適應)
-  const W = container.clientWidth || 920;
+  // 幾何尺寸 (RWD 自適應與防黑洞比例修復)
   const isMobile = window.innerWidth <= 768;
-  const H = isMobile
-    ? Math.max(340, Math.min(460, window.innerHeight - 200))
-    : Math.max(540, Math.min(680, window.innerHeight - 250));
-  const ML = isMobile ? 35 : 55;
-  const MR = isMobile ? 25 : 45;
-  const MT = isMobile ? 30 : 40;
-  const MB = isMobile ? 35 : 45;
+  const W = container.clientWidth || (isMobile ? 360 : 920);
+  // 手機端維持 420px~450px 正方形/黃金比例視野，緊湊貼合
+  const H = isMobile ? 420 : Math.max(540, Math.min(680, window.innerHeight - 250));
+  const ML = isMobile ? 24 : 55;
+  const MR = isMobile ? 20 : 45;
+  const MT = isMobile ? 26 : 40;
+  const MB = isMobile ? 28 : 45;
   const PW = W - ML - MR;
   const PH = H - MT - MB;
   const centerX = ML + PW / 2;
@@ -19260,7 +19269,16 @@ window.renderDoudouScreenerList = function() {
   const totalHolding = buyCnt + addCnt + holdCnt;
 
   if (countEl) {
-    countEl.innerHTML = `<strong>${filtered.length}</strong> 檔 (買進 <strong>${buyCnt}</strong> ｜ 加碼 <strong>${addCnt}</strong> ｜ 賣出(3日內) <strong>${closedCnt}</strong> ｜ 持倉中 <strong>${holdCnt}</strong>)`;
+    countEl.innerHTML = `<strong>${filtered.length}</strong>`;
+  }
+  const statsChipsEl = document.getElementById('resultsStatsChips');
+  if (statsChipsEl) {
+    statsChipsEl.innerHTML = `
+      <span class="chip-item chip-buy">買進 <strong>${buyCnt}</strong></span>
+      <span class="chip-item chip-add">加碼 <strong>${addCnt}</strong></span>
+      <span class="chip-item chip-closed">賣出(3日內) <strong>${closedCnt}</strong></span>
+      <span class="chip-item chip-hold">持倉中 <strong>${holdCnt}</strong></span>
+    `;
   }
 
   if (filtered.length === 0) {

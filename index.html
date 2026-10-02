@@ -66,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=71" />
+  <link rel="stylesheet" href="style.css?v=72" />
 
 
 
@@ -182,28 +182,28 @@
 
     <!-- ======================== 戰術儀表板視圖 ======================== -->
     <section class="view active" id="view-dashboard">
-      <!-- 頂部控制列：標題 + 視角縮放 + 市場健康度收合按鈕 -->
-      <div class="dashboard-radar-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <h2 style="margin:0; font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px; color:white;">
-            <span style="font-size:20px;">🎯</span> 荳花漲跌區塊偵測
-            <span class="badge" style="background:rgba(249,115,22,0.2); color:var(--primary); font-size:11px; border:1px solid rgba(249,115,22,0.4); padding:2px 8px; border-radius:12px;">荳荳精選標的</span>
+      <!-- 頂部控制列：標題 + 視角縮放 + 市場健康度收合按鈕 (全面整齊 RWD) -->
+      <div class="dashboard-radar-header-modern">
+        <div class="radar-title-group">
+          <h2 class="radar-title-text">
+            <span style="font-size:18px;">🎯</span> 荳花漲跌區塊偵測
+            <span class="badge radar-title-badge">荳荳精選標的</span>
           </h2>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px; position:relative;">
-          <!-- 縮放視角控制 -->
-          <div style="display:flex; align-items:center; gap:4px; background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:3px 6px;">
-            <button onclick="zoomSectorBubble(1.2)" class="bubble-filter-btn" style="border:none; background:transparent; padding:2px 6px; font-size:11px; cursor:pointer;" title="放大雷達視角">➕ 放大</button>
-            <button onclick="zoomSectorBubble(0.8)" class="bubble-filter-btn" style="border:none; background:transparent; padding:2px 6px; font-size:11px; cursor:pointer;" title="縮小雷達視角">➖ 縮小</button>
-            <button onclick="resetSectorBubble()" class="bubble-filter-btn" style="border:none; background:transparent; padding:2px 6px; font-size:11px; cursor:pointer;" title="重設視角">🔄 重設</button>
+        <div class="radar-top-actions">
+          <!-- 縮放視角控制膠囊 -->
+          <div class="radar-zoom-capsule">
+            <button onclick="zoomSectorBubble(1.2)" class="zoom-btn" title="放大視角">➕</button>
+            <button onclick="zoomSectorBubble(0.8)" class="zoom-btn" title="縮小視角">➖</button>
+            <button onclick="resetSectorBubble()" class="zoom-btn" title="重設視角">🔄</button>
           </div>
 
-          <!-- 📊 市場健康度戰術診斷組件 (高科技發光收合) -->
+          <!-- 📊 市場健康度戰術診斷按鈕 -->
           <div class="health-widget-wrap" style="position: relative;">
-            <button class="health-icon-btn" id="healthToggleBtn" onclick="toggleHealthPopover(event)" title="點擊展開/收合大盤市場健康度戰術診斷">
+            <button class="health-icon-btn modern-health-btn" id="healthToggleBtn" onclick="toggleHealthPopover(event)" title="點擊展開/收合大盤市場健康度戰術診斷">
               <span class="health-beacon-dot" id="headerHealthBeacon"></span>
-              <span class="health-btn-title">🩺 市場健康度</span>
+              <span class="health-btn-title">市場健康度</span>
               <span class="health-badge-status" id="healthQuickBadge">偏多</span>
               <span class="health-btn-arrow">▾</span>
             </button>
@@ -286,32 +286,30 @@
 
       <!-- 🎯 指標雷達掃描儀 (Tactical Radar Display) -->
       <div class="flow-bubble-full flow-map-panel tactical-radar-panel">
-        <div class="panel-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-            <!-- 四象限過濾標籤 -->
-            <div style="display:flex; align-items:center; gap:6px; font-size:11px; flex-wrap:wrap;">
-              <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
-                <span class="dot major" style="background:#ef4444;"></span>🔥 主力爆買 (強動能)
-              </button>
-              <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
-                <span class="dot bottom" style="background:#3b82f6;"></span>💎 資金進駐 (剛起爆)
-              </button>
-              <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
-                <span class="dot retreat" style="background:#10b981;"></span>❄️ 量縮整理 (洗盤)
-              </button>
-              <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
-                <span class="dot rotate" style="background:#eab308;"></span>⚠️ 買力降溫 (提防)
-              </button>
-            </div>
-            <div id="bubble-legend-text" style="font-size: 11px; color: var(--text-muted);">
-              X軸: 5日動能強度 ｜ Y軸: 當日動能爆量倍數 ｜ 氣泡: 荳荳清單標的 ｜ 點擊查看標的情報
-            </div>
+        <div class="panel-header radar-quad-panel-header">
+          <!-- 四象限過濾標籤 (2x2 或 單行整齊 Grid) -->
+          <div class="radar-quadrant-grid">
+            <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
+              <span class="dot major" style="background:#ef4444;"></span>🔥 主力爆買
+            </button>
+            <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
+              <span class="dot bottom" style="background:#3b82f6;"></span>💎 資金進駐
+            </button>
+            <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
+              <span class="dot retreat" style="background:#10b981;"></span>🟢 量縮整理
+            </button>
+            <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
+              <span class="dot rotate" style="background:#eab308;"></span>🟡 買力降溫
+            </button>
+          </div>
+          <div id="bubble-legend-text" class="radar-legend-text">
+            X軸: 5日籌碼動量 ｜ Y軸: 當日漲跌幅 ｜ 氣泡: 荳荳精選標的
           </div>
         </div>
 
-        <!-- 科技雷達動畫視窗 -->
-        <div class="radar-viewport" style="position:relative; width:100%; border-radius:12px; overflow:hidden;">
-          <div class="flow-map-container" id="sectorTreeMap" style="min-height:540px; height:calc(100vh - 240px);">
+        <!-- 科技雷達動畫視窗 (自適應高，消除上方大空洞) -->
+        <div class="radar-viewport">
+          <div class="flow-map-container" id="sectorTreeMap">
             <!-- 由 JS 動態繪製荳荳清單標的氣泡 -->
           </div>
         </div>
@@ -334,27 +332,23 @@
 
     <section class="view" id="view-screener">
       <div class="screener-full-layout" style="width: 100%;">
-        <!-- 頂部戰術搜尋與 Hashtag 快速過濾 Bar -->
-        <div class="screener-search-bar-wrap" style="background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; backdrop-filter: blur(12px);">
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <!-- 搜尋框 (支援代碼或名稱即時過濾) -->
-            <div style="position: relative; flex: 1; min-width: 240px;">
-              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-muted);">🔍</span>
-              <input type="text" id="screenerSearchInput" placeholder="搜尋股票代碼或名稱 (例如：2330、德律、奇鋐)..." style="width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 10px 14px 10px 36px; color: white; font-size: 13.5px; outline: none; transition: border-color 0.2s;" oninput="handleScreenerSearch(this.value)">
-            </div>
-
-            <!-- 手動健檢評估按鈕 -->
-            <div style="display: flex; gap: 6px;">
-              <input type="text" id="screenerManualInput" placeholder="輸入股號健檢 (如 2330)" style="width: 150px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 9px 12px; color: white; font-size: 12px;" onkeydown="if(event.key==='Enter') evaluateManualStock()">
-              <button class="btn-primary" style="padding: 0 16px; font-size: 13px; font-weight: 700; border-radius: 8px; height: 38px;" onclick="evaluateManualStock()">健檢</button>
-            </div>
+        <!-- 頂部戰術搜尋與 Hashtag 快速過濾 Bar (單行整合與橫向滑動分類) -->
+        <div class="screener-search-bar-wrap modern-search-wrap">
+          <div class="unified-search-container">
+            <span class="unified-search-icon">🔍</span>
+            <input type="text" id="screenerSearchInput" class="unified-search-input" placeholder="搜尋股票代碼或名稱 (如 2330、奇鋐)..." oninput="handleUnifiedSearch(this.value)" onkeydown="if(event.key==='Enter') evaluateManualStock()">
+            <!-- 保留隱藏的 screenerManualInput 確保舊 JS 安全 -->
+            <input type="hidden" id="screenerManualInput">
+            <button class="unified-health-btn" onclick="evaluateManualStock()" title="個股即時智能量化健檢">
+              <span>🩺</span> 健檢
+            </button>
           </div>
 
           <div id="manualEvalResult" style="margin-top: 10px; display: none;"></div>
 
-          <!-- 🏷️ Hashtags 快速過濾列 (由原五大排行轉移) -->
-          <div class="hashtag-filter-row" style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center;">
-            <span style="font-size: 12px; color: var(--text-muted); font-weight: 700; margin-right: 4px;">戰術分類：</span>
+          <!-- 🏷️ Hashtags 快速過濾列 (手機端橫向平滑滾動膠囊) -->
+          <div class="hashtag-filter-row modern-hashtag-scroll">
+            <span class="hashtag-label">戰術分類：</span>
             <button class="hashtag-chip active" data-tag="all" onclick="filterByHashtag('all', this)">#全部標的</button>
             <button class="hashtag-chip" data-tag="strong" onclick="filterByHashtag('strong', this)">#🔥強勢族群</button>
             <button class="hashtag-chip" data-tag="weak" onclick="filterByHashtag('weak', this)">#❄️弱勢族群</button>
@@ -379,26 +373,35 @@
 
 
 
-          <div class="results-header" style="flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <h3>篩選結果</h3>
-              <div class="signal-filter-tabs" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" class="sig-tab-btn active" id="sigTab_all" onclick="filterBySignalType('all')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: var(--primary); color: white; border: none; font-weight: bold;">全部</button>
-                <button type="button" class="sig-tab-btn" id="sigTab_buy" onclick="filterBySignalType('buy')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid #22c55e; font-weight: bold;">買進</button>
-                <button type="button" class="sig-tab-btn" id="sigTab_add" onclick="filterBySignalType('add')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid #3b82f6; font-weight: bold;">加碼</button>
-                <button type="button" class="sig-tab-btn" id="sigTab_closed" onclick="filterBySignalType('closed')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid #ef4444; font-weight: bold;">賣出(3日內)</button>
-                <button type="button" class="sig-tab-btn" id="sigTab_hold" onclick="filterBySignalType('hold')" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; cursor: pointer; background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid #f59e0b; font-weight: bold;">持倉中</button>
+          <div class="results-header-modern">
+            <!-- Row 1: 標題與排序下拉 -->
+            <div class="results-row-top">
+              <div class="results-title-group">
+                <h3 style="margin:0; font-size:16px; font-weight:800; color:white;">篩選結果</h3>
+                <span class="results-total-badge" id="resultTotalBadge">共 <strong id="resultCount">0</strong> 檔</span>
+              </div>
+              <div class="results-sort-group">
+                <select id="resultSort" onchange="sortResults(this.value)" class="modern-sort-select">
+                  <option value="score">按評分排序 ↕</option>
+                  <option value="techType">按技術類型 ↕</option>
+                  <option value="price">按收盤價 ↕</option>
+                  <option value="trustDays">按投信買超 ↕</option>
+                </select>
               </div>
             </div>
 
-            <div class="results-meta">
-              <span>共 <strong id="resultCount">0</strong> 檔</span>
-              <select id="resultSort" onchange="sortResults(this.value)">
-                <option value="score">按荳荳評分排序</option>
-                <option value="techType">按技術類型</option>
-                <option value="price">按收盤價</option>
-                <option value="trustDays">按投信當日買超</option>
-              </select>
+            <!-- Row 2: 狀態切換按鈕列 (水平膠囊，手機均分或橫滑) -->
+            <div class="signal-filter-tabs-modern">
+              <button type="button" class="sig-tab-btn active" id="sigTab_all" onclick="filterBySignalType('all')">全部</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_buy" onclick="filterBySignalType('buy')"><span class="sig-dot" style="background:#22c55e;"></span>買進</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_add" onclick="filterBySignalType('add')"><span class="sig-dot" style="background:#3b82f6;"></span>加碼</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_closed" onclick="filterBySignalType('closed')"><span class="sig-dot" style="background:#ef4444;"></span>賣出(3日)</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_hold" onclick="filterBySignalType('hold')"><span class="sig-dot" style="background:#f59e0b;"></span>持倉中</button>
+            </div>
+
+            <!-- Row 3: 狀態統計 Chips 微型徽章列 -->
+            <div class="results-stats-chips" id="resultsStatsChips">
+              <!-- 由 JS 動態注入各狀態統計小晶片 -->
             </div>
           </div>
 
@@ -1107,9 +1110,9 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="data.js?v=71"></script>
-  <script src="app.js?v=71"></script>
-  <script src="stock-dashboard.js?v=71"></script>
+  <script src="data.js?v=72"></script>
+  <script src="app.js?v=72"></script>
+  <script src="stock-dashboard.js?v=72"></script>
 </body>
 
 
