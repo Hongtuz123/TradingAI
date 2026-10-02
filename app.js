@@ -19130,34 +19130,25 @@ window.toggleDoudouReportPanel = function() {
 
 
 window.closeDogReminder = function(event) {
-
-
-
-  if (event) event.stopPropagation();
-
-
+  if (event && event.stopPropagation) event.stopPropagation();
 
   const modal = document.getElementById('dogReminderModal');
-
-
-
   if (modal) modal.classList.remove('active');
 
-
-
   sessionStorage.setItem('trading_ai_session_remind', 'true');
-
-
-
   const todayStr = new Date().toISOString().split('T')[0];
-
-
-
   localStorage.setItem('trading_ai_last_remind_date', todayStr);
-
-
-
 };
+
+// 支援鍵盤 ESC 鍵一鍵安全關閉彈窗
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' || e.key === 'Esc') {
+    const modal = document.getElementById('dogReminderModal');
+    if (modal && modal.classList.contains('active')) {
+      window.closeDogReminder();
+    }
+  }
+});
 
 
 
