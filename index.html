@@ -39,6 +39,7 @@
 
   <script id="onesignal-sdk-script" src="./OneSignalSDK.page.js" defer></script>
   <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       try {
         await OneSignal.init({
@@ -65,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=70" />
+  <link rel="stylesheet" href="style.css?v=71" />
 
 
 
@@ -1106,9 +1107,9 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="data.js?v=70"></script>
-  <script src="app.js?v=70"></script>
-  <script src="stock-dashboard.js?v=70"></script>
+  <script src="data.js?v=71"></script>
+  <script src="app.js?v=71"></script>
+  <script src="stock-dashboard.js?v=71"></script>
 </body>
 
 

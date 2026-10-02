@@ -573,7 +573,12 @@ window.updateAllStockPrices = function() {
 
 
 
-document.addEventListener('DOMContentLoaded', async () => {
+// 🚀 核心安全啟動器：確保無論何時載入（DOMContentLoaded 或已 completed）均 100% 執行首屏初始化
+window._appInitialized = false;
+async function bootstrapApp() {
+  if (window._appInitialized) return;
+  window._appInitialized = true;
+
 
 
 
@@ -753,6 +758,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     initDashboard();
+    // 🎯 首屏保底：大盤健康度載入完畢後，立即第一時間繪製指標雷達！
+    if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
 
 
 
@@ -828,7 +835,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
+
+}
+
+// 🛡️ 三重防禦開場啟動機制
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+  bootstrapApp();
+}
+
+// 🛡️ 頁面全資源載入後之二次保底檢查
+window.addEventListener('load', () => {
+  if (!window._appInitialized) {
+    bootstrapApp();
+  }
+  // 檢測雷達畫布，若仍為空白則無縫補繪
+  setTimeout(() => {
+    const radarBox = document.getElementById('sectorTreeMap');
+    if (radarBox && (!radarBox.children || radarBox.children.length === 0)) {
+      console.log('[App] Radar viewport empty on load fallback, rendering now...');
+      if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
+    }
+  }, 150);
 });
+
 
 
 
