@@ -38,12 +38,37 @@ window.handleScreenerSearch = function(query) {
   }
 };
 
-window.toggleHealthSummaryPopover = function() {
-  const popover = document.getElementById('healthSummaryPopover');
+
+window.toggleHealthPopover = function(e) {
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+  const popover = document.getElementById('healthPopover');
+  const btn = document.getElementById('healthToggleBtn');
   if (!popover) return;
-  const isHidden = popover.style.display === 'none' || !popover.style.display;
-  popover.style.display = isHidden ? 'block' : 'none';
+  const isShown = popover.classList.contains('active');
+  if (isShown) {
+    popover.classList.remove('active');
+    if (btn) btn.classList.remove('active');
+  } else {
+    popover.classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
 };
+
+// 點擊網頁外部空白處自動收起
+document.addEventListener('click', function(e) {
+  const popover = document.getElementById('healthPopover');
+  const btn = document.getElementById('healthToggleBtn');
+  if (popover && popover.classList.contains('active')) {
+    if (!popover.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      popover.classList.remove('active');
+      if (btn) btn.classList.remove('active');
+    }
+  }
+});
+
 
 
 
@@ -1638,6 +1663,83 @@ function initDashboard() {
  
 
 
+
+  
+  // ── 🎯 高科技大盤環境戰術診斷動態數據填入 ────────────────────
+  const isTwBull = twTotalScore >= 60;
+  const isUsBull = usTotalScore >= 60;
+
+  // 1. 頂部按鈕狀態標籤與呼吸燈
+  const quickBadge = document.getElementById('healthQuickBadge');
+  const beaconDot = document.getElementById('headerHealthBeacon');
+  if (quickBadge) {
+    quickBadge.innerText = isTwBull ? '偏多 📈' : '偏空 📉';
+    quickBadge.className = isTwBull ? 'health-badge-status bull' : 'health-badge-status bear';
+  }
+  if (beaconDot) {
+    beaconDot.className = isTwBull ? 'health-beacon-dot bull' : 'health-beacon-dot bear';
+  }
+
+  // 2. 彈出面板內容
+  const hpUpdateTime = document.getElementById('hpUpdateTime');
+  if (hpUpdateTime) hpUpdateTime.innerText = `最後更新：${updateTime}`;
+
+  const hpTwStatus = document.getElementById('hpTwStatus');
+  const hpTwMeter = document.getElementById('hpTwMeter');
+  const hpTwDesc = document.getElementById('hpTwDesc');
+  if (hpTwStatus) {
+    hpTwStatus.innerText = isTwBull ? '🟢 偏多格局' : '🔴 偏空格局';
+    hpTwStatus.style.color = isTwBull ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)';
+  }
+  if (hpTwMeter) {
+    hpTwMeter.style.width = `${Math.min(100, Math.max(15, twTotalScore))}%`;
+    hpTwMeter.style.background = isTwBull 
+      ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
+      : 'linear-gradient(90deg, #ef4444 0%, #f87171 100%)';
+  }
+  if (hpTwDesc) {
+    hpTwDesc.innerText = isTwBull 
+      ? `台股評級：${twRating} (${twTotalScore}分) · 站穩短中天期均線，動能偏多格局` 
+      : `台股評級：${twRating} (${twTotalScore}分) · 空方賣壓沉重，宜嚴控倉位水位`;
+  }
+
+  const hpUsStatus = document.getElementById('hpUsStatus');
+  const hpUsMeter = document.getElementById('hpUsMeter');
+  const hpUsDesc = document.getElementById('hpUsDesc');
+  if (hpUsStatus) {
+    hpUsStatus.innerText = isUsBull ? '🟢 偏多運作' : '🔴 偏空震盪';
+    hpUsStatus.style.color = isUsBull ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)';
+  }
+  if (hpUsMeter) {
+    hpUsMeter.style.width = `${Math.min(100, Math.max(15, usTotalScore))}%`;
+    hpUsMeter.style.background = isUsBull 
+      ? 'linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%)' 
+      : 'linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)';
+  }
+  if (hpUsDesc) {
+    hpUsDesc.innerText = isUsBull 
+      ? `美股評級：${usRating} (${usTotalScore}分) · 外圍市場風險中低，支撐多頭信心` 
+      : `美股評級：${usRating} (${usTotalScore}分) · 留意國際連動震盪風險`;
+  }
+
+  // 3. VIX 恐慌指標
+  const vixData = (marketData.us_indices || []).find(idx => idx.label && idx.label.includes('VIX'));
+  const vixClose = vixData ? vixData.close : 16;
+  const hpVixStatus = document.getElementById('hpVixStatus');
+  const hpVixDesc = document.getElementById('hpVixDesc');
+  if (hpVixStatus) {
+    if (vixClose > 25) {
+      hpVixStatus.innerText = '⚠️ 警戒偏高';
+      hpVixStatus.className = 'hp-status-tag danger';
+      hpVixStatus.style.color = '#ef4444';
+      if (hpVixDesc) hpVixDesc.innerText = `VIX 指數為 ${vixClose}，市場恐慌蔓延，宜提高防禦警覺`;
+    } else {
+      hpVixStatus.innerText = '🛡️ 波動平穩 (安全)';
+      hpVixStatus.className = 'hp-status-tag safe';
+      hpVixStatus.style.color = '#10b981';
+      if (hpVixDesc) hpVixDesc.innerText = `VIX 指數為 ${vixClose}，市場恐慌情緒低，量化策略正常運作`;
+    }
+  }
 
   // 2. 美股評分系統 (直接對接後端 0 - 100 分)
 
