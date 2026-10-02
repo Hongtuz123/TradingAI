@@ -65,7 +65,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=66" />
+  <link rel="stylesheet" href="style.css?v=67" />
 
 
 
@@ -207,57 +207,59 @@
               <span class="health-btn-arrow">▾</span>
             </button>
 
-            <!-- 展開的高科技戰術診斷卡 (Popover) -->
+                        <!-- 展開的高科技戰術診斷卡 (Popover) -->
             <div class="health-popover" id="healthPopover">
               <div class="health-popover-header">
                 <div class="hp-title-group">
-                  <span class="hp-radar-icon">🌐</span>
+                  <span class="hp-radar-icon">🩺</span>
                   <div>
-                    <div class="hp-title">大盤環境戰術診斷</div>
-                    <div class="hp-subtitle" id="hpUpdateTime">即時市場多空量化</div>
+                    <div class="hp-title">大盤健康度戰術指標</div>
+                    <div class="hp-subtitle" id="hpUpdateTime">即時多空量化</div>
                   </div>
                 </div>
                 <button class="hp-close-btn" onclick="toggleHealthPopover(event)" title="關閉">✕</button>
               </div>
 
               <div class="health-popover-body">
-                <!-- 🇹🇼 台股盤面 -->
-                <div class="hp-card">
+                <!-- 1. 🇹🇼 台股前一日加權指數 -->
+                <div class="hp-card" id="hpTwCard">
                   <div class="hp-card-top">
-                    <span class="hp-card-name">🇹🇼 台股大盤</span>
-                    <span class="hp-status-tag" id="hpTwStatus">偏多</span>
+                    <span class="hp-card-name">🇹🇼 台灣加權指數 (前一日)</span>
+                    <span class="hp-status-tag" id="hpTwStatus">--</span>
                   </div>
-                  <div class="hp-meter-track">
-                    <div class="hp-meter-fill" id="hpTwMeter" style="width: 75%;"></div>
+                  <div class="hp-chg-banner" id="hpTwBanner" style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                    <span style="font-size:16px; font-weight:800;" id="hpTwClose">--</span>
+                    <span style="font-size:14px; font-weight:800; padding:2px 8px; border-radius:6px;" id="hpTwChg">--%</span>
                   </div>
-                  <div class="hp-card-desc" id="hpTwDesc">加權指數站穩均線，動能偏多佈局</div>
+                  <div class="hp-rule-hint" id="hpTwRuleHint" style="font-size:10px; color:#64748b; margin-top:4px;">
+                    規則：漲&gt;1% 綠色 · 跌&gt;1% 紅色 · ±1%內 黃色
+                  </div>
                 </div>
 
-                <!-- 🇺🇸 美股外圍 -->
-                <div class="hp-card">
-                  <div class="hp-card-top">
-                    <span class="hp-card-name">🇺🇸 美股外圍連動</span>
-                    <span class="hp-status-tag" id="hpUsStatus">偏多</span>
+                <!-- 2. 🇺🇸 美股主要指數 (DJI, S&P 500, Nasdaq, SOX) -->
+                <div class="hp-card" id="hpUsCard">
+                  <div class="hp-card-top" style="margin-bottom:6px;">
+                    <span class="hp-card-name">🇺🇸 美股核心指數 (4大板塊)</span>
+                    <span style="font-size:10px; color:#94a3b8;">漲&gt;1%綠 · 跌&gt;1%紅 · ±1%黃</span>
                   </div>
-                  <div class="hp-meter-track">
-                    <div class="hp-meter-fill" id="hpUsMeter" style="width: 80%;"></div>
+                  <div class="hp-us-grid" id="hpUsGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <!-- 由 JS 動態渲染 4 大美股指數 -->
                   </div>
-                  <div class="hp-card-desc" id="hpUsDesc">主要指數多頭排列，外圍風險平穩</div>
                 </div>
 
-                <!-- ⚡ VIX 恐慌指標 -->
-                <div class="hp-card">
+                <!-- 3. ⚡ 台股恐慌指數 (VIX) -->
+                <div class="hp-card" id="hpVixCard">
                   <div class="hp-card-top">
-                    <span class="hp-card-name">⚡ VIX 恐慌情緒</span>
-                    <span class="hp-status-tag safe" id="hpVixStatus">🛡️ 波動平穩</span>
+                    <span class="hp-card-name">⚡ 恐慌指數 (VIX)</span>
+                    <span class="hp-status-tag" id="hpVixTag" style="font-size:12px; font-weight:800;">--</span>
                   </div>
-                  <div class="hp-card-desc" id="hpVixDesc">市場未見非理性拋售，策略維持正常執行</div>
+                  <div style="font-size:15px; font-weight:800; margin:6px 0;" id="hpVixFullText">
+                    台股恐慌指數(VIX): <span id="hpVixVal">--</span> <span id="hpVixLevel" style="margin-left:6px;">--</span>
+                  </div>
+                  <div class="hp-rule-hint" style="font-size:10px; color:#64748b;">
+                    門檻：&lt;20 良好 (綠) · 20~30 普通 (黃) · &gt;30 恐慌 (紅)
+                  </div>
                 </div>
-              </div>
-
-              <!-- 底部戰術提示 -->
-              <div class="health-popover-footer">
-                <span>💡 依大盤體質動態調配清單持倉水位</span>
               </div>
 
               <!-- 保留隱藏的 legacy DOM 元素以防舊 JS 引用報錯 -->
@@ -894,8 +896,8 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="app.js?v=66"></script>
-  <script src="stock-dashboard.js?v=66"></script>
+  <script src="app.js?v=67"></script>
+  <script src="stock-dashboard.js?v=67"></script>
 </body>
 
 
