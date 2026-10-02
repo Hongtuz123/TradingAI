@@ -165,9 +165,9 @@ window.reloadDataJson = async function() {
     }
 
     // 🛡️ 雙重保險：若 fetch 失敗或為離線/file協議，直接無縫使用 static data.js
-    if (!data && typeof marketData !== 'undefined' && marketData) {
-      console.log('[App] Utilizing static window.marketData fallback successfully!');
-      data = marketData;
+    if (!data && typeof window._rawMarketData !== 'undefined' && window._rawMarketData) {
+      console.log('[App] Utilizing static window._rawMarketData fallback successfully!');
+      data = window._rawMarketData;
     }
 
     if (!data) throw new Error('No available market data source found');
@@ -597,9 +597,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 🛡️ 雙重保險：若 fetch 失敗或為離線/file協議，直接無縫使用 static data.js
-    if (!data && typeof marketData !== 'undefined' && marketData) {
-      console.log('[App] Utilizing static window.marketData fallback successfully!');
-      data = marketData;
+    if (!data && typeof window._rawMarketData !== 'undefined' && window._rawMarketData) {
+      console.log('[App] Utilizing static window._rawMarketData fallback successfully!');
+      data = window._rawMarketData;
     }
 
     if (!data) throw new Error('No available market data source found');
@@ -3227,41 +3227,14 @@ function runScreener(isAutoRefresh = false) {
 
 
   const p = {
-
-
-
-    trustDays: parseInt(document.getElementById('f_trust_days').value) || 0,
-
-
-
-    foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold').value) || 0,
-
-
-
-    dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold').value) || 0,
-
-
-
-    volRatio: parseFloat(document.getElementById('f_vol_ratio').value) || 1,
-
-
-
-    turnover: parseFloat(document.getElementById('f_turnover').value) || 0,
-
-
-
-    mktCap: parseFloat(document.getElementById('f_market_cap').value) || 0,
-
-
-
-    dailyVol: parseFloat(document.getElementById('f_daily_vol').value) || 0,
-
-
-
-    minScore: parseInt(document.getElementById('f_min_score').value) || 60
-
-
-
+    trustDays: parseInt(document.getElementById('f_trust_days')?.value) || 0,
+    foreignNetBuyLimit: parseInt(document.getElementById('f_foreign_net_buy_threshold')?.value) || 0,
+    dealerNetBuyLimit: parseInt(document.getElementById('f_dealer_net_buy_threshold')?.value) || 0,
+    volRatio: parseFloat(document.getElementById('f_vol_ratio')?.value) || 1,
+    turnover: parseFloat(document.getElementById('f_turnover')?.value) || 0,
+    mktCap: parseFloat(document.getElementById('f_market_cap')?.value) || 0,
+    dailyVol: parseFloat(document.getElementById('f_daily_vol')?.value) || 0,
+    minScore: parseInt(document.getElementById('f_min_score')?.value) || 60
   };
 
 
@@ -13291,6 +13264,18 @@ window.changeBubbleAxisMode = function() {
 // =============================================
 // 🎯 荳花漲跌區塊偵測 · 指標雷達（高靈敏度四象限戰術散佈）
 // =============================================
+
+// 🎯 縮放與重設指標雷達視窗視角
+window.radarZoomScale = 1.0;
+window.zoomSectorBubble = function(factor) {
+  window.radarZoomScale = Math.max(0.5, Math.min(2.5, (window.radarZoomScale || 1.0) * factor));
+  if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
+};
+window.resetSectorBubble = function() {
+  window.radarZoomScale = 1.0;
+  if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
+};
+
 function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
   if (!container) return;
@@ -13303,9 +13288,9 @@ function renderSectorFlowMap() {
     stocks = mockStocks.filter(s => (s.dynamicScore || s.totalScore || s.score || 70) >= 60);
     if (stocks.length === 0) stocks = mockStocks.slice(0, 45);
   }
-  // 🛡️ 雙重保底：若仍然為空，從全域 marketData 取得
-  if (stocks.length === 0 && typeof marketData !== 'undefined' && marketData && marketData.mockStocks) {
-    stocks = marketData.mockStocks.slice(0, 45);
+  // 🛡️ 雙重保底：若仍然為空，從全域 window._rawMarketData 取得
+  if (stocks.length === 0 && typeof window._rawMarketData !== 'undefined' && window._rawMarketData && window._rawMarketData.mockStocks) {
+    stocks = window._rawMarketData.mockStocks.slice(0, 45);
   }
 
   // 顏色與象限定義
@@ -13323,10 +13308,16 @@ function renderSectorFlowMap() {
     rotate: '🟡 買力降溫'
   };
 
-  // 幾何尺寸
+  // 幾何尺寸 (RWD 自適應)
   const W = container.clientWidth || 920;
-  const H = Math.max(540, Math.min(680, window.innerHeight - 250));
-  const ML = 55, MR = 45, MT = 40, MB = 45;
+  const isMobile = window.innerWidth <= 768;
+  const H = isMobile
+    ? Math.max(340, Math.min(460, window.innerHeight - 200))
+    : Math.max(540, Math.min(680, window.innerHeight - 250));
+  const ML = isMobile ? 35 : 55;
+  const MR = isMobile ? 25 : 45;
+  const MT = isMobile ? 30 : 40;
+  const MB = isMobile ? 35 : 45;
   const PW = W - ML - MR;
   const PH = H - MT - MB;
   const centerX = ML + PW / 2;
@@ -13384,8 +13375,8 @@ function renderSectorFlowMap() {
   // SVG 畫布
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('width', W);
-  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   svg.style.cssText = 'position:relative; z-index:2; display:block; width:100%; height:100%;';
 
   function el(tag, attrs, text) {
@@ -13420,7 +13411,8 @@ function renderSectorFlowMap() {
   svg.appendChild(el('line', { x1: ML, y1: centerY, x2: ML + PW, y2: centerY, stroke: 'rgba(56, 189, 248, 0.45)', 'stroke-width': '1.5' }));
 
   // 4. 四象限戰術浮雕標籤
-  const qStyle = 'font-size:11px; font-weight:800; letter-spacing:1px; user-select:none; opacity:0.9;';
+  const qFontSize = isMobile ? '9px' : '11px';
+  const qStyle = `font-size:${qFontSize}; font-weight:800; letter-spacing:0.5px; user-select:none; opacity:0.9;`;
   svg.appendChild(el('text', { x: ML + PW - 15, y: MT + 22, 'text-anchor': 'end', fill: '#ef4444', style: qStyle }, '【主力爆買 ZONE】'));
   svg.appendChild(el('text', { x: ML + 15, y: MT + 22, 'text-anchor': 'start', fill: '#3b82f6', style: qStyle }, '【資金進駐 ZONE】'));
   svg.appendChild(el('text', { x: ML + 15, y: MT + PH - 14, 'text-anchor': 'start', fill: '#10b981', style: qStyle }, '【量縮整理 ZONE】'));
@@ -13453,7 +13445,10 @@ function renderSectorFlowMap() {
 
     const x = toSvgX(xNorm);
     const y = toSvgY(yNorm);
-    const r = Math.min(14, Math.max(7, 6 + Math.sqrt(s.volRatio || 1) * 2.8));
+    const rBase = isMobile ? 5 : 6;
+    const rMul = isMobile ? 2.0 : 2.8;
+    const rMax = isMobile ? 10 : 14;
+    const r = Math.min(rMax, Math.max(rBase + 1, rBase + Math.sqrt(s.volRatio || 1) * rMul));
 
     const blipG = el('g', { class: 'radar-blip-item', style: 'cursor:pointer;' });
 
@@ -13479,11 +13474,12 @@ function renderSectorFlowMap() {
     blipG.appendChild(coreDot);
 
     // 股票代號標籤
+    const labelFontSize = isMobile ? '8' : '10';
     const label = el('text', {
-      x: x, y: y - r - 4,
+      x: x, y: y - r - 3,
       'text-anchor': 'middle',
       fill: '#f8fafc',
-      'font-size': '10',
+      'font-size': labelFontSize,
       'font-weight': '700',
       'text-shadow': '0 2px 4px rgba(0,0,0,0.9)',
       style: 'pointer-events:none; user-select:none;'

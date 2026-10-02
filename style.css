@@ -4301,3 +4301,623 @@ body {
   border-radius: 8px;
   border-left: 3px solid #38bdf8;
 }
+
+/* ==========================================================================
+   🎯 荳荳 AI 系統 — 全面 RWD 響應式重構 (Mobile-First Adaptive Design)
+   ========================================================================== */
+
+/* ===== 📱 底部原生 Tab 導航列 (< 768px 才顯示) ===== */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9990;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 8px env(safe-area-inset-bottom, 6px);
+  justify-content: space-around;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.m-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.m-nav-btn.active {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.m-nav-btn .m-nav-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.m-nav-btn .m-nav-label {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* ===== 📱 手機端全面響應式 (≤ 768px) ===== */
+@media (max-width: 768px) {
+  /* -- 底部 Tab 顯示 -- */
+  .mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  /* -- 頂部 Nav 精簡 -- */
+  .topbar {
+    padding: 8px 12px !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .topbar-nav {
+    display: none !important;
+  }
+
+  .topbar-brand {
+    gap: 6px !important;
+  }
+
+  .brand-logo {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .brand-name {
+    font-size: 13px !important;
+  }
+
+  .brand-sub {
+    display: none !important;
+  }
+
+  .topbar-status {
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    font-size: 10px !important;
+  }
+
+  .market-status-badge {
+    font-size: 10px !important;
+    padding: 3px 8px !important;
+  }
+
+  .current-time,
+  .last-update {
+    font-size: 10px !important;
+  }
+
+  /* -- 主容器底部留空給 bottom nav -- */
+  .main-container {
+    padding: 10px !important;
+    padding-bottom: 80px !important;
+  }
+
+  body {
+    padding-bottom: 72px;
+  }
+
+  /* -- 全域 footer 調整 -- */
+  .doudou-footer {
+    padding-bottom: 80px !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    font-size: 10px !important;
+  }
+
+  /* =========================================
+     📡 指標雷達 (Dashboard) — 手機 RWD
+     ========================================= */
+  .dashboard-radar-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .dashboard-radar-header h2 {
+    font-size: 15px !important;
+  }
+
+  .dashboard-radar-header .badge {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* 象限過濾按鈕 - 手機橫向捲軸 */
+  .bubble-filters-bar {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+  }
+
+  .bubble-filter-btn {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  #bubble-legend-text {
+    font-size: 9px !important;
+  }
+
+  /* 雷達視窗 - 填滿手機寬度 */
+  .radar-viewport {
+    border-radius: 8px !important;
+  }
+
+  .radar-display-wrapper {
+    min-height: 380px !important;
+    height: calc(100vh - 280px) !important;
+  }
+
+  .flow-map-container {
+    min-height: 380px !important;
+    height: calc(100vh - 280px) !important;
+  }
+
+  /* 縮放按鈕組 */
+  .dashboard-radar-header > div:last-child {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* 市場健康度按鈕 */
+  .health-popover-trigger {
+    font-size: 12px !important;
+  }
+
+  /* 市場健康度浮窗 - 手機全螢幕 overlay */
+  .health-popover-panel {
+    position: fixed !important;
+    top: 60px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
+    z-index: 9999 !important;
+  }
+
+  .hp-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* =========================================
+     🐕 荳荳清單 (Screener) — 手機 RWD
+     ========================================= */
+  .screener-search-bar-wrap {
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .screener-search-bar-wrap > div:first-child {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  #screenerSearchInput {
+    font-size: 14px !important;
+    padding: 11px 14px 11px 36px !important;
+    min-width: unset !important;
+  }
+
+  #screenerManualInput {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* Hashtag 過濾列 - 橫向捲軸 */
+  .hashtag-filter-row {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .hashtag-chip {
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  /* 篩選結果 header */
+  .screener-results-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+  }
+
+  .screener-results-header .results-count-text {
+    font-size: 11px !important;
+  }
+
+  .screener-action-pills {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .screener-action-pills button {
+    font-size: 10.5px !important;
+    padding: 4px 10px !important;
+  }
+
+  /* ★ 表格轉卡片 — 核心手機策略 */
+  .screener-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -10px !important;
+    padding: 0 10px !important;
+  }
+
+  .screener-table {
+    font-size: 11px !important;
+    min-width: 680px !important;
+  }
+
+  .screener-table th {
+    font-size: 10px !important;
+    padding: 6px 8px !important;
+    white-space: nowrap !important;
+  }
+
+  .screener-table td {
+    padding: 8px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* =========================================
+     🐕 荳荳指標 (Chart/Pipeline) — 手機 RWD
+     ========================================= */
+  .quant-pipeline-wrapper {
+    gap: 14px !important;
+    padding-bottom: 80px !important;
+  }
+
+  /* 頂部 Header */
+  .pipeline-header-card {
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .pipeline-main-title {
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+  }
+
+  .pipeline-subtitle {
+    font-size: 12px !important;
+  }
+
+  .pipeline-header-metrics {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .p-metric-item {
+    min-width: unset !important;
+    padding: 8px 10px !important;
+  }
+
+  .p-metric-label {
+    font-size: 9.5px !important;
+  }
+
+  .p-metric-val {
+    font-size: 14px !important;
+  }
+
+  /* 4 階流程圖 → 手機垂直堆疊 */
+  .pipeline-flowchart {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  .flow-stage-card {
+    border-radius: 10px !important;
+    padding: 16px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .stage-name {
+    font-size: 14px !important;
+  }
+
+  .stage-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+  }
+
+  /* 連接箭頭 → 手機旋轉為垂直向下 */
+  .flow-connector {
+    transform: rotate(90deg) !important;
+    margin: 4px auto !important;
+    padding: 4px 0 !important;
+    height: 40px !important;
+  }
+
+  .connector-label {
+    writing-mode: horizontal-tb !important;
+    font-size: 9px !important;
+  }
+
+  /* Stage 1 資料來源列表 */
+  .stage-source-list li {
+    padding: 6px 8px !important;
+  }
+
+  .src-badge {
+    font-size: 8px !important;
+    padding: 1px 4px !important;
+  }
+
+  .src-info strong {
+    font-size: 11px !important;
+  }
+
+  .src-detail {
+    font-size: 9.5px !important;
+  }
+
+  /* Stage 3 多因子公式 */
+  .factor-formula-banner {
+    font-size: 8.5px !important;
+    padding: 6px 8px !important;
+    word-break: break-all !important;
+  }
+
+  .factor-badge {
+    font-size: 10px !important;
+  }
+
+  .factor-logic {
+    font-size: 8.5px !important;
+    text-align: left !important;
+  }
+
+  .factor-left {
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+
+  /* Stage 4 訊號決策 */
+  .tier-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .tier-desc {
+    font-size: 10px !important;
+  }
+
+  /* 量化情境模擬器 */
+  .quant-sim-card {
+    padding: 14px 16px !important;
+  }
+
+  .sim-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .sim-title {
+    font-size: 14px !important;
+  }
+
+  .sim-preset-btns {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .sim-btn {
+    width: 100% !important;
+    text-align: left !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+
+  .sim-body {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .sim-score-num {
+    font-size: 32px !important;
+  }
+
+  /* =========================================
+     🐾 Modals / 彈窗 — 手機 RWD (防溢出)
+     ========================================= */
+  .modal-overlay {
+    padding: 12px !important;
+    align-items: flex-start !important;
+    padding-top: 60px !important;
+  }
+
+  .postmarket-summary-card,
+  .modal-content-glass {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow-y: auto !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+
+  #dogReminderBox {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: calc(100vh - 100px) !important;
+    overflow-y: auto !important;
+  }
+
+  .modal-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+  }
+
+  .shiba-chat-close,
+  .modal-close {
+    top: 8px !important;
+    right: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+  }
+
+  /* 氣象彈窗內 強勢/弱勢族群表格 */
+  .postmarket-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .postmarket-section-title {
+    font-size: 11px !important;
+  }
+
+  /* =========================================
+     🐶 柴犬吉祥物 — 手機調整
+     ========================================= */
+  .shiba-mascot-container {
+    bottom: 72px !important;
+  }
+
+  .shiba-chat-panel {
+    max-width: calc(100vw - 24px) !important;
+    right: 0 !important;
+    bottom: 60px !important;
+    max-height: calc(100vh - 180px) !important;
+  }
+
+  /* =========================================
+     📊 Bubble Tooltip — 手機避免溢出
+     ========================================= */
+  #bubbleTooltip {
+    max-width: calc(100vw - 32px) !important;
+    min-width: 180px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ===== 📱 超小螢幕 (≤ 480px) 額外修正 ===== */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 6px 8px !important;
+  }
+
+  .brand-name {
+    font-size: 12px !important;
+  }
+
+  .main-container {
+    padding: 6px !important;
+    padding-bottom: 78px !important;
+  }
+
+  /* 雷達區更緊湊 */
+  .dashboard-radar-header h2 {
+    font-size: 14px !important;
+  }
+
+  .radar-display-wrapper,
+  .flow-map-container {
+    min-height: 320px !important;
+    height: calc(100vh - 240px) !important;
+  }
+
+  /* 荳荳清單表格 */
+  .screener-table {
+    font-size: 10px !important;
+    min-width: 600px !important;
+  }
+
+  .screener-table th {
+    font-size: 9px !important;
+  }
+
+  /* 指標頂部 metrics → 單欄 */
+  .pipeline-header-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pipeline-main-title {
+    font-size: 14px !important;
+  }
+
+  /* 模擬器分數 */
+  .sim-score-num {
+    font-size: 28px !important;
+  }
+
+  /* Modal 更密實 */
+  .postmarket-summary-card,
+  .modal-content-glass {
+    padding: 12px !important;
+  }
+}
+
+/* ===== 🖥️ 平板 (769px ~ 1024px) ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-container {
+    padding: 12px 16px !important;
+  }
+
+  .pipeline-flowchart {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  .flow-connector {
+    display: none !important;
+  }
+
+  .flow-stage-card {
+    margin-bottom: 0 !important;
+  }
+
+  .pipeline-header-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}

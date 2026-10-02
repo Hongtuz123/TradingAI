@@ -2169,7 +2169,7 @@ def run_screener(force=False):
     # 同步輸出 data.js 供前端直接引入與後端狀態檢查使用
     with open('data.js', 'w', encoding='utf-8') as f:
         f.write(f"// 由 yfinance 產生之真實資料 — {now_str}\n")
-        f.write("const marketData = ")
+        f.write("window._rawMarketData = ")
         json.dump(cleaned_json_data, f, ensure_ascii=False, indent=2)
         f.write(";\n")
 
