@@ -3,13 +3,13 @@ try {
   importScripts('./OneSignalSDK.sw.js');
 } catch (e) {}
 
-const CACHE_NAME = 'doudou-ai-cache-v3.0';
+const CACHE_NAME = 'doudou-ai-cache-v4.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
-  './stock-dashboard.js',
+  './style.css?v=78',
+  './app.js?v=78',
+  './stock-dashboard.js?v=78',
   './manifest.json',
   './OneSignalSDKWorker.js',
   './OneSignalSDK.sw.js',
@@ -19,6 +19,7 @@ const ASSETS_TO_CACHE = [
 
 // 安裝服務工作線程
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE).catch(err => {
@@ -26,60 +27,66 @@ self.addEventListener('install', (event) => {
       });
     })
   );
-  self.skipWaiting();
 });
 
-// 激活服務工作線程並清理舊快取
+// 激活服務工作線程並徹底清理舊快取
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] 清理過期快取:', key);
             return caches.delete(key);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// 網路請求攔截與漸進式快取
+// 網路請求攔截 (Network-First，連線成功即自動更新快取)
 self.addEventListener('fetch', (event) => {
-  // 只處理 GET 請求
   if (event.request.method !== 'GET') return;
   
   try {
     const url = new URL(event.request.url);
-    // 關鍵修正：只攔截本站同源請求。外部 CDN 如 OneSignal 等一律不予攔截，讓瀏覽器原生處理
     if (url.origin !== self.location.origin) {
       return;
     }
 
-    // API 或動態數據一律網路優先
     if (url.pathname.includes('/api/') || url.pathname.includes('data.js') || url.pathname.includes('data.json')) {
       return;
     }
 
     event.respondWith(
-      fetch(event.request).catch(() => {
+      fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
         return caches.match(event.request);
       })
     );
   } catch (e) {
-    // 預防 URL 解析失敗時的安全退路
     return;
   }
 });
 
-// 推播通知監聽 (預留給 Phase 2/3)
+// 推播通知監聽 (收到雲端推播時的預設展示)
 self.addEventListener('push', (event) => {
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
   let payload = {
-    title: '🟢 荳荳 AI 動態交易訊號',
-    body: '觸發最新買進/加碼訊號，點擊直達 TradingView App！',
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>',
-    data: { url: 'tradingview://symbol/TWSE:2330' }
+    title: `🟢 [${timeStr}] 2330 台積電 · 買進 (1D+4H)`,
+    body: '觸發最新買進起爆訊號，點擊立即查看荳荳精選買進清單 🐕',
+    icon: './apple-touch-icon.png',
+    data: { url: './index.html?view=screener&filter=buy', view: 'screener', filter: 'buy' }
   };
 
   if (event.data) {
@@ -92,13 +99,10 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body,
-    icon: payload.icon,
-    badge: payload.icon,
+    icon: payload.icon || './apple-touch-icon.png',
+    badge: payload.badge || './apple-touch-icon.png',
     data: payload.data,
-    vibrate: [100, 50, 100],
-    actions: [
-      { action: 'open_tv', title: '📈 TradingView App' }
-    ]
+    vibrate: [200, 100, 200]
   };
 
   event.waitUntil(

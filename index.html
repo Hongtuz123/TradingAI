@@ -66,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=77" />
+  <link rel="stylesheet" href="style.css?v=78" />
 
 
 
@@ -1150,7 +1150,7 @@
           <span class="pwa-modal-icon">🔔</span>
           <div>
             <div class="pwa-modal-title">手機交易訊號推播</div>
-            <div class="pwa-modal-sub">PWA 原生鎖屏推播 ｜ TradingView 秒級跳轉</div>
+            <div class="pwa-modal-sub">PWA 原生鎖屏推播 ｜ 系統買進清單秒級導流</div>
           </div>
         </div>
         <button class="pwa-close-btn" onclick="closePushSettingsModal()" title="關閉">✕</button>
@@ -1205,20 +1205,38 @@
         </button>
 
         <button class="pwa-test-action-btn" onclick="sendTestPushFromModal()">
-          <span>⚡ 發送一則測試推播 (驗證手機跳轉 TradingView)</span>
+          <span>⚡ 發送一則測試推播 (驗證橫幅與導回清單)</span>
+        </button>
+
+        <!-- 🔄 強制清除舊快取按鈕 -->
+        <button class="pwa-refresh-cache-btn" onclick="forceClearPwaCache()" style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; width: 100%;">
+          <span>🔄</span>
+          <span>清除舊快取並獲取最新版本 (解決舊畫面問題)</span>
         </button>
       </div>
 
       <div style="font-size: 11px; color: #64748b; line-height: 1.45; text-align: center;">
-        💡 啟用後，後端每日掃描出【買進起爆】或【獲利平倉】訊號時，手機鎖屏將即時彈出通知，點擊即可直達 TradingView App 精準個股！
+        💡 啟用後，後端每日掃描出【買進起爆】或【獲利平倉】訊號時，手機鎖屏將即時彈出通知，點擊通知將自動導回本系統並開啟最新買進精選清單！
       </div>
     </div>
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=77"></script>
-  <script src="app.js?v=77"></script>
-  <script src="stock-dashboard.js?v=77"></script>
+  <script src="data.js?v=78"></script>
+  <script src="app.js?v=78"></script>
+  <script src="stock-dashboard.js?v=78"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=78', { scope: './' })
+          .then((reg) => {
+            reg.update();
+            console.log('[PWA] Service Worker 註冊與更新檢查完成');
+          })
+          .catch((err) => console.warn('[PWA] SW 註冊異常:', err));
+      });
+    }
+  </script>
 </body>
 
 

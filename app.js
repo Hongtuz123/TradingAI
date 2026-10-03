@@ -19002,6 +19002,32 @@ window.copyCurrentSiteUrl = function() {
   }
 };
 
+// 🔄 一鍵徹底清除 PWA / 瀏覽器快取並重新載入最新版本
+window.forceClearPwaCache = async function() {
+  if (!confirm('即將清除本裝置的離線快取並重新載入最新系統版本，是否確定？')) {
+    return;
+  }
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(key => caches.delete(key)));
+      console.log('[Cache] 所有快取庫已清除');
+    }
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (let reg of registrations) {
+        await reg.unregister();
+      }
+      console.log('[SW] 舊版 Service Worker 已註銷');
+    }
+    const cleanUrl = window.location.origin + window.location.pathname + '?reload=' + Date.now();
+    window.location.replace(cleanUrl);
+  } catch (err) {
+    console.error('清除快取失敗:', err);
+    window.location.reload(true);
+  }
+};
+
 // 即時更新彈窗內的裝置與權限狀態
 window.updatePushModalStatus = function() {
   const osEl = document.getElementById('pwaOsVal');
