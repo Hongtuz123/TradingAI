@@ -3808,6 +3808,28 @@ function runScreener(isAutoRefresh = false) {
       return; // ETF 且非持倉中 → 直接跳過
     }
 
+    // 🧟 殭屍股硬性排除門檻（非持倉標的才擋）
+    if (!isHeld) {
+      // 計算 20 日平均成交量（張）
+      const _avgVol = (() => {
+        if (s.kline && s.kline.length >= 20) {
+          const sum20 = s.kline.slice(-20).reduce((a, c) => a + parseFloat(c.volume || 0), 0);
+          return Math.round((sum20 / 20) / 1000);
+        }
+        return s.dailyVol || 0;
+      })();
+      const _mktCap = s.marketCap || 0;
+
+      if (_avgVol < 300) {
+        s.zombieReason = `日均量不足 (${_avgVol}張 < 300張)`;
+        return; // 流動性不足 → 跳過
+      }
+      if (_mktCap > 0 && _mktCap < 20) {
+        s.zombieReason = `市值過小 (${_mktCap}億 < 20億)`;
+        return; // 微型股 → 跳過
+      }
+    }
+
     // 🚀 持倉中的標的 (In Position) 或 符合多因子得分門檻 (>= p.minScore) 者，納入荳荳清單
     if (isHeld || s.dynamicScore >= p.minScore) {
       currentResults.push(s);
