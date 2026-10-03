@@ -66,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=72" />
+  <link rel="stylesheet" href="style.css?v=73" />
 
 
 
@@ -182,23 +182,16 @@
 
     <!-- ======================== 戰術儀表板視圖 ======================== -->
     <section class="view active" id="view-dashboard">
-      <!-- 頂部控制列：標題 + 視角縮放 + 市場健康度收合按鈕 (全面整齊 RWD) -->
+      <!-- 頂部控制列：荳荳雷達標題 + 市場健康度收合按鈕 (RWD 兩端對齊) -->
       <div class="dashboard-radar-header-modern">
         <div class="radar-title-group">
           <h2 class="radar-title-text">
-            <span style="font-size:18px;">🎯</span> 荳花漲跌區塊偵測
+            <span style="font-size:18px;">🎯</span> 荳荳雷達
             <span class="badge radar-title-badge">荳荳精選標的</span>
           </h2>
         </div>
 
         <div class="radar-top-actions">
-          <!-- 縮放視角控制膠囊 -->
-          <div class="radar-zoom-capsule">
-            <button onclick="zoomSectorBubble(1.2)" class="zoom-btn" title="放大視角">➕</button>
-            <button onclick="zoomSectorBubble(0.8)" class="zoom-btn" title="縮小視角">➖</button>
-            <button onclick="resetSectorBubble()" class="zoom-btn" title="重設視角">🔄</button>
-          </div>
-
           <!-- 📊 市場健康度戰術診斷按鈕 -->
           <div class="health-widget-wrap" style="position: relative;">
             <button class="health-icon-btn modern-health-btn" id="healthToggleBtn" onclick="toggleHealthPopover(event)" title="點擊展開/收合大盤市場健康度戰術診斷">
@@ -1110,9 +1103,9 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="data.js?v=72"></script>
-  <script src="app.js?v=72"></script>
-  <script src="stock-dashboard.js?v=72"></script>
+  <script src="data.js?v=73"></script>
+  <script src="app.js?v=73"></script>
+  <script src="stock-dashboard.js?v=73"></script>
 </body>
 
 

@@ -5434,3 +5434,242 @@ body {
     padding: 2px 6px !important;
   }
 }
+
+
+/* ==========================================================================
+   🎯 荳荳 AI 系統 — 4項核心精修 (搜尋框瘦身/頁尾防遮擋/罐頭按鈕Sticky/荳荳雷達RWD)
+   ========================================================================== */
+
+/* ── 需求 4: 荳荳雷達頂部控制列 RWD (移除縮放後的雙側極簡對齊) ── */
+.dashboard-radar-header-modern {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: 12px !important;
+  flex-wrap: nowrap !important;
+}
+
+.dashboard-radar-header-modern .radar-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.dashboard-radar-header-modern .radar-title-text {
+  margin: 0 !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-radar-header-modern .radar-top-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+
+/* ── 需求 3: 氣象彈窗常駐吸底罐頭按鈕與內部滾動 ── */
+#dogReminderBox {
+  max-height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 16px 16px 8px !important;
+}
+
+#dogReminderContent {
+  flex: 1 1 auto !important;
+  max-height: calc(85vh - 75px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-right: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.dog-reminder-action-bar {
+  position: sticky !important;
+  bottom: 0 !important;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.98) 75%, transparent) !important;
+  padding: 10px 0 4px !important;
+  margin-top: auto !important;
+  z-index: 10 !important;
+  width: 100% !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.doudou-can-btn {
+  padding: 10px 28px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+  border: none !important;
+  color: white !important;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.45) !important;
+  cursor: pointer !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
+}
+
+.doudou-can-btn:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6) !important;
+}
+
+/* ==========================================================================
+   📱 手機端 (Mobile <= 768px) 專屬精修覆蓋規則
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* ── 需求 1: 搜尋輸入框極致瘦身 (從 130px 巨大卡片改為 38px 緊湊單行膠囊) ── */
+  .screener-search-bar-wrap.modern-search-wrap,
+  .screener-search-bar-wrap {
+    padding: 0 !important;
+    margin-bottom: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  .screener-search-bar-wrap > div:first-child,
+  .unified-search-container {
+    display: flex !important;
+    flex-direction: row !important; /* 徹底消除 column 縱向排列 */
+    align-items: center !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 2px 4px 2px 10px !important;
+    border-radius: 8px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .unified-search-icon {
+    font-size: 13px !important;
+    margin-right: 2px !important;
+    color: #94a3b8 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .unified-search-input,
+  #screenerSearchInput {
+    flex: 1 !important;
+    min-width: 0 !important;
+    font-size: 12px !important;
+    padding: 4px 0 !important;
+    height: 30px !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #ffffff !important;
+  }
+
+  .unified-search-input::placeholder,
+  #screenerSearchInput::placeholder {
+    font-size: 11px !important;
+    color: #64748b !important;
+  }
+
+  .unified-health-btn {
+    height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+  }
+
+  /* ── 需求 2: 頁尾文字徹底防遮擋 (解除 fixed 定位，給足底部安全距離) ── */
+  .doudou-footer {
+    position: static !important; /* 徹底解除 fixed 定位，避免與底部導航重疊 */
+    width: 100% !important;
+    margin-top: 24px !important;
+    margin-bottom: 20px !important;
+    padding: 14px 16px 20px 16px !important;
+    background: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    gap: 6px !important;
+    z-index: 1 !important;
+  }
+
+  .doudou-footer .footer-left {
+    font-size: 11.5px !important;
+    color: #94a3b8 !important;
+    text-align: center !important;
+  }
+
+  .doudou-footer .footer-right {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    font-size: 11px !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* 主內容容器底部安全避讓距離 */
+  .main-container {
+    padding-bottom: 110px !important;
+  }
+
+  /* 柴犬吉祥物懸浮於底部導航欄右上方，不再遮蓋頁尾文字 */
+  .shiba-mascot-container {
+    bottom: 72px !important;
+    right: 12px !important;
+    transform: scale(0.85) !important;
+    transform-origin: bottom right !important;
+    z-index: 9995 !important;
+  }
+
+  /* ── 需求 4: 荳荳雷達頂部單行兩端對齊 (無縮放膠囊後極簡整齊) ── */
+  .dashboard-radar-header-modern {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .dashboard-radar-header-modern .radar-title-group {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-radar-header-modern .radar-title-text {
+    font-size: 15px !important;
+  }
+
+  .radar-title-badge {
+    font-size: 9.5px !important;
+    padding: 1px 6px !important;
+  }
+
+  .modern-health-btn {
+    height: 32px !important;
+    font-size: 11.5px !important;
+    padding: 0 10px !important;
+    flex-shrink: 0 !important;
+  }
+}

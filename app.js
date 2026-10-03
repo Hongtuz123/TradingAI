@@ -13300,10 +13300,10 @@ window.changeBubbleAxisMode = function() {
 
 
 // =============================================
-// 🎯 荳花漲跌區塊偵測 · 戰術雷達（只針對荳荳清單標的）
+// 🎯 荳荳雷達 · 戰術雷達（只針對荳荳清單標的）
 // =============================================
 // =============================================
-// 🎯 荳花漲跌區塊偵測 · 指標雷達（高靈敏度四象限戰術散佈）
+// 🎯 荳荳雷達 · 指標雷達（高靈敏度四象限戰術散佈）
 // =============================================
 
 // 🎯 縮放與重設指標雷達視窗視角
@@ -15189,9 +15189,9 @@ function renderPostmarketSummary() {
 
 
 
-    <!-- 互動選項按鈕 (唯一選項：給荳荳罐頭) -->
-    <div style="display:flex; justify-content:center; margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
-      <button class="btn-primary" onclick="giveDoudouCan()" style="padding: 12px 36px; font-size: 15px; font-weight: 800; border-radius: 9999px; background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border: none; box-shadow: 0 4px 18px rgba(236, 72, 153, 0.45); cursor: pointer; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='scale(1)';">
+    <!-- 互動選項按鈕 (唯一選項：給荳荳罐頭 - 常駐吸底避免手機版遮擋) -->
+    <div class="dog-reminder-action-bar">
+      <button class="btn-primary doudou-can-btn" onclick="giveDoudouCan()">
         🥫 給荳荳罐頭 (獎勵你汪)
       </button>
     </div>
