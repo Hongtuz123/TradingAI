@@ -19219,14 +19219,14 @@ async function _syncOneSignalOptIn() {
   }
 }
 
-// ⚡️ 發送測試推播通知並跳轉 TradingView
-window.sendTestNotification = function(symbolCode = '2330', tvUrl = '', market = 'TSE') {
-  if (!tvUrl) {
-    tvUrl = getTradingViewDeepLink(symbolCode, market);
-  }
-
-  const title = `🟢 荳荳 AI 訊號測試：${symbolCode} 台積電`;
-  const body = `已成功連結推播系統！點擊此處跳轉 TradingView 查看 ${symbolCode} K線圖 📈`;
+// ⚡️ 發送測試推播通知並導回系統開啟荳荳清單買進標的
+window.sendTestNotification = function(symbolCode = '2330', targetUrl = '', market = 'TSE') {
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  
+  const systemUrl = targetUrl || './index.html?view=screener&filter=buy';
+  const title = `🟢 [${timeStr}] ${symbolCode} 台積電 · 買進 (1D+4H)`;
+  const body = `觸發日線+4H雙時框突破訊號！點擊立即查看荳荳精選買進清單 🐕`;
   const icon = './apple-touch-icon.png';
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
@@ -19235,29 +19235,51 @@ window.sendTestNotification = function(symbolCode = '2330', tvUrl = '', market =
         body: body,
         icon: icon,
         badge: icon,
-        data: { url: tvUrl },
+        data: { url: systemUrl, view: 'screener', filter: 'buy' },
         vibrate: [200, 100, 200],
-        tag: 'doudou-test-push'
+        tag: 'doudou-signal-push'
       });
     }).catch(() => {
-      _fallbackNotification(title, body, symbolCode, market);
+      _fallbackNotification(title, body, systemUrl);
     });
   } else if ('Notification' in window && Notification.permission === 'granted') {
-    _fallbackNotification(title, body, symbolCode, market);
+    _fallbackNotification(title, body, systemUrl);
   }
 };
 
-function _fallbackNotification(title, body, symbolCode, market) {
+function _fallbackNotification(title, body, systemUrl) {
   try {
     const n = new Notification(title, {
       body: body,
       icon: './apple-touch-icon.png'
     });
     n.onclick = function() {
-      openTradingViewAppOrWeb(symbolCode, market);
+      if (typeof switchView === 'function') switchView('screener');
+      if (typeof filterBySignalType === 'function') filterBySignalType('buy');
+      if (typeof closePushSettingsModal === 'function') closePushSettingsModal();
     };
   } catch(e) {}
 }
+
+// 🌐 處理網址 Deep Link (預設載入並切換到指定 view 與 filter)
+window.handleDeepLinkNavigation = function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const targetView = params.get('view');
+    const targetFilter = params.get('filter');
+
+    if (targetView && typeof switchView === 'function') {
+      switchView(targetView);
+    }
+    if (targetFilter && typeof filterBySignalType === 'function') {
+      setTimeout(() => {
+        filterBySignalType(targetFilter);
+      }, 400);
+    }
+  } catch(e) {
+    console.warn('[DeepLink] navigation error:', e);
+  }
+};
 
 // ⚡️ 測試推播通知發送並跳轉 TradingView
 window.testTradingViewDeepLink = function(symbolCode = '2330', market = 'TSE') {
@@ -19597,8 +19619,12 @@ window.applyQuantScenario = function(type) {
   }
 };
 
-// 🔔 初始化與載入完成時自動檢測推播狀態
+// 🔔 初始化與載入完成時自動檢測推播狀態與處理網址 Deep Link
 if (typeof checkPushPermissionStatus === 'function') {
   setTimeout(checkPushPermissionStatus, 800);
   window.addEventListener('load', checkPushPermissionStatus);
+}
+if (typeof handleDeepLinkNavigation === 'function') {
+  setTimeout(handleDeepLinkNavigation, 300);
+  window.addEventListener('load', handleDeepLinkNavigation);
 }

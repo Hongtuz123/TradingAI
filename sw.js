@@ -106,22 +106,28 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// 點擊通知跳轉至 TradingView App
+// 點擊通知導回荳荳 AI 系統並開啟荳荳清單 (預設買進起爆篩選)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  let targetUrl = 'tradingview://symbol/TWSE:2330';
+  let targetUrl = './index.html?view=screener&filter=buy';
   if (event.notification.data && event.notification.data.url) {
     targetUrl = event.notification.data.url;
-  } else if (event.notification.data && event.notification.data.symbol) {
-    const sym = event.notification.data.symbol;
-    const mkt = (event.notification.data.market || 'TSE').toUpperCase() === 'OTC' ? 'TPEX' : 'TWSE';
-    targetUrl = `tradingview://symbol/${mkt}:${sym}`;
   }
 
   event.waitUntil(
-    clients.openWindow(targetUrl).catch(() => {
-      clients.openWindow('https://www.tradingview.com');
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (let client of windowClients) {
+        if ('focus' in client) {
+          if ('navigate' in client) {
+            client.navigate(targetUrl);
+          }
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });

@@ -87,23 +87,27 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     if not buys and not adds and not sells:
         return True
 
-    # 優先發送最高優質的 🟢 買進訊號，無買進則發送 🔵 加碼訊號
+    # 優先發送最高優質的 🟢 買進訊號，無買進則發送 🔵 加碼訊號，其次賣出
     target_stock = None
-    sig_type = "買進"
+    sig_action = "買進"
     sig_emoji = "🟢"
+    filter_type = "buy"
 
     if buys:
         target_stock = buys[0]
-        sig_type = "買進起爆"
+        sig_action = "買進"
         sig_emoji = "🟢"
+        filter_type = "buy"
     elif adds:
         target_stock = adds[0]
-        sig_type = "加碼買進"
+        sig_action = "加碼"
         sig_emoji = "🔵"
+        filter_type = "add"
     elif sells:
         target_stock = sells[0]
-        sig_type = "獲利平倉"
+        sig_action = "賣出"
         sig_emoji = "🔴"
+        filter_type = "closed"
 
     if not target_stock:
         return True
@@ -117,25 +121,39 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     vol_r = _get_vol_ratio(target_stock)
     chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
     
-    prefix = "TPEX" if str(market).upper() == "OTC" else "TWSE"
-    tv_app_url = f"tradingview://symbol/{prefix}:{code}"
-    tv_web_url = f"https://www.tradingview.com/chart/?symbol={prefix}:{code}"
+    # 格式化訊號時間 (取 HH:MM)
+    if not time_str:
+        from datetime import datetime, timezone, timedelta
+        tz = timezone(timedelta(hours=8))
+        time_display = datetime.now(tz).strftime("%H:%M")
+    else:
+        parts = str(time_str).strip().split()
+        time_display = parts[-1][:5] if len(parts) > 1 else parts[0][:5]
 
-    push_title = f"{sig_emoji} [荳荳 AI {sig_type}] {code} {name} ({score}分)"
-    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 爆量 {vol_r:.2f}x ｜ 點擊直達 TradingView App！"
+    # 交易時框 (日線 + 4H 雙時框共振)
+    timeframe_label = target_stock.get('timeframe', '1D+4H')
+
+    # 🎯 規範格式：訊號時間 + 股票代碼 + 股票名稱 + 訊號(買進/賣出/加碼) + 對應交易時框
+    push_title = f"{sig_emoji} [{time_display}] {code} {name} · {sig_action} ({timeframe_label})"
+    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 量能放大 {vol_r:.2f}x ｜ 點擊查看荳荳精選清單 🐕"
+
+    # 🎯 導回本系統並開啟荳荳清單對應篩選
+    system_target_url = f"https://trading-ai-eosin-zeta.vercel.app/?view=screener&filter={filter_type}"
 
     payload = {
         "app_id": ONESIGNAL_APP_ID,
         "included_segments": ["Subscribed Users"],
         "headings": {"en": push_title, "zh": push_title},
         "contents": {"en": push_body, "zh": push_body},
-        "web_url": tv_web_url,
-        "app_url": tv_app_url,
+        "web_url": system_target_url,
+        "app_url": system_target_url,
         "data": {
             "symbol": code,
             "market": market,
             "score": score,
-            "url": tv_app_url
+            "view": "screener",
+            "filter": filter_type,
+            "url": system_target_url
         }
     }
 
