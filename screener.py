@@ -1538,8 +1538,12 @@ def run_screener(force=False):
                 f_chip_4h = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
                 sc_4h = min(100, max(0, f_adx_4h + f_ma_4h + f_vol_4h + f_pat_4h + f_chip_4h - penalty))
 
+            # 判斷是否為 ETF（00 開頭且代碼長度 >= 5 之純數字標的）
+            _is_etf = symbol.isdigit() and symbol.startswith('00') and len(symbol) >= 5
+
             results.append({
                 "id": symbol, "name": name, "market": market,
+                "isETF": _is_etf,
                 "industry": industry_map.get(str(symbol).zfill(4), ''),
                 "price": round(close, 2), "change": round(change_num, 2),
                 "epsYoY": None,

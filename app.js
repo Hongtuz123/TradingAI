@@ -3275,7 +3275,7 @@ function runScreener(isAutoRefresh = false) {
     turnover: parseFloat(document.getElementById('f_turnover')?.value) || 0,
     mktCap: parseFloat(document.getElementById('f_market_cap')?.value) || 0,
     dailyVol: parseFloat(document.getElementById('f_daily_vol')?.value) || 0,
-    minScore: parseInt(document.getElementById('f_min_score')?.value) || 60
+    minScore: parseInt(document.getElementById('f_min_score')?.value) || 70
   };
 
 
@@ -3802,7 +3802,13 @@ function runScreener(isAutoRefresh = false) {
     s.isHeld = isHeld;
     s.posInfo = posState[s.id] || null;
 
-    // 🚀 關鍵修復：持倉中的標的 (In Position) 或 符合多因子得分門檻 (>= p.minScore) 者，100% 全部納入荳荳清單！
+    // 🐕 排除 ETF：僅保留個股（使用者自行存股 ETF，此系統專注操作個股）
+    const _isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
+    if (_isETF && !isHeld) {
+      return; // ETF 且非持倉中 → 直接跳過
+    }
+
+    // 🚀 持倉中的標的 (In Position) 或 符合多因子得分門檻 (>= p.minScore) 者，納入荳荳清單
     if (isHeld || s.dynamicScore >= p.minScore) {
       currentResults.push(s);
     }
