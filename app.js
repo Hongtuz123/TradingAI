@@ -19088,15 +19088,14 @@ window.sendTestPushFromModal = function() {
   sendTestNotification('2330', '', 'TSE');
 };
 
-// 🔔 切換與請求手機系統推播權限 (OneSignal SDK v16 三層 fallback)
+// 🔔 切換與請求手機系統推播權限 (User-Gesture First + Native Priority)
 window.togglePushNotification = async function() {
-  // 即時 Toast 反饋（非阻塞）
   function _toast(msg) {
     let t = document.getElementById('_pushToast');
     if (!t) {
       t = document.createElement('div');
       t.id = '_pushToast';
-      t.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.92);color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;z-index:99999;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      t.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.95);border:1px solid rgba(249,115,22,0.4);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:999999;max-width:90vw;text-align:center;box-shadow:0 6px 25px rgba(0,0,0,0.5);';
       document.body.appendChild(t);
     }
     t.textContent = msg;
@@ -19105,129 +19104,120 @@ window.togglePushNotification = async function() {
     t._tid = setTimeout(() => { t.style.display = 'none'; }, 4000);
   }
 
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  // 1. 若為 iOS 但非 Standalone 模式，Apple iOS 16.4+ 規定無法授權 Web Push，必須引導加入主畫面
+  if (isIOS && !isStandalone) {
+    _toast('🍎 iPhone 規範：請先將本站「加入主畫面」，再從桌面圖示開啟即可啟用！');
+    if (typeof openPushSettingsModal === 'function') openPushSettingsModal();
+    const iosBox = document.getElementById('pwaIosGuideBox');
+    if (iosBox) {
+      iosBox.style.display = 'flex';
+      iosBox.scrollIntoView({ behavior: 'smooth' });
+    }
+    return;
+  }
+
+  // 2. 檢查 Notification 支援
   if (!('Notification' in window)) {
-    _toast('📱 請先將網頁「加入主畫面」後從桌面 App 圖示開啟，才能啟用系統推播！');
+    _toast('📱 您的瀏覽器暫不支援通知，請加入主畫面或使用 Chrome / Safari 開啟！');
     return;
   }
 
   if (Notification.permission === 'denied') {
-    _toast('⚠️ 推播已被封鎖，請至手機設定 → 通知 解除封鎖後重試。');
+    _toast('⚠️ 推播已被手動封鎖，請至手機「設定 ➔ Safari/Chrome ➔ 通知」解除封鎖！');
     return;
   }
 
-  _toast('🔄 正在與 OneSignal 雲端同步...');
-
-  // 三層 fallback 取得 OneSignal 實例（含動態載入自我修復）
-  let os = window._os || window.OneSignal;
-  if (!os) {
-    _toast('⏳ 正在修復並載入推播組件...');
-    
-    // 確保 script 節點存在
-    let scriptNode = document.getElementById('onesignal-sdk-script');
-    if (!scriptNode) {
-      scriptNode = document.createElement('script');
-      scriptNode.id = 'onesignal-sdk-script';
-      scriptNode.src = './OneSignalSDK.page.js';
-      document.head.appendChild(scriptNode);
-    }
-    
-    // 主動推入初始化任務
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function(OneSignalInstance) {
-      try {
-        await OneSignalInstance.init({
-          appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-          allowLocalhostAsSecureOrigin: true,
-          serviceWorkerPath: "sw.js",
-          serviceWorkerParam: { scope: "/" }
-        });
-        window._os = OneSignalInstance;
-        console.log('[OneSignal] Dynamic Init OK');
-      } catch(err) {
-        window._osInitError = err.message || String(err);
-        console.error('[OneSignal] Dynamic Init Error:', err);
-      }
-    });
-
-    // 輪詢等待最多 8 秒 (16 * 500ms)
-    for (let i = 0; i < 16; i++) {
-      await new Promise(r => setTimeout(r, 500));
-      os = window._os || window.OneSignal;
-      if (os) break;
-    }
-  }
-
-  async function _doOptIn(os) {
+  // 3. ★★★ 關鍵核心：在點擊的第一時間立即觸發原生 Notification.requestPermission() ★★★
+  // 不等待任何異步 script 載入，確保 100% 綁定使用者點擊手勢 (User Activation Token)
+  let perm = Notification.permission;
+  if (perm !== 'granted') {
+    _toast('🔔 請在彈出的確認視窗中點擊「允許」...');
     try {
-      // 1. 檢查通知權限 (若已允許則免重複調用 requestPermission 避免 iOS 懸掛)
-      _toast('🔄 1/3 檢查系統權限...');
-      if (Notification.permission !== 'granted') {
-        if (os.Notifications && os.Notifications.requestPermission) {
-          // 加上 3 秒超時保護
-          await Promise.race([
-            os.Notifications.requestPermission(),
-            new Promise(resolve => setTimeout(resolve, 3000))
-          ]);
+      // 支援標準 Promise 與舊版 callback 兼容寫法
+      perm = await new Promise((resolve) => {
+        const res = Notification.requestPermission(resolve);
+        if (res && res.then) {
+          res.then(resolve);
         }
-      }
-
-      // 2. 等待 Service Worker 完全接管，避免發送訊息時 Pending
-      _toast('🔄 2/3 連線推播背景元件...');
-      if (navigator.serviceWorker) {
-        try {
-          await Promise.race([
-            navigator.serviceWorker.ready,
-            new Promise(resolve => setTimeout(resolve, 2000))
-          ]);
-        } catch(swErr) {
-          console.warn('SW ready wait timed out or failed:', swErr);
-        }
-      }
-
-      // 3. 執行 OneSignal optIn 註冊並加入 4 秒強制超時保護
-      _toast('🔄 3/3 向雲端伺服器註冊裝置...');
-      if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
-        await Promise.race([
-          os.User.PushSubscription.optIn(),
-          new Promise(resolve => setTimeout(resolve, 4000))
-        ]);
-      }
-
-      // 4. 取得註冊結果
-      const subId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
-      if (subId) {
-        _toast('🎉 成功！已連線 OneSignal 雲端推播！');
-        console.log('[OneSignal] OptIn success. SubID:', subId);
-      } else {
-        // 沒有拿到 subId，可能還在非同步寫入中，再次輪詢讀取
-        let polledId = null;
-        for (let i = 0; i < 6; i++) {
-          await new Promise(r => setTimeout(r, 500));
-          polledId = os.User && os.User.PushSubscription && os.User.PushSubscription.id;
-          if (polledId) break;
-        }
-        if (polledId) {
-          _toast('🎉 成功！已連線 OneSignal 雲端推播！');
-        } else {
-          _toast('✅ 推播服務就緒！若未收到測試推播，請滑掉App重開即可。');
-        }
-      }
-      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-    } catch(e) {
-      console.error('OneSignal optIn err:', e);
-      _toast('⚠️ 同步失敗：' + (e.message || String(e)).slice(0, 30));
+      });
+    } catch (err) {
+      console.warn('[Push] requestPermission error:', err);
     }
   }
 
-  if (os) {
-    await _doOptIn(os);
+  // 若使用者點擊了允許
+  if (perm === 'granted' || Notification.permission === 'granted') {
+    _toast('🎉 授權成功！系統推播已開啟！');
+    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+
+    // 立即發送一則本地測試推播，讓使用者手機頂部立刻彈出通知橫幅
+    setTimeout(() => {
+      sendTestNotification('2330', '', 'TSE');
+    }, 600);
+
+    // 4. 背景非同步向 OneSignal 雲端同步註冊裝置
+    _syncOneSignalOptIn();
+  } else if (perm === 'denied' || Notification.permission === 'denied') {
+    _toast('❌ 您點擊了拒絕。若需接收訊號，請至手機設定中重新開啟通知。');
+    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
   } else {
-    const swState = navigator.serviceWorker ? 'SW有' : 'SW無';
-    const notifState = 'Notification' in window ? Notification.permission : '不支援';
-    const initErr = window._osInitError ? ('錯誤:' + window._osInitError.slice(0, 30)) : '未初始化';
-    _toast('❌ SDK失敗(' + swState + '|通知:' + notifState + '|' + initErr + ')');
+    _toast('⚠️ 未完成授權，請再試一次點擊允許。');
+    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
   }
 };
+
+// 雲端 OneSignal 背景同步註冊函數
+async function _syncOneSignalOptIn() {
+  try {
+    let os = window._os || window.OneSignal;
+    if (!os) {
+      let scriptNode = document.getElementById('onesignal-sdk-script');
+      if (!scriptNode) {
+        scriptNode = document.createElement('script');
+        scriptNode.id = 'onesignal-sdk-script';
+        scriptNode.src = './OneSignalSDK.page.js';
+        document.head.appendChild(scriptNode);
+      }
+
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function(OneSignalInstance) {
+        try {
+          await OneSignalInstance.init({
+            appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
+            allowLocalhostAsSecureOrigin: true,
+            serviceWorkerPath: "sw.js",
+            serviceWorkerParam: { scope: "/" }
+          });
+          window._os = OneSignalInstance;
+          if (OneSignalInstance.User && OneSignalInstance.User.PushSubscription && OneSignalInstance.User.PushSubscription.optIn) {
+            await OneSignalInstance.User.PushSubscription.optIn();
+          }
+        } catch(e) {
+          console.warn('[OneSignal] deferred init err:', e);
+        }
+      });
+      return;
+    }
+
+    if (navigator.serviceWorker) {
+      await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise(r => setTimeout(r, 2000))
+      ]);
+    }
+
+    if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
+      await os.User.PushSubscription.optIn();
+      console.log('[OneSignal] Cloud registration synced.');
+    }
+  } catch(e) {
+    console.warn('[OneSignal] _syncOneSignalOptIn background error:', e);
+  }
+}
 
 // ⚡️ 發送測試推播通知並跳轉 TradingView
 window.sendTestNotification = function(symbolCode = '2330', tvUrl = '', market = 'TSE') {
@@ -19249,14 +19239,11 @@ window.sendTestNotification = function(symbolCode = '2330', tvUrl = '', market =
         vibrate: [200, 100, 200],
         tag: 'doudou-test-push'
       });
-      openTradingViewAppOrWeb(symbolCode, market);
     }).catch(() => {
       _fallbackNotification(title, body, symbolCode, market);
     });
   } else if ('Notification' in window && Notification.permission === 'granted') {
     _fallbackNotification(title, body, symbolCode, market);
-  } else {
-    openTradingViewAppOrWeb(symbolCode, market);
   }
 };
 
@@ -19270,7 +19257,6 @@ function _fallbackNotification(title, body, symbolCode, market) {
       openTradingViewAppOrWeb(symbolCode, market);
     };
   } catch(e) {}
-  openTradingViewAppOrWeb(symbolCode, market);
 }
 
 // ⚡️ 測試推播通知發送並跳轉 TradingView
