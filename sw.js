@@ -3,13 +3,13 @@ try {
   importScripts('./OneSignalSDK.sw.js');
 } catch (e) {}
 
-const CACHE_NAME = 'doudou-ai-cache-v4.1';
+const CACHE_NAME = 'doudou-ai-cache-v4.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css?v=78',
-  './app.js?v=78',
-  './stock-dashboard.js?v=78',
+  './style.css?v=79',
+  './app.js?v=79',
+  './stock-dashboard.js?v=79',
   './manifest.json',
   './OneSignalSDKWorker.js',
   './OneSignalSDK.sw.js',
@@ -110,25 +110,47 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// 點擊通知導回荳荳 AI 系統並開啟荳荳清單 (預設買進起爆篩選)
+// 點擊通知導回荳荳 AI 系統並開啟荳荳清單對應篩選 (買進/賣出/加碼)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
   let targetUrl = './index.html?view=screener&filter=buy';
-  if (event.notification.data && event.notification.data.url) {
-    targetUrl = event.notification.data.url;
+  let targetView = 'screener';
+  let targetFilter = 'buy';
+
+  if (event.notification.data) {
+    if (event.notification.data.url) targetUrl = event.notification.data.url;
+    if (event.notification.data.view) targetView = event.notification.data.view;
+    if (event.notification.data.filter) targetFilter = event.notification.data.filter;
   }
+
+  // 從 targetUrl 參數中解析 view 與 filter (雙重保險)
+  try {
+    const parsed = new URL(targetUrl, self.location.origin);
+    if (parsed.searchParams.get('view')) targetView = parsed.searchParams.get('view');
+    if (parsed.searchParams.get('filter')) targetFilter = parsed.searchParams.get('filter');
+  } catch(e) {}
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // 1. 若已經有開啟中的視窗，向視窗發送 postMessage 觸發即時切換並 focus
       for (let client of windowClients) {
         if ('focus' in client) {
+          try {
+            client.postMessage({
+              type: 'DOUDOU_NOTIFICATION_CLICK',
+              view: targetView,
+              filter: targetFilter,
+              url: targetUrl
+            });
+          } catch(e) {}
           if ('navigate' in client) {
-            client.navigate(targetUrl);
+            client.navigate(targetUrl).catch(() => {});
           }
           return client.focus();
         }
       }
+      // 2. 若完全未開啟任何視窗，則直接開啟新視窗
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }

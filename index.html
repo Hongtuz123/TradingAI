@@ -51,6 +51,19 @@
         // ★ 儲存 reference，供 button handler 直接使用
         window._os = OneSignal;
         console.log('[OneSignal] Init OK, _os ready, id:', OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.id);
+
+        // 🎯 監聽 OneSignal 推播通知點擊，精準切換至荳荳清單與指定篩選
+        if (OneSignal.Notifications && OneSignal.Notifications.addEventListener) {
+          OneSignal.Notifications.addEventListener('click', function(event) {
+            console.log('[OneSignal] Notification Clicked:', event);
+            const data = (event.notification && event.notification.additionalData) || {};
+            const targetView = data.view || 'screener';
+            const targetFilter = data.filter || 'buy';
+            if (typeof executeSignalNavigation === 'function') {
+              executeSignalNavigation(targetView, targetFilter);
+            }
+          });
+        }
       } catch(err) {
         window._osInitError = err.message || String(err);
         console.error('[OneSignal] Init Error:', err);
@@ -60,13 +73,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 
-
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-
-
-  <link rel="stylesheet" href="style.css?v=78" />
+  <link rel="stylesheet" href="style.css?v=79" />
 
 
 
@@ -1204,9 +1213,21 @@
           <span id="pwaMainActionText">啟用手機原生推播通知</span>
         </button>
 
-        <button class="pwa-test-action-btn" onclick="sendTestPushFromModal()">
-          <span>⚡ 發送一則測試推播 (驗證橫幅與導回清單)</span>
-        </button>
+        <!-- ⚡ 買進/賣出/加碼三合一測試推播操作區 -->
+        <div style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin: 6px 0 2px; text-align: left;">
+          ⚡ 發送訊號推播測試 (驗證手機點擊自動切換)：
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%;">
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('buy')" style="background: rgba(34,197,94,0.18); border: 1px solid rgba(34,197,94,0.5); color: #4ade80; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🟢 買進訊號
+          </button>
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('closed')" style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.5); color: #f87171; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🔴 賣出訊號
+          </button>
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('add')" style="background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.5); color: #60a5fa; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🔵 加碼訊號
+          </button>
+        </div>
 
         <!-- 🔄 強制清除舊快取按鈕 -->
         <button class="pwa-refresh-cache-btn" onclick="forceClearPwaCache()" style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; width: 100%;">
@@ -1216,19 +1237,19 @@
       </div>
 
       <div style="font-size: 11px; color: #64748b; line-height: 1.45; text-align: center;">
-        💡 啟用後，後端每日掃描出【買進起爆】或【獲利平倉】訊號時，手機鎖屏將即時彈出通知，點擊通知將自動導回本系統並開啟最新買進精選清單！
+        💡 點擊推播通知時，系統將自動導回並切換至「荳荳清單」對應標籤（買進 ➔ 買進清單，賣出 ➔ 賣出清單，加碼 ➔ 加碼清單）！
       </div>
     </div>
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=78"></script>
-  <script src="app.js?v=78"></script>
-  <script src="stock-dashboard.js?v=78"></script>
+  <script src="data.js?v=79"></script>
+  <script src="app.js?v=79"></script>
+  <script src="stock-dashboard.js?v=79"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=78', { scope: './' })
+        navigator.serviceWorker.register('./sw.js?v=79', { scope: './' })
           .then((reg) => {
             reg.update();
             console.log('[PWA] Service Worker 註冊與更新檢查完成');
