@@ -18923,32 +18923,170 @@ window.openTradingViewAppOrWeb = function(symbolCode = '2330', market = 'TSE') {
   }
 };
 
-// 🔔 檢查並更新推播按鈕狀態
+// 🔔 檢查並更新全域推播按鈕與狀態指示燈
 function checkPushPermissionStatus() {
-  const btns = document.querySelectorAll('#pwaPushBtn, button[onclick="togglePushNotification()"]');
-  if (!btns || !btns.length) return;
-  btns.forEach(btn => {
-    if (!('Notification' in window)) {
-      btn.innerHTML = '<span>📱 請加入主畫面啟用</span>';
-      btn.style.opacity = '0.9';
-      btn.style.background = 'rgba(249, 115, 22, 0.2)';
-      btn.style.borderColor = 'rgba(249, 115, 22, 0.5)';
-      btn.style.color = '#fb923c';
-      return;
+  const isGranted = ('Notification' in window) && Notification.permission === 'granted';
+  const isDenied = ('Notification' in window) && Notification.permission === 'denied';
+
+  // 1. 電腦版頂部按鈕
+  const desktopBtn = document.getElementById('pwaPushBtn');
+  if (desktopBtn) {
+    if (isGranted) {
+      desktopBtn.innerHTML = '<span class="nav-icon">🟢</span> 推播已開';
+      desktopBtn.style.background = 'rgba(34, 197, 94, 0.25)';
+      desktopBtn.style.borderColor = 'rgba(34, 197, 94, 0.6)';
+      desktopBtn.style.color = '#4ade80';
+    } else if (isDenied) {
+      desktopBtn.innerHTML = '<span class="nav-icon">🚫</span> 推播封鎖';
+      desktopBtn.style.background = 'rgba(239, 68, 68, 0.2)';
+      desktopBtn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+      desktopBtn.style.color = '#f87171';
+    } else {
+      desktopBtn.innerHTML = '<span class="nav-icon">🔔</span> 啟用推播';
+      desktopBtn.style.background = 'rgba(34, 197, 94, 0.2)';
+      desktopBtn.style.borderColor = 'rgba(34, 197, 94, 0.5)';
+      desktopBtn.style.color = '#4ade80';
     }
-    if (Notification.permission === 'granted') {
-      btn.innerHTML = '<span>🟢 推播已啟用</span>';
-      btn.style.background = 'rgba(34, 197, 94, 0.25)';
-      btn.style.borderColor = 'rgba(34, 197, 94, 0.6)';
-      btn.style.color = '#4ade80';
-    } else if (Notification.permission === 'denied') {
-      btn.innerHTML = '<span>🚫 推播已封鎖</span>';
-      btn.style.background = 'rgba(239, 68, 68, 0.2)';
-      btn.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-      btn.style.color = '#f87171';
+  }
+
+  // 2. 手機版頂部快速按鈕
+  const mTopbarBtn = document.getElementById('mTopbarPushBtn');
+  const mText = document.getElementById('mPushText');
+  if (mTopbarBtn) {
+    if (isGranted) {
+      mTopbarBtn.classList.add('granted');
+      if (mText) mText.innerText = '🟢 訊號連線中';
+    } else {
+      mTopbarBtn.classList.remove('granted');
+      if (mText) mText.innerText = '🔔 訊號推播';
     }
-  });
+  }
+
+  // 3. 手機版底部導覽按鈕標籤
+  const mNavLabel = document.getElementById('mNavPushLabel');
+  if (mNavLabel) {
+    mNavLabel.innerText = isGranted ? '推播就緒' : '推播設定';
+  }
+
+  // 4. 更新彈窗內部的即時狀態
+  if (typeof updatePushModalStatus === 'function') {
+    updatePushModalStatus();
+  }
 }
+
+// 📲 開啟手機推播設定視窗
+window.openPushSettingsModal = function() {
+  const modal = document.getElementById('pwaPushModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  updatePushModalStatus();
+};
+
+// 關閉視窗
+window.closePushSettingsModal = function() {
+  const modal = document.getElementById('pwaPushModal');
+  if (modal) modal.style.display = 'none';
+};
+
+// 複製當前網址
+window.copyCurrentSiteUrl = function() {
+  const url = window.location.href.split('#')[0];
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      alert('📋 已成功複製網址！\n請打開 Safari 瀏覽器貼上網址並前往，再執行「分享 ➔ 加入主畫面」。');
+    }).catch(() => {
+      alert(`請長按複製此網址：\n${url}`);
+    });
+  } else {
+    alert(`請長按複製此網址：\n${url}`);
+  }
+};
+
+// 即時更新彈窗內的裝置與權限狀態
+window.updatePushModalStatus = function() {
+  const osEl = document.getElementById('pwaOsVal');
+  const modeEl = document.getElementById('pwaModeVal');
+  const permEl = document.getElementById('pwaPermVal');
+  const iosBox = document.getElementById('pwaIosGuideBox');
+  const mainBtn = document.getElementById('pwaModalMainActionBtn');
+  const mainIcon = document.getElementById('pwaMainActionIcon');
+  const mainText = document.getElementById('pwaMainActionText');
+
+  if (!osEl || !modeEl || !permEl) return;
+
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  // 顯示 OS
+  if (isIOS) osEl.innerText = '🍎 iOS';
+  else if (isAndroid) osEl.innerText = '🤖 Android';
+  else osEl.innerText = '💻 電腦版';
+
+  // 顯示運行環境
+  if (isStandalone) {
+    modeEl.innerText = '📱 獨立 App';
+    modeEl.style.color = '#4ade80';
+  } else {
+    modeEl.innerText = '🌐 瀏覽器';
+    modeEl.style.color = '#fbbf24';
+  }
+
+  // 顯示推播權限
+  if (!('Notification' in window)) {
+    permEl.innerText = isIOS ? '⚪ 需加入主畫面' : '⚪ 不支援';
+    permEl.style.color = '#94a3b8';
+  } else if (Notification.permission === 'granted') {
+    permEl.innerText = '🟢 已允許';
+    permEl.style.color = '#4ade80';
+  } else if (Notification.permission === 'denied') {
+    permEl.innerText = '🔴 已封鎖';
+    permEl.style.color = '#f87171';
+  } else {
+    permEl.innerText = '🟡 未授權';
+    permEl.style.color = '#fbbf24';
+  }
+
+  // iOS 引導區塊顯示邏輯：如果在 iOS 且不是 standalone 模式，則顯示引導
+  if (isIOS && !isStandalone) {
+    if (iosBox) iosBox.style.display = 'flex';
+  } else {
+    if (iosBox) iosBox.style.display = 'none';
+  }
+
+  // 主按鈕文字與狀態
+  if (mainBtn) {
+    if (('Notification' in window) && Notification.permission === 'granted') {
+      mainBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      mainBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.4)';
+      if (mainIcon) mainIcon.innerText = '✅';
+      if (mainText) mainText.innerText = '推播服務已就緒 (已連線 OneSignal)';
+    } else if (('Notification' in window) && Notification.permission === 'denied') {
+      mainBtn.style.background = 'rgba(239, 68, 68, 0.2)';
+      mainBtn.style.border = '1px solid rgba(239, 68, 68, 0.5)';
+      mainBtn.style.boxShadow = 'none';
+      if (mainIcon) mainIcon.innerText = '⚠️';
+      if (mainText) mainText.innerText = '推播已被封鎖 (請至手機設定解除)';
+    } else {
+      mainBtn.style.background = 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)';
+      mainBtn.style.boxShadow = '0 4px 16px rgba(249, 115, 22, 0.4)';
+      if (mainIcon) mainIcon.innerText = '🔔';
+      if (mainText) mainText.innerText = '立即啟用手機系統推播通知';
+    }
+  }
+};
+
+// 彈窗測試推播觸發
+window.sendTestPushFromModal = function() {
+  const isGranted = ('Notification' in window) && Notification.permission === 'granted';
+  if (!isGranted) {
+    alert('💡 請先點擊上方的「立即啟用手機原生推播通知」按鈕授權，才能在手機接收測試通知！');
+    togglePushNotification();
+    return;
+  }
+  sendTestNotification('2330', '', 'TSE');
+};
 
 // 🔔 切換與請求手機系統推播權限 (OneSignal SDK v16 三層 fallback)
 window.togglePushNotification = async function() {
@@ -19472,3 +19610,9 @@ window.applyQuantScenario = function(type) {
     summaryText.innerText = '日均量不足 300 張或總分低於 70 分門檻。觸發最新三層防禦體系硬性攔截淘汰，杜絕殭屍股與無量誘多陷阱！';
   }
 };
+
+// 🔔 初始化與載入完成時自動檢測推播狀態
+if (typeof checkPushPermissionStatus === 'function') {
+  setTimeout(checkPushPermissionStatus, 800);
+  window.addEventListener('load', checkPushPermissionStatus);
+}

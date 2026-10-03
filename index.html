@@ -66,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=74" />
+  <link rel="stylesheet" href="style.css?v=75" />
 
 
 
@@ -139,13 +139,17 @@
         <span class="nav-icon">🐕</span> 荳荳指標
       </button>
 
-      <!-- 📱 快捷推播啟用按鈕 -->
-      <button id="pwaPushBtn" class="nav-btn pwa-quick-btn" onclick="togglePushNotification()" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #4ade80;" title="點擊啟用手機系統原生推播通知">
+      <!-- 📱 快捷推播啟用按鈕 (電腦版) -->
+      <button id="pwaPushBtn" class="nav-btn pwa-quick-btn" onclick="openPushSettingsModal()" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #4ade80;" title="點擊開啟手機推播設定">
         <span class="nav-icon">🔔</span> 啟用推播
       </button>
     </nav>
 
-
+    <!-- 📱 手機版專屬頂部推播捷徑 (<=768px 顯示) -->
+    <button class="mobile-push-badge-btn" id="mTopbarPushBtn" onclick="openPushSettingsModal()" title="手機推播設定">
+      <span class="m-push-dot" id="mPushDot"></span>
+      <span class="m-push-text" id="mPushText">🔔 訊號推播</span>
+    </button>
 
     <div class="topbar-status">
 
@@ -1132,12 +1136,89 @@
       <span class="m-nav-icon">🐕</span>
       <span class="m-nav-label">荳荳指標</span>
     </button>
+    <button class="m-nav-btn" id="mNavPushBtn" onclick="openPushSettingsModal()">
+      <span class="m-nav-icon">🔔</span>
+      <span class="m-nav-label" id="mNavPushLabel">推播設定</span>
+    </button>
   </nav>
 
+  <!-- 📲 荳荳 AI 手機推播與 PWA 專屬設定視窗 (Modal) -->
+  <div class="pwa-modal-backdrop" id="pwaPushModal" onclick="if(event.target===this) closePushSettingsModal()">
+    <div class="pwa-modal-card">
+      <div class="pwa-modal-header">
+        <div class="pwa-modal-title-group">
+          <span class="pwa-modal-icon">🔔</span>
+          <div>
+            <div class="pwa-modal-title">手機交易訊號推播</div>
+            <div class="pwa-modal-sub">PWA 原生鎖屏推播 ｜ TradingView 秒級跳轉</div>
+          </div>
+        </div>
+        <button class="pwa-close-btn" onclick="closePushSettingsModal()" title="關閉">✕</button>
+      </div>
+
+      <!-- 即時裝置狀態儀表 -->
+      <div class="pwa-status-dashboard">
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">作業系統</span>
+          <span class="pwa-dash-val" id="pwaOsVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">運作環境</span>
+          <span class="pwa-dash-val" id="pwaModeVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">推播權限</span>
+          <span class="pwa-dash-val" id="pwaPermVal">檢測中...</span>
+        </div>
+      </div>
+
+      <!-- iOS 特別引導區 (僅在 iOS 且非 standalone 模式時顯示) -->
+      <div class="pwa-ios-guide-box" id="pwaIosGuideBox" style="display: none;">
+        <div style="font-size: 13px; font-weight: 800; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+          <span>🍎</span> iPhone / iPad 用戶必讀安裝指引
+        </div>
+        <p style="font-size: 11.5px; color: #94a3b8; margin: 0; line-height: 1.45;">
+          Apple 規定網頁推播必須先將系統「加入主畫面」，才能開啟原生鎖屏通知：
+        </p>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 1</span>
+          <span>點擊 Safari 螢幕正下方的 <b>「分享」圖示 ⎋</b></span>
+        </div>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 2</span>
+          <span>在選單中往下滑動，點擊 <b>「加入主畫面」 ⊞</b> 並確認「新增」</span>
+        </div>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 3</span>
+          <span>返回手機桌面，點擊 <b>「🐾 荳荳 AI」</b> 圖示開啟，即可在此一鍵開啟通知！</span>
+        </div>
+        <button class="pwa-copy-btn" onclick="copyCurrentSiteUrl()">
+          <span>📋 複製本站網址 (若在 LINE/FB 內建瀏覽器請貼至 Safari 打開)</span>
+        </button>
+      </div>
+
+      <!-- 主要功能操作區 -->
+      <div class="pwa-btn-stack">
+        <button class="pwa-primary-action-btn" id="pwaModalMainActionBtn" onclick="togglePushNotification()">
+          <span id="pwaMainActionIcon">🔔</span>
+          <span id="pwaMainActionText">啟用手機原生推播通知</span>
+        </button>
+
+        <button class="pwa-test-action-btn" onclick="sendTestPushFromModal()">
+          <span>⚡ 發送一則測試推播 (驗證手機跳轉 TradingView)</span>
+        </button>
+      </div>
+
+      <div style="font-size: 11px; color: #64748b; line-height: 1.45; text-align: center;">
+        💡 啟用後，後端每日掃描出【買進起爆】或【獲利平倉】訊號時，手機鎖屏將即時彈出通知，點擊即可直達 TradingView App 精準個股！
+      </div>
+    </div>
+  </div>
+
   <!-- 腳本 -->
-  <script src="data.js?v=74"></script>
-  <script src="app.js?v=74"></script>
-  <script src="stock-dashboard.js?v=74"></script>
+  <script src="data.js?v=75"></script>
+  <script src="app.js?v=75"></script>
+  <script src="stock-dashboard.js?v=75"></script>
 </body>
 
 

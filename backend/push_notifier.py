@@ -44,26 +44,39 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         code = str(s.get('id', s.get('Code', ''))).strip()
         market = str(s.get('market', '')).upper()
         name = str(s.get('name', s.get('Name', ''))).strip()
-        # 🛡️ 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股與股票型 ETF (排除興櫃、債券、權證等)
+        # 🛡️ 硬性防線 1：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股
         if market not in ('TSE', 'OTC'):
             return False
-        # 排除債券型商品 (無論名稱或代碼以 B 結尾)
-        if '債' in name or code.upper().endswith('B'):
+        # 🚫 最新規則：全面排除 ETF (00開頭) 與債券、權證、ETN、TDR
+        if code.startswith('00') or s.get('isETF', False):
             return False
-        # 排除權證、ETN、TDR 等
+        if '債' in name or code.upper().endswith('B') or 'ETF' in name.upper():
+            return False
         if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
             return False
-        # 允許 4 位普通股或 00 開頭之股票型 ETF (4~6位純數字)
-        if not (code.isdigit() and (len(code) == 4 or (code.startswith('00') and len(code) in (5, 6)))):
+        # 僅操作純個股 (4 位純數字)
+        if not (code.isdigit() and len(code) == 4):
             return False
 
-        vol_v = (s.get('dailyVol', 9999) or 0) >= 300
+        # 💧 硬性防線 2：殭屍股雙硬指標強制阻斷 (日均量 >= 300張 且 市值 >= 20億元)
+        daily_vol = float(s.get('dailyVol', s.get('vol', 0)) or 0)
+        market_cap = float(s.get('marketCap', s.get('cap', 0)) or 0)
+        if daily_vol < 300:
+            return False
+        if 0 < market_cap < 20:
+            return False
+
+        # 🎯 硬性防線 3：入選評分門檻嚴格 >= 70 分
+        score = _get_sort_score(s)
+        if score < 70:
+            return False
+
         vol_r = _get_vol_ratio(s) >= 1.2
         fn = s.get('foreignNetBuy', 0) or 0
         tr = s.get('trustDays', 0) or 0
         dl = s.get('dealerDays', 0) or 0
         inst_buy = (fn + tr + dl) > 0
-        return vol_v and vol_r and inst_buy
+        return vol_r and inst_buy
 
     buys = [s for s in buys if _is_qualified(s)]
     adds = [s for s in adds if _is_qualified(s)]
