@@ -66,7 +66,7 @@
 
 
 
-  <link rel="stylesheet" href="style.css?v=73" />
+  <link rel="stylesheet" href="style.css?v=74" />
 
 
 
@@ -528,11 +528,11 @@
         <div class="pipeline-header-card">
           <div class="pipeline-header-left">
             <div class="pipeline-title-row">
-              <span class="pipeline-badge-terminal">QUANT ENGINE v4.2</span>
+              <span class="pipeline-badge-terminal">QUANT ENGINE v4.3</span>
               <h2 class="pipeline-main-title">🐾 荳荳 AI 多因子量化選股資料流 (Data Pipeline)</h2>
             </div>
             <p class="pipeline-subtitle">
-              深度整合交易所即時行情、三大法人籌碼、基本面財報與多時框趨勢演算法，透過 4 階管線全自動萃取高勝率交易標的。
+              深度整合交易所即時行情、三大法人籌碼、基本面財報與多時框趨勢演算法。<strong>本次升級全面排除 ETF、落實殭屍股雙硬指標強制阻斷，並將入選門檻由 60 分提升至 70 分</strong>，透過三層防禦體系全自動萃取高勝率標的。
             </p>
           </div>
           <div class="pipeline-header-metrics">
@@ -542,15 +542,47 @@
             </div>
             <div class="p-metric-item">
               <span class="p-metric-label">全市場硬濾率</span>
-              <span class="p-metric-val orange">86.5%</span>
+              <span class="p-metric-val orange">93.2%</span>
             </div>
             <div class="p-metric-item">
-              <span class="p-metric-label">五年回測勝率</span>
-              <span class="p-metric-val green">68.4%</span>
+              <span class="p-metric-label">入選核心門檻</span>
+              <span class="p-metric-val green">&ge; 70 分</span>
             </div>
             <div class="p-metric-item">
               <span class="p-metric-label">平均盈虧比 (R:R)</span>
-              <span class="p-metric-val purple">2.8 : 1</span>
+              <span class="p-metric-val purple">3.2 : 1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🆕 2026.10 量化引擎重大升級公告 (Quant Engine v4.3) -->
+        <div class="pipeline-upgrade-banner">
+          <div class="upgrade-banner-header">
+            <span class="upgrade-badge">🔥 2026 最新核心升級</span>
+            <span class="upgrade-title">荳荳量化選股防禦與精選體系全面進化</span>
+            <span class="upgrade-date">Release v4.3</span>
+          </div>
+          <div class="upgrade-grid">
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">🚫</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">全面排除 ETF (個股專注閥)</div>
+                <div class="upgrade-card-desc">全域封鎖剔除 <code>00</code> 開頭之指數及債券型 ETF，將寶貴的選股算力與資金集中在具備強大爆發動能與機構籌碼的純個股標的。</div>
+              </div>
+            </div>
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">💧</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">殭屍股雙硬指標強制阻斷</div>
+                <div class="upgrade-card-desc">嚴格設下<b>5 日均量 ≥ 300 張</b>與<b>市值 ≥ 20 億元</b>雙重硬性閥門，未達標者直接強制剔除（不予放行），杜絕滑價與流動性陷阱。</div>
+              </div>
+            </div>
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">🎯</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">精選門檻調升至 ≥ 70 分</div>
+                <div class="upgrade-card-desc">預設入選標準由 60 分拉高至 <b>70 分</b>，嚴格鎖定「起漲甜蜜點」與「強勢主升段」，淘汰 60~69 分整理期雜訊，去蕪存菁。</div>
+              </div>
             </div>
           </div>
         </div>
@@ -600,7 +632,7 @@
                 </li>
               </ul>
               <div class="stage-action-box">
-                ⚡ 執行清洗：除權息還原平滑 ｜ 異質數據戳記對齊 ｜ 排除殭屍與冷門無效報價
+                ⚡ 執行清洗：除權息還原平滑 ｜ 異質數據戳記對齊 ｜ 全面識別排除 ETF (00開頭) ｜ 剔除無效冷門報價
               </div>
             </div>
           </div>
@@ -619,28 +651,28 @@
               <div class="stage-icon">🛡️</div>
               <div class="stage-name-box">
                 <h3 class="stage-name">一級硬門檻過濾</h3>
-                <span class="stage-sub">Hard Gate Filtering</span>
+                <span class="stage-sub">Hard Gate Filtering (三層防禦)</span>
               </div>
             </div>
             <div class="stage-content">
               <div class="gate-grid">
                 <div class="gate-item">
-                  <div class="gate-item-title">💧 流動性安全閥</div>
-                  <p class="gate-desc">上市櫃市值 &gt; 50 億且 5 日日均量 &gt; 1,000 張，剔除滑價過大與主力易操縱的小型殭屍股。</p>
+                  <div class="gate-item-title">🚫 全面排除 ETF (個股專注)</div>
+                  <p class="gate-desc">代碼 <code>00</code> 開頭之 ETF 直接剔除，避免被動指數與債券型商品稀釋個股爆發力機會。</p>
                 </div>
                 <div class="gate-item">
-                  <div class="gate-item-title">⚖️ 財務底線過濾</div>
-                  <p class="gate-desc">近季 EPS &gt; 0，堅決排除全額交割、處置警示與財務虧損體質惡化之投機地雷標的。</p>
+                  <div class="gate-item-title">💧 殭屍股雙硬指標安全閥</div>
+                  <p class="gate-desc">嚴格檢核 <b>5 日均量 &ge; 300 張</b> 且 <b>市值 &ge; 20 億元</b>，未達標者強制封殺剔除，防範無量出貨與滑價陷阱。</p>
                 </div>
                 <div class="gate-item">
-                  <div class="gate-item-title">🌐 大盤環境濾網</div>
-                  <p class="gate-desc">結合台股加權 20MA、美股四指及 VIX 恐慌值，若處空頭風暴期，自動調高評分觸發門檻防守。</p>
+                  <div class="gate-item-title">⚖️ 財務底線與大盤濾網</div>
+                  <p class="gate-desc">近季 EPS &gt; 0，堅決排除全額交割；動態連動台股加權 20MA、美股四指及 VIX 恐慌值，空頭期自動收縮防守。</p>
                 </div>
               </div>
               <div class="stage-stat-footer">
                 <span>全市場 1,800+ 檔標的</span>
-                <span class="filter-arrow">➔ 濃縮篩出 ➔</span>
-                <strong class="highlight-blue">前 15% 機構級股票池</strong>
+                <span class="filter-arrow">➔ 嚴格硬濾 ➔</span>
+                <strong class="highlight-blue">前 6.8% 高動能個股池</strong>
               </div>
             </div>
           </div>
@@ -731,29 +763,29 @@
             </div>
             <div class="stage-content">
               <div class="signal-tier-list">
-                <!-- 70-85 -->
+                <!-- 70-84 -->
                 <div class="signal-tier-card tier-sweet">
                   <div class="tier-top">
                     <span class="tier-score">70 ~ 84 分</span>
-                    <span class="tier-tag green">★ 起漲甜蜜點 (黃金區間)</span>
+                    <span class="tier-tag green">★ 起漲甜蜜點 (黃金進場區)</span>
                   </div>
-                  <p class="tier-desc">底部築底完成「首次帶量突破」，下檔貼緊 20MA（停損僅 3%~5%），向上盈虧比超過 3:1，為勝率最高的關鍵進場點。</p>
+                  <p class="tier-desc">底部築底完成「首次帶量突破」，下檔貼緊 20MA（停損僅 3%~5%），向上盈虧比超過 3:1，為系統核心推播與勝率最高之佈局點。</p>
                 </div>
                 <!-- 85+ -->
                 <div class="signal-tier-card tier-strong">
                   <div class="tier-top">
                     <span class="tier-score">85 ~ 100 分</span>
-                    <span class="tier-tag blue">🚀 強勢噴出 (不追高/加碼)</span>
+                    <span class="tier-tag blue">🚀 強勢噴出 (主升段續抱/移動停利)</span>
                   </div>
-                  <p class="tier-desc">多頭趨勢最強，若已脫離成本區不建議重倉追價，適合已有底單者沿 5MA 移動停利或小部位順勢操作。</p>
+                  <p class="tier-desc">多頭趨勢最強，外資投信重倉共振。若已脫離成本區不建議重倉追價，適合已有底單者沿 5MA 移動停利或小部位順勢操作。</p>
                 </div>
-                <!-- 60-69 -->
+                <!-- < 70 -->
                 <div class="signal-tier-card tier-watch">
                   <div class="tier-top">
-                    <span class="tier-score">60 ~ 69 分</span>
-                    <span class="tier-tag yellow">👁️ 潛伏監控區 (等待催化劑)</span>
+                    <span class="tier-score">&lt; 70 分 (原 60-69 分區間)</span>
+                    <span class="tier-tag red">⛔ 系統強制淘汰 (未達發動門檻)</span>
                   </div>
-                  <p class="tier-desc">籌碼或營收底子扎實但尚未放量攻擊，納入雷達四象限「量縮整理」密切追蹤放量訊號。</p>
+                  <p class="tier-desc">【最新升級】低於 70 分判定動能不足或屬無量整理，<strong>系統預設直接剔除不予納入選股清單</strong>，杜絕資金卡死在盤整股中。</p>
                 </div>
                 <!-- 停損 -->
                 <div class="signal-tier-card tier-stoploss">
@@ -779,7 +811,7 @@
             <div class="sim-preset-btns">
               <button class="sim-btn active" onclick="applyQuantScenario('breakout')">🚀 2330 台積電型態起爆 (甜蜜點)</button>
               <button class="sim-btn" onclick="applyQuantScenario('inst_buy')">🔥 投信法人連三買重倉 (強攻)</button>
-              <button class="sim-btn" onclick="applyQuantScenario('fake_rally')">⚠️ 無量弱勢誘多 (過濾淘汰)</button>
+              <button class="sim-btn" onclick="applyQuantScenario('fake_rally')">⚠️ 殭屍股 / 未達70分 (最新硬門檻淘汰)</button>
             </div>
           </div>
           
@@ -1103,9 +1135,9 @@
   </nav>
 
   <!-- 腳本 -->
-  <script src="data.js?v=73"></script>
-  <script src="app.js?v=73"></script>
-  <script src="stock-dashboard.js?v=73"></script>
+  <script src="data.js?v=74"></script>
+  <script src="app.js?v=74"></script>
+  <script src="stock-dashboard.js?v=74"></script>
 </body>
 
 

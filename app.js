@@ -19468,7 +19468,7 @@ window.applyQuantScenario = function(type) {
     scoreNum.innerHTML = '39.0 <span style="font-size:16px;">分</span>';
     scoreNum.style.color = '#f87171';
     statusPill.className = 'sim-status-pill red';
-    statusPill.innerText = '🔴 無量弱勢誘多 ｜ 系統阻斷過濾';
-    summaryText.innerText = '量能萎縮且未站上 20MA，籌碼面主力實為淨賣出。觸發一級硬濾網與弱勢門檻直接淘汰，避免投資人誤入無量誘多陷阱。';
+    statusPill.innerText = '🔴 殭屍股 / 未達70分 ｜ 系統直接淘汰';
+    summaryText.innerText = '日均量不足 300 張或總分低於 70 分門檻。觸發最新三層防禦體系硬性攔截淘汰，杜絕殭屍股與無量誘多陷阱！';
   }
 };

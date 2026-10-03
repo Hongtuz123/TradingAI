@@ -3758,6 +3758,118 @@ body {
 .p-metric-val.orange { color: #f97316; }
 .p-metric-val.purple { color: #c084fc; }
 
+/* 🆕 2026.10 量化引擎重大升級公告橫幅 */
+.pipeline-upgrade-banner {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upgrade-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upgrade-badge {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.upgrade-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.upgrade-date {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .upgrade-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.upgrade-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.upgrade-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+
+.upgrade-card-icon {
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
+.upgrade-card-body {
+  flex: 1;
+}
+
+.upgrade-card-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #f97316;
+  margin-bottom: 4px;
+}
+
+.upgrade-card-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.upgrade-card-desc code {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 10.5px;
+}
+
+.upgrade-card-desc b {
+  color: #f1f5f9;
+}
+
 /* 🚀 4 階架構流程卡片 Flowchart */
 .pipeline-flowchart {
   display: grid;
