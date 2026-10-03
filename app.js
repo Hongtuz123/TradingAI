@@ -13332,12 +13332,15 @@ function renderSectorFlowMap() {
   // 1. 資料來源：進入「荳荳清單」的標的，若無則即時取用庫存優選標的
   let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) ? [...currentResults] : [];
   if (stocks.length === 0 && typeof mockStocks !== 'undefined' && mockStocks.length > 0) {
-    stocks = mockStocks.filter(s => (s.dynamicScore || s.totalScore || s.score || 70) >= 60);
-    if (stocks.length === 0) stocks = mockStocks.slice(0, 45);
+    stocks = mockStocks.filter(s => {
+      const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
+      return !isETF && (s.dynamicScore || s.totalScore || s.score || 70) >= 60;
+    });
+    if (stocks.length === 0) stocks = mockStocks.filter(s => !(s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id)))).slice(0, 45);
   }
-  // 🛡️ 雙重保底：若仍然為空，從全域 window._rawMarketData 取得
+  // 🛡️ 雙重保底：若仍然為空，從全域 window._rawMarketData 取得（同樣排除 ETF）
   if (stocks.length === 0 && typeof window._rawMarketData !== 'undefined' && window._rawMarketData && window._rawMarketData.mockStocks) {
-    stocks = window._rawMarketData.mockStocks.slice(0, 45);
+    stocks = window._rawMarketData.mockStocks.filter(s => !(s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id)))).slice(0, 45);
   }
 
   // 顏色與象限定義
