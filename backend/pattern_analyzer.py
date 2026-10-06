@@ -131,6 +131,33 @@ def analyze_chart_patterns(df, timeframe="1D", live_price=None, stock_info=None)
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(method='ffill')
 
+    # 自動補齊關鍵技術指標（若輸入 DataFrame 尚未計算）
+    if 'atr14' not in df.columns or df['atr14'].isna().all():
+        prev_close = df['close'].shift(1)
+        tr = pd.concat([
+            df['high'] - df['low'],
+            (df['high'] - prev_close).abs(),
+            (df['low'] - prev_close).abs()
+        ], axis=1).max(axis=1)
+        df['atr14'] = tr.rolling(14, min_periods=1).mean()
+
+    if 'vol_ma20' not in df.columns or df['vol_ma20'].isna().all():
+        df['vol_ma20'] = df['volume'].rolling(20, min_periods=1).mean()
+
+    if 'ma5' not in df.columns:
+        df['ma5'] = df['close'].rolling(5, min_periods=1).mean()
+    if 'ma20' not in df.columns:
+        df['ma20'] = df['close'].rolling(20, min_periods=1).mean()
+    if 'ma60' not in df.columns:
+        df['ma60'] = df['close'].rolling(60, min_periods=1).mean()
+
+    if 'bb_upper' not in df.columns:
+        mid = df['close'].rolling(20, min_periods=1).mean()
+        std = df['close'].rolling(20, min_periods=1).std(ddof=0)
+        df['bb_mid'] = mid
+        df['bb_upper'] = mid + 2 * std
+        df['bb_lower'] = mid - 2 * std
+
     latest = df.iloc[-1]
     prev = df.iloc[-2] if len(df) >= 2 else latest
     cur_p = round(float(live_price if (live_price and live_price > 0) else latest['close']), 2)
@@ -145,9 +172,15 @@ def analyze_chart_patterns(df, timeframe="1D", live_price=None, stock_info=None)
     ma60 = round(float(latest.get('ma60', cur_p) or cur_p), 2)
     vol_cur = float(latest.get('volume', 0) or 0)
     vol_ma20 = float(latest.get('vol_ma20', 1) or 1)
-    vol_mult = round(vol_cur / vol_ma20, 2) if vol_ma20 > 0 else 1.0
 
-    st_val = int(latest.get('supertrend', 1) or 1)
+    stock_info = stock_info or {}
+    info_vol_ratio = stock_info.get('volRatio') or stock_info.get('volRatio_4h')
+    if info_vol_ratio and float(info_vol_ratio) > 0:
+        vol_mult = round(float(info_vol_ratio), 2)
+    else:
+        vol_mult = round(vol_cur / vol_ma20, 2) if vol_ma20 > 0 else 1.0
+
+    st_val = int(latest.get('supertrend', stock_info.get('supertrend', 1)) or 1)
     bb_upper = float(latest.get('bb_upper', cur_p * 1.05) or (cur_p * 1.05))
     bb_lower = float(latest.get('bb_lower', cur_p * 0.95) or (cur_p * 0.95))
     bb_mid = float(latest.get('bb_mid', cur_p) or cur_p)
@@ -540,7 +573,11 @@ def _generate_indicator_metrics(stock_info, vol_mult, vol_cur, atr, bb_width, st
     stock_info = stock_info or {}
 
     # 1. 成交量
-    vol_k = int(vol_cur // 1000) if vol_cur > 0 else int(stock_info.get('dailyVol', 0) or 0)
+    daily_vol_info = stock_info.get('dailyVol')
+    if daily_vol_info and int(daily_vol_info) > 0:
+        vol_k = int(daily_vol_info)
+    else:
+        vol_k = int(vol_cur // 1000) if vol_cur > 0 else 0
     if vol_mult >= 2.0:
         vol_desc = f"💥 巨量爆發 ({vol_mult}倍 20MA，當前約 {vol_k:,} 張)"
     elif vol_mult >= 1.2:

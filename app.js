@@ -191,6 +191,9 @@ window.reloadDataJson = async function() {
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
     mockStocks = data.mockStocks || [];
+    window.mockStocks = mockStocks;
+    window.marketData = marketData;
+    window.rulesConfig = rulesConfig;
     window.posState = data.pos_state || {};
     window.rankingsData = data.rankingsData || {};
     window.broadcastData = data.broadcastData || {};
@@ -632,6 +635,9 @@ async function bootstrapApp() {
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
     mockStocks = data.mockStocks || [];
+    window.mockStocks = mockStocks;
+    window.marketData = marketData;
+    window.rulesConfig = rulesConfig;
     window.posState = data.pos_state || {};
     window.rankingsData = data.rankingsData || {};
     window.broadcastData = data.broadcastData || {};
@@ -19703,12 +19709,9 @@ window.renderDoudouScreenerList = function() {
         <td>${s.dealerDays || 0}張</td>
         <td>${s.volRatio ? parseFloat(s.volRatio).toFixed(2) + 'x' : '1.00x'}</td>
         <td>
-          <div style="display:inline-flex; align-items:center; gap:5px; flex-wrap:nowrap;">
-            <button class="pattern-report-btn" onclick="event.stopPropagation(); openPatternReportModal('${s.id}')" title="查看 1D/4H 深度型態與點位分析報告">
-              <span>📄</span> 型態報告
-            </button>
-            <button class="btn-secondary" style="padding:4px 7px; font-size:11px;" onclick="event.stopPropagation(); switchView('chart'); loadTVChartFromScreener('${s.id}')">📈 K線</button>
-          </div>
+          <button class="pattern-report-btn" onclick="event.stopPropagation(); openPatternReportModal('${s.id}')" title="查看 1D/4H 深度型態與點位分析報告">
+            <span>📄</span> 型態報告
+          </button>
         </td>
       </tr>
     `;
@@ -19857,25 +19860,54 @@ let currentPatternReportTf = '1D'; // '1D' or '4H'
 window.openPatternReportModal = function(stockId) {
   if (!stockId) return;
   const sId = String(stockId).trim();
+  const sIdClean = sId.replace(/[^0-9a-zA-Z]/g, '');
+  const sIdPadded = sIdClean.padStart(4, '0');
+  const sIdNum = parseInt(sIdClean, 10);
 
-  // 從 mockStocks 或 currentResults 找到股票物件
+  // 1. 全方位候選池（跨 script-scoped、window、RAW_DATA 均能精準命中）
   let stock = null;
-  if (Array.isArray(window.mockStocks)) {
-    stock = window.mockStocks.find(s => String(s.id).trim() === sId || String(s.id).padStart(4, '0') === sId);
+  const candidatePools = [];
+  if (typeof mockStocks !== 'undefined' && Array.isArray(mockStocks)) candidatePools.push(mockStocks);
+  if (typeof window !== 'undefined' && Array.isArray(window.mockStocks)) candidatePools.push(window.mockStocks);
+  if (typeof currentResults !== 'undefined' && Array.isArray(currentResults)) candidatePools.push(currentResults);
+  if (typeof window !== 'undefined' && Array.isArray(window.currentResults)) candidatePools.push(window.currentResults);
+  if (typeof RAW_DATA !== 'undefined' && RAW_DATA && Array.isArray(RAW_DATA.mockStocks)) candidatePools.push(RAW_DATA.mockStocks);
+  if (typeof window !== 'undefined' && window._rawMarketData && Array.isArray(window._rawMarketData.mockStocks)) candidatePools.push(window._rawMarketData.mockStocks);
+
+  for (const pool of candidatePools) {
+    if (!pool || !pool.length) continue;
+    stock = pool.find(item => {
+      if (!item) return false;
+      const itemId = String(item.id || '').trim();
+      const itemClean = itemId.replace(/[^0-9a-zA-Z]/g, '');
+      return itemClean === sIdClean || 
+             itemClean === sIdPadded || 
+             itemId === sId || 
+             itemId.padStart(4, '0') === sIdPadded ||
+             (!isNaN(sIdNum) && parseInt(itemClean, 10) === sIdNum);
+    });
+    if (stock) break;
   }
-  if (!stock && Array.isArray(window.currentResults)) {
-    stock = window.currentResults.find(s => String(s.id).trim() === sId || String(s.id).padStart(4, '0') === sId);
+
+  // 2. 產業分類補齊（若股票物件缺少 industry，直接由台股產業字典補齊）
+  let industryName = stock ? stock.industry : '';
+  if (!industryName || industryName === '一般族群' || industryName === '一般') {
+    if (typeof SECTOR_COMPENSATION !== 'undefined') {
+      industryName = SECTOR_COMPENSATION[sIdClean] || SECTOR_COMPENSATION[sIdPadded] || '一般族群';
+    }
   }
 
   if (!stock) {
     stock = {
       id: sId,
       name: sId,
-      price: 100,
+      price: 0,
       change: 0,
-      industry: '一般族群',
+      industry: industryName || '一般族群',
       kline: []
     };
+  } else if (!stock.industry || stock.industry === '一般族群' || stock.industry === '一般') {
+    stock.industry = industryName;
   }
 
   currentPatternReportStock = stock;
