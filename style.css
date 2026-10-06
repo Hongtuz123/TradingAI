@@ -6530,6 +6530,73 @@ body {
 .level-card.tp .level-card-val { color: #60a5fa; }
 .level-card.rr .level-card-val { color: #fb923c; }
 
+.level-card-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+.level-card.entry .level-card-sub { color: #86efac; }
+.level-card.sl .level-card-sub { color: #fca5a5; }
+.level-card.tp .level-card-sub { color: #93c5fd; }
+.level-card.rr .level-card-sub { color: #fdba74; }
+
+/* 技術分析 K 線繪圖容器與控制條 */
+.pattern-chart-wrapper {
+  margin: 12px 0;
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.pattern-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pattern-chart-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-download-chart {
+  background: rgba(249, 115, 22, 0.18);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #fdba74;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-download-chart:hover {
+  background: rgba(249, 115, 22, 0.35);
+  color: #ffffff;
+  border-color: #f97316;
+}
+
+.pattern-chart-canvas {
+  width: 100%;
+  height: 330px;
+  display: block;
+  background: #0a0e17;
+}
+
 /* 關鍵幾何參考位 */
 .pattern-pivot-row {
   display: flex;

@@ -59,7 +59,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=84" />
+  <link rel="stylesheet" href="style.css?v=85" />
 
 
 
@@ -1279,21 +1279,18 @@
         <!-- JS 動態渲染 -->
       </div>
 
-      <!-- Modal 底部工具列 -->
+      <!-- Modal 底部工具列 (僅保留簡潔關閉按鈕) -->
       <div class="pattern-modal-footer">
         <button type="button" class="btn-pattern-close" onclick="closePatternReportModal()">關閉報告</button>
-        <button type="button" class="btn-pattern-chart" id="pmGoChartBtn" onclick="goToStockChartFromPattern()">
-          <span>📈</span> 查看「荳荳指標」完整 K 線圖
-        </button>
       </div>
     </div>
   </div>
 
 
   <!-- 腳本 -->
-  <script src="data.js?v=84"></script>
-  <script src="app.js?v=84"></script>
-  <script src="stock-dashboard.js?v=84"></script>
+  <script src="data.js?v=85"></script>
+  <script src="app.js?v=85"></script>
+  <script src="stock-dashboard.js?v=85"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

@@ -593,26 +593,34 @@ def _generate_indicator_metrics(stock_info, vol_mult, vol_cur, atr, bb_width, st
     dealer_days = stock_info.get('dealerDays', 0) or 0
     inst_5d = stock_info.get('instSum5D', 0) or 0
 
-    chip_parts = []
-    if trust_days > 0:
-        chip_parts.append(f"投信買超 {trust_days} 張")
-    elif trust_days < 0:
-        chip_parts.append(f"投信賣超 {abs(trust_days)} 張")
+    # 2. 三大法人籌碼 (外資、投信、自營商完整呈現，0張亦明確標示)
+    trust_days = stock_info.get('trustDays', 0) or 0
+    foreign_buy = stock_info.get('foreignNetBuy', 0) or 0
+    dealer_days = stock_info.get('dealerDays', 0) or 0
+    inst_5d = stock_info.get('instSum5D', 0) or 0
 
     if foreign_buy > 0:
-        chip_parts.append(f"外資買超 {foreign_buy} 張")
+        f_part = f"外資買超 {foreign_buy:,} 張"
     elif foreign_buy < 0:
-        chip_parts.append(f"外資賣超 {abs(foreign_buy)} 張")
+        f_part = f"外資賣超 {abs(foreign_buy):,} 張"
+    else:
+        f_part = "外資無進出 (0張)"
+
+    if trust_days > 0:
+        t_part = f"投信買超 {trust_days:,} 張"
+    elif trust_days < 0:
+        t_part = f"投信賣超 {abs(trust_days):,} 張"
+    else:
+        t_part = "投信無進出 (0張)"
 
     if dealer_days > 0:
-        chip_parts.append(f"自營商買超 {dealer_days} 張")
+        d_part = f"自營商買超 {dealer_days:,} 張"
     elif dealer_days < 0:
-        chip_parts.append(f"自營商賣超 {abs(dealer_days)} 張")
-
-    if not chip_parts:
-        inst_desc = f"三大法人動向觀望 (5日法人淨動向: {inst_5d:+} 張)"
+        d_part = f"自營商賣超 {abs(dealer_days):,} 張"
     else:
-        inst_desc = f"{'、'.join(chip_parts)} (5日主力淨額: {inst_5d:+} 張)"
+        d_part = "自營商無進出 (0張)"
+
+    inst_desc = f"{f_part} ｜ {t_part} ｜ {d_part} (5日主力淨額: {inst_5d:+} 張)"
 
     # 3. 波動率
     if bb_width > 15.0:
