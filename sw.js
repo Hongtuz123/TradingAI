@@ -10,7 +10,7 @@ function isOneSignalPayload(json) {
   return !!(json && json.custom && typeof json.custom.i === 'string');
 }
 
-const CACHE_NAME = 'doudou-ai-cache-v4.3';
+const CACHE_NAME = 'doudou-ai-cache-v4.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -84,51 +84,60 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// 推播通知監聽 (收到雲端推播時的預設展示)
+// 推播通知監聽 (收到雲端推播時的展示引擎，相容 OneSignal 封包與 iOS 規範)
 self.addEventListener('push', (event) => {
-  // 🛡️ 防重複：OneSignal 封包已由 OneSignalSDK.sw.js 的 push 監聽器展示，此處直接跳過
-  if (ONESIGNAL_SW_LOADED && event.data) {
-    try {
-      if (isOneSignalPayload(event.data.json())) return;
-    } catch (e) {}
-  }
-
   const now = new Date();
   const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
-  let payload = {
-    title: `🟢 [${timeStr}] 2330 台積電 · 買進 (1D+4H)`,
-    body: '觸發最新買進起爆訊號，點擊立即查看荳荳精選買進清單 🐕',
-    icon: './apple-touch-icon.png',
-    data: { url: './index.html?view=screener&filter=buy', view: 'screener', filter: 'buy' }
-  };
+  let title = `🟢 [${timeStr}] 荳荳 AI 交易訊號`;
+  let body = '觸發最新買進起爆訊號，點擊立即查看荳荳精選買進清單 🐕';
+  let targetUrl = './index.html?view=screener&filter=buy';
+  let targetView = 'screener';
+  let targetFilter = 'buy';
+  let notifTag = 'doudou-signal-' + Date.now();
 
   if (event.data) {
     try {
-      payload = Object.assign(payload, event.data.json());
+      const json = event.data.json();
+      // 🎯 精準相容 OneSignal 專屬封包欄位 (title 與 alert)
+      if (json.title) title = json.title;
+      if (json.alert) body = json.alert;
+      else if (json.body) body = json.body;
+
+      if (json.custom) {
+        if (json.custom.i) notifTag = json.custom.i; // 🛡️ 使用相同 UUID tag，防止任何平台雙重彈出
+        if (json.custom.u) targetUrl = json.custom.u;
+        if (json.custom.a) {
+          if (json.custom.a.view) targetView = json.custom.a.view;
+          if (json.custom.a.filter) targetFilter = json.custom.a.filter;
+          if (json.custom.a.url) targetUrl = json.custom.a.url;
+        }
+      }
     } catch (e) {
-      payload.body = event.data.text();
+      body = event.data.text() || body;
     }
   }
 
+  // 🍎 iOS Safari 16.4+ / Android 最高相容規範：不傳遞 actions/requireInteraction 以免拋錯
   const options = {
-    body: payload.body,
-    icon: payload.icon || './apple-touch-icon.png',
-    badge: payload.badge || './apple-touch-icon.png',
-    data: payload.data,
-    vibrate: [200, 100, 200]
+    body: body,
+    icon: './apple-touch-icon.png',
+    badge: './apple-touch-icon.png',
+    data: {
+      url: targetUrl,
+      view: targetView,
+      filter: targetFilter
+    },
+    tag: notifTag
   };
 
   event.waitUntil(
-    self.registration.showNotification(payload.title, options)
+    self.registration.showNotification(title, options)
   );
 });
 
 // 點擊通知導回荳荳 AI 系統並開啟荳荳清單對應篩選 (買進/賣出/加碼)
 self.addEventListener('notificationclick', (event) => {
-  // 🛡️ 防重複：OneSignal 通知 (data 含 notificationId) 由 OneSignal SDK 處理開窗與點擊回報
-  if (ONESIGNAL_SW_LOADED && event.notification.data && event.notification.data.notificationId) return;
-
   event.notification.close();
   
   let targetUrl = './index.html?view=screener&filter=buy';
