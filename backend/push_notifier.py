@@ -1,17 +1,75 @@
 import requests
 import os
 
-# OneSignal 配置 (可透過環境變數 ONESIGNAL_APP_ID 與 ONESIGNAL_REST_KEY 覆寫)
-ONESIGNAL_APP_ID = os.environ.get(
-    "ONESIGNAL_APP_ID",
-    "5691aeec-82c3-445f-b89a-0fb2a593a51d"
-)
-ONESIGNAL_REST_KEY = os.environ.get(
-    "ONESIGNAL_REST_KEY",
-    "os_v2_app_k2i253ecyncf7oe2b6zkle5fduhyiuevwdyuhguk2rpntu5yqmi6wtb2zd46fig752rwyb7a35vhtlb3yh77c72bkwuovrz5hyvpewy"
-)
+# OneSignal 配置：App ID 為公開值；REST Key 僅能放在 .env.local / CI Secrets，嚴禁寫死於原始碼
+DEFAULT_ONESIGNAL_APP_ID = "5691aeec-82c3-445f-b89a-0fb2a593a51d"
 
-ONESIGNAL_API_URL = "https://onesignal.com/api/v1/notifications"
+# OneSignal 現行官方端點 (舊版 onesignal.com/api/v1 為 legacy)
+ONESIGNAL_API_URL = "https://api.onesignal.com/notifications"
+
+
+def _get_onesignal_config():
+    """執行期動態讀取 (確保 .env.local 已由 discord_notifier 載入)"""
+    app_id = os.environ.get("ONESIGNAL_APP_ID", "").strip() or DEFAULT_ONESIGNAL_APP_ID
+    rest_key = os.environ.get("ONESIGNAL_REST_KEY", "").strip()
+    return app_id, rest_key
+
+
+# ===== 🛡️ 推播共用防線 (PWA 與 Discord 100% 同步引用) =====
+def get_sort_score(s):
+    sc = s.get('display_score') or s.get('totalScore') or s.get('totalScore_4h') or 70
+    try: return float(sc)
+    except (TypeError, ValueError): return 70.0
+
+
+def get_vol_ratio(s):
+    try: return abs(float(s.get('volRatio', 1.0) or 1.0))
+    except (TypeError, ValueError): return 1.0
+
+
+def is_push_qualified(s):
+    code = str(s.get('id', s.get('Code', ''))).strip()
+    market = str(s.get('market', '')).upper()
+    name = str(s.get('name', s.get('Name', ''))).strip()
+    # 🛡️ 硬性防線 1：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股
+    if market not in ('TSE', 'OTC'):
+        return False
+    # 🚫 最新規則：全面排除 ETF (00開頭) 與債券、權證、ETN、TDR
+    if code.startswith('00') or s.get('isETF', False):
+        return False
+    if '債' in name or code.upper().endswith('B') or 'ETF' in name.upper():
+        return False
+    if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
+        return False
+    # 僅操作純個股 (4 位純數字)
+    if not (code.isdigit() and len(code) == 4):
+        return False
+
+    # 💧 硬性防線 2：殭屍股雙硬指標強制阻斷 (日均量 >= 300張 且 市值 >= 20億元)
+    daily_vol = float(s.get('dailyVol', s.get('vol', 0)) or 0)
+    market_cap = float(s.get('marketCap', s.get('cap', 0)) or 0)
+    if daily_vol < 300:
+        return False
+    if 0 < market_cap < 20:
+        return False
+
+    # 🎯 硬性防線 3：入選評分門檻嚴格 >= 70 分
+    if get_sort_score(s) < 70:
+        return False
+
+    vol_r = get_vol_ratio(s) >= 1.2
+    fn = s.get('foreignNetBuy', 0) or 0
+    tr = s.get('trustDays', 0) or 0
+    dl = s.get('dealerDays', 0) or 0
+    inst_buy = (fn + tr + dl) > 0
+    return vol_r and inst_buy
+
+
+def filter_and_sort_signals(signals):
+    """套用共用防線，並依【分數升冪 (70分甜蜜點優先)、同分爆量降冪】排序"""
+    out = [s for s in (signals or []) if is_push_qualified(s)]
+    out.sort(key=lambda s: (get_sort_score(s), -get_vol_ratio(s)))
+    return out
 
 
 def get_tradingview_url(symbol_code, market="TSE"):
@@ -26,63 +84,11 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     📱 Phase 3: 荳荳 AI 後端手機 PWA 系統原生推播發送器 (OneSignal REST API)
     發送包含 TradingView Deep Link 的手機鎖屏推播通知
     """
-    buys = buy_signals or []
-    adds = add_buy_signals or []
     sells = sell_signals or []
 
-    # 🚀 硬性成交量防線與分數升冪排序 (70分起爆甜蜜點優先，同分爆量降冪)
-    def _get_sort_score(s):
-        sc = s.get('display_score') or s.get('totalScore') or s.get('totalScore_4h') or 70
-        try: return float(sc)
-        except (TypeError, ValueError): return 70.0
-
-    def _get_vol_ratio(s):
-        try: return abs(float(s.get('volRatio', 1.0) or 1.0))
-        except (TypeError, ValueError): return 1.0
-
-    def _is_qualified(s):
-        code = str(s.get('id', s.get('Code', ''))).strip()
-        market = str(s.get('market', '')).upper()
-        name = str(s.get('name', s.get('Name', ''))).strip()
-        # 🛡️ 硬性防線 1：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股
-        if market not in ('TSE', 'OTC'):
-            return False
-        # 🚫 最新規則：全面排除 ETF (00開頭) 與債券、權證、ETN、TDR
-        if code.startswith('00') or s.get('isETF', False):
-            return False
-        if '債' in name or code.upper().endswith('B') or 'ETF' in name.upper():
-            return False
-        if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
-            return False
-        # 僅操作純個股 (4 位純數字)
-        if not (code.isdigit() and len(code) == 4):
-            return False
-
-        # 💧 硬性防線 2：殭屍股雙硬指標強制阻斷 (日均量 >= 300張 且 市值 >= 20億元)
-        daily_vol = float(s.get('dailyVol', s.get('vol', 0)) or 0)
-        market_cap = float(s.get('marketCap', s.get('cap', 0)) or 0)
-        if daily_vol < 300:
-            return False
-        if 0 < market_cap < 20:
-            return False
-
-        # 🎯 硬性防線 3：入選評分門檻嚴格 >= 70 分
-        score = _get_sort_score(s)
-        if score < 70:
-            return False
-
-        vol_r = _get_vol_ratio(s) >= 1.2
-        fn = s.get('foreignNetBuy', 0) or 0
-        tr = s.get('trustDays', 0) or 0
-        dl = s.get('dealerDays', 0) or 0
-        inst_buy = (fn + tr + dl) > 0
-        return vol_r and inst_buy
-
-    buys = [s for s in buys if _is_qualified(s)]
-    adds = [s for s in adds if _is_qualified(s)]
-
-    buys.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
-    adds.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
+    # 🚀 共用防線 + 分數升冪排序 (70分起爆甜蜜點優先，同分爆量降冪)
+    buys = filter_and_sort_signals(buy_signals)
+    adds = filter_and_sort_signals(add_buy_signals)
 
     if not buys and not adds and not sells:
         return True
@@ -117,8 +123,8 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     market = target_stock.get('market', 'TSE')
     price = target_stock.get('price', 0)
     change = target_stock.get('change', 0)
-    score = int(_get_sort_score(target_stock))
-    vol_r = _get_vol_ratio(target_stock)
+    score = int(get_sort_score(target_stock))
+    vol_r = get_vol_ratio(target_stock)
     chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
     
     # 格式化訊號時間 (取 HH:MM)
@@ -140,9 +146,15 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     # 🎯 導回本系統並開啟荳荳清單對應篩選
     system_target_url = f"https://trading-ai-eosin-zeta.vercel.app/?view=screener&filter={filter_type}"
 
+    app_id, rest_key = _get_onesignal_config()
+    if not rest_key:
+        print("📱 ⚠️ 未設定 ONESIGNAL_REST_KEY (.env.local)，跳過 PWA 推播。")
+        return False
+
     payload = {
-        "app_id": ONESIGNAL_APP_ID,
-        "included_segments": ["Subscribed Users"],
+        "app_id": app_id,
+        "target_channel": "push",
+        "included_segments": ["Total Subscriptions"],
         "headings": {"en": push_title, "zh": push_title},
         "contents": {"en": push_body, "zh": push_body},
         "web_url": system_target_url,
@@ -158,10 +170,10 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     }
 
     # OneSignal 新版 REST Key (os_v2_app_ 開頭) 需使用 "Key" 前綴，舊版才用 "Basic"
-    auth_prefix = "Key" if ONESIGNAL_REST_KEY.startswith("os_v2_app_") else "Basic"
+    auth_prefix = "Key" if rest_key.startswith("os_v2_app_") else "Basic"
     headers = {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": f"{auth_prefix} {ONESIGNAL_REST_KEY}"
+        "Authorization": f"{auth_prefix} {rest_key}"
     }
 
     try:

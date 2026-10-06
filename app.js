@@ -19216,7 +19216,8 @@ async function _syncOneSignalOptIn() {
             appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
             allowLocalhostAsSecureOrigin: true,
             serviceWorkerPath: "sw.js",
-            serviceWorkerParam: { scope: "/" }
+            serviceWorkerParam: { scope: "/" },
+            serviceWorkerOverrideForTypical: true
           });
           window._os = OneSignalInstance;
           if (OneSignalInstance.User && OneSignalInstance.User.PushSubscription && OneSignalInstance.User.PushSubscription.optIn) {

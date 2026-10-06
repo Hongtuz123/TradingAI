@@ -1,9 +1,16 @@
 // 荳荳 AI 智能選股 — PWA Service Worker
+let ONESIGNAL_SW_LOADED = false;
 try {
   importScripts('./OneSignalSDK.sw.js');
+  ONESIGNAL_SW_LOADED = true;
 } catch (e) {}
 
-const CACHE_NAME = 'doudou-ai-cache-v4.2';
+// 判斷是否為 OneSignal 雲端推播封包 (與 OneSignal SDK 內部判斷一致：custom.i 為通知 UUID)
+function isOneSignalPayload(json) {
+  return !!(json && json.custom && typeof json.custom.i === 'string');
+}
+
+const CACHE_NAME = 'doudou-ai-cache-v4.3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -79,6 +86,13 @@ self.addEventListener('fetch', (event) => {
 
 // 推播通知監聽 (收到雲端推播時的預設展示)
 self.addEventListener('push', (event) => {
+  // 🛡️ 防重複：OneSignal 封包已由 OneSignalSDK.sw.js 的 push 監聽器展示，此處直接跳過
+  if (ONESIGNAL_SW_LOADED && event.data) {
+    try {
+      if (isOneSignalPayload(event.data.json())) return;
+    } catch (e) {}
+  }
+
   const now = new Date();
   const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
@@ -112,6 +126,9 @@ self.addEventListener('push', (event) => {
 
 // 點擊通知導回荳荳 AI 系統並開啟荳荳清單對應篩選 (買進/賣出/加碼)
 self.addEventListener('notificationclick', (event) => {
+  // 🛡️ 防重複：OneSignal 通知 (data 含 notificationId) 由 OneSignal SDK 處理開窗與點擊回報
+  if (ONESIGNAL_SW_LOADED && event.notification.data && event.notification.data.notificationId) return;
+
   event.notification.close();
   
   let targetUrl = './index.html?view=screener&filter=buy';

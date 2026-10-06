@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 import requests
 
+from backend.push_notifier import filter_and_sort_signals
+
 
 def _load_local_env():
     """自動自專案根目錄載入 .env.local 或 .env 中的環境變數（線下專用，嚴禁上傳 GitHub）"""
@@ -76,56 +78,11 @@ def send_discord_signal_state_push(buy_signals=None, add_buy_signals=None, sell_
     """
     發送【買進 / 加碼買進 / 賣出】三大動態交易訊號卡片至 Discord Channel
     """
-    buys  = buy_signals or []
-    adds  = add_buy_signals or []
     sells = sell_signals or []
 
-    # 🚀 硬性防線：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股與股票型 ETF (排除興櫃、債券、權證等)
-    def _is_valid_target(s):
-        code = str(s.get('id', s.get('Code', ''))).strip()
-        market = str(s.get('market', '')).upper()
-        name = str(s.get('name', s.get('Name', ''))).strip()
-        if market not in ('TSE', 'OTC'):
-            return False
-        # 排除債券型商品 (無論名稱或代碼以 B 結尾)
-        if '債' in name or code.upper().endswith('B'):
-            return False
-        # 排除權證、ETN、TDR 等
-        if code.startswith(('01', '02', '03', '04', '05', '06', '07', '08', '91')):
-            return False
-        # 允許 4 位普通股或 00 開頭之股票型 ETF (4~6位純數字)
-        if code.isdigit() and (len(code) == 4 or (code.startswith('00') and len(code) in (4, 5, 6))):
-            return True
-        return False
-
-    # 🚀 成交量硬性防線與上市上櫃防線
-    MIN_DAILY_VOL = 300
-    buys = [s for s in buys if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_valid_target(s)]
-    adds = [s for s in adds if (s.get('dailyVol', 9999) or 0) >= MIN_DAILY_VOL and _is_valid_target(s)]
-
-    def _get_sort_score(s):
-        sc = s.get('display_score')
-        if sc is None:
-            sc = s.get('totalScore')
-        if sc is None:
-            sc = s.get('totalScore_4h')
-        try:
-            return float(sc)
-        except (TypeError, ValueError):
-            return 70.0
-
-    def _get_vol_ratio(s):
-        try:
-            # 確保爆量倍數取絕對值，避免異常負號影響次要降冪排序
-            return abs(float(s.get('volRatio', 1.0) or 1.0))
-        except (TypeError, ValueError):
-            return 1.0
-
-    # 🚀 雙重防禦：買進與加碼買進推播 100% 依據【分數升冪】排序 (70分起漲甜蜜點最優先，從小排到大)，同分時依【爆量倍數降冪】(從大排到小)
-    if buys:
-        buys.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
-    if adds:
-        adds.sort(key=lambda s: (_get_sort_score(s), -_get_vol_ratio(s)))
+    # 🛡️ 與 PWA 推播 100% 同步：共用防線 (純個股/量≥300張/市值≥20億/≥70分/爆量≥1.2x/法人買超) + 分數升冪、同分爆量降冪
+    buys = filter_and_sort_signals(buy_signals)
+    adds = filter_and_sort_signals(add_buy_signals)
 
     if not buys and not adds and not sells:
         return True
