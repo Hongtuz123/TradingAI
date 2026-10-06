@@ -16,6 +16,18 @@ let mockStocks = [];
 
 let currentResults = [];
 
+// 🐾 荳荳清單標的過濾：全市場僅保留上市櫃普通股與指定特准 ETF (僅 0050 與 00631L)
+function isAllowedStockOrEtf(stock) {
+  if (!stock) return false;
+  const sId = String(stock.id || stock.Code || '').trim().toUpperCase();
+  const sName = String(stock.name || stock.Name || '').trim();
+  // 特准 ETF：僅允許 0050 與 00631L (正2)
+  if (sId === '0050' || sId === '00631L') return true;
+  // 其餘所有 00 開頭 ETF 或名稱包含 ETF/債券 等商品全部排除
+  if (sId.startsWith('00') || sName.includes('ETF') || sName.includes('債') || sName.includes('證券投資信託基金')) return false;
+  return true;
+}
+
 // =============================================
 // 荳荳清單 Hashtag 與搜尋即時過濾邏輯
 // =============================================
@@ -190,7 +202,7 @@ window.reloadDataJson = async function() {
 
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
-    mockStocks = data.mockStocks || [];
+    mockStocks = (data.mockStocks || []).filter(isAllowedStockOrEtf);
     window.mockStocks = mockStocks;
     window.marketData = marketData;
     window.rulesConfig = rulesConfig;
@@ -634,7 +646,7 @@ async function bootstrapApp() {
 
     marketData = data.marketData || {};
     rulesConfig = data.rulesConfig || {};
-    mockStocks = data.mockStocks || [];
+    mockStocks = (data.mockStocks || []).filter(isAllowedStockOrEtf);
     window.mockStocks = mockStocks;
     window.marketData = marketData;
     window.rulesConfig = rulesConfig;
@@ -19992,61 +20004,49 @@ function renderPatternModalContent() {
   const tpVal = report.take_profit ? parseFloat(report.take_profit) : null;
   const rrVal = (report.risk_reward_ratio !== null && report.risk_reward_ratio !== undefined) ? parseFloat(report.risk_reward_ratio) : null;
 
-  // 1. 格式化進場點顯示（必定標出具體價位，滿足使用者需求 1）
+  // 1. 格式化進場點顯示（緊湊格式，帶有括號備註）
   let entryStr = '--';
-  let entrySubStr = '等待交易信號';
   if (isBearish) {
     entryStr = '❌ 嚴禁開多';
-    entrySubStr = '空方下壓禁止買進';
   } else if (entryVal !== null) {
-    entryStr = `$${entryVal.toFixed(2)}`;
-    if (actionType === 'buy') {
-      entrySubStr = '突破切入 / 回踩支撐';
-    } else if (curPrice >= entryVal * 1.02) {
+    if (curPrice && curPrice >= entryVal * 1.02) {
       const awayPct = (((curPrice - entryVal) / entryVal) * 100).toFixed(1);
-      entrySubStr = `原始突破點 (+${awayPct}% 遠離禁追)`;
+      entryStr = `$${entryVal.toFixed(2)} (+${awayPct}%)`;
     } else {
-      entrySubStr = '建議掛單點 (待突破回踩)';
+      entryStr = `$${entryVal.toFixed(2)}`;
     }
   }
 
-  // 2. 格式化止損點顯示
-  const slStr = slVal ? `$${slVal.toFixed(2)}` : '--';
-  let slSubStr = '嚴設防守點位';
-  if (slVal && curPrice) {
-    const slDiff = (((slVal - curPrice) / curPrice) * 100).toFixed(1);
-    if (actionType === 'watch') {
-      slSubStr = `跌幅 ${slDiff}% (移動停利防守位)`;
+  // 2. 格式化止損點顯示：價格後直接附加 (-6.1%) 緊湊無冗字
+  let slStr = '--';
+  if (slVal) {
+    if (curPrice) {
+      const slDiff = (((slVal - curPrice) / curPrice) * 100).toFixed(1);
+      const slSign = parseFloat(slDiff) > 0 ? '+' : '';
+      slStr = `$${slVal.toFixed(2)} (${slSign}${slDiff}%)`;
     } else {
-      slSubStr = `跌幅 ${slDiff}% (破位停損)`;
+      slStr = `$${slVal.toFixed(2)}`;
     }
   }
 
-  // 3. 格式化目標價顯示（確保漲幅為正，滿足使用者需求 2）
-  const tpStr = tpVal ? `$${tpVal.toFixed(2)}` : (isBearish ? '下探測距' : '--');
-  let tpSubStr = '預期獲利目標';
-  if (tpVal && curPrice) {
-    const tpDiff = (((tpVal - curPrice) / curPrice) * 100).toFixed(1);
-    const tpSign = parseFloat(tpDiff) >= 0 ? '+' : '';
-    const isExt = (actionType === 'watch' || curPrice >= (report.neckline || curPrice) * 1.05);
-    tpSubStr = `漲幅 ${tpSign}${tpDiff}% (${isExt ? '波段延伸目標' : '等幅滿足'})`;
+  // 3. 格式化目標價顯示：價格後直接附加 (+18.4%) 緊湊無冗字
+  let tpStr = isBearish ? '下探測距' : '--';
+  if (tpVal) {
+    if (curPrice) {
+      const tpDiff = (((tpVal - curPrice) / curPrice) * 100).toFixed(1);
+      const tpSign = parseFloat(tpDiff) >= 0 ? '+' : '';
+      tpStr = `$${tpVal.toFixed(2)} (${tpSign}${tpDiff}%)`;
+    } else {
+      tpStr = `$${tpVal.toFixed(2)}`;
+    }
   }
 
-  // 4. 格式化真實風報比 (完全實算，不亂塞假數據)
+  // 4. 格式化真實風報比 (完全實算)
   let rrStr = '--';
-  let rrSubStr = '待空間確認';
   if (isBearish) {
     rrStr = '0.0 (高風險)';
-    rrSubStr = '空方下壓防被套';
   } else if (rrVal !== null && rrVal > 0) {
     rrStr = `1 : ${rrVal.toFixed(1)}`;
-    if (rrVal >= 1.5) {
-      rrSubStr = '盈虧比優質 (≥1.5)';
-    } else if (rrVal >= 1.0) {
-      rrSubStr = '⚠️ 盈虧比中等 (1.0~1.4)';
-    } else {
-      rrSubStr = '⚠️ 盈虧比偏低 (<1.0 勿追)';
-    }
   }
 
   let typeTagHtml = '';
@@ -20066,6 +20066,10 @@ function renderPatternModalContent() {
   // 格式化三大法人籌碼（外資、投信、自營商完整三法人，絕不遺漏投信）
   const instChipDesc = formatInstChipDesc(s, report.metrics);
 
+  // 精簡建議文字，去除冗贅詞彙
+  let cleanActionAdvice = report.action_advice || '';
+  cleanActionAdvice = cleanActionAdvice.replace('後續具備複製旗桿漲幅的二次發動機會', '待二次發動機會');
+
   container.innerHTML = `
     <!-- # 01. 目前 K 線型態量化解構與操作計畫 (最核心置頂第一屏) -->
     <div class="pattern-section-title">
@@ -20079,27 +20083,23 @@ function renderPatternModalContent() {
         ${typeTagHtml}
       </div>
 
-      <!-- 關鍵點位四宮格矩陣 (置頂核心視覺焦點) -->
-      <div class="pattern-levels-grid" style="margin-top:8px;">
+      <!-- 關鍵點位四宮格矩陣 (極致緊湊，拿掉冗字) -->
+      <div class="pattern-levels-grid" style="margin-top:6px;">
         <div class="level-card entry">
           <span class="level-card-label">🎯 建議進場點 (Entry)</span>
-          <span class="level-card-val" style="${!entryVal && actionType === 'watch' ? 'color:#facc15;font-size:16px;' : ''}">${entryStr}</span>
-          <span class="level-card-sub">${entrySubStr}</span>
+          <span class="level-card-val" style="${!entryVal && actionType === 'watch' ? 'color:#facc15;font-size:15px;' : ''}">${entryStr}</span>
         </div>
         <div class="level-card sl">
           <span class="level-card-label">🛑 建議止損點 (SL)</span>
           <span class="level-card-val">${slStr}</span>
-          <span class="level-card-sub">${slSubStr}</span>
         </div>
         <div class="level-card tp">
           <span class="level-card-label">🏁 預期目標價 (TP)</span>
           <span class="level-card-val">${tpStr}</span>
-          <span class="level-card-sub">${tpSubStr}</span>
         </div>
         <div class="level-card rr">
           <span class="level-card-label">⚖️ 風險報酬比 (R:R)</span>
           <span class="level-card-val" style="${rrVal !== null && rrVal < 1.0 ? 'color:#f87171;' : ''}">${rrStr}</span>
-          <span class="level-card-sub">${rrSubStr}</span>
         </div>
       </div>
 
@@ -20118,7 +20118,7 @@ function renderPatternModalContent() {
 
       <!-- 建議操作結論 -->
       <div class="pattern-action-banner ${actionType === 'warning' ? 'warning' : (actionType === 'buy' ? 'buy' : 'watch')}">
-        <span>${report.action_advice}</span>
+        <span>${cleanActionAdvice}</span>
       </div>
 
       <!-- 型態特徵概述 -->

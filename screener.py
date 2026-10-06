@@ -28,6 +28,8 @@ WATCHLIST = [
     {'Code': '4961', 'Name': '天鈺',   'market': 'TSE'},
     {'Code': '5228', 'Name': '鈺鎧',   'market': 'OTC'},
     {'Code': '6525', 'Name': '捷敏-KY', 'market': 'TSE'},
+    {'Code': '0050', 'Name': '元大台灣50', 'market': 'TSE'},
+    {'Code': '00631L', 'Name': '元大台灣50正2', 'market': 'TSE'},
 ]
 
 
@@ -90,9 +92,10 @@ def load_all_market_info():
         )
         if res.status_code == 200:
             for r in res.json():
-                if r['Code'].isdigit() and len(r['Code']) >= 4:
+                code = str(r.get('Code', '')).strip()
+                if (code.isdigit() and len(code) >= 4) or code.upper() == '00631L':
                     r['market'] = 'TSE'
-                    all_listed[r['Code'].strip()] = r
+                    all_listed[code] = r
     except Exception as e:
         print(f'TWSE 抓取失敗: {e}')
 
@@ -104,8 +107,8 @@ def load_all_market_info():
         )
         if res.status_code == 200:
             for r in res.json():
-                code = (r.get('SecuritiesCompanyCode') or r.get('Code', '')).strip()
-                if code and code.isdigit() and len(code) >= 4:
+                code = str(r.get('SecuritiesCompanyCode') or r.get('Code', '')).strip()
+                if (code.isdigit() and len(code) >= 4) or code.upper() == '00631L':
                     vol  = r.get('Volume') or r.get('TradeVolume') or 0
                     name = r.get('CompanyName') or r.get('Name')
                     open_price = r.get('Open') or r.get('OpeningPrice')
@@ -121,11 +124,12 @@ def load_all_market_info():
 
 def is_valid_stock_or_etf(stock):
     """
-    判斷標的是否為【上市/上櫃之股票或股票型 ETF】
+    判斷標的是否為【上市/上櫃普通股，ETF 僅保留 0050 與 00631L】
     - 市場類別 market 必須為 TSE (上市) 或 OTC (上櫃)，排除興櫃
     - 排除債券型商品 (名稱含'債'、'美債'、'公司債'或代碼以 B 結尾)
     - 排除權證 (03-08)、ETN (02)、TDR (91)、受益憑證 (01) 等
-    - 保留 4 位純數字普通股 (如 2330) 與 00 開頭之股票型 ETF (如 0050, 0056, 00878, 00919, 00929 等)
+    - ETF 僅保留 0050 (元大台灣50) 與 00631L (元大台灣50正2)，其他 ETF 全部排除
+    - 保留 4 位純數字普通股 (如 2330)
     """
     if not stock or not isinstance(stock, dict):
         return False
@@ -133,23 +137,28 @@ def is_valid_stock_or_etf(stock):
     if market not in ("TSE", "OTC"):
         return False
 
-    code = str(stock.get("id", stock.get("Code", ""))).strip()
+    code = str(stock.get("id", stock.get("Code", ""))).strip().upper()
     name = str(stock.get("name", stock.get("Name", stock.get("CompanyName", "")))).strip()
 
     # 🚫 排除債券型商品
-    if "債" in name or code.upper().endswith("B"):
+    if "債" in name or code.endswith("B"):
         return False
 
     # 🚫 排除權證、ETN、TDR 等非股票型商品
     if code.startswith(("01", "02", "03", "04", "05", "06", "07", "08", "91")):
         return False
 
-    # ✅ 允許 4 位普通股 (如 2330) 或 00 開頭之股票型 ETF (4~6位純數字)
-    if code.isdigit():
-        if len(code) == 4:
-            return True
-        if code.startswith("00") and len(code) in (5, 6):
-            return True
+    # 🎯 特准 ETF：僅允許 0050 與 00631L
+    if code in ("0050", "00631L"):
+        return True
+
+    # 🚫 排除所有其他 ETF (以 00 開頭，或名稱含 ETF / 基金 / 指數 等)
+    if code.startswith("00") or "ETF" in name.upper():
+        return False
+
+    # ✅ 允許 4 位普通股 (如 2330，非 00 開頭)
+    if code.isdigit() and len(code) == 4:
+        return True
 
     return False
 

@@ -6507,28 +6507,24 @@ body {
   color: #fca5a5;
 }
 
-/* 點位四宮格矩陣 */
+/* 點位四宮格矩陣 (極致緊湊設計) */
 .pattern-levels-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin-top: 4px;
-}
-
-@media (max-width: 640px) {
-  .pattern-levels-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 .level-card {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 8px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   text-align: center;
 }
 
@@ -6549,33 +6545,25 @@ body {
 }
 
 .level-card-label {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #94a3b8;
+  white-space: nowrap;
 }
 
 .level-card-val {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   font-family: 'JetBrains Mono', monospace, sans-serif;
   color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
 }
 
 .level-card.entry .level-card-val { color: #4ade80; }
 .level-card.sl .level-card-val { color: #f87171; }
 .level-card.tp .level-card-val { color: #60a5fa; }
 .level-card.rr .level-card-val { color: #fb923c; }
-
-.level-card-sub {
-  font-size: 10.5px;
-  font-weight: 600;
-  margin-top: 2px;
-  letter-spacing: 0.2px;
-}
-.level-card.entry .level-card-sub { color: #86efac; }
-.level-card.sl .level-card-sub { color: #fca5a5; }
-.level-card.tp .level-card-sub { color: #93c5fd; }
-.level-card.rr .level-card-sub { color: #fdba74; }
 
 /* 技術分析 K 線繪圖容器與控制條 */
 .pattern-chart-wrapper {
@@ -6700,3 +6688,205 @@ body {
   box-shadow: 0 6px 16px rgba(249, 115, 22, 0.5);
   transform: translateY(-1px);
 }
+
+/* ==========================================================================
+   📱 荳荳分析圖卡 手機版專屬 RWD 響應式優化 (≤768px & ≤480px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .pattern-modal-overlay,
+  .modal-overlay {
+    padding: 8px 0 !important;
+  }
+
+  .pattern-report-dialog {
+    width: 95% !important;
+    max-width: 95% !important;
+    border-radius: 12px !important;
+    margin: 4px auto !important;
+  }
+
+  .pattern-modal-header {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .pattern-brand-badge {
+    font-size: 11px !important;
+  }
+
+  .pattern-stock-headline {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .stock-id-badge {
+    font-size: 12px !important;
+    padding: 1px 6px !important;
+  }
+
+  .stock-name-title {
+    font-size: 17px !important;
+  }
+
+  .stock-industry-pill {
+    font-size: 10px !important;
+    padding: 1px 5px !important;
+  }
+
+  .stock-live-price {
+    font-size: 17px !important;
+  }
+
+  .stock-change-pill {
+    font-size: 11px !important;
+    padding: 1px 6px !important;
+  }
+
+  .pattern-meta-time {
+    font-size: 10px !important;
+  }
+
+  .pattern-tf-switcher {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+
+  .tf-pill-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .pattern-modal-body {
+    padding: 10px 10px 14px !important;
+  }
+
+  .pattern-section-title {
+    font-size: 11px !important;
+    margin: 8px 0 4px !important;
+  }
+
+  .pattern-core-card {
+    padding: 10px 10px 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .pattern-headline-badge {
+    font-size: 13px !important;
+  }
+
+  .pattern-levels-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .level-card {
+    padding: 5px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  .level-card-label {
+    font-size: 10px !important;
+  }
+
+  .level-card-val {
+    font-size: 13.5px !important;
+  }
+
+  .pattern-chart-wrapper {
+    margin: 8px 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .pattern-chart-header {
+    padding: 6px 10px !important;
+  }
+
+  .pattern-chart-title {
+    font-size: 11px !important;
+  }
+
+  .btn-download-chart {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .pattern-chart-canvas {
+    height: 240px !important;
+  }
+
+  .pattern-action-banner {
+    padding: 7px 9px !important;
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    border-radius: 6px !important;
+  }
+
+  .pattern-desc-text {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  .pattern-pivot-row {
+    font-size: 10.5px !important;
+    gap: 4px 8px !important;
+  }
+
+  .pattern-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .pattern-metric-card {
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .metric-header {
+    font-size: 11px !important;
+  }
+
+  .metric-detail {
+    font-size: 10.5px !important;
+  }
+
+  .pattern-modal-footer {
+    padding: 10px 12px !important;
+  }
+
+  .btn-pattern-close {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .pattern-levels-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 5px !important;
+  }
+
+  .level-card {
+    padding: 5px 6px !important;
+  }
+
+  .level-card-label {
+    font-size: 9.5px !important;
+  }
+
+  .level-card-val {
+    font-size: 12.5px !important;
+  }
+
+  .pattern-chart-canvas {
+    height: 220px !important;
+  }
+
+  .pattern-metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

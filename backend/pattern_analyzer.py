@@ -826,7 +826,7 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                         "name": "🚩 多頭旗形 (Bullish Flag) 攻擊突破",
                         "type": "bullish",
                         "desc": f"前期自 ${past_low:.1f} 急拉至 ${pole_high:.1f} 形成陡峭旗桿，近期呈高檔強勢量縮回檔換手。現價重啟多頭動能突破旗面上軌。",
-                        "advice": "🎯 建議進場做多：強勢股多頭中繼型態完成，後續具備複製旗桿漲幅的二次發動機會，嚴守旗面下緣停損。",
+                        "advice": "🎯 建議進場做多：強勢股多頭中繼型態完成，待二次發動機會，嚴守旗面下緣停損。",
                         "action_type": "buy",
                         "entry": entry,
                         "sl": sl,
