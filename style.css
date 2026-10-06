@@ -6073,18 +6073,39 @@ body {
   transform: translateY(0);
 }
 
-/* Modal 外層遮罩 (支援黃金標準全屏自然平滑捲動) */
+/* Modal 外層遮罩 (最高層級 100000 防遮擋，支援全屏自然平滑捲動) */
 #patternReportModal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 100000 !important; /* 確保超越手機底部導航列 (9999) 與吉祥物浮動按鈕 (99999) */
+  background: rgba(3, 7, 18, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  padding: 30px 0;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 24px 0 !important;
+  display: none;
   align-items: flex-start !important;
+  justify-content: center;
+}
+
+/* 當報告開啟時，徹底隱藏手機底部導航列與吉祥物，防範任何邊界遮擋 */
+body.pattern-modal-open .mobile-bottom-nav,
+body.pattern-modal-open #mobileBottomNav,
+body.pattern-modal-open .shiba-mascot-container,
+body.pattern-modal-open #shibaMascotContainer {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Modal 對話框本體 (自然延展，margin: auto 實現安全垂直置中與防截斷) */
 .pattern-report-dialog {
   background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
   width: 92%;
   max-width: 860px;
@@ -6093,6 +6114,30 @@ body {
   flex-direction: column;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(249, 115, 22, 0.15);
   animation: patternModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+/* 手機端頂部下拉手柄 (點擊直接關閉) */
+.pattern-modal-handle-bar {
+  display: none;
+  width: 100%;
+  padding: 10px 0 4px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #111827;
+}
+
+.pattern-modal-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s ease;
+}
+
+.pattern-modal-handle-bar:active .pattern-modal-handle {
+  background: #f97316;
 }
 
 @keyframes patternModalFadeIn {
@@ -6110,16 +6155,45 @@ body {
 .pattern-modal-header {
   position: sticky;
   top: 0;
-  z-index: 20;
-  padding: 16px 20px;
-  background: rgba(17, 24, 39, 0.96);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  z-index: 25;
+  padding: 14px 20px;
+  background: rgba(17, 24, 39, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+/* 右上角醒目關閉按鈕 (大熱區、高對比) */
+.modal-close-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #f8fafc;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:active {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: scale(0.94);
 }
 
 .pattern-modal-title-group {
@@ -6642,29 +6716,37 @@ body {
 .pattern-modal-footer {
   flex-shrink: 0;
   padding: 14px 20px;
-  background: rgba(17, 24, 39, 0.95);
+  background: rgba(17, 24, 39, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  justify-content: center;
 }
 
 .btn-pattern-close {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  width: 100%;
+  min-height: 46px;
+  background: rgba(249, 115, 22, 0.14);
+  border: 1.5px solid #f97316;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.btn-pattern-close:hover {
-  background: rgba(255, 255, 255, 0.12);
+.btn-pattern-close:hover,
+.btn-pattern-close:active {
+  background: #f97316;
   color: #ffffff;
+  transform: scale(0.98);
 }
 
 .btn-pattern-chart {
@@ -6689,25 +6771,49 @@ body {
   transform: translateY(-1px);
 }
 
+/* 📱 手機端常駐浮動關閉膠囊 (滾動時永遠可隨手關閉) */
+.pattern-floating-close-pill {
+  display: none;
+}
+
 /* ==========================================================================
    📱 荳荳分析圖卡 手機版專屬 RWD 響應式優化 (≤768px & ≤480px)
    ========================================================================== */
 @media (max-width: 768px) {
-  .pattern-modal-overlay,
-  .modal-overlay {
-    padding: 8px 0 !important;
+  /* 畫面上緣與下緣防截斷、防遮擋核心配置 */
+  #patternReportModal {
+    padding-top: max(24px, env(safe-area-inset-top, 28px)) !important;
+    padding-bottom: max(36px, env(safe-area-inset-bottom, 32px)) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
   }
 
   .pattern-report-dialog {
-    width: 95% !important;
-    max-width: 95% !important;
-    border-radius: 12px !important;
-    margin: 4px auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    margin: 0 auto !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9) !important;
+  }
+
+  .pattern-modal-handle-bar {
+    display: flex !important;
   }
 
   .pattern-modal-header {
-    padding: 10px 12px !important;
+    padding: 10px 14px !important;
     gap: 8px !important;
+  }
+
+  .modal-close-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    font-size: 18px !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
   }
 
   .pattern-brand-badge {
@@ -6853,13 +6959,42 @@ body {
     font-size: 10.5px !important;
   }
 
+  /* 畫面下緣按鈕列 (避開 iPhone 小白條) */
   .pattern-modal-footer {
-    padding: 10px 12px !important;
+    padding: 12px 14px max(22px, env(safe-area-inset-bottom, 22px)) !important;
   }
 
   .btn-pattern-close {
-    padding: 6px 12px !important;
-    font-size: 12px !important;
+    min-height: 48px !important;
+    font-size: 15px !important;
+    border-radius: 12px !important;
+  }
+
+  /* 📱 手機常駐浮動關閉膠囊 (長滾動時隨按隨關) */
+  .pattern-floating-close-pill {
+    display: flex !important;
+    position: fixed !important;
+    right: 14px !important;
+    bottom: max(18px, env(safe-area-inset-bottom, 20px)) !important;
+    z-index: 100005 !important;
+    background: rgba(15, 23, 42, 0.94) !important;
+    border: 1.5px solid #f97316 !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 14px rgba(249, 115, 22, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    cursor: pointer !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .pattern-floating-close-pill:active {
+    transform: scale(0.92) !important;
+    background: #ea580c !important;
   }
 }
 

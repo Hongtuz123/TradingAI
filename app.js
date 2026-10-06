@@ -19957,9 +19957,10 @@ window.openPatternReportModal = function(stockId) {
   // 渲染報告內容
   renderPatternModalContent();
 
-  // 顯示 Modal
+  // 顯示 Modal (保證置頂，封鎖背景捲動與底部干擾)
   modalEl.style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  document.body.classList.add('pattern-modal-open');
 };
 
 window.switchPatternModalTimeframe = function(tf) {
@@ -20581,12 +20582,21 @@ window.closePatternReportModal = function() {
   const modalEl = document.getElementById('patternReportModal');
   if (modalEl) modalEl.style.display = 'none';
   document.body.style.overflow = '';
+  document.body.classList.remove('pattern-modal-open');
 };
 
 window.handlePatternModalBackdropClick = function(e) {
-  if (e.target && e.target.id === 'patternReportModal') {
+  if (e.target && (e.target.id === 'patternReportModal' || e.target.classList.contains('modal-overlay'))) {
     closePatternReportModal();
   }
 };
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      closePatternReportModal();
+    }
+  });
+}
 
 

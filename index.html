@@ -59,7 +59,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=90" />
+  <link rel="stylesheet" href="style.css?v=91" />
 
 
 
@@ -1242,6 +1242,11 @@
   <!-- ==================== 荳荳 AI 深度型態分析報告 Modal ==================== -->
   <div id="patternReportModal" class="modal-overlay" style="display:none;" onclick="handlePatternModalBackdropClick(event)">
     <div class="pattern-report-dialog" onclick="event.stopPropagation()">
+      <!-- 手機端頂部下拉手柄 (點擊直接關閉) -->
+      <div class="pattern-modal-handle-bar" onclick="closePatternReportModal()" title="點擊關閉視窗">
+        <div class="pattern-modal-handle"></div>
+      </div>
+
       <!-- 頂部 Header -->
       <div class="pattern-modal-header">
         <div class="pattern-modal-title-group">
@@ -1257,7 +1262,7 @@
           </div>
           <div class="pattern-meta-time" id="pmMetaTime">📅 分析時間：2026-10-06 (雙時框幾何量化運算)</div>
         </div>
-        <button class="modal-close-btn" onclick="closePatternReportModal()" title="關閉視窗">✕</button>
+        <button type="button" class="modal-close-btn" onclick="closePatternReportModal()" title="關閉視窗" aria-label="關閉視窗">✕</button>
       </div>
 
       <!-- 時框切換列 (1D 日線 / 4H 4小時) -->
@@ -1278,18 +1283,26 @@
         <!-- JS 動態渲染 -->
       </div>
 
-      <!-- Modal 底部工具列 (僅保留簡潔關閉按鈕) -->
+      <!-- Modal 底部工具列 (醒目全寬關閉按鈕) -->
       <div class="pattern-modal-footer">
-        <button type="button" class="btn-pattern-close" onclick="closePatternReportModal()">關閉報告</button>
+        <button type="button" class="btn-pattern-close" onclick="closePatternReportModal()">
+          <span style="font-size: 15px; font-weight: 800;">✕</span>
+          <span>關閉分析報告</span>
+        </button>
       </div>
     </div>
+
+    <!-- 📱 手機端常駐浮動快速關閉按鈕 (滾動時隨時一鍵關閉) -->
+    <button type="button" class="pattern-floating-close-pill" onclick="closePatternReportModal()" title="快速關閉報告">
+      <span>✕</span> 關閉報告
+    </button>
   </div>
 
 
   <!-- 腳本 -->
-  <script src="data.js?v=90"></script>
-  <script src="app.js?v=90"></script>
-  <script src="stock-dashboard.js?v=90"></script>
+  <script src="data.js?v=91"></script>
+  <script src="app.js?v=91"></script>
+  <script src="stock-dashboard.js?v=91"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
