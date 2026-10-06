@@ -8,11 +8,11 @@
     }
   },
   {
-    "endpoint": "https://web.push.apple.com/QE9GS92ltruA7oL4zPBTAtl2yz5RWCerQpJuSuyVYJn7RGxRfmHtQPMSWOcBqXe6I3cwi1I0ZVP4guU4xsT4LTRsARI2KnYW98cCBLGO7TrJC-dIjQjXsR5E5Rmqmflv6Nh4esPxii7Y-XstngNraSJCPb7hKb8D3XQkWbBqao4",
+    "endpoint": "https://web.push.apple.com/QNqFLJHFVk4DnWmUXOeLakShhwNwFJ1nO5uBITiId5PZ7B_bIca1Hr0Lj0kY9fO4a5QroQXWaGfeGtg7q2mgHEReAufGaAzwX0wqN1hwJqrOJcAZ0gKXFOdE3DoROCCRIcI_3sVMJ-TT7gsecXuimtWIhrUlMBWgvHMd0qPuD-k",
     "expirationTime": null,
     "keys": {
-      "p256dh": "BDrppN_78YtU9WV_yDqygHortDR9l7DkkwokqqyjuZTOFOC5-RJa2pxX7fMXKrAojo4Htn4YmXRJRrZypohJ1g4",
-      "auth": "XZVSOcRaS8ibQBYILoufXw"
+      "p256dh": "BBRqVD4WS9Kk-rZRdL3nlTmJd7MvONwSMkO2fVr4JjktkQ2jBu88St8iZg1sFoHNgDAflcT6gzXMoqcgMBCFWxk",
+      "auth": "BHjWMWxbcG4c2Npp_-AbMQ"
     }
   }
 ]
