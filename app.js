@@ -19028,11 +19028,29 @@ window.forceClearPwaCache = async function() {
   }
 };
 
+// 💡 全域獲取已初始化的 OneSignal 實例
+window.getOneSignalInstance = async function() {
+  if (window._os) return window._os;
+  if (window._osReadyPromise) {
+    try {
+      const os = await Promise.race([
+        window._osReadyPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('OneSignal 初始化逾時')), 4000))
+      ]);
+      if (os) return os;
+    } catch (e) {
+      console.warn('[OneSignal] getOneSignalInstance timeout/err:', e);
+    }
+  }
+  return window._os || window.OneSignal || null;
+};
+
 // 即時更新彈窗內的裝置與權限狀態
 window.updatePushModalStatus = function() {
   const osEl = document.getElementById('pwaOsVal');
   const modeEl = document.getElementById('pwaModeVal');
   const permEl = document.getElementById('pwaPermVal');
+  const cloudEl = document.getElementById('pwaCloudVal');
   const iosBox = document.getElementById('pwaIosGuideBox');
   const mainBtn = document.getElementById('pwaModalMainActionBtn');
   const mainIcon = document.getElementById('pwaMainActionIcon');
@@ -19045,12 +19063,12 @@ window.updatePushModalStatus = function() {
   const isAndroid = /Android/.test(ua);
   const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 
-  // 顯示 OS
+  // 1. 顯示 OS
   if (isIOS) osEl.innerText = '🍎 iOS';
   else if (isAndroid) osEl.innerText = '🤖 Android';
   else osEl.innerText = '💻 電腦版';
 
-  // 顯示運行環境
+  // 2. 顯示運行環境
   if (isStandalone) {
     modeEl.innerText = '📱 獨立 App';
     modeEl.style.color = '#4ade80';
@@ -19059,14 +19077,16 @@ window.updatePushModalStatus = function() {
     modeEl.style.color = '#fbbf24';
   }
 
-  // 顯示推播權限
-  if (!('Notification' in window)) {
-    permEl.innerText = isIOS ? '⚪ 需加入主畫面' : '⚪ 不支援';
+  // 3. 顯示推播權限
+  const hasNotif = ('Notification' in window);
+  const perm = hasNotif ? Notification.permission : 'unsupported';
+  if (!hasNotif) {
+    permEl.innerText = isIOS ? '⚪ 需加主畫面' : '⚪ 不支援';
     permEl.style.color = '#94a3b8';
-  } else if (Notification.permission === 'granted') {
+  } else if (perm === 'granted') {
     permEl.innerText = '🟢 已允許';
     permEl.style.color = '#4ade80';
-  } else if (Notification.permission === 'denied') {
+  } else if (perm === 'denied') {
     permEl.innerText = '🔴 已封鎖';
     permEl.style.color = '#f87171';
   } else {
@@ -19074,36 +19094,51 @@ window.updatePushModalStatus = function() {
     permEl.style.color = '#fbbf24';
   }
 
-  // iOS 引導區塊顯示邏輯：如果在 iOS 且不是 standalone 模式，則顯示引導
+  // iOS 引導區塊顯示邏輯
   if (isIOS && !isStandalone) {
     if (iosBox) iosBox.style.display = 'flex';
   } else {
     if (iosBox) iosBox.style.display = 'none';
   }
 
-  // 檢驗真實 OneSignal 雲端訂閱狀態
+  // 4. 檢驗真實 OneSignal 雲端訂閱狀態
   const os = window._os || window.OneSignal;
-  const subId = os && os.User && os.User.PushSubscription && os.User.PushSubscription.id;
-  const isOptedIn = os && os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn;
+  const pushSub = os && os.User && os.User.PushSubscription;
+  const subId = pushSub && pushSub.id;
+  const isOptedIn = pushSub && pushSub.optedIn;
 
-  // 主按鈕文字與狀態
-  if (mainBtn) {
-    if (('Notification' in window) && Notification.permission === 'granted') {
-      if (subId || isOptedIn) {
+  if (cloudEl) {
+    if (subId) {
+      cloudEl.innerText = '🟢 已連線';
+      cloudEl.style.color = '#4ade80';
+      cloudEl.title = subId;
+    } else if (isOptedIn) {
+      cloudEl.innerText = '🟡 同步中';
+      cloudEl.style.color = '#fbbf24';
+    } else if (window._osInitError) {
+      cloudEl.innerText = '🔴 異常';
+      cloudEl.style.color = '#f87171';
+    } else {
+      cloudEl.innerText = '⚪ 未綁定';
+      cloudEl.style.color = '#94a3b8';
+    }
+  }
+
+  // 5. 主按鈕文字與狀態 (若正在同步則不覆蓋)
+  if (mainBtn && !mainBtn.dataset.syncing) {
+    if (hasNotif && perm === 'granted') {
+      if (subId) {
         mainBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
         mainBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.4)';
         if (mainIcon) mainIcon.innerText = '✅';
-        const displayId = subId ? ` (ID: ${subId.slice(0, 8)}...)` : '';
-        if (mainText) mainText.innerText = `雲端推播已連線${displayId}`;
+        if (mainText) mainText.innerText = `雲端推播已連線 (ID: ${subId.slice(0, 8)}...)`;
       } else {
         mainBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
         mainBtn.style.boxShadow = '0 4px 16px rgba(245, 158, 11, 0.4)';
-        if (mainIcon) mainIcon.innerText = '🔄';
-        if (mainText) mainText.innerText = '點擊立即同步綁定 OneSignal 雲端推播';
-        // 背景自動嘗試同步
-        _syncOneSignalOptIn();
+        if (mainIcon) mainIcon.innerText = '⚡';
+        if (mainText) mainText.innerText = '點擊立即完成 OneSignal 雲端連線';
       }
-    } else if (('Notification' in window) && Notification.permission === 'denied') {
+    } else if (hasNotif && perm === 'denied') {
       mainBtn.style.background = 'rgba(239, 68, 68, 0.2)';
       mainBtn.style.border = '1px solid rgba(239, 68, 68, 0.5)';
       mainBtn.style.boxShadow = 'none';
@@ -19129,7 +19164,7 @@ window.sendTestPushFromModal = function() {
   sendTestNotification('2330', '', 'TSE');
 };
 
-// 🔔 切換與請求手機系統推播權限 (User-Gesture First + Native Priority)
+// 🔔 切換與請求手機系統推播權限 (User-Gesture First + 防連續連按 + 精準輪詢)
 window.togglePushNotification = async function() {
   function _toast(msg) {
     let t = document.getElementById('_pushToast');
@@ -19142,7 +19177,7 @@ window.togglePushNotification = async function() {
     t.textContent = msg;
     t.style.display = 'block';
     clearTimeout(t._tid);
-    t._tid = setTimeout(() => { t.style.display = 'none'; }, 4000);
+    t._tid = setTimeout(() => { t.style.display = 'none'; }, 5000);
   }
 
   const ua = navigator.userAgent || '';
@@ -19168,96 +19203,96 @@ window.togglePushNotification = async function() {
   }
 
   if (Notification.permission === 'denied') {
-    _toast('⚠️ 推播已被手動封鎖，請至手機「設定 ➔ Safari/Chrome ➔ 通知」解除封鎖！');
+    _toast('⚠️ 推播已被手動封鎖，請至手機「設定 ➔ Safari ➔ 通知」解除封鎖！');
     return;
   }
 
-  // 3. ★★★ 關鍵核心：在點擊的第一時間立即觸發原生 Notification.requestPermission() ★★★
-  let perm = Notification.permission;
-  if (perm !== 'granted') {
-    _toast('🔔 請在彈出的確認視窗中點擊「允許」...');
-    try {
-      perm = await new Promise((resolve) => {
-        const res = Notification.requestPermission(resolve);
-        if (res && res.then) {
-          res.then(resolve);
-        }
-      });
-    } catch (err) {
-      console.warn('[Push] requestPermission error:', err);
-    }
+  const mainBtn = document.getElementById('pwaModalMainActionBtn');
+  const mainIcon = document.getElementById('pwaMainActionIcon');
+  const mainText = document.getElementById('pwaMainActionText');
+
+  // 設定按鈕狀態為處理中，防止重複連續按擊
+  if (mainBtn) {
+    mainBtn.dataset.syncing = 'true';
+    if (mainIcon) mainIcon.innerText = '⏳';
+    if (mainText) mainText.innerText = '正在連線 OneSignal 雲端伺服器...';
+    mainBtn.style.opacity = '0.75';
+    mainBtn.style.pointerEvents = 'none';
   }
 
-  // 若使用者點擊了允許，或早已允許（點擊執行重新同步）
-  if (perm === 'granted' || Notification.permission === 'granted') {
-    _toast('🔄 正在同步 OneSignal 雲端註冊...');
-    await _syncOneSignalOptIn();
-    _toast('🎉 雲端連線同步完成！');
-    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-
-    // 發送一則本地測試推播確認
-    setTimeout(() => {
-      sendTestNotification('2330', '', 'TSE');
-    }, 600);
-  } else if (perm === 'denied' || Notification.permission === 'denied') {
-    _toast('❌ 您點擊了拒絕。若需接收訊號，請至手機設定中重新開啟通知。');
-    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-  } else {
-    _toast('⚠️ 未完成授權，請再試一次點擊允許。');
-    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-  }
-};
-
-// 雲端 OneSignal 背景同步註冊函數
-async function _syncOneSignalOptIn() {
   try {
-    let os = window._os || window.OneSignal;
-    if (!os) {
-      let scriptNode = document.getElementById('onesignal-sdk-script');
-      if (!scriptNode) {
-        scriptNode = document.createElement('script');
-        scriptNode.id = 'onesignal-sdk-script';
-        scriptNode.src = './OneSignalSDK.page.js';
-        document.head.appendChild(scriptNode);
+    // 3. 原生手勢權限請求 (若尚未 granted)
+    let perm = Notification.permission;
+    if (perm !== 'granted') {
+      _toast('🔔 請在彈出的確認視窗中點擊「允許」...');
+      try {
+        perm = await new Promise((resolve) => {
+          const res = Notification.requestPermission(resolve);
+          if (res && res.then) res.then(resolve);
+        });
+      } catch (err) {
+        console.warn('[Push] requestPermission error:', err);
       }
+    }
 
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      window.OneSignalDeferred.push(async function(OneSignalInstance) {
-        try {
-          await OneSignalInstance.init({
-            appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-            allowLocalhostAsSecureOrigin: true,
-            serviceWorkerPath: "sw.js",
-            serviceWorkerParam: { scope: "/" },
-            serviceWorkerOverrideForTypical: true
-          });
-          window._os = OneSignalInstance;
-          if (OneSignalInstance.User && OneSignalInstance.User.PushSubscription && OneSignalInstance.User.PushSubscription.optIn) {
-            await OneSignalInstance.User.PushSubscription.optIn();
-          }
-        } catch(e) {
-          console.warn('[OneSignal] deferred init err:', e);
-        }
-      });
+    if (perm !== 'granted' && Notification.permission !== 'granted') {
+      if (perm === 'denied' || Notification.permission === 'denied') {
+        _toast('❌ 您點擊了拒絕。若需接收訊號，請至手機設定中重新開啟通知。');
+      } else {
+        _toast('⚠️ 未完成授權，請再試一次點擊允許。');
+      }
       return;
     }
 
-    if (navigator.serviceWorker) {
-      await Promise.race([
-        navigator.serviceWorker.ready,
-        new Promise(r => setTimeout(r, 2000))
-      ]);
+    // 4. 取得 OneSignal 實例並觸發 optIn()
+    _toast('🔄 正在連線 OneSignal 雲端金鑰...');
+    const os = await window.getOneSignalInstance();
+    if (!os) {
+      throw new Error('OneSignal 模組載入中，請稍候 3 秒後重試');
     }
 
-    if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
+    if (os.User && os.User.PushSubscription) {
+      // 若早已具備真實 Subscription ID，直接完成
+      if (os.User.PushSubscription.id) {
+        _toast(`🎉 雲端連線成功！(ID: ${os.User.PushSubscription.id.slice(0, 8)}...)`);
+        return;
+      }
+
+      // 保留 User Gesture 立即觸發 optIn()
+      console.log('[OneSignal] 立即觸發 PushSubscription.optIn()...');
       await os.User.PushSubscription.optIn();
-      console.log('[OneSignal] Cloud registration synced. Sub ID:', os.User.PushSubscription.id);
-      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+
+      // 輪詢等待 Subscription ID 返回 (最多等 8 秒)
+      let resolvedSubId = null;
+      for (let i = 0; i < 16; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        resolvedSubId = os.User.PushSubscription.id;
+        if (resolvedSubId) break;
+      }
+
+      if (resolvedSubId) {
+        console.log('[OneSignal] 成功取得 Subscription ID:', resolvedSubId);
+        _toast(`🎉 成功綁定雲端推播！(ID: ${resolvedSubId.slice(0, 8)}...)`);
+      } else if (os.User.PushSubscription.optedIn) {
+        _toast('✅ 雲端推播已登記！金鑰生成中，重新整理即可接收。');
+      } else {
+        _toast('⚠️ 雲端仍在同步金鑰中，請重新整理本頁面確認。');
+      }
+    } else {
+      throw new Error('PushSubscription 模組尚未就緒');
     }
-  } catch(e) {
-    console.warn('[OneSignal] _syncOneSignalOptIn background error:', e);
+  } catch (err) {
+    console.error('[Push] 同步異常:', err);
+    _toast(`⚠️ 同步異常: ${err.message || err}`);
+  } finally {
+    if (mainBtn) {
+      delete mainBtn.dataset.syncing;
+      mainBtn.style.opacity = '1';
+      mainBtn.style.pointerEvents = 'auto';
+    }
+    if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
   }
-}
+};
 
 // 🎯 核心導航引擎：精準導回系統並切換至荳荳清單與指定訊號篩選 (買進/賣出/加碼)
 window.executeSignalNavigation = function(targetView = 'screener', targetFilter = 'buy') {

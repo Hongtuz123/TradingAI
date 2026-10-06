@@ -40,6 +40,10 @@
   <script id="onesignal-sdk-script" src="./OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window._osReadyPromise = new Promise((resolve) => {
+      window._resolveOsReady = resolve;
+    });
+
     OneSignalDeferred.push(async function(OneSignal) {
       try {
         await OneSignal.init({
@@ -51,27 +55,24 @@
           serviceWorkerOverrideForTypical: true
         });
         window._os = OneSignal;
+        window._osReady = true;
+        if (window._resolveOsReady) window._resolveOsReady(OneSignal);
         console.log('[OneSignal] Init OK, _os ready');
 
-        // ★ 核心修復：若瀏覽器早已授權通知，必須自動呼叫 optIn() 向 OneSignal 雲端註冊此手機
+        // 監聽雲端訂閱變更 (取得真實 Subscription ID 時立即更新 UI)
+        if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.addEventListener) {
+          OneSignal.User.PushSubscription.addEventListener('change', function(evt) {
+            console.log('[OneSignal] 訂閱狀態變更:', evt);
+            if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+          });
+        }
+
+        // 若系統早已授權通知，且為桌機或獨立 App，背景嘗試同步
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try {
-            if (OneSignal.User && OneSignal.User.PushSubscription) {
-              if (OneSignal.User.PushSubscription.optIn) {
-                console.log('[OneSignal] 偵測到已獲通知授權，自動觸發雲端 optIn()...');
-                await OneSignal.User.PushSubscription.optIn();
-              }
-              if (OneSignal.User.PushSubscription.addEventListener) {
-                OneSignal.User.PushSubscription.addEventListener('change', function(evt) {
-                  console.log('[OneSignal] 訂閱狀態變更:', evt);
-                  if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-                });
-              }
-              console.log('[OneSignal] 雲端 optIn 完成！Subscription ID:', OneSignal.User.PushSubscription.id);
-              if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-            }
-          } catch (optErr) {
-            console.warn('[OneSignal] auto optIn error:', optErr);
+          if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
+            OneSignal.User.PushSubscription.optIn().catch((err) => {
+              console.log('[OneSignal] 背景自動 optIn 需使用者手勢跳過:', err && err.message);
+            });
           }
         }
 
@@ -1201,6 +1202,10 @@
         <div class="pwa-dash-item">
           <span class="pwa-dash-label">推播權限</span>
           <span class="pwa-dash-val" id="pwaPermVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">雲端連線</span>
+          <span class="pwa-dash-val" id="pwaCloudVal">檢測中...</span>
         </div>
       </div>
 

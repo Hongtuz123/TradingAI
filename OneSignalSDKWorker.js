@@ -1,1 +1,1 @@
-importScripts('./OneSignalSDK.sw.js');
+importScripts('./sw.js');

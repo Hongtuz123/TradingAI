@@ -5877,10 +5877,10 @@ body {
 /* 狀態卡 */
 .pwa-status-dashboard {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   background: rgba(15, 23, 42, 0.6);
-  padding: 10px;
+  padding: 10px 8px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
