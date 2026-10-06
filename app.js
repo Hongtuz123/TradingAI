@@ -19272,15 +19272,22 @@ window.togglePushNotification = async function() {
       throw new Error('瀏覽器未就緒 Service Worker 推播模組');
     }
 
-    // 檢查現有訂閱或建立新訂閱
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      const vapidKey = window.VAPID_PUBLIC_KEY || 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlB64ToUint8Array(vapidKey)
-      });
+    // 🛡️ 先檢查並註銷舊門牌，確保 100% 以最新 VAPID 金鑰重新向 Apple 申請新門牌
+    let existingSub = await reg.pushManager.getSubscription();
+    if (existingSub) {
+      try {
+        await existingSub.unsubscribe();
+        console.log('[NativePush] 已註銷舊推播門牌');
+      } catch (unsubErr) {
+        console.warn('[NativePush] 舊門牌註銷略過:', unsubErr);
+      }
     }
+
+    const vapidKey = window.VAPID_PUBLIC_KEY || 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(vapidKey)
+    });
 
     if (sub) {
       const subJson = JSON.stringify(sub);
