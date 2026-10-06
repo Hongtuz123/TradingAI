@@ -59,7 +59,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=91" />
+  <link rel="stylesheet" href="style.css?v=92" />
 
 
 
@@ -437,15 +437,13 @@
 
 
 
-                  <th onclick="toggleSort('trustDays')" style="cursor:pointer; user-select:none;" title="點擊按投信買超排序">投信 <span class="sort-icon" id="sort-trustDays">↕</span></th>
-
-
-
-                  <th onclick="toggleSort('foreignNet')" style="cursor:pointer; user-select:none;" title="點擊按外資買超排序">外資 <span class="sort-icon" id="sort-foreignNet">↕</span></th>
-
-
-
-                  <th onclick="toggleSort('dealerNet')" style="cursor:pointer; user-select:none;" title="點擊按自營商買超排序">自營商 <span class="sort-icon" id="sort-dealerNet">↕</span></th>
+                  <th onclick="toggleSort('mainNet')" style="cursor:pointer; user-select:none; min-width: 140px;" title="點擊按三大法人主力合計買賣超排序">
+                    <div style="display:inline-flex; align-items:center; gap:5px;">
+                      <span>三大法人主力</span>
+                      <span class="sort-icon" id="sort-mainNet">↕</span>
+                      <button type="button" id="btnToggleInstDetails" class="inst-th-toggle-btn" onclick="event.stopPropagation(); toggleAllInstDetails();" title="一鍵展開/收合所有標的之外資、投信、自營商個別明細">明細 ▾</button>
+                    </div>
+                  </th>
 
 
 
@@ -1300,9 +1298,9 @@
 
 
   <!-- 腳本 -->
-  <script src="data.js?v=91"></script>
-  <script src="app.js?v=91"></script>
-  <script src="stock-dashboard.js?v=91"></script>
+  <script src="data.js?v=92"></script>
+  <script src="app.js?v=92"></script>
+  <script src="stock-dashboard.js?v=92"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

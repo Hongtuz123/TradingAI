@@ -278,9 +278,9 @@ def fetch_openapi_fundamentals():
             for r in res.json():
                 code = get_stock_code(r)
                 if code:
-                    debt = safe_float(r.get("負債總額"))
-                    assets = safe_float(r.get("資產總額"))
-                    equity = safe_float(r.get("權益總額"))
+                    debt = safe_float(r.get("負債總計") or r.get("負債總額"))
+                    assets = safe_float(r.get("資產總計") or r.get("資產總額"))
+                    equity = safe_float(r.get("權益總計") or r.get("權益總額") or r.get("歸屬於母公司業主之權益合計"))
                     capital = safe_float(r.get("股本"))
                     if debt is not None and assets is not None and assets > 0:
                         fundamentals.setdefault(code, {})["debtRatio"] = round((debt / assets) * 100, 2)
@@ -297,9 +297,9 @@ def fetch_openapi_fundamentals():
             for r in res.json():
                 code = get_stock_code(r)
                 if code:
-                    debt = safe_float(r.get("負債總額"))
-                    assets = safe_float(r.get("資產總額"))
-                    equity = safe_float(r.get("權益總額"))
+                    debt = safe_float(r.get("負債總計") or r.get("負債總額"))
+                    assets = safe_float(r.get("資產總計") or r.get("資產總額"))
+                    equity = safe_float(r.get("權益總計") or r.get("權益總額") or r.get("歸屬於母公司業主之權益合計"))
                     capital = safe_float(r.get("股本"))
                     if debt is not None and assets is not None and assets > 0:
                         fundamentals.setdefault(code, {})["debtRatio"] = round((debt / assets) * 100, 2)

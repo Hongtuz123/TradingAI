@@ -7025,3 +7025,89 @@ body.pattern-modal-open #shibaMascotContainer {
   }
 }
 
+/* ================= 三大法人主力與明細展開樣式 ================= */
+.inst-th-toggle-btn {
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #f97316;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+.inst-th-toggle-btn:hover {
+  background: rgba(249, 115, 22, 0.3);
+  color: #ffedd5;
+  border-color: #f97316;
+}
+
+.inst-main-cell {
+  min-width: 140px;
+}
+.inst-main-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.inst-net-pill {
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+}
+.inst-net-pill.up {
+  color: var(--up-color, #ef4444);
+}
+.inst-net-pill.down {
+  color: var(--down-color, #22c55e);
+}
+.inst-net-pill.flat {
+  color: var(--text-muted, #94a3b8);
+}
+
+.inst-cell-toggle-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted, #94a3b8);
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.inst-cell-toggle-btn:hover,
+.inst-cell-toggle-btn.active {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.5);
+  color: #f97316;
+}
+
+.inst-breakdown-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 5px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  font-size: 11px;
+}
+.inst-chip-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.inst-chip-item small {
+  color: var(--text-muted, #94a3b8);
+  font-size: 10px;
+}
+.inst-chip-item b {
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+}
+

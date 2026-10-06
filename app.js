@@ -4284,7 +4284,7 @@ function renderScreenerTable(data) {
   tbody.innerHTML = '';
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px; color: var(--text-muted);">目前無符合此交易訊號分類的標的</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--text-muted);">目前無符合此交易訊號分類的標的</td></tr>';
     return;
   }
 
@@ -4312,16 +4312,38 @@ function renderScreenerTable(data) {
       statusActionTag = `<span style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:2px;">🟡 觀察關注區</span>`;
     }
 
+    const fNet = Number(s.foreignNetBuy) || 0;
+    const tNet = Number(s.trustDays) || 0;
+    const dNet = Number(s.dealerDays) || 0;
+    const mainNet = fNet + tNet + dNet;
+    const isExpanded = window.allInstDetailsExpanded || (window.expandedInstRows && window.expandedInstRows.has(s.id));
+    const mainNetClass = mainNet > 0 ? 'up' : (mainNet < 0 ? 'down' : 'flat');
+    const mainNetText = mainNet > 0 ? `主力買超 +${mainNet.toLocaleString()}張`
+                      : mainNet < 0 ? `主力賣超 -${Math.abs(mainNet).toLocaleString()}張`
+                      : `主力平盤 0張`;
+
     tr.innerHTML = `
       <td><strong>${s.id}</strong> ${s.name}${heldBadge}</td>
       <td>${s.livePrice || s.price} <span class="${(s.liveChange || s.change)>=0?'text-up':'text-down'}">${(s.liveChange || s.change)>0?'+':''}${(s.liveChange || s.change)}%</span></td>
       <td><strong style="color:var(--warning)">${s.dynamicScore || s.totalScore || s.score || 70}分</strong></td>
-      <td>${s.eps != null ? s.eps + '元' : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? s.epsYoY + '%' : '--'}</span></td>
+      <td>${s.eps != null ? `$${parseFloat(s.eps).toFixed(2)}` : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? (s.epsYoY>0?'+':'') + s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
       <td>${s.roe != null ? s.roe + '%' : '--'}</td>
-      <td>${s.trustDays != null ? `<span class="${s.trustDays > 0 ? 'text-up' : s.trustDays < 0 ? 'text-down' : ''}">${s.trustDays > 0 ? '+' : ''}${s.trustDays}張</span>` : '--'}</td>
-      <td>${s.foreignNetBuy != null ? `<span class="${s.foreignNetBuy > 0 ? 'text-up' : s.foreignNetBuy < 0 ? 'text-down' : ''}">${s.foreignNetBuy > 0 ? '+' : ''}${s.foreignNetBuy}張</span>` : '--'}</td>
-      <td>${s.dealerDays != null ? `<span class="${s.dealerDays > 0 ? 'text-up' : s.dealerDays < 0 ? 'text-down' : ''}">${s.dealerDays > 0 ? '+' : ''}${s.dealerDays}張</span>` : '--'}</td>
+      <td class="inst-main-cell">
+        <div class="inst-main-summary-row">
+          <span class="inst-net-pill ${mainNetClass}">${mainNetText}</span>
+          <button type="button" class="inst-cell-toggle-btn ${isExpanded ? 'active' : ''}" onclick="event.stopPropagation(); toggleStockInstDetail('${s.id}')" title="展開/收合外資、投信、自營商收支明細">
+            ${isExpanded ? '收起 ▴' : '收支 ▾'}
+          </button>
+        </div>
+        ${isExpanded ? `
+          <div class="inst-breakdown-box">
+            <span class="inst-chip-item"><small>外資</small> <b class="${fNet>0?'text-up':fNet<0?'text-down':''}">${fNet>0?'+':''}${fNet.toLocaleString()}張</b></span>
+            <span class="inst-chip-item"><small>投信</small> <b class="${tNet>0?'text-up':tNet<0?'text-down':''}">${tNet>0?'+':''}${tNet.toLocaleString()}張</b></span>
+            <span class="inst-chip-item"><small>自營</small> <b class="${dNet>0?'text-up':dNet<0?'text-down':''}">${dNet>0?'+':''}${dNet.toLocaleString()}張</b></span>
+          </div>
+        ` : ''}
+      </td>
       <td>${s.volRatio}x</td>
       <td>
         ${statusActionTag}
@@ -16474,74 +16496,25 @@ function getSortValue(item, key) {
 
 
     case 'roe':
-
-
-
       return item.roe;
-
-
-
+    case 'mainNet':
+      return (Number(item.foreignNetBuy) || 0) + (Number(item.trustDays) || 0) + (Number(item.dealerDays) || 0);
     case 'trustDays':
-
-
-
       return item.trustDays;
-
-
-
     case 'foreignNet':
-
-
-
       return item.foreignNetBuy;
-
-
-
     case 'dealerNet':
-
-
-
       return item.dealerDays;
-
-
-
     case 'volRatio':
-
-
-
       return item.volRatio;
-
-
-
     default:
-
-
-
       return 0;
-
-
-
   }
-
-
-
 }
 
-
-
-
-
-
-
 // 更新 results Table 標頭的視覺圖標
-
-
-
 function updateSortIcons() {
-
-
-
-  const keys = ['id', 'techType', 'price', 'score', 'epsGrowth', 'revGrowth', 'roe', 'trustDays', 'foreignNet', 'dealerNet', 'volRatio'];
+  const keys = ['id', 'techType', 'price', 'score', 'epsGrowth', 'revGrowth', 'roe', 'mainNet', 'trustDays', 'foreignNet', 'dealerNet', 'volRatio'];
 
 
 
@@ -19691,7 +19664,7 @@ window.renderDoudouScreenerList = function() {
   }
 
   if (filtered.length === 0) {
-    body.innerHTML = `<tr class="empty-row"><td colspan="11" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合 70分以上、1.2X 交易量與 300 張日均量門檻的個股</td></tr>`;
+    body.innerHTML = `<tr class="empty-row"><td colspan="9" style="padding:40px; color:#94a3b8; text-align:center;">目前無符合 70分以上、1.2X 交易量與 300 張日均量門檻的個股</td></tr>`;
     return;
   }
 
@@ -19705,6 +19678,27 @@ window.renderDoudouScreenerList = function() {
     const chgColor = s.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
     const chgSign = s.change >= 0 ? '+' : '';
 
+    // 1. EPS 呈現（優先顯示當季 EPS，次層顯示 YoY 成長率）
+    const epsVal = (s.eps !== null && s.eps !== undefined) ? `$${parseFloat(s.eps).toFixed(2)}` : '--';
+    const epsYoYHtml = (s.epsYoY !== null && s.epsYoY !== undefined)
+      ? `<br><span style="font-size:10px; color:var(--text-muted);">YoY ${s.epsYoY > 0 ? '+' : ''}${s.epsYoY}%</span>`
+      : '';
+
+    // 2. ROE 呈現
+    const roeVal = (s.roe !== null && s.roe !== undefined) ? `${parseFloat(s.roe).toFixed(2)}%` : '--';
+
+    // 3. 三大法人主力合計與展開明細
+    const fNet = Number(s.foreignNetBuy) || 0;
+    const tNet = Number(s.trustDays) || 0;
+    const dNet = Number(s.dealerDays) || 0;
+    const mainNet = fNet + tNet + dNet;
+
+    const isExpanded = window.allInstDetailsExpanded || (window.expandedInstRows && window.expandedInstRows.has(s.id));
+    const mainNetClass = mainNet > 0 ? 'up' : (mainNet < 0 ? 'down' : 'flat');
+    const mainNetText = mainNet > 0 ? `主力買超 +${mainNet.toLocaleString()}張`
+                      : mainNet < 0 ? `主力賣超 -${Math.abs(mainNet).toLocaleString()}張`
+                      : `主力平盤 0張`;
+
     return `
       <tr>
         <td style="font-weight:bold;">
@@ -19713,12 +19707,24 @@ window.renderDoudouScreenerList = function() {
         </td>
         <td style="color:${chgColor}; font-weight:bold;">$${s.price} (${chgSign}${s.change}%)</td>
         <td style="color:#f59e0b; font-weight:bold; font-size:14px;">${scoreVal}分</td>
-        <td>${s.epsYoY !== null && s.epsYoY !== undefined ? s.epsYoY + '%' : '--'}</td>
+        <td>${epsVal}${epsYoYHtml}</td>
         <td>${s.revYoY !== null && s.revYoY !== undefined ? s.revYoY + '%' : '--'}</td>
-        <td>${s.roe !== null && s.roe !== undefined ? s.roe + '%' : '--'}</td>
-        <td>${s.trustDays || 0}張</td>
-        <td>${s.foreignNetBuy || 0}張</td>
-        <td>${s.dealerDays || 0}張</td>
+        <td>${roeVal}</td>
+        <td class="inst-main-cell">
+          <div class="inst-main-summary-row">
+            <span class="inst-net-pill ${mainNetClass}">${mainNetText}</span>
+            <button type="button" class="inst-cell-toggle-btn ${isExpanded ? 'active' : ''}" onclick="event.stopPropagation(); toggleStockInstDetail('${s.id}')" title="展開/收合外資、投信、自營商收支明細">
+              ${isExpanded ? '收起 ▴' : '收支 ▾'}
+            </button>
+          </div>
+          ${isExpanded ? `
+            <div class="inst-breakdown-box">
+              <span class="inst-chip-item"><small>外資</small> <b class="${fNet>0?'text-up':fNet<0?'text-down':''}">${fNet>0?'+':''}${fNet.toLocaleString()}張</b></span>
+              <span class="inst-chip-item"><small>投信</small> <b class="${tNet>0?'text-up':tNet<0?'text-down':''}">${tNet>0?'+':''}${tNet.toLocaleString()}張</b></span>
+              <span class="inst-chip-item"><small>自營</small> <b class="${dNet>0?'text-up':dNet<0?'text-down':''}">${dNet>0?'+':''}${dNet.toLocaleString()}張</b></span>
+            </div>
+          ` : ''}
+        </td>
         <td>${s.volRatio ? parseFloat(s.volRatio).toFixed(2) + 'x' : '1.00x'}</td>
         <td>
           <button class="pattern-report-btn" onclick="event.stopPropagation(); openPatternReportModal('${s.id}')" title="查看 1D/4H 深度型態與點位分析報告">
@@ -19728,6 +19734,36 @@ window.renderDoudouScreenerList = function() {
       </tr>
     `;
   }).join('');
+};
+
+window.expandedInstRows = window.expandedInstRows || new Set();
+window.allInstDetailsExpanded = false;
+
+window.toggleStockInstDetail = function(stockId) {
+  if (!window.expandedInstRows) window.expandedInstRows = new Set();
+  if (window.expandedInstRows.has(stockId)) {
+    window.expandedInstRows.delete(stockId);
+  } else {
+    window.expandedInstRows.add(stockId);
+  }
+  renderDoudouScreenerList();
+};
+
+window.toggleAllInstDetails = function() {
+  window.allInstDetailsExpanded = !window.allInstDetailsExpanded;
+  if (!window.expandedInstRows) window.expandedInstRows = new Set();
+  if (window.allInstDetailsExpanded) {
+    if (typeof currentResults !== 'undefined' && Array.isArray(currentResults)) {
+      currentResults.forEach(s => window.expandedInstRows.add(s.id));
+    }
+  } else {
+    window.expandedInstRows.clear();
+  }
+  const btn = document.getElementById('btnToggleInstDetails');
+  if (btn) {
+    btn.textContent = window.allInstDetailsExpanded ? '收合 ▴' : '明細 ▾';
+  }
+  renderDoudouScreenerList();
 };
 
 window.runScreener = function() {
