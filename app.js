@@ -19028,25 +19028,51 @@ window.forceClearPwaCache = async function() {
   }
 };
 
-// 💡 全域獲取已初始化的 OneSignal 實例
-window.getOneSignalInstance = async function() {
-  if (window._os) return window._os;
-  if (window._osReadyPromise) {
-    try {
-      const os = await Promise.race([
-        window._osReadyPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('OneSignal 初始化逾時')), 4000))
-      ]);
-      if (os) return os;
-    } catch (e) {
-      console.warn('[OneSignal] getOneSignalInstance timeout/err:', e);
-    }
+// 💡 原生標準 Web Push 輔助函式：將 URL-Safe Base64 字串轉為 Uint8Array
+function urlB64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
   }
-  return window._os || window.OneSignal || null;
+  return outputArray;
+}
+
+// 取得當前本機的原生推播訂閱
+window.getNativePushSubscription = async function() {
+  if (!('serviceWorker' in navigator)) return null;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.pushManager) return null;
+    return await reg.pushManager.getSubscription();
+  } catch (e) {
+    return null;
+  }
+};
+
+// 複製原生推播門牌 JSON 代碼
+window.copyPushSubscriptionJson = async function() {
+  const sub = await window.getNativePushSubscription();
+  if (!sub) {
+    alert('尚未取得原生推播訂閱，請先點擊上方按鈕啟用推播！');
+    return;
+  }
+  const str = JSON.stringify(sub);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(str).then(() => {
+      alert('📋 已複製手機原生推播門牌金鑰！\n請直接貼在對話中，系統將立即為您完成後端排程註冊。');
+    }).catch(() => {
+      prompt('請長按複製下方推播金鑰代碼：', str);
+    });
+  } else {
+    prompt('請長按複製下方推播金鑰代碼：', str);
+  }
 };
 
 // 即時更新彈窗內的裝置與權限狀態
-window.updatePushModalStatus = function() {
+window.updatePushModalStatus = async function() {
   const osEl = document.getElementById('pwaOsVal');
   const modeEl = document.getElementById('pwaModeVal');
   const permEl = document.getElementById('pwaPermVal');
@@ -19101,42 +19127,37 @@ window.updatePushModalStatus = function() {
     if (iosBox) iosBox.style.display = 'none';
   }
 
-  // 4. 檢驗真實 OneSignal 雲端訂閱狀態
-  const os = window._os || window.OneSignal;
-  const pushSub = os && os.User && os.User.PushSubscription;
-  const subId = pushSub && pushSub.id;
-  const isOptedIn = pushSub && pushSub.optedIn;
+  // 4. 檢查原生 Web Push 訂閱狀態 (非同步)
+  const currentSub = await window.getNativePushSubscription();
+  const hasSubscription = !!currentSub;
 
   if (cloudEl) {
-    if (subId) {
+    if (hasSubscription) {
       cloudEl.innerText = '🟢 已連線';
       cloudEl.style.color = '#4ade80';
-      cloudEl.title = subId;
-    } else if (isOptedIn) {
-      cloudEl.innerText = '🟡 同步中';
+      cloudEl.title = currentSub.endpoint;
+    } else if (perm === 'granted') {
+      cloudEl.innerText = '🟡 待建立金鑰';
       cloudEl.style.color = '#fbbf24';
-    } else if (window._osInitError) {
-      cloudEl.innerText = '🔴 異常';
-      cloudEl.style.color = '#f87171';
     } else {
-      cloudEl.innerText = '⚪ 未綁定';
+      cloudEl.innerText = '⚪ 未授權';
       cloudEl.style.color = '#94a3b8';
     }
   }
 
-  // 5. 主按鈕文字與狀態 (若正在同步則不覆蓋)
+  // 5. 主按鈕文字與狀態
   if (mainBtn && !mainBtn.dataset.syncing) {
     if (hasNotif && perm === 'granted') {
-      if (subId) {
+      if (hasSubscription) {
         mainBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
         mainBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.4)';
         if (mainIcon) mainIcon.innerText = '✅';
-        if (mainText) mainText.innerText = `雲端推播已連線 (ID: ${subId.slice(0, 8)}...)`;
+        if (mainText) mainText.innerText = '原生推播已連線 (直連 Apple/Google)';
       } else {
         mainBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
         mainBtn.style.boxShadow = '0 4px 16px rgba(245, 158, 11, 0.4)';
         if (mainIcon) mainIcon.innerText = '⚡';
-        if (mainText) mainText.innerText = '點擊立即完成 OneSignal 雲端連線';
+        if (mainText) mainText.innerText = '點擊一鍵完成 Apple 原生金鑰建立';
       }
     } else if (hasNotif && perm === 'denied') {
       mainBtn.style.background = 'rgba(239, 68, 68, 0.2)';
@@ -19164,7 +19185,7 @@ window.sendTestPushFromModal = function() {
   sendTestNotification('2330', '', 'TSE');
 };
 
-// 🔔 切換與請求手機系統推播權限 (User-Gesture First + 防連續連按 + 精準輪詢)
+// 🔔 啟用標準原生 Web Push 推播 (零第三方依賴 + 直連 Apple APNs)
 window.togglePushNotification = async function() {
   function _toast(msg) {
     let t = document.getElementById('_pushToast');
@@ -19177,7 +19198,7 @@ window.togglePushNotification = async function() {
     t.textContent = msg;
     t.style.display = 'block';
     clearTimeout(t._tid);
-    t._tid = setTimeout(() => { t.style.display = 'none'; }, 5000);
+    t._tid = setTimeout(() => { t.style.display = 'none'; }, 6000);
   }
 
   const ua = navigator.userAgent || '';
@@ -19211,11 +19232,11 @@ window.togglePushNotification = async function() {
   const mainIcon = document.getElementById('pwaMainActionIcon');
   const mainText = document.getElementById('pwaMainActionText');
 
-  // 設定按鈕狀態為處理中，防止重複連續按擊
+  // 設定按鈕狀態為處理中，防止重複點擊
   if (mainBtn) {
     mainBtn.dataset.syncing = 'true';
     if (mainIcon) mainIcon.innerText = '⏳';
-    if (mainText) mainText.innerText = '正在連線 OneSignal 雲端伺服器...';
+    if (mainText) mainText.innerText = '正在向 Apple 原生推播伺服器建立金鑰...';
     mainBtn.style.opacity = '0.75';
     mainBtn.style.pointerEvents = 'none';
   }
@@ -19231,7 +19252,7 @@ window.togglePushNotification = async function() {
           if (res && res.then) res.then(resolve);
         });
       } catch (err) {
-        console.warn('[Push] requestPermission error:', err);
+        console.warn('[NativePush] requestPermission error:', err);
       }
     }
 
@@ -19244,46 +19265,39 @@ window.togglePushNotification = async function() {
       return;
     }
 
-    // 4. 取得 OneSignal 實例並觸發 optIn()
-    _toast('🔄 正在連線 OneSignal 雲端金鑰...');
-    const os = await window.getOneSignalInstance();
-    if (!os) {
-      throw new Error('OneSignal 模組載入中，請稍候 3 秒後重試');
+    // 4. 原生標準 Web Push 訂閱 (直連 Apple/Google 原生推播伺服器)
+    _toast('🔄 正在向原生推播中心註冊門牌...');
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg || !reg.pushManager) {
+      throw new Error('瀏覽器未就緒 Service Worker 推播模組');
     }
 
-    if (os.User && os.User.PushSubscription) {
-      // 若早已具備真實 Subscription ID，直接完成
-      if (os.User.PushSubscription.id) {
-        _toast(`🎉 雲端連線成功！(ID: ${os.User.PushSubscription.id.slice(0, 8)}...)`);
-        return;
-      }
+    // 檢查現有訂閱或建立新訂閱
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      const vapidKey = window.VAPID_PUBLIC_KEY || 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlB64ToUint8Array(vapidKey)
+      });
+    }
 
-      // 保留 User Gesture 立即觸發 optIn()
-      console.log('[OneSignal] 立即觸發 PushSubscription.optIn()...');
-      await os.User.PushSubscription.optIn();
+    if (sub) {
+      const subJson = JSON.stringify(sub);
+      localStorage.setItem('doudou_native_push_sub', subJson);
+      console.log('[NativePush] 成功取得推播門牌:', subJson);
 
-      // 輪詢等待 Subscription ID 返回 (最多等 8 秒)
-      let resolvedSubId = null;
-      for (let i = 0; i < 16; i++) {
-        await new Promise(r => setTimeout(r, 500));
-        resolvedSubId = os.User.PushSubscription.id;
-        if (resolvedSubId) break;
+      // 自動嘗試複製到剪貼簿，並彈出成功提醒
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(subJson).catch(() => {});
       }
-
-      if (resolvedSubId) {
-        console.log('[OneSignal] 成功取得 Subscription ID:', resolvedSubId);
-        _toast(`🎉 成功綁定雲端推播！(ID: ${resolvedSubId.slice(0, 8)}...)`);
-      } else if (os.User.PushSubscription.optedIn) {
-        _toast('✅ 雲端推播已登記！金鑰生成中，重新整理即可接收。');
-      } else {
-        _toast('⚠️ 雲端仍在同步金鑰中，請重新整理本頁面確認。');
-      }
+      _toast('🎉 成功取得 Apple 原生推播門牌！已為您複製代碼。');
     } else {
-      throw new Error('PushSubscription 模組尚未就緒');
+      throw new Error('未取得有效推播訂閱物件');
     }
   } catch (err) {
-    console.error('[Push] 同步異常:', err);
-    _toast(`⚠️ 同步異常: ${err.message || err}`);
+    console.error('[NativePush] 訂閱異常:', err);
+    _toast(`⚠️ 訂閱異常: ${err.message || err}`);
   } finally {
     if (mainBtn) {
       delete mainBtn.dataset.syncing;

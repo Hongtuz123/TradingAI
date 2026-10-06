@@ -37,62 +37,22 @@
 
 
 
-  <script id="onesignal-sdk-script" src="./OneSignalSDK.page.js" defer></script>
+  <!-- 🐾 荳荳 AI 原生標準 Web Push 核心配置 -->
   <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window._osReadyPromise = new Promise((resolve) => {
-      window._resolveOsReady = resolve;
-    });
+    // VAPID 公鑰 (標準 Web Push 原生金鑰)
+    window.VAPID_PUBLIC_KEY = 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
 
-    OneSignalDeferred.push(async function(OneSignal) {
-      try {
-        await OneSignal.init({
-          appId: "5691aeec-82c3-445f-b89a-0fb2a593a51d",
-          allowLocalhostAsSecureOrigin: true,
-          serviceWorkerPath: "sw.js",
-          serviceWorkerParam: { scope: "/" },
-          // ⚠️ 未開啟時 OneSignal 會忽略 serviceWorkerPath，改註冊後台預設的 OneSignalSDKWorker.js，與 sw.js 互相覆蓋
-          serviceWorkerOverrideForTypical: true
-        });
-        window._os = OneSignal;
-        window._osReady = true;
-        if (window._resolveOsReady) window._resolveOsReady(OneSignal);
-        console.log('[OneSignal] Init OK, _os ready');
-
-        // 監聽雲端訂閱變更 (取得真實 Subscription ID 時立即更新 UI)
-        if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.addEventListener) {
-          OneSignal.User.PushSubscription.addEventListener('change', function(evt) {
-            console.log('[OneSignal] 訂閱狀態變更:', evt);
-            if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
-          });
-        }
-
-        // 若系統早已授權通知，且為桌機或獨立 App，背景嘗試同步
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          if (OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optIn) {
-            OneSignal.User.PushSubscription.optIn().catch((err) => {
-              console.log('[OneSignal] 背景自動 optIn 需使用者手勢跳過:', err && err.message);
-            });
+    // 監聽 Service Worker 傳送的通知點擊訊息
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'DOUDOU_NOTIFICATION_CLICK') {
+          console.log('[NativePush] 收到通知點擊訊息:', event.data);
+          if (typeof executeSignalNavigation === 'function') {
+            executeSignalNavigation(event.data.view || 'screener', event.data.filter || 'buy');
           }
         }
-
-        // 🎯 監聽 OneSignal 推播通知點擊，精準切換至荳荳清單與指定篩選
-        if (OneSignal.Notifications && OneSignal.Notifications.addEventListener) {
-          OneSignal.Notifications.addEventListener('click', function(event) {
-            console.log('[OneSignal] Notification Clicked:', event);
-            const data = (event.notification && event.notification.additionalData) || {};
-            const targetView = data.view || 'screener';
-            const targetFilter = data.filter || 'buy';
-            if (typeof executeSignalNavigation === 'function') {
-              executeSignalNavigation(targetView, targetFilter);
-            }
-          });
-        }
-      } catch(err) {
-        window._osInitError = err.message || String(err);
-        console.error('[OneSignal] Init Error:', err);
-      }
-    });
+      });
+    }
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1241,6 +1201,12 @@
           <span id="pwaMainActionText">啟用手機原生推播通知</span>
         </button>
 
+        <!-- 📋 複製專屬門牌金鑰按鈕 -->
+        <button type="button" class="pwa-copy-sub-btn" onclick="copyPushSubscriptionJson()" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+          <span>📋</span>
+          <span>複製我的手機推播門牌代碼 (供後端直接登記)</span>
+        </button>
+
         <!-- ⚡ 買進/賣出/加碼三合一測試推播操作區 -->
         <div style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin: 6px 0 2px; text-align: left;">
           ⚡ 發送訊號推播測試 (驗證手機點擊自動切換)：
@@ -1271,9 +1237,9 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=79"></script>
-  <script src="app.js?v=79"></script>
-  <script src="stock-dashboard.js?v=79"></script>
+  <script src="data.js?v=80"></script>
+  <script src="app.js?v=80"></script>
+  <script src="stock-dashboard.js?v=80"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

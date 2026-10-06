@@ -1,18 +1,69 @@
-import requests
+import json
 import os
+from pathlib import Path
 
-# OneSignal 配置：App ID 為公開值；REST Key 僅能放在 .env.local / CI Secrets，嚴禁寫死於原始碼
-DEFAULT_ONESIGNAL_APP_ID = "5691aeec-82c3-445f-b89a-0fb2a593a51d"
-
-# OneSignal 現行官方端點 (舊版 onesignal.com/api/v1 為 legacy)
-ONESIGNAL_API_URL = "https://api.onesignal.com/notifications"
+# ===== 🛡️ 原生 Web Push (VAPID / RFC 8292) 配置 =====
+DEFAULT_VAPID_CLAIMS_EMAIL = "doudou.trading.ai@gmail.com"
+SUBSCRIPTIONS_FILE = Path(__file__).resolve().parent / "subscriptions.json"
 
 
-def _get_onesignal_config():
-    """執行期動態讀取 (確保 .env.local 已由 discord_notifier 載入)"""
-    app_id = os.environ.get("ONESIGNAL_APP_ID", "").strip() or DEFAULT_ONESIGNAL_APP_ID
-    rest_key = os.environ.get("ONESIGNAL_REST_KEY", "").strip()
-    return app_id, rest_key
+def _load_env_local():
+    """動態載入 .env.local 中的環境變數"""
+    env_path = Path(__file__).resolve().parent.parent / ".env.local"
+    if env_path.exists():
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                if k not in os.environ:
+                    os.environ[k] = v
+
+
+def _get_vapid_config():
+    _load_env_local()
+    private_key = os.environ.get("VAPID_PRIVATE_KEY", "").strip()
+    email = os.environ.get("VAPID_CLAIMS_EMAIL", "").strip() or DEFAULT_VAPID_CLAIMS_EMAIL
+    return private_key, email
+
+
+def load_subscriptions():
+    """載入所有已登記之原生 Web Push 設備門牌"""
+    if not SUBSCRIPTIONS_FILE.exists():
+        return []
+    try:
+        with open(SUBSCRIPTIONS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except Exception as e:
+        print(f"⚠️ 讀取 subscriptions.json 異常: {e}")
+        return []
+
+
+def save_subscriptions(subs):
+    """保存設備門牌清單"""
+    try:
+        with open(SUBSCRIPTIONS_FILE, "w", encoding="utf-8") as f:
+            json.dump(subs, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"⚠️ 寫入 subscriptions.json 異常: {e}")
+
+
+def register_new_subscription(sub_dict):
+    """登記或更新一個設備門牌"""
+    if not isinstance(sub_dict, dict) or "endpoint" not in sub_dict:
+        return False
+    subs = load_subscriptions()
+    endpoint = sub_dict.get("endpoint")
+    # 去重並更新
+    filtered = [s for s in subs if s.get("endpoint") != endpoint]
+    filtered.append(sub_dict)
+    save_subscriptions(filtered)
+    print(f"📱 ✅ 成功登記原生推播設備門牌 (目前總共 {len(filtered)} 台裝置)")
+    return True
 
 
 # ===== 🛡️ 推播共用防線 (PWA 與 Discord 100% 同步引用) =====
@@ -34,7 +85,7 @@ def is_push_qualified(s):
     # 🛡️ 硬性防線 1：僅允許上市 (TSE) / 上櫃 (OTC) 之普通股
     if market not in ('TSE', 'OTC'):
         return False
-    # 🚫 最新規則：全面排除 ETF (00開頭) 與債券、權證、ETN、TDR
+    # 🚫 全面排除 ETF (00開頭) 與債券、權證、ETN、TDR
     if code.startswith('00') or s.get('isETF', False):
         return False
     if '債' in name or code.upper().endswith('B') or 'ETF' in name.upper():
@@ -73,7 +124,7 @@ def filter_and_sort_signals(signals):
 
 
 def get_tradingview_url(symbol_code, market="TSE"):
-    """自動配對 TradingView 專屬 Deep Link (支援手機原生 TradingView App 自動喚起精準股票標的)"""
+    """自動配對 TradingView 專屬 Deep Link"""
     symbol_code = str(symbol_code).strip()
     prefix = "TPEX" if str(market).upper() == "OTC" else "TWSE"
     return f"tradingview://symbol/{prefix}:{symbol_code}"
@@ -81,8 +132,7 @@ def get_tradingview_url(symbol_code, market="TSE"):
 
 def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_signals=None, scanned_cnt=0, time_str=""):
     """
-    📱 Phase 3: 荳荳 AI 後端手機 PWA 系統原生推播發送器 (OneSignal REST API)
-    發送包含 TradingView Deep Link 的手機鎖屏推播通知
+    📱 Phase 3: 荳荳 AI 原生標準 Web Push 直連推播發送器 (直連 Apple APNs / RFC 8292)
     """
     sells = sell_signals or []
 
@@ -126,7 +176,7 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     score = int(get_sort_score(target_stock))
     vol_r = get_vol_ratio(target_stock)
     chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
-    
+
     # 格式化訊號時間 (取 HH:MM)
     if not time_str:
         from datetime import datetime, timezone, timedelta
@@ -136,29 +186,17 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         parts = str(time_str).strip().split()
         time_display = parts[-1][:5] if len(parts) > 1 else parts[0][:5]
 
-    # 交易時框 (日線 + 4H 雙時框共振)
     timeframe_label = target_stock.get('timeframe', '1D+4H')
 
     # 🎯 規範格式：訊號時間 + 股票代碼 + 股票名稱 + 訊號(買進/賣出/加碼) + 對應交易時框
     push_title = f"{sig_emoji} [{time_display}] {code} {name} · {sig_action} ({timeframe_label})"
     push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 量能放大 {vol_r:.2f}x ｜ 點擊查看荳荳精選清單 🐕"
-
-    # 🎯 導回本系統並開啟荳荳清單對應篩選
     system_target_url = f"https://trading-ai-eosin-zeta.vercel.app/?view=screener&filter={filter_type}"
 
-    app_id, rest_key = _get_onesignal_config()
-    if not rest_key:
-        print("📱 ⚠️ 未設定 ONESIGNAL_REST_KEY (.env.local)，跳過 PWA 推播。")
-        return False
-
     payload = {
-        "app_id": app_id,
-        "target_channel": "push",
-        "included_segments": ["Total Subscriptions"],
-        "headings": {"en": push_title, "zh": push_title},
-        "contents": {"en": push_body, "zh": push_body},
-        "web_url": system_target_url,
-        "app_url": system_target_url,
+        "title": push_title,
+        "body": push_body,
+        "tag": f"doudou-{code}-{int(datetime.now().timestamp()) if 'datetime' in locals() else 0}",
         "data": {
             "symbol": code,
             "market": market,
@@ -169,22 +207,53 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
         }
     }
 
-    # OneSignal 新版 REST Key (os_v2_app_ 開頭) 需使用 "Key" 前綴，舊版才用 "Basic"
-    auth_prefix = "Key" if rest_key.startswith("os_v2_app_") else "Basic"
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": f"{auth_prefix} {rest_key}"
-    }
+    private_key, claims_email = _get_vapid_config()
+    if not private_key:
+        print("📱 ⚠️ 未設定 VAPID_PRIVATE_KEY (.env.local)，跳過原生 Web Push。")
+        return False
+
+    subs = load_subscriptions()
+    if not subs:
+        print("📱 ℹ️ 目前尚未有設備登記原生推播門牌 (subscriptions.json 為空)。")
+        return True
 
     try:
-        res = requests.post(ONESIGNAL_API_URL, json=payload, headers=headers, timeout=10)
-        if res.status_code in (200, 202):
-            print(f"📱 ✅ [Phase 3 手機推播] 成功向 OneSignal 發送推播: {push_title}")
-            return True
-        else:
-            # 印出完整錯誤 body 方便除錯 (例如 401 / 400 的原因)
-            print(f"📱 ❌ [Phase 3 手機推播] OneSignal 回傳錯誤 HTTP {res.status_code}: {res.text[:500]}")
-            return False
-    except Exception as e:
-        print(f"📱 ⚠️ [Phase 3 手機推播] 發送異常 (不影響數據運算): {e}")
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        print("📱 ⚠️ 未安裝 pywebpush，請執行 pip install pywebpush")
         return False
+
+    success_cnt = 0
+    expired_endpoints = set()
+
+    payload_json = json.dumps(payload, ensure_ascii=False)
+    vapid_claims = {"sub": f"mailto:{claims_email}"}
+
+    for sub in subs:
+        endpoint = sub.get("endpoint", "")
+        try:
+            res = webpush(
+                subscription_info=sub,
+                data=payload_json,
+                vapid_private_key=private_key,
+                vapid_claims=vapid_claims,
+                timeout=10
+            )
+            print(f"📱 ✅ [原生推播] 直連發送成功 ({endpoint[:35]}...): HTTP {res.status_code}")
+            success_cnt += 1
+        except WebPushException as ex:
+            print(f"📱 ❌ [原生推播] 發送失敗 ({endpoint[:35]}...): {ex}")
+            # 若為 404 / 410 Gone，表示設備已取消授權或門牌過期，自動標記清理
+            if ex.response and ex.response.status_code in (404, 410):
+                expired_endpoints.add(endpoint)
+        except Exception as e:
+            print(f"📱 ⚠️ [原生推播] 網路異常: {e}")
+
+    # 自動清理已過期門牌
+    if expired_endpoints:
+        active_subs = [s for s in subs if s.get("endpoint") not in expired_endpoints]
+        save_subscriptions(active_subs)
+        print(f"📱 🧹 自動清理 {len(expired_endpoints)} 個過期推播設備。")
+
+    print(f"📱 🎉 [Phase 3 原生推播] 完成：{success_cnt}/{len(subs)} 台裝置成功推達！")
+    return success_cnt > 0
