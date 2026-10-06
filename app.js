@@ -19987,30 +19987,79 @@ function renderPatternModalContent() {
   const actionType = report.action_type || (isBearish ? 'warning' : 'buy');
 
   const curPrice = parseFloat(s.livePrice || s.price || 100);
-  const entryVal = report.entry_price ? parseFloat(report.entry_price) : (isBearish ? null : curPrice);
-  const slVal = report.stop_loss ? parseFloat(report.stop_loss) : (entryVal ? +(entryVal * 0.95).toFixed(2) : null);
-  const tpVal = report.take_profit ? parseFloat(report.take_profit) : (entryVal ? +(entryVal * 1.09).toFixed(2) : null);
+  // 嚴格判定進場點：若後端判定觀望/空方/空間耗盡(entry_price為null)，絕不硬塞現價為進場點
+  const entryVal = (report.entry_price !== null && report.entry_price !== undefined) ? parseFloat(report.entry_price) : null;
+  const slVal = report.stop_loss ? parseFloat(report.stop_loss) : null;
+  const tpVal = report.take_profit ? parseFloat(report.take_profit) : null;
+  const rrVal = (report.risk_reward_ratio !== null && report.risk_reward_ratio !== undefined) ? parseFloat(report.risk_reward_ratio) : null;
 
-  const entryStr = entryVal ? `$${entryVal.toFixed(2)}` : (isBearish ? '❌ 嚴禁開多' : '待突破確認');
-  const slStr = slVal ? `$${slVal.toFixed(2)}` : '--';
-  const tpStr = tpVal ? `$${tpVal.toFixed(2)}` : (isBearish ? '下探測距' : '--');
-  const rrStr = report.risk_reward_ratio && report.risk_reward_ratio > 0 ? `1 : ${parseFloat(report.risk_reward_ratio).toFixed(1)}` : (isBearish ? '高風險' : '1 : 1.8');
-
-  // 計算點位漲跌幅標籤
-  let slSubStr = '嚴設防守點位';
-  let tpSubStr = '預期獲利目標';
-  if (entryVal && slVal) {
-    const slDiff = (((slVal - entryVal) / entryVal) * 100).toFixed(1);
-    slSubStr = `跌幅 ${slDiff}% (破位停損)`;
+  // 格式化進場點顯示
+  let entryStr = '--';
+  let entrySubStr = '等待交易信號';
+  if (isBearish) {
+    entryStr = '❌ 嚴禁開多';
+    entrySubStr = '空方下壓禁止買進';
+  } else if (entryVal !== null) {
+    entryStr = `$${entryVal.toFixed(2)}`;
+    entrySubStr = (actionType === 'buy') ? '突破切入 / 回踩支撐' : '建議掛單價位';
+  } else {
+    // entryVal === null
+    if (actionType === 'watch' && tpVal && curPrice >= tpVal * 0.98) {
+      entryStr = '⚠️ 空間耗盡';
+      entrySubStr = '目標已近 · 嚴禁追高';
+    } else if (actionType === 'watch') {
+      entryStr = '⏳ 暫不開倉';
+      entrySubStr = '待帶量實體突破確認';
+    } else {
+      entryStr = '--';
+      entrySubStr = '待型態確立';
+    }
   }
-  if (entryVal && tpVal) {
-    const tpDiff = (((tpVal - entryVal) / entryVal) * 100).toFixed(1);
+
+  // 格式化止損點顯示
+  const slStr = slVal ? `$${slVal.toFixed(2)}` : '--';
+  let slSubStr = '嚴設防守點位';
+  const baseForSl = entryVal || curPrice;
+  if (slVal && baseForSl) {
+    const slDiff = (((slVal - baseForSl) / baseForSl) * 100).toFixed(1);
+    if (actionType === 'watch' && (!entryVal || curPrice >= (tpVal || curPrice) * 0.95)) {
+      slSubStr = `跌幅 ${slDiff}% (移動停利防守位)`;
+    } else {
+      slSubStr = `跌幅 ${slDiff}% (破位停損)`;
+    }
+  }
+
+  // 格式化目標價顯示
+  const tpStr = tpVal ? `$${tpVal.toFixed(2)}` : (isBearish ? '下探測距' : '--');
+  let tpSubStr = '預期獲利目標';
+  const baseForTp = entryVal || curPrice;
+  if (tpVal && baseForTp) {
+    const tpDiff = (((tpVal - baseForTp) / baseForTp) * 100).toFixed(1);
     tpSubStr = `漲幅 +${tpDiff}% (等幅滿足)`;
+  }
+
+  // 格式化真實風報比 (完全實算，不亂塞1.5)
+  let rrStr = '--';
+  let rrSubStr = '待空間確認';
+  if (isBearish) {
+    rrStr = '0.0 (高風險)';
+    rrSubStr = '空方下壓防被套';
+  } else if (rrVal !== null && rrVal > 0) {
+    rrStr = `1 : ${rrVal.toFixed(1)}`;
+    if (rrVal >= 1.5) {
+      rrSubStr = '盈虧比優質 (≥1.5)';
+    } else if (rrVal >= 1.0) {
+      rrSubStr = '⚠️ 盈虧比中等 (1.0~1.4)';
+    } else {
+      rrSubStr = '⚠️ 盈虧比偏低 (<1.0 勿追)';
+    }
   }
 
   let typeTagHtml = '';
   if (isBearish) {
     typeTagHtml = `<span class="pattern-type-tag bearish_warning">⚠️ 空方高危險警示區 (嚴禁做多/持股防守)</span>`;
+  } else if (actionType === 'watch' && tpVal && curPrice >= tpVal * 0.95) {
+    typeTagHtml = `<span class="pattern-type-tag neutral" style="background:rgba(234,179,8,0.18);color:#facc15;border-color:rgba(234,179,8,0.35);">🌟 目標已近滿足警戒區 (嚴禁追高)</span>`;
   } else if (pType === 'bullish') {
     typeTagHtml = `<span class="pattern-type-tag bullish">🚀 多方攻擊/突破延續</span>`;
   } else {
@@ -20040,8 +20089,8 @@ function renderPatternModalContent() {
       <div class="pattern-levels-grid" style="margin-top:8px;">
         <div class="level-card entry">
           <span class="level-card-label">🎯 建議進場點 (Entry)</span>
-          <span class="level-card-val">${entryStr}</span>
-          <span class="level-card-sub">${isBearish ? '空方壓制禁止買進' : '突破切入 / 回踩支撐'}</span>
+          <span class="level-card-val" style="${!entryVal && actionType === 'watch' ? 'color:#facc15;font-size:16px;' : ''}">${entryStr}</span>
+          <span class="level-card-sub">${entrySubStr}</span>
         </div>
         <div class="level-card sl">
           <span class="level-card-label">🛑 建議止損點 (SL)</span>
@@ -20055,8 +20104,8 @@ function renderPatternModalContent() {
         </div>
         <div class="level-card rr">
           <span class="level-card-label">⚖️ 風險報酬比 (R:R)</span>
-          <span class="level-card-val">${rrStr}</span>
-          <span class="level-card-sub">${isBearish ? '高風險謹防被套' : '盈虧比優勢 (≥1.5)'}</span>
+          <span class="level-card-val" style="${rrVal !== null && rrVal < 1.0 ? 'color:#f87171;' : ''}">${rrStr}</span>
+          <span class="level-card-sub">${rrSubStr}</span>
         </div>
       </div>
 
@@ -20208,7 +20257,7 @@ function drawPatternTechnicalChart(s, tf, report) {
 
   const rect = canvas.getBoundingClientRect();
   const width = Math.max(rect.width || canvas.clientWidth || 720, 360);
-  const height = 330;
+  const height = 340;
   const dpr = window.devicePixelRatio || 2;
 
   canvas.width = width * dpr;
@@ -20251,7 +20300,7 @@ function drawPatternTechnicalChart(s, tf, report) {
     if (k.low < minP) minP = k.low;
   });
 
-  const entryP = report.entry_price ? parseFloat(report.entry_price) : null;
+  const entryP = (report.entry_price !== null && report.entry_price !== undefined) ? parseFloat(report.entry_price) : null;
   const slP = report.stop_loss ? parseFloat(report.stop_loss) : null;
   const tpP = report.take_profit ? parseFloat(report.take_profit) : null;
   const neckP = report.neckline ? parseFloat(report.neckline) : null;
@@ -20261,16 +20310,16 @@ function drawPatternTechnicalChart(s, tf, report) {
   if (tpP) { maxP = Math.max(maxP, tpP); minP = Math.min(minP, tpP); }
   if (neckP) { maxP = Math.max(maxP, neckP); minP = Math.min(minP, neckP); }
 
-  // 上下邊距緩衝 7%
+  // 上下邊距緩衝 8%
   const pMargin = (maxP - minP) * 0.08 || curP * 0.05;
   maxP += pMargin;
   minP -= pMargin;
   const pRange = maxP - minP || 1;
 
-  // 畫布幾何區域
+  // 畫布幾何區域 (頂部留給雙行標題空間，徹底杜絕重疊)
   const padLeft = 14;
   const padRight = 135; // 右側留給價格軸標籤
-  const padTop = 38;    // 頂部留給標題
+  const padTop = 48;    // 頂部留給雙行獨立標題
   const padBottom = 26; // 底部留給圖例
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
@@ -20333,7 +20382,7 @@ function drawPatternTechnicalChart(s, tf, report) {
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
-  ctx.shadowBlur = 0; // 重置陰影
+  ctx.shadowBlur = 0;
 
   // 5. 繪製 K 線燭台 (紅漲綠跌)
   for (let i = 0; i < nBars; i++) {
@@ -20345,7 +20394,7 @@ function drawPatternTechnicalChart(s, tf, report) {
     const yLow = priceToY(k.low);
 
     const isUp = k.close >= k.open;
-    const color = isUp ? '#ef4444' : '#22c55e'; // 台股紅漲綠跌
+    const color = isUp ? '#ef4444' : '#22c55e';
 
     // 垂直影線
     ctx.strokeStyle = color;
@@ -20379,7 +20428,7 @@ function drawPatternTechnicalChart(s, tf, report) {
     ctx.setLineDash([]);
 
     // 右側膠囊標籤
-    const badgeW = 120;
+    const badgeW = 124;
     const badgeH = 19;
     const badgeX = width - padRight + 6;
     const badgeY = y - badgeH / 2;
@@ -20395,44 +20444,51 @@ function drawPatternTechnicalChart(s, tf, report) {
 
     // 標籤文字
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.font = 'bold 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, badgeX + 6, y);
+    ctx.fillText(text, badgeX + 5, y);
   }
 
   // 6. 畫好技術分析線 (關鍵頸線、進場點、止損點、目標價)
-  if (neckP && (!entryP || Math.abs(neckP - entryP) / entryP > 0.008)) {
+  if (neckP) {
     drawTechLevel(neckP, '#c084fc', `🔑 頸線 $${neckP.toFixed(2)}`, [4, 4]);
   }
   if (slP) {
-    const slDiff = entryP ? ` (${(((slP - entryP) / entryP) * 100).toFixed(1)}%)` : '';
-    drawTechLevel(slP, '#ef4444', `🛑 止損 $${slP.toFixed(2)}${slDiff}`);
+    const slBase = entryP || curP;
+    const slDiff = ` (${(((slP - slBase) / slBase) * 100).toFixed(1)}%)`;
+    const slLabel = (report.action_type === 'watch' && !entryP) ? `🛡️ 防守 $${slP.toFixed(2)}${slDiff}` : `🛑 止損 $${slP.toFixed(2)}${slDiff}`;
+    drawTechLevel(slP, '#ef4444', slLabel);
   }
   if (tpP) {
-    const tpDiff = entryP ? ` (+${(((tpP - entryP) / entryP) * 100).toFixed(1)}%)` : '';
+    const tpBase = entryP || curP;
+    const tpDiff = ` (+${(((tpP - tpBase) / tpBase) * 100).toFixed(1)}%)`;
     drawTechLevel(tpP, '#38bdf8', `🏁 目標 $${tpP.toFixed(2)}${tpDiff}`);
   }
-  if (entryP) {
+  if (entryP && report.action_type === 'buy') {
     drawTechLevel(entryP, '#10b981', `🎯 進場 $${entryP.toFixed(2)}`);
   }
 
-  // 7. 抬頭資訊 (左上角)
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif';
+  // 7. 抬頭資訊 (左上角) - 雙行垂直獨立排列，徹底解決橘字重疊問題！
+  // 第一行：標的代號、名稱、市場、時框、現價
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = 'bold 12.5px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.fillText(`${s.id} ${s.name} (${s.market || '台股'}) · ${tf}時框 · 現價 $${curP}`, padLeft + 2, 10);
+  ctx.fillText(`${s.id} ${s.name} (${s.market || '台股'}) · ${tf}時框 · 現價 $${curP}`, padLeft + 2, 8);
 
+  // 第二行：型態名稱標籤 (橘色高亮)
   ctx.fillStyle = '#f97316';
-  ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif';
-  ctx.fillText(`型態：${report.pattern_name}`, padLeft + 240, 11);
+  ctx.font = 'bold 11.5px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`型態：${report.pattern_name}`, padLeft + 2, 27);
 
   // 8. 底部圖例說明 (左下角)
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '10.5px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('🟡 20MA(月線)  ｜  🟢 建議進場點  ｜  🔴 建議止損點  ｜  🔵 預期目標價  ｜  🟣 關鍵頸線', padLeft + 2, height - 6);
+  const legendEntry = (entryP && report.action_type === 'buy') ? '🟢 建議進場點  ｜  ' : '';
+  ctx.fillText(`🟡 20MA(月線)  ｜  ${legendEntry}🔴 防守止損點  ｜  🔵 預期目標價  ｜  🟣 關鍵頸線`, padLeft + 2, height - 6);
 
   ctx.restore();
 }
