@@ -19987,13 +19987,12 @@ function renderPatternModalContent() {
   const actionType = report.action_type || (isBearish ? 'warning' : 'buy');
 
   const curPrice = parseFloat(s.livePrice || s.price || 100);
-  // 嚴格判定進場點：若後端判定觀望/空方/空間耗盡(entry_price為null)，絕不硬塞現價為進場點
   const entryVal = (report.entry_price !== null && report.entry_price !== undefined) ? parseFloat(report.entry_price) : null;
   const slVal = report.stop_loss ? parseFloat(report.stop_loss) : null;
   const tpVal = report.take_profit ? parseFloat(report.take_profit) : null;
   const rrVal = (report.risk_reward_ratio !== null && report.risk_reward_ratio !== undefined) ? parseFloat(report.risk_reward_ratio) : null;
 
-  // 格式化進場點顯示
+  // 1. 格式化進場點顯示（必定標出具體價位，滿足使用者需求 1）
   let entryStr = '--';
   let entrySubStr = '等待交易信號';
   if (isBearish) {
@@ -20001,44 +20000,39 @@ function renderPatternModalContent() {
     entrySubStr = '空方下壓禁止買進';
   } else if (entryVal !== null) {
     entryStr = `$${entryVal.toFixed(2)}`;
-    entrySubStr = (actionType === 'buy') ? '突破切入 / 回踩支撐' : '建議掛單價位';
-  } else {
-    // entryVal === null
-    if (actionType === 'watch' && tpVal && curPrice >= tpVal * 0.98) {
-      entryStr = '⚠️ 空間耗盡';
-      entrySubStr = '目標已近 · 嚴禁追高';
-    } else if (actionType === 'watch') {
-      entryStr = '⏳ 暫不開倉';
-      entrySubStr = '待帶量實體突破確認';
+    if (actionType === 'buy') {
+      entrySubStr = '突破切入 / 回踩支撐';
+    } else if (curPrice >= entryVal * 1.02) {
+      const awayPct = (((curPrice - entryVal) / entryVal) * 100).toFixed(1);
+      entrySubStr = `原始突破點 (+${awayPct}% 遠離禁追)`;
     } else {
-      entryStr = '--';
-      entrySubStr = '待型態確立';
+      entrySubStr = '建議掛單點 (待突破回踩)';
     }
   }
 
-  // 格式化止損點顯示
+  // 2. 格式化止損點顯示
   const slStr = slVal ? `$${slVal.toFixed(2)}` : '--';
   let slSubStr = '嚴設防守點位';
-  const baseForSl = entryVal || curPrice;
-  if (slVal && baseForSl) {
-    const slDiff = (((slVal - baseForSl) / baseForSl) * 100).toFixed(1);
-    if (actionType === 'watch' && (!entryVal || curPrice >= (tpVal || curPrice) * 0.95)) {
+  if (slVal && curPrice) {
+    const slDiff = (((slVal - curPrice) / curPrice) * 100).toFixed(1);
+    if (actionType === 'watch') {
       slSubStr = `跌幅 ${slDiff}% (移動停利防守位)`;
     } else {
       slSubStr = `跌幅 ${slDiff}% (破位停損)`;
     }
   }
 
-  // 格式化目標價顯示
+  // 3. 格式化目標價顯示（確保漲幅為正，滿足使用者需求 2）
   const tpStr = tpVal ? `$${tpVal.toFixed(2)}` : (isBearish ? '下探測距' : '--');
   let tpSubStr = '預期獲利目標';
-  const baseForTp = entryVal || curPrice;
-  if (tpVal && baseForTp) {
-    const tpDiff = (((tpVal - baseForTp) / baseForTp) * 100).toFixed(1);
-    tpSubStr = `漲幅 +${tpDiff}% (等幅滿足)`;
+  if (tpVal && curPrice) {
+    const tpDiff = (((tpVal - curPrice) / curPrice) * 100).toFixed(1);
+    const tpSign = parseFloat(tpDiff) >= 0 ? '+' : '';
+    const isExt = (actionType === 'watch' || curPrice >= (report.neckline || curPrice) * 1.05);
+    tpSubStr = `漲幅 ${tpSign}${tpDiff}% (${isExt ? '波段延伸目標' : '等幅滿足'})`;
   }
 
-  // 格式化真實風報比 (完全實算，不亂塞1.5)
+  // 4. 格式化真實風報比 (完全實算，不亂塞假數據)
   let rrStr = '--';
   let rrSubStr = '待空間確認';
   if (isBearish) {
@@ -20058,7 +20052,7 @@ function renderPatternModalContent() {
   let typeTagHtml = '';
   if (isBearish) {
     typeTagHtml = `<span class="pattern-type-tag bearish_warning">⚠️ 空方高危險警示區 (嚴禁做多/持股防守)</span>`;
-  } else if (actionType === 'watch' && tpVal && curPrice >= tpVal * 0.95) {
+  } else if (actionType === 'watch' && tpVal && curPrice >= (entryVal || curPrice) * 1.04) {
     typeTagHtml = `<span class="pattern-type-tag neutral" style="background:rgba(234,179,8,0.18);color:#facc15;border-color:rgba(234,179,8,0.35);">🌟 目標已近滿足警戒區 (嚴禁追高)</span>`;
   } else if (pType === 'bullish') {
     typeTagHtml = `<span class="pattern-type-tag bullish">🚀 多方攻擊/突破延續</span>`;
@@ -20451,22 +20445,24 @@ function drawPatternTechnicalChart(s, tf, report) {
   }
 
   // 6. 畫好技術分析線 (關鍵頸線、進場點、止損點、目標價)
+  // 6. 畫好技術分析線 (關鍵頸線、進場點、止損點、目標價)
   if (neckP) {
     drawTechLevel(neckP, '#c084fc', `🔑 頸線 $${neckP.toFixed(2)}`, [4, 4]);
   }
+  if (entryP && !isBearish) {
+    const entryDiff = (((entryP - curP) / curP) * 100).toFixed(1);
+    const entryLabel = (report.action_type === 'buy') ? `🎯 建議進場 $${entryP.toFixed(2)}` : `🎯 突破進場 $${entryP.toFixed(2)} (${entryDiff}%)`;
+    drawTechLevel(entryP, '#10b981', entryLabel);
+  }
   if (slP) {
-    const slBase = entryP || curP;
-    const slDiff = ` (${(((slP - slBase) / slBase) * 100).toFixed(1)}%)`;
-    const slLabel = (report.action_type === 'watch' && !entryP) ? `🛡️ 防守 $${slP.toFixed(2)}${slDiff}` : `🛑 止損 $${slP.toFixed(2)}${slDiff}`;
+    const slDiff = (((slP - curP) / curP) * 100).toFixed(1);
+    const slLabel = (report.action_type === 'watch') ? `🛡️ 防守 $${slP.toFixed(2)} (${slDiff}%)` : `🛑 止損 $${slP.toFixed(2)} (${slDiff}%)`;
     drawTechLevel(slP, '#ef4444', slLabel);
   }
   if (tpP) {
-    const tpBase = entryP || curP;
-    const tpDiff = ` (+${(((tpP - tpBase) / tpBase) * 100).toFixed(1)}%)`;
-    drawTechLevel(tpP, '#38bdf8', `🏁 目標 $${tpP.toFixed(2)}${tpDiff}`);
-  }
-  if (entryP && report.action_type === 'buy') {
-    drawTechLevel(entryP, '#10b981', `🎯 進場 $${entryP.toFixed(2)}`);
+    const tpDiff = (((tpP - curP) / curP) * 100).toFixed(1);
+    const tpSign = parseFloat(tpDiff) >= 0 ? '+' : '';
+    drawTechLevel(tpP, '#38bdf8', `🏁 目標 $${tpP.toFixed(2)} (${tpSign}${tpDiff}%)`);
   }
 
   // 7. 抬頭資訊 (左上角) - 雙行垂直獨立排列，徹底解決橘字重疊問題！
@@ -20487,7 +20483,7 @@ function drawPatternTechnicalChart(s, tf, report) {
   ctx.fillStyle = '#94a3b8';
   ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textBaseline = 'bottom';
-  const legendEntry = (entryP && report.action_type === 'buy') ? '🟢 建議進場點  ｜  ' : '';
+  const legendEntry = (entryP && !isBearish) ? '🟢 突破進場點  ｜  ' : '';
   ctx.fillText(`🟡 20MA(月線)  ｜  ${legendEntry}🔴 防守止損點  ｜  🔵 預期目標價  ｜  🟣 關鍵頸線`, padLeft + 2, height - 6);
 
   ctx.restore();

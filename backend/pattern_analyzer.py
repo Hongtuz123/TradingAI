@@ -218,6 +218,54 @@ def analyze_chart_patterns(df, timeframe="1D", live_price=None, stock_info=None)
     return report
 
 
+def _calc_bullish_targets(neckline, h_pattern, cur_p, atr):
+    """
+    計算多方型態（W底、頭肩底、上升三角、箱型）之目標價、進場點與生命週期進度：
+    - entry_orig: 原始突破進場價（頸線位）
+    - tp1: 理論等幅測距目標價 = neckline + h_pattern
+    - tp_active: 當前有效目標價（若現價已超越或逼近 tp1，自動切換至次一級斐波那契擴展目標，確保目標價永遠高於現價！）
+    - progress_tp1: 對於原始等幅目標的達成率
+    - remaining_upside: 距離當前有效目標價的剩餘漲幅空間
+    - is_over_extended: 是否已達成或超越原始目標
+    - ext_label: 標籤說明
+    """
+    entry_orig = round(neckline, 2)
+    tp1 = round(neckline + h_pattern * 1.0, 2)
+    progress_tp1 = (cur_p - neckline) / max(h_pattern, 0.01)
+    
+    if cur_p < tp1 * 0.985:
+        tp_active = tp1
+        is_over_extended = False
+        ext_label = "等幅滿足目標"
+    else:
+        is_over_extended = True
+        tp_1618 = round(neckline + h_pattern * 1.618, 2)
+        tp_200 = round(neckline + h_pattern * 2.0, 2)
+        tp_2618 = round(neckline + h_pattern * 2.618, 2)
+        tp_atr = round(cur_p + max(atr * 1.5, cur_p * 0.035), 2)
+        
+        if cur_p < tp_1618 * 0.985:
+            tp_active = tp_1618
+            ext_label = "1.618倍波段延伸"
+        elif cur_p < tp_200 * 0.985:
+            tp_active = tp_200
+            ext_label = "2.0倍雙等幅延伸"
+        elif cur_p < tp_2618 * 0.985:
+            tp_active = tp_2618
+            ext_label = "2.618倍強勢延伸"
+        else:
+            tp_active = tp_atr
+            ext_label = "高檔動態追蹤目標"
+            
+    # 嚴格保證：目標價必定高於現價至少 1.5%！
+    if tp_active <= cur_p:
+        tp_active = round(cur_p + max(atr * 1.2, cur_p * 0.03), 2)
+        ext_label = "高檔波段追蹤目標"
+        
+    remaining_upside = max((tp_active - cur_p) / max(cur_p, 0.01), 0.005)
+    return entry_orig, tp1, tp_active, progress_tp1, remaining_upside, is_over_extended, ext_label
+
+
 def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, vol_mult):
     """
     從局部波峰與波谷中識別 16 種型態，嚴格依據幾何結構與買賣點位。
@@ -238,37 +286,38 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                 min_bottom = min(v1['price'], v2['price'])
                 h_bottom = neckline - min_bottom
                 if h_bottom > 0:
-                    tp_theo = round(neckline + h_bottom * 1.0, 2)
+                    entry_orig, tp1, tp_active, progress_tp1, remaining_upside, is_over_extended, ext_label = _calc_bullish_targets(neckline, h_bottom, cur_p, atr)
                     # 現價接近或已突破頸線
                     if cur_p >= neckline * 0.98:
                         if cur_p >= neckline: # 已突破頸線
-                            progress = (cur_p - neckline) / max(h_bottom, 0.01)
-                            remaining_upside = (tp_theo - cur_p) / max(cur_p, 0.01)
-                            
-                            # 分支 A：等幅測距目標已近滿足區 / 乖離過大（嚴禁追高！）
-                            if progress >= 0.65 or remaining_upside < 0.035 or cur_p >= tp_theo * 0.99:
+                            # 分支 A：等幅測距目標已近滿足區 / 超額達成（嚴禁追高！）
+                            if is_over_extended or progress_tp1 >= 0.65 or remaining_upside < 0.035:
                                 sl_trail = round(cur_p - atr * 1.2, 2) # 短期移動停利防守位
-                                rr_real = round(max(tp_theo - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                                rr_real = round(max(tp_active - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                                if is_over_extended:
+                                    desc_text = f"在 ${min_bottom:.1f} 築雙底，中間頸線位在 ${neckline:.1f}。原等幅目標 ${tp1:.1f} 已完全超額達成（進度 {int(progress_tp1*100)}%），高檔多頭強勢延伸中，次一級波段延伸目標看 ${tp_active:.1f}。"
+                                else:
+                                    desc_text = f"在 ${min_bottom:.1f} 築雙底，中間頸線位在 ${neckline:.1f}。目前等幅測距目標 ${tp1:.1f} 已達成 {int(progress_tp1*100)}%，剩餘空間僅剩 +{remaining_upside*100:.1f}%，波段利潤已高度釋放。"
                                 return {
                                     "code": "double_bottom",
                                     "name": "🌟 雙重底 (W底) · 目標已近滿足警戒",
                                     "type": "bullish",
-                                    "desc": f"在 ${min_bottom:.1f} 築雙底，中間頸線位在 ${neckline:.1f}。目前等幅測距目標 ${tp_theo:.1f} 已達成 {int(progress*100)}%，剩餘空間僅剩 +{remaining_upside*100:.1f}%，波段利潤已高度釋放。",
-                                    "advice": f"⚠️ 等幅目標已近（剩餘空間僅 +{remaining_upside*100:.1f}%），空間耗盡嚴禁追高！持股者應採移動停利逢高分批獲利了結；空手者切勿追價，耐心等待拉回測試頸線守穩。",
+                                    "desc": desc_text,
+                                    "advice": f"⚠️ 等幅目標已達成（剩餘空間僅 +{remaining_upside*100:.1f}%），現價已遠離突破進場點 ${entry_orig:.1f}，嚴禁追高！持股者應採移動停利保護暴利（防守位 ${sl_trail:.1f}）；空手者切勿追價，耐心等待拉回測試頸線守穩。",
                                     "action_type": "watch",
-                                    "entry": None, # 禁止追高開多
+                                    "entry": entry_orig, # 標出原始突破進場價
                                     "sl": sl_trail,
-                                    "tp": tp_theo,
+                                    "tp": tp_active,     # 目標價永遠高於現價！
                                     "rr": rr_real,
                                     "neckline": neckline,
                                     "support": round(neckline, 2),
-                                    "resistance": tp_theo
+                                    "resistance": tp_active
                                 }
                             # 分支 B：黃金突破初升段 / 回踩頸線守穩（空間充足，盈虧比優勢）
-                            elif progress < 0.35 and remaining_upside >= 0.04:
+                            elif progress_tp1 < 0.35 and not is_over_extended:
                                 entry = round(cur_p, 2)
                                 sl_breakout = round(neckline - atr * 1.0, 2) # 跌破頸線緩衝區即停損！絕不放底！
-                                rr_real = round((tp_theo - entry) / max(entry - sl_breakout, 0.01), 2)
+                                rr_real = round((tp1 - entry) / max(entry - sl_breakout, 0.01), 2)
                                 return {
                                     "code": "double_bottom",
                                     "name": "🌟 雙重底 (W底) 突破確認",
@@ -278,32 +327,32 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                     "action_type": "buy",
                                     "entry": entry,
                                     "sl": sl_breakout,
-                                    "tp": tp_theo,
+                                    "tp": tp1,
                                     "rr": rr_real,
                                     "neckline": neckline,
                                     "support": round(neckline, 2),
-                                    "resistance": tp_theo
+                                    "resistance": tp1
                                 }
                             # 分支 C：波段中繼推進中（已走半途）
                             else:
                                 entry = round(cur_p, 2)
                                 sl_mid = round(max(neckline * 0.99, cur_p - atr * 1.3), 2)
-                                rr_real = round((tp_theo - entry) / max(entry - sl_mid, 0.01), 2)
+                                rr_real = round((tp1 - entry) / max(entry - sl_mid, 0.01), 2)
                                 if rr_real >= 1.4 and remaining_upside >= 0.04:
                                     return {
                                         "code": "double_bottom",
                                         "name": "🌟 雙重底 (W底) 波段推進中",
                                         "type": "bullish",
-                                        "desc": f"在 ${min_bottom:.1f} 完成雙底，頸線 ${neckline:.1f}。突破後多頭持續向上推升，目前推進進度 {int(progress*100)}%，距目標 ${tp_theo:.1f} 仍有 +{remaining_upside*100:.1f}% 空間。",
+                                        "desc": f"在 ${min_bottom:.1f} 完成雙底，頸線 ${neckline:.1f}。突破後多頭持續向上推升，目前推進進度 {int(progress_tp1*100)}%，距目標 ${tp1:.1f} 仍有 +{remaining_upside*100:.1f}% 空間。",
                                         "advice": "🎯 波段延伸推進：型態持續向上發酵，但因已脫離頸線，建議小量分批切入並嚴設移動防守位。",
                                         "action_type": "buy",
                                         "entry": entry,
                                         "sl": sl_mid,
-                                        "tp": tp_theo,
+                                        "tp": tp1,
                                         "rr": rr_real,
                                         "neckline": neckline,
                                         "support": round(neckline, 2),
-                                        "resistance": tp_theo
+                                        "resistance": tp1
                                     }
                                 else:
                                     return {
@@ -313,18 +362,18 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                         "desc": f"在 ${min_bottom:.1f} 完成雙底，頸線 ${neckline:.1f}。現價波段漲幅已走過半，盈虧比已收斂至 1:{rr_real:.1f}，空間性價比逐漸偏低。",
                                         "advice": f"⏳ 盈虧比已收斂至 1:{rr_real:.1f}，性價比不佳，建議暫時觀望或靜待回測支撐。",
                                         "action_type": "watch",
-                                        "entry": None,
+                                        "entry": entry_orig,
                                         "sl": sl_mid,
-                                        "tp": tp_theo,
+                                        "tp": tp_active,
                                         "rr": rr_real,
                                         "neckline": neckline,
                                         "support": round(neckline, 2),
-                                        "resistance": tp_theo
+                                        "resistance": tp_active
                                     }
                         else: # cur_p < neckline：逼近頸線尚未突破
                             entry_wait = round(neckline * 1.005, 2)
                             sl_wait = round(v2['price'] * 0.985, 2)
-                            rr_real = round((tp_theo - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
+                            rr_real = round((tp1 - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
                             return {
                                 "code": "double_bottom",
                                 "name": "⏳ 雙重底 (W底) 醞釀型態",
@@ -334,7 +383,7 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                 "action_type": "watch",
                                 "entry": entry_wait,
                                 "sl": sl_wait,
-                                "tp": tp_theo,
+                                "tp": tp1,
                                 "rr": rr_real,
                                 "neckline": neckline,
                                 "support": min_bottom,
@@ -376,33 +425,35 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
             if abs(v1['price'] - v3['price']) / max(v1['price'], 1e-5) <= 0.05: # 左右肩高度相近
                 neckline = max(peaks[-1]['price'], peaks[-2]['price'])
                 h_head = neckline - v2['price']
-                tp_theo = round(neckline + h_head, 2)
+                entry_orig, tp1, tp_active, progress_tp1, remaining_upside, is_over_extended, ext_label = _calc_bullish_targets(neckline, h_head, cur_p, atr)
                 if cur_p >= neckline * 0.98:
                     if cur_p >= neckline: # 已突破頸線
-                        progress = (cur_p - neckline) / max(h_head, 0.01)
-                        remaining_upside = (tp_theo - cur_p) / max(cur_p, 0.01)
-                        if progress >= 0.65 or remaining_upside < 0.035 or cur_p >= tp_theo * 0.99:
+                        if is_over_extended or progress_tp1 >= 0.65 or remaining_upside < 0.035:
                             sl_trail = round(cur_p - atr * 1.2, 2)
-                            rr_real = round(max(tp_theo - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                            rr_real = round(max(tp_active - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                            if is_over_extended:
+                                desc_text = f"大型頭肩底反轉結構：頭部 ${v2['price']:.1f}，頸線位在 ${neckline:.1f}。原等幅目標 ${tp1:.1f} 已完全超額達成（進度 {int(progress_tp1*100)}%），高檔多頭強勢延伸中，次一級延伸目標看 ${tp_active:.1f}。"
+                            else:
+                                desc_text = f"大型頭肩底反轉結構：頭部 ${v2['price']:.1f}，頸線位在 ${neckline:.1f}。目前等幅測距目標 ${tp1:.1f} 已達成 {int(progress_tp1*100)}%，剩餘空間僅剩 +{remaining_upside*100:.1f}%。"
                             return {
                                 "code": "inverse_head_shoulders",
                                 "name": "🚀 頭肩底 · 目標已近滿足警戒",
                                 "type": "bullish",
-                                "desc": f"大型頭肩底反轉結構：頭部 ${v2['price']:.1f}，頸線位在 ${neckline:.1f}。目前等幅測距目標 ${tp_theo:.1f} 已達成 {int(progress*100)}%，剩餘空間僅剩 +{remaining_upside*100:.1f}%。",
-                                "advice": f"⚠️ 等幅目標已近（剩餘空間僅 +{remaining_upside*100:.1f}%），空間耗盡嚴禁追高！持股者應採移動停利保護利潤；空手者切勿追價。",
+                                "desc": desc_text,
+                                "advice": f"⚠️ 等幅目標已達成（剩餘空間僅 +{remaining_upside*100:.1f}%），現價已遠離突破點 ${entry_orig:.1f}，嚴禁追高！持股者應採移動停利保護獲利（防守位 ${sl_trail:.1f}）；空手者切勿追價。",
                                 "action_type": "watch",
-                                "entry": None,
+                                "entry": entry_orig,
                                 "sl": sl_trail,
-                                "tp": tp_theo,
+                                "tp": tp_active,
                                 "rr": rr_real,
                                 "neckline": neckline,
                                 "support": round(neckline, 2),
-                                "resistance": tp_theo
+                                "resistance": tp_active
                             }
-                        elif progress < 0.35 and remaining_upside >= 0.04:
+                        elif progress_tp1 < 0.35 and not is_over_extended:
                             entry = round(cur_p, 2)
                             sl_breakout = round(neckline - atr * 1.0, 2)
-                            rr_real = round((tp_theo - entry) / max(entry - sl_breakout, 0.01), 2)
+                            rr_real = round((tp1 - entry) / max(entry - sl_breakout, 0.01), 2)
                             return {
                                 "code": "inverse_head_shoulders",
                                 "name": "🚀 頭肩底 (Inverse H&S) 向上突破",
@@ -412,31 +463,31 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                 "action_type": "buy",
                                 "entry": entry,
                                 "sl": sl_breakout,
-                                "tp": tp_theo,
+                                "tp": tp1,
                                 "rr": rr_real,
                                 "neckline": neckline,
                                 "support": round(neckline, 2),
-                                "resistance": tp_theo
+                                "resistance": tp1
                             }
                         else:
                             entry = round(cur_p, 2)
                             sl_mid = round(max(neckline * 0.99, cur_p - atr * 1.3), 2)
-                            rr_real = round((tp_theo - entry) / max(entry - sl_mid, 0.01), 2)
+                            rr_real = round((tp1 - entry) / max(entry - sl_mid, 0.01), 2)
                             if rr_real >= 1.4 and remaining_upside >= 0.04:
                                 return {
                                     "code": "inverse_head_shoulders",
                                     "name": "🚀 頭肩底波段延伸推進",
                                     "type": "bullish",
-                                    "desc": f"頭肩底結構完整，頸線 ${neckline:.1f}。突破後多頭持續向上推升，目前推進進度 {int(progress*100)}%，距目標 ${tp_theo:.1f} 仍有空間。",
+                                    "desc": f"頭肩底結構完整，頸線 ${neckline:.1f}。突破後多頭持續向上推升，目前推進進度 {int(progress_tp1*100)}%，距目標 ${tp1:.1f} 仍有空間。",
                                     "advice": "🎯 波段延伸推進：頭肩底多頭持續發酵，建議小量分批佈局並嚴設移動防守位。",
                                     "action_type": "buy",
                                     "entry": entry,
                                     "sl": sl_mid,
-                                    "tp": tp_theo,
+                                    "tp": tp1,
                                     "rr": rr_real,
                                     "neckline": neckline,
                                     "support": round(neckline, 2),
-                                    "resistance": tp_theo
+                                    "resistance": tp1
                                 }
                             else:
                                 return {
@@ -446,18 +497,18 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                     "desc": f"頭肩底已走過半，盈虧比已收斂至 1:{rr_real:.1f}，空間性價比逐漸偏低。",
                                     "advice": f"⏳ 盈虧比已收斂至 1:{rr_real:.1f}，性價比不佳，建議暫時觀望。",
                                     "action_type": "watch",
-                                    "entry": None,
+                                    "entry": entry_orig,
                                     "sl": sl_mid,
-                                    "tp": tp_theo,
+                                    "tp": tp_active,
                                     "rr": rr_real,
                                     "neckline": neckline,
                                     "support": round(neckline, 2),
-                                    "resistance": tp_theo
+                                    "resistance": tp_active
                                 }
                     else:
                         entry_wait = round(neckline * 1.005, 2)
                         sl_wait = round(v3['price'] * 0.985, 2)
-                        rr_real = round((tp_theo - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
+                        rr_real = round((tp1 - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
                         return {
                             "code": "inverse_head_shoulders",
                             "name": "⏳ 頭肩底右肩成型中",
@@ -467,7 +518,7 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                             "action_type": "watch",
                             "entry": entry_wait,
                             "sl": sl_wait,
-                            "tp": tp_theo,
+                            "tp": tp1,
                             "rr": rr_real,
                             "neckline": neckline,
                             "support": v3['price'],
@@ -507,33 +558,35 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
         if abs(p1['price'] - p2['price']) / max(p1['price'], 1e-5) <= 0.025 and v2['price'] > v1['price'] * 1.01:
             neckline = max(p1['price'], p2['price'])
             h_tri = neckline - v1['price']
-            tp_theo = round(neckline + h_tri, 2)
+            entry_orig, tp1, tp_active, progress_tp1, remaining_upside, is_over_extended, ext_label = _calc_bullish_targets(neckline, h_tri, cur_p, atr)
             if cur_p >= neckline * 0.99:
                 if cur_p >= neckline: # 已突破水平阻力線
-                    progress = (cur_p - neckline) / max(h_tri, 0.01)
-                    remaining_upside = (tp_theo - cur_p) / max(cur_p, 0.01)
-                    if progress >= 0.65 or remaining_upside < 0.035 or cur_p >= tp_theo * 0.99:
+                    if is_over_extended or progress_tp1 >= 0.65 or remaining_upside < 0.035:
                         sl_trail = round(cur_p - atr * 1.2, 2)
-                        rr_real = round(max(tp_theo - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                        rr_real = round(max(tp_active - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                        if is_over_extended:
+                            desc_text = f"上升三角形突破：水平壓力線 ${neckline:.1f}。原等幅目標 ${tp1:.1f} 已完全超額達成（進度 {int(progress_tp1*100)}%），高檔多頭強勢延伸中，次一級延伸目標看 ${tp_active:.1f}。"
+                        else:
+                            desc_text = f"上升三角形收斂，水平壓力線 ${neckline:.1f}。目前等幅目標 ${tp1:.1f} 已達成 {int(progress_tp1*100)}%，剩餘空間僅 +{remaining_upside*100:.1f}%。"
                         return {
                             "code": "ascending_triangle",
                             "name": "🚀 上升三角形 · 目標已近滿足警戒",
                             "type": "bullish",
-                            "desc": f"上升三角形收斂，水平壓力線 ${neckline:.1f}。目前等幅目標 ${tp_theo:.1f} 已達成 {int(progress*100)}%，剩餘空間僅 +{remaining_upside*100:.1f}%。",
-                            "advice": f"⚠️ 等幅目標已近（剩餘空間僅 +{remaining_upside*100:.1f}%），嚴禁追高！持股者應採移動停利保護獲利；空手者切勿追價。",
+                            "desc": desc_text,
+                            "advice": f"⚠️ 等幅目標已達成（剩餘空間僅 +{remaining_upside*100:.1f}%），現價已遠離突破點 ${entry_orig:.1f}，嚴禁追高！持股者應採移動停利保護獲利（防守位 ${sl_trail:.1f}）；空手者切勿追價。",
                             "action_type": "watch",
-                            "entry": None,
+                            "entry": entry_orig,
                             "sl": sl_trail,
-                            "tp": tp_theo,
+                            "tp": tp_active,
                             "rr": rr_real,
                             "neckline": neckline,
                             "support": round(neckline, 2),
-                            "resistance": tp_theo
+                            "resistance": tp_active
                         }
-                    elif progress < 0.35 and remaining_upside >= 0.04:
+                    elif progress_tp1 < 0.35 and not is_over_extended:
                         entry = round(cur_p, 2)
                         sl_breakout = round(neckline - atr * 1.0, 2) # 水平阻力跌破停損
-                        rr_real = round((tp_theo - entry) / max(entry - sl_breakout, 0.01), 2)
+                        rr_real = round((tp1 - entry) / max(entry - sl_breakout, 0.01), 2)
                         return {
                             "code": "ascending_triangle",
                             "name": "🚀 上升三角形突破確認",
@@ -543,31 +596,31 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                             "action_type": "buy",
                             "entry": entry,
                             "sl": sl_breakout,
-                            "tp": tp_theo,
+                            "tp": tp1,
                             "rr": rr_real,
                             "neckline": neckline,
                             "support": round(neckline, 2),
-                            "resistance": tp_theo
+                            "resistance": tp1
                         }
                     else:
                         entry = round(cur_p, 2)
                         sl_mid = round(max(neckline * 0.99, cur_p - atr * 1.3), 2)
-                        rr_real = round((tp_theo - entry) / max(entry - sl_mid, 0.01), 2)
+                        rr_real = round((tp1 - entry) / max(entry - sl_mid, 0.01), 2)
                         if rr_real >= 1.4 and remaining_upside >= 0.04:
                             return {
                                 "code": "ascending_triangle",
                                 "name": "🚀 上升三角形波段推進中",
                                 "type": "bullish",
-                                "desc": f"上方水平阻力 ${neckline:.1f} 已突破，目前波段推進中，距目標 ${tp_theo:.1f} 仍有空間。",
+                                "desc": f"上方水平阻力 ${neckline:.1f} 已突破，目前波段推進中，距目標 ${tp1:.1f} 仍有空間。",
                                 "advice": "🎯 波段延伸推進：三角形突破後持續走高，建議分批切入並嚴設移動防守位。",
                                 "action_type": "buy",
                                 "entry": entry,
                                 "sl": sl_mid,
-                                "tp": tp_theo,
+                                "tp": tp1,
                                 "rr": rr_real,
                                 "neckline": neckline,
                                 "support": round(neckline, 2),
-                                "resistance": tp_theo
+                                "resistance": tp1
                             }
                         else:
                             return {
@@ -577,18 +630,18 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                                 "desc": f"上升三角形突破後漲幅已走過半，盈虧比已收斂至 1:{rr_real:.1f}，空間性價比逐漸偏低。",
                                 "advice": f"⏳ 盈虧比已收斂至 1:{rr_real:.1f}，性價比不佳，建議暫時觀望。",
                                 "action_type": "watch",
-                                "entry": None,
+                                "entry": entry_orig,
                                 "sl": sl_mid,
-                                "tp": tp_theo,
+                                "tp": tp_active,
                                 "rr": rr_real,
                                 "neckline": neckline,
                                 "support": round(neckline, 2),
-                                "resistance": tp_theo
+                                "resistance": tp_active
                             }
                 else: # 逼近阻力線未突破
                     entry_wait = round(neckline * 1.005, 2)
                     sl_wait = round(v2['price'] * 0.985, 2)
-                    rr_real = round((tp_theo - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
+                    rr_real = round((tp1 - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
                     return {
                         "code": "ascending_triangle",
                         "name": "📈 上升三角形收斂末端",
@@ -598,7 +651,7 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                         "action_type": "watch",
                         "entry": entry_wait,
                         "sl": sl_wait,
-                        "tp": tp_theo,
+                        "tp": tp1,
                         "rr": rr_real,
                         "neckline": neckline,
                         "support": v2['price'],
@@ -635,34 +688,36 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
     box_low = recent_low_20
     box_h = box_high - box_low
     if box_h > 0 and (box_h / box_low) >= 0.04 and (box_h / box_low) <= 0.18:
-        tp_theo = round(box_high + box_h, 2)
+        entry_orig, tp1, tp_active, progress_tp1, remaining_upside, is_over_extended, ext_label = _calc_bullish_targets(box_high, box_h, cur_p, atr)
         # 箱型向上突破
         if cur_p >= box_high * 0.99:
             if cur_p >= box_high: # 已突破箱頂
-                progress = (cur_p - box_high) / max(box_h, 0.01)
-                remaining_upside = (tp_theo - cur_p) / max(cur_p, 0.01)
-                if progress >= 0.65 or remaining_upside < 0.035 or cur_p >= tp_theo * 0.99:
+                if is_over_extended or progress_tp1 >= 0.65 or remaining_upside < 0.035:
                     sl_trail = round(cur_p - atr * 1.2, 2)
-                    rr_real = round(max(tp_theo - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                    rr_real = round(max(tp_active - cur_p, 0) / max(cur_p - sl_trail, 0.01), 2)
+                    if is_over_extended:
+                        desc_text = f"股價突破 ${box_low:.1f} ~ ${box_high:.1f} 箱型區間。原等幅目標 ${tp1:.1f} 已完全超額達成（進度 {int(progress_tp1*100)}%），高檔多頭強勢延伸中，次一級延伸目標看 ${tp_active:.1f}。"
+                    else:
+                        desc_text = f"股價在 ${box_low:.1f} ~ ${box_high:.1f} 箱型整理。目前等幅測距目標 ${tp1:.1f} 已達成 {int(progress_tp1*100)}%，剩餘空間僅 +{remaining_upside*100:.1f}%。"
                     return {
                         "code": "rectangle_breakout",
                         "name": "📦 箱型突破 · 等幅目標已近滿足",
                         "type": "bullish",
-                        "desc": f"股價在 ${box_low:.1f} ~ ${box_high:.1f} 箱型整理。目前等幅測距目標 ${tp_theo:.1f} 已達成 {int(progress*100)}%，剩餘空間僅 +{remaining_upside*100:.1f}%。",
-                        "advice": f"⚠️ 等幅目標已近（剩餘空間僅 +{remaining_upside*100:.1f}%），空間耗盡嚴禁追高！持股者應採移動停利保護獲利；空手者切勿追價。",
+                        "desc": desc_text,
+                        "advice": f"⚠️ 等幅目標已達成（剩餘空間僅 +{remaining_upside*100:.1f}%），現價已遠離突破點 ${entry_orig:.1f}，嚴禁追高！持股者應採移動停利保護獲利（防守位 ${sl_trail:.1f}）；空手者切勿追價。",
                         "action_type": "watch",
-                        "entry": None,
+                        "entry": entry_orig,
                         "sl": sl_trail,
-                        "tp": tp_theo,
+                        "tp": tp_active,
                         "rr": rr_real,
                         "neckline": box_high,
                         "support": round(box_high, 2),
-                        "resistance": tp_theo
+                        "resistance": tp_active
                     }
-                elif progress < 0.35 and remaining_upside >= 0.04:
+                elif progress_tp1 < 0.35 and not is_over_extended:
                     entry = round(cur_p, 2)
                     sl_breakout = round(box_high - atr * 1.0, 2) # 假突破跌回箱頂下方停損
-                    rr_real = round((tp_theo - entry) / max(entry - sl_breakout, 0.01), 2)
+                    rr_real = round((tp1 - entry) / max(entry - sl_breakout, 0.01), 2)
                     return {
                         "code": "rectangle_breakout",
                         "name": "📦 箱型向上強勢突破",
@@ -672,31 +727,31 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                         "action_type": "buy",
                         "entry": entry,
                         "sl": sl_breakout,
-                        "tp": tp_theo,
+                        "tp": tp1,
                         "rr": rr_real,
                         "neckline": box_high,
                         "support": round(box_high, 2),
-                        "resistance": tp_theo
+                        "resistance": tp1
                     }
                 else:
                     entry = round(cur_p, 2)
                     sl_mid = round(max(box_high * 0.99, cur_p - atr * 1.3), 2)
-                    rr_real = round((tp_theo - entry) / max(entry - sl_mid, 0.01), 2)
+                    rr_real = round((tp1 - entry) / max(entry - sl_mid, 0.01), 2)
                     if rr_real >= 1.4 and remaining_upside >= 0.04:
                         return {
                             "code": "rectangle_breakout",
                             "name": "📦 箱型突破波段推進中",
                             "type": "bullish",
-                            "desc": f"箱頂 ${box_high:.1f} 已突破，目前波段推進中，距等幅目標 ${tp_theo:.1f} 仍有空間。",
+                            "desc": f"箱頂 ${box_high:.1f} 已突破，目前波段推進中，距等幅目標 ${tp1:.1f} 仍有空間。",
                             "advice": "🎯 波段延伸推進：突破箱型後持續走強，建議小量分批佈局並嚴設移動防守位。",
                             "action_type": "buy",
                             "entry": entry,
                             "sl": sl_mid,
-                            "tp": tp_theo,
+                            "tp": tp1,
                             "rr": rr_real,
                             "neckline": box_high,
                             "support": round(box_high, 2),
-                            "resistance": tp_theo
+                            "resistance": tp1
                         }
                     else:
                         return {
@@ -706,18 +761,18 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                             "desc": f"箱型突破後漲幅已走過半，盈虧比已收斂至 1:{rr_real:.1f}，空間性價比逐漸偏低。",
                             "advice": f"⏳ 盈虧比已收斂至 1:{rr_real:.1f}，性價比不佳，建議暫時觀望。",
                             "action_type": "watch",
-                            "entry": None,
+                            "entry": entry_orig,
                             "sl": sl_mid,
-                            "tp": tp_theo,
+                            "tp": tp_active,
                             "rr": rr_real,
                             "neckline": box_high,
                             "support": round(box_high, 2),
-                            "resistance": tp_theo
+                            "resistance": tp_active
                         }
             else:
                 entry_wait = round(box_high * 1.005, 2)
                 sl_wait = round(box_high - box_h * 0.35, 2)
-                rr_real = round((tp_theo - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
+                rr_real = round((tp1 - entry_wait) / max(entry_wait - sl_wait, 0.01), 2)
                 return {
                     "code": "rectangle_breakout",
                     "name": "⏳ 箱型上軌挑戰中",
@@ -727,7 +782,7 @@ def _detect_patterns_from_pivots(df, peaks, valleys, cur_p, atr, ma20, st_val, v
                     "action_type": "watch",
                     "entry": entry_wait,
                     "sl": sl_wait,
-                    "tp": tp_theo,
+                    "tp": tp1,
                     "rr": rr_real,
                     "neckline": box_high,
                     "support": box_low,
