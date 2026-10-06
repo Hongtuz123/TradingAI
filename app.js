@@ -20024,92 +20024,9 @@ function renderPatternModalContent() {
   const instChipDesc = formatInstChipDesc(s, report.metrics);
 
   container.innerHTML = `
-    <!-- # 1. 基本資訊 -->
+    <!-- # 01. 目前 K 線型態量化解構與操作計畫 (最核心置頂第一屏) -->
     <div class="pattern-section-title">
-      <span class="tag">#01</span> 基本資訊與分析環境 (時框：${tf === '4H' ? '4小時 4H' : '日線 1D'})
-    </div>
-    <div class="pattern-info-card">
-      <div class="info-item">
-        <span class="info-item-label">股票標的</span>
-        <span class="info-item-val">${s.id} ${s.name} (${s.market || '台股'})</span>
-      </div>
-      <div class="info-item">
-        <span class="info-item-label">產業類別</span>
-        <span class="info-item-val">${s.industry || '一般族群'}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-item-label">當前市價 / 漲跌</span>
-        <span class="info-item-val" style="color:${(s.change||0)>=0?'#f87171':'#4ade80'}">$${curPrice} (${(s.change||0)>0?'+':''}${s.change||0}%)</span>
-      </div>
-      <div class="info-item">
-        <span class="info-item-label">分析時框基準</span>
-        <span class="info-item-val" style="color:#f97316;">${tf === '4H' ? '⏱️ 4H K線 (60分重採樣)' : '📅 1D 日線 (250日歷史)'}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-item-label">荳荳量化總評分</span>
-        <span class="info-item-val" style="color:#f59e0b;">${tf === '4H' ? (s.totalScore_4h || s.totalScore || 70) : (s.totalScore || 70)} 分</span>
-      </div>
-      <div class="info-item">
-        <span class="info-item-label">當前量能規模</span>
-        <span class="info-item-val">${dailyVolStr} (量比 ${volMultStr})</span>
-      </div>
-    </div>
-
-    <!-- # 2. 判斷指標 -->
-    <div class="pattern-section-title" style="margin-top:6px;">
-      <span class="tag">#02</span> 多維度量化判斷指標 (成交量 / 籌碼 / 波動率 / 大趨勢)
-    </div>
-    <div class="pattern-metrics-grid">
-      <!-- 成交量指標 -->
-      <div class="pattern-metric-card">
-        <div class="metric-header">
-          <span class="metric-name">📊 成交量量能診斷</span>
-          <span class="metric-badge" style="background:rgba(249,115,22,0.18);color:#fdba74;">20MA 基準</span>
-        </div>
-        <div class="metric-detail">
-          ${report.metrics ? report.metrics.volume_desc : `量能比 ${s.volRatio || 1.0}x，日成交約 ${dailyVolStr}`}
-        </div>
-      </div>
-
-      <!-- 三大法人籌碼 (外資、投信、自營商必定全部包含) -->
-      <div class="pattern-metric-card">
-        <div class="metric-header">
-          <span class="metric-name">🏆 三大法人買賣超動態</span>
-          <span class="metric-badge" style="background:rgba(59,130,246,0.18);color:#93c5fd;">主力追蹤</span>
-        </div>
-        <div class="metric-detail" style="line-height:1.45;">
-          ${instChipDesc}
-        </div>
-      </div>
-
-      <!-- 波動率指標 -->
-      <div class="pattern-metric-card">
-        <div class="metric-header">
-          <span class="metric-name">⚡ 波動率與布林帶寬</span>
-          <span class="metric-badge" style="background:rgba(168,85,247,0.18);color:#d8b4fe;">ATR14 / BB</span>
-        </div>
-        <div class="metric-detail">
-          ${report.metrics ? report.metrics.volatility_desc : `ATR波動 $${report.metrics?.volatility_atr || (curPrice*0.025).toFixed(2)}，常態震盪`}
-        </div>
-      </div>
-
-      <!-- 大趨勢方向 -->
-      <div class="pattern-metric-card">
-        <div class="metric-header">
-          <span class="metric-name">🧭 大趨勢多空方向</span>
-          <span class="metric-badge" style="background:${report.metrics?.trend_status==='bear'?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${report.metrics?.trend_status==='bear'?'#f87171':'#4ade80'};">
-            ${report.metrics?.trend_status==='bear'?'空方下壓':'多頭主控'}
-          </span>
-        </div>
-        <div class="metric-detail">
-          ${report.metrics ? report.metrics.trend_direction : (s.supertrend === -1 ? '🔴 超級趨勢 SuperTrend 空方下壓' : '🟢 超級趨勢 SuperTrend 多頭確立')}
-        </div>
-      </div>
-    </div>
-
-    <!-- # 3. 目前型態量化解構與操作計畫 -->
-    <div class="pattern-section-title" style="margin-top:6px;">
-      <span class="tag">#03</span> 目前 K 線型態量化解構與操作計畫
+      <span class="tag">#01</span> 目前 K 線型態量化解構與操作計畫 (核心焦點)
     </div>
     <div class="pattern-core-card ${isBearish ? 'is-bearish-warning' : ''}">
       <div class="pattern-headline-row">
@@ -20171,6 +20088,89 @@ function renderPatternModalContent() {
         <span class="pivot-tag">🔑 關鍵頸線/軸心：<strong>$${report.neckline ? parseFloat(report.neckline).toFixed(2) : '--'}</strong></span>
         <span class="pivot-tag">🛡️ 型態下檔支撐：<strong>$${report.support ? parseFloat(report.support).toFixed(2) : '--'}</strong></span>
         <span class="pivot-tag">🚧 上檔目標壓力：<strong>$${report.resistance ? parseFloat(report.resistance).toFixed(2) : '--'}</strong></span>
+      </div>
+    </div>
+
+    <!-- # 02. 多維度量化判斷指標 -->
+    <div class="pattern-section-title" style="margin-top:10px;">
+      <span class="tag">#02</span> 多維度量化判斷指標 (成交量 / 籌碼 / 波動率 / 大趨勢)
+    </div>
+    <div class="pattern-metrics-grid">
+      <!-- 成交量指標 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">📊 成交量量能診斷</span>
+          <span class="metric-badge" style="background:rgba(249,115,22,0.18);color:#fdba74;">20MA 基準</span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.volume_desc : `量能比 ${s.volRatio || 1.0}x，日成交約 ${dailyVolStr}`}
+        </div>
+      </div>
+
+      <!-- 三大法人籌碼 (外資、投信、自營商必定全部包含) -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">🏆 三大法人買賣超動態</span>
+          <span class="metric-badge" style="background:rgba(59,130,246,0.18);color:#93c5fd;">主力追蹤</span>
+        </div>
+        <div class="metric-detail" style="line-height:1.45;">
+          ${instChipDesc}
+        </div>
+      </div>
+
+      <!-- 波動率指標 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">⚡ 波動率與布林帶寬</span>
+          <span class="metric-badge" style="background:rgba(168,85,247,0.18);color:#d8b4fe;">ATR14 / BB</span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.volatility_desc : `ATR波動 $${report.metrics?.volatility_atr || (curPrice*0.025).toFixed(2)}，常態震盪`}
+        </div>
+      </div>
+
+      <!-- 大趨勢方向 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">🧭 大趨勢多空方向</span>
+          <span class="metric-badge" style="background:${report.metrics?.trend_status==='bear'?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${report.metrics?.trend_status==='bear'?'#f87171':'#4ade80'};">
+            ${report.metrics?.trend_status==='bear'?'空方下壓':'多頭主控'}
+          </span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.trend_direction : (s.supertrend === -1 ? '🔴 超級趨勢 SuperTrend 空方下壓' : '🟢 超級趨勢 SuperTrend 多頭確立')}
+        </div>
+      </div>
+    </div>
+
+    <!-- # 03. 基本資訊與分析環境 -->
+    <div class="pattern-section-title" style="margin-top:10px;">
+      <span class="tag">#03</span> 基本資訊與分析環境 (時框：${tf === '4H' ? '4小時 4H' : '日線 1D'})
+    </div>
+    <div class="pattern-info-card">
+      <div class="info-item">
+        <span class="info-item-label">股票標的</span>
+        <span class="info-item-val">${s.id} ${s.name} (${s.market || '台股'})</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">產業類別</span>
+        <span class="info-item-val">${s.industry || '一般族群'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">當前市價 / 漲跌</span>
+        <span class="info-item-val" style="color:${(s.change||0)>=0?'#f87171':'#4ade80'}">$${curPrice} (${(s.change||0)>0?'+':''}${s.change||0}%)</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">分析時框基準</span>
+        <span class="info-item-val" style="color:#f97316;">${tf === '4H' ? '⏱️ 4H K線 (60分重採樣)' : '📅 1D 日線 (250日歷史)'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">荳荳量化總評分</span>
+        <span class="info-item-val" style="color:#f59e0b;">${tf === '4H' ? (s.totalScore_4h || s.totalScore || 70) : (s.totalScore || 70)} 分</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">當前量能規模</span>
+        <span class="info-item-val">${dailyVolStr} (量比 ${volMultStr})</span>
       </div>
     </div>
   `;

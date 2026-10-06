@@ -6073,18 +6073,24 @@ body {
   transform: translateY(0);
 }
 
-/* Modal 對話框本體 */
+/* Modal 外層遮罩 (支援黃金標準全屏自然平滑捲動) */
+#patternReportModal {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 30px 0;
+  align-items: flex-start !important;
+}
+
+/* Modal 對話框本體 (自然延展，margin: auto 實現安全垂直置中與防截斷) */
 .pattern-report-dialog {
   background: #111827;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   width: 92%;
-  max-width: 840px;
-  height: 88vh;
-  max-height: 88vh;
+  max-width: 860px;
+  margin: auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(249, 115, 22, 0.15);
   animation: patternModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -6100,11 +6106,15 @@ body {
   }
 }
 
-/* Header 區塊 (禁止被 flex 擠壓) */
+/* Header 區塊 (吸頂 Sticky 支援) */
 .pattern-modal-header {
-  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   padding: 16px 20px;
-  background: linear-gradient(180deg, rgba(31, 41, 55, 0.85) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: rgba(17, 24, 39, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: flex-start;
@@ -6204,14 +6214,18 @@ body {
   color: #64748b;
 }
 
-/* 時框切換列 (禁止被 flex 擠壓) */
+/* 時框切換列 */
 .pattern-tf-switcher {
-  flex-shrink: 0;
+  position: sticky;
+  top: 75px;
+  z-index: 15;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background: rgba(24, 32, 47, 0.65);
+  background: rgba(24, 32, 47, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-wrap: wrap;
   gap: 10px;
@@ -6255,15 +6269,9 @@ body {
   box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
 }
 
-/* 報告內容捲動主體 (關鍵修正：min-height: 0 確保 flex 子項目觸發 overflow 捲動) */
+/* 報告內容主體 (全屏自然排版流) */
 .pattern-modal-body {
   padding: 18px 20px 28px 20px;
-  overflow-y: auto !important;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  flex: 1 1 0px;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
