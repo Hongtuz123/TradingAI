@@ -19460,15 +19460,15 @@ window.sendTestSignalPush = function(signalType = 'buy') {
 
   if (signalType === 'buy') {
     title = `🟢 [${timeStr}] 2330 台積電 · 買進 (1D+4H)`;
-    body = `現價 $995.00 (+2.58%) ｜ 量能放大 1.62x ｜ 點擊查看荳荳精選買進清單 🐕`;
+    body = `觸發價 $995.00 (+2.58%) ｜ 量能放大 1.62x ｜ 點擊查看荳荳精選買進清單 🐕`;
     targetFilter = 'buy';
   } else if (signalType === 'closed') {
     title = `🔴 [${timeStr}] 2603 長榮 · 獲利平倉 (1D+4H)`;
-    body = `跌破移動停利線或轉弱 ｜ 執行平倉保護獲利 ｜ 點擊查看已賣出清單 🐕`;
+    body = `觸發價 $185.00 (-1.80%) ｜ 跌破移動停利線或轉弱 ｜ 點擊查看已賣出清單 🐕`;
     targetFilter = 'closed';
   } else if (signalType === 'add') {
     title = `🔵 [${timeStr}] 2454 聯發科 · 加碼買進 (1D+4H)`;
-    body = `主升段爆量續攻 ｜ 雙時框多頭共振 ｜ 點擊查看加碼標的清單 🐕`;
+    body = `觸發價 $1,280.00 (+3.20%) ｜ 主升段爆量續攻 ｜ 點擊查看加碼標的清單 🐕`;
     targetFilter = 'add';
   }
 

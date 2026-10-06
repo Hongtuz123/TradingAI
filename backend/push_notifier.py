@@ -143,64 +143,141 @@ def send_pwa_push_notification(buy_signals=None, add_buy_signals=None, sell_sign
     if not buys and not adds and not sells:
         return True
 
-    # 優先發送最高優質的 🟢 買進訊號，無買進則發送 🔵 加碼訊號，其次賣出
-    target_stock = None
-    sig_action = "買進"
-    sig_emoji = "🟢"
-    filter_type = "buy"
-
-    if buys:
-        target_stock = buys[0]
-        sig_action = "買進"
-        sig_emoji = "🟢"
-        filter_type = "buy"
-    elif adds:
-        target_stock = adds[0]
-        sig_action = "加碼"
-        sig_emoji = "🔵"
-        filter_type = "add"
-    elif sells:
-        target_stock = sells[0]
-        sig_action = "賣出"
-        sig_emoji = "🔴"
-        filter_type = "closed"
-
-    if not target_stock:
-        return True
-
-    code = target_stock.get('id', '')
-    name = target_stock.get('name', '')
-    market = target_stock.get('market', 'TSE')
-    price = target_stock.get('price', 0)
-    change = target_stock.get('change', 0)
-    score = int(get_sort_score(target_stock))
-    vol_r = get_vol_ratio(target_stock)
-    chg_str = f"+{change:.2f}%" if change >= 0 else f"{change:.2f}%"
-
     # 格式化訊號時間 (取 HH:MM)
+    from datetime import datetime, timezone, timedelta
     if not time_str:
-        from datetime import datetime, timezone, timedelta
         tz = timezone(timedelta(hours=8))
         time_display = datetime.now(tz).strftime("%H:%M")
     else:
         parts = str(time_str).strip().split()
         time_display = parts[-1][:5] if len(parts) > 1 else parts[0][:5]
 
-    timeframe_label = target_stock.get('timeframe', '1D+4H')
+    def _fmt_stock_item(s):
+        c = str(s.get('id', '')).strip()
+        n = str(s.get('name', '')).strip()
+        p = float(s.get('price', 0) or 0)
+        chg = float(s.get('change', 0) or 0)
+        chg_str = f"+{chg:.2f}%" if chg >= 0 else f"{chg:.2f}%"
+        p_str = f"${p:,.2f}" if p >= 100 else f"${p:.2f}"
+        return f"{c} {n} {p_str} ({chg_str})"
 
-    # 🎯 規範格式：訊號時間 + 股票代碼 + 股票名稱 + 訊號(買進/賣出/加碼) + 對應交易時框
-    push_title = f"{sig_emoji} [{time_display}] {code} {name} · {sig_action} ({timeframe_label})"
-    push_body = f"現價 ${price:.2f} ({chg_str}) ｜ 量能放大 {vol_r:.2f}x ｜ 點擊查看荳荳精選清單 🐕"
+    active_types = [t for t, lst in [('buy', buys), ('add', adds), ('closed', sells)] if lst]
+
+    if len(active_types) > 1:
+        # ⚡️ 跨類型混合訊號：全數合併為單一則推播
+        total_count = len(buys) + len(adds) + len(sells)
+        filter_type = "buy" if buys else ("add" if adds else "closed")
+        primary_stock = (buys or adds or sells)[0]
+        sig_code = primary_stock.get('id', '')
+        primary_score = int(get_sort_score(primary_stock))
+        primary_market = primary_stock.get('market', 'TSE')
+
+        summary_parts = []
+        if buys: summary_parts.append(f"買進 {len(buys)}")
+        if adds: summary_parts.append(f"加碼 {len(adds)}")
+        if sells: summary_parts.append(f"賣出 {len(sells)}")
+
+        push_title = f"⚡️ [{time_display}] 荳荳 AI 觸發 {total_count} 檔訊號 ({' · '.join(summary_parts)})"
+
+        detail_parts = []
+        if buys:
+            b_str = "、".join([_fmt_stock_item(s) for s in buys[:2]])
+            if len(buys) > 2: b_str += f" 等共 {len(buys)} 檔"
+            detail_parts.append(f"🟢買進: {b_str}")
+        if adds:
+            a_str = "、".join([_fmt_stock_item(s) for s in adds[:2]])
+            if len(adds) > 2: a_str += f" 等共 {len(adds)} 檔"
+            detail_parts.append(f"🔵加碼: {a_str}")
+        if sells:
+            s_str = "、".join([_fmt_stock_item(s) for s in sells[:2]])
+            if len(sells) > 2: s_str += f" 等共 {len(sells)} 檔"
+            detail_parts.append(f"🔴賣出: {s_str}")
+
+        push_body = " ｜ ".join(detail_parts) + " 🐕"
+
+    elif buys:
+        filter_type = "buy"
+        count = len(buys)
+        primary_stock = buys[0]
+        sig_code = primary_stock.get('id', '')
+        primary_score = int(get_sort_score(primary_stock))
+        primary_market = primary_stock.get('market', 'TSE')
+        
+        if count == 1:
+            p_val = float(primary_stock.get('price', 0) or 0)
+            p_str = f"${p_val:,.2f}" if p_val >= 100 else f"${p_val:.2f}"
+            chg = float(primary_stock.get('change', 0) or 0)
+            chg_str = f"+{chg:.2f}%" if chg >= 0 else f"{chg:.2f}%"
+            vol_r = get_vol_ratio(primary_stock)
+            tf_label = primary_stock.get('timeframe', '1D+4H')
+            
+            push_title = f"🟢 [{time_display}] {sig_code} {primary_stock.get('name', '')} · 買進 ({tf_label})"
+            push_body = f"觸發價 {p_str} ({chg_str}) ｜ 量能放大 {vol_r:.2f}x ｜ 點擊查看荳荳清單 🐕"
+        else:
+            items_str = "、".join([_fmt_stock_item(s) for s in buys[:3]])
+            if count > 3:
+                items_str += f" 等共 {count} 檔"
+            push_title = f"🟢 [{time_display}] 荳荳 AI 觸發 {count} 檔精選買進！"
+            push_body = f"{items_str} 帶量起爆，點擊立即查看買進清單 🐕"
+
+    elif adds:
+        filter_type = "add"
+        count = len(adds)
+        primary_stock = adds[0]
+        sig_code = primary_stock.get('id', '')
+        primary_score = int(get_sort_score(primary_stock))
+        primary_market = primary_stock.get('market', 'TSE')
+
+        if count == 1:
+            p_val = float(primary_stock.get('price', 0) or 0)
+            p_str = f"${p_val:,.2f}" if p_val >= 100 else f"${p_val:.2f}"
+            chg = float(primary_stock.get('change', 0) or 0)
+            chg_str = f"+{chg:.2f}%" if chg >= 0 else f"{chg:.2f}%"
+            vol_r = get_vol_ratio(primary_stock)
+            tf_label = primary_stock.get('timeframe', '1D+4H')
+
+            push_title = f"🔵 [{time_display}] {sig_code} {primary_stock.get('name', '')} · 加碼 ({tf_label})"
+            push_body = f"觸發價 {p_str} ({chg_str}) ｜ 量能放大 {vol_r:.2f}x ｜ 點擊查看荳荳清單 🐕"
+        else:
+            items_str = "、".join([_fmt_stock_item(s) for s in adds[:3]])
+            if count > 3:
+                items_str += f" 等共 {count} 檔"
+            push_title = f"🔵 [{time_display}] 荳荳 AI 觸發 {count} 檔加碼訊號！"
+            push_body = f"{items_str} 突破加碼，點擊立即查看加碼清單 🐕"
+
+    elif sells:
+        filter_type = "closed"
+        count = len(sells)
+        primary_stock = sells[0]
+        sig_code = primary_stock.get('id', '')
+        primary_score = int(get_sort_score(primary_stock))
+        primary_market = primary_stock.get('market', 'TSE')
+
+        if count == 1:
+            p_val = float(primary_stock.get('price', 0) or 0)
+            p_str = f"${p_val:,.2f}" if p_val >= 100 else f"${p_val:.2f}"
+            chg = float(primary_stock.get('change', 0) or 0)
+            chg_str = f"+{chg:.2f}%" if chg >= 0 else f"{chg:.2f}%"
+
+            push_title = f"🔴 [{time_display}] {sig_code} {primary_stock.get('name', '')} · 賣出"
+            push_body = f"觸發價 {p_str} ({chg_str}) ｜ 跌破防守停損位，點擊查看已賣出清單 🐕"
+        else:
+            items_str = "、".join([_fmt_stock_item(s) for s in sells[:3]])
+            if count > 3:
+                items_str += f" 等共 {count} 檔"
+            push_title = f"🔴 [{time_display}] 荳荳 AI 觸發 {count} 檔賣出訊號！"
+            push_body = f"{items_str} 觸發防守離場，點擊立即查看已賣出清單 🐕"
+
     system_target_url = f"https://trading-ai-eosin-zeta.vercel.app/?view=screener&filter={filter_type}"
 
     payload = {
         "title": push_title,
         "body": push_body,
-        "tag": f"doudou-{code}-{int(datetime.now().timestamp()) if 'datetime' in locals() else 0}",
+        "tag": f"doudou-{filter_type}-{int(datetime.now().timestamp())}",
         "data": {
-            "symbol": code,
-            "market": market,
-            "score": score,
+            "symbol": sig_code,
+            "market": primary_market,
+            "score": primary_score,
             "view": "screener",
             "filter": filter_type,
             "url": system_target_url
