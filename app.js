@@ -19071,6 +19071,56 @@ window.copyPushSubscriptionJson = async function() {
   }
 };
 
+// 🔑 強制重設並向 Apple APNs 換發全新門牌 (徹底根除舊金鑰殘留)
+window.forceRenewPushSubscription = async function() {
+  try {
+    if (!('serviceWorker' in navigator)) {
+      alert('瀏覽器不支援 Service Worker');
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.pushManager) {
+      alert('瀏覽器未就緒推播管理器');
+      return;
+    }
+
+    // 1. 強制註銷本機目前持有的所有訂閱
+    const oldSub = await reg.pushManager.getSubscription();
+    if (oldSub) {
+      try {
+        await oldSub.unsubscribe();
+        console.log('[NativePush] 舊門牌已成功註銷');
+      } catch (unsubErr) {
+        console.warn('註銷異常:', unsubErr);
+      }
+    }
+    localStorage.removeItem('doudou_native_push_sub');
+
+    // 2. 以最新 VAPID 公鑰向 Apple APNs 申請全新門牌
+    const vapidKey = window.VAPID_PUBLIC_KEY || 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
+    const newSub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlB64ToUint8Array(vapidKey)
+    });
+
+    if (!newSub) {
+      throw new Error('Apple APNs 未回傳新門牌');
+    }
+
+    const str = JSON.stringify(newSub);
+    localStorage.setItem('doudou_native_push_sub', str);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(str);
+    }
+    alert('🎉 換發成功！已向 Apple APNs 取得全新門牌！\n\n新代碼已自動複製，請直接貼在對話中給我！');
+    if (typeof updatePushModalStatus === 'function') updatePushModalStatus();
+  } catch (err) {
+    console.error('[NativePush] 強制換發異常:', err);
+    alert('⚠️ 換發失敗: ' + (err.message || err));
+  }
+};
+
 // 即時更新彈窗內的裝置與權限狀態
 window.updatePushModalStatus = async function() {
   const osEl = document.getElementById('pwaOsVal');

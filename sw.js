@@ -1,5 +1,5 @@
 // 🐾 荳荳 AI 智能選股 — 原生標準 Web Push Service Worker
-const CACHE_NAME = 'doudou-ai-cache-v5.1-native';
+const CACHE_NAME = 'doudou-ai-cache-v5.2-native';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

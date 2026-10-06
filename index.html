@@ -1207,6 +1207,12 @@
           <span>複製我的手機推播門牌代碼 (供後端直接登記)</span>
         </button>
 
+        <!-- 🔑 強制向 Apple 換發全新門牌 (重設專用) -->
+        <button type="button" class="pwa-renew-sub-btn" onclick="forceRenewPushSubscription()" style="background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+          <span>🔑</span>
+          <span>強制重設並換發全新金鑰 (解決舊門牌失效問題)</span>
+        </button>
+
         <!-- ⚡ 買進/賣出/加碼三合一測試推播操作區 -->
         <div style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin: 6px 0 2px; text-align: left;">
           ⚡ 發送訊號推播測試 (驗證手機點擊自動切換)：
@@ -1226,7 +1232,7 @@
         <!-- 🔄 強制清除舊快取按鈕 -->
         <button class="pwa-refresh-cache-btn" onclick="forceClearPwaCache()" style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; width: 100%;">
           <span>🔄</span>
-          <span>清除舊快取並獲取最新版本 (解決舊畫面問題)</span>
+          <span>清除舊快取並獲取最新版本 (解決舊畫面問題 · v82 原生版)</span>
         </button>
       </div>
 
@@ -1237,9 +1243,9 @@
   </div>
 
   <!-- 腳本 -->
-  <script src="data.js?v=81"></script>
-  <script src="app.js?v=81"></script>
-  <script src="stock-dashboard.js?v=81"></script>
+  <script src="data.js?v=82"></script>
+  <script src="app.js?v=82"></script>
+  <script src="stock-dashboard.js?v=82"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
