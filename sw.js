@@ -10,7 +10,7 @@ function isOneSignalPayload(json) {
   return !!(json && json.custom && typeof json.custom.i === 'string');
 }
 
-const CACHE_NAME = 'doudou-ai-cache-v4.5';
+const CACHE_NAME = 'doudou-ai-cache-v4.6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

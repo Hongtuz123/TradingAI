@@ -19081,13 +19081,28 @@ window.updatePushModalStatus = function() {
     if (iosBox) iosBox.style.display = 'none';
   }
 
+  // 檢驗真實 OneSignal 雲端訂閱狀態
+  const os = window._os || window.OneSignal;
+  const subId = os && os.User && os.User.PushSubscription && os.User.PushSubscription.id;
+  const isOptedIn = os && os.User && os.User.PushSubscription && os.User.PushSubscription.optedIn;
+
   // 主按鈕文字與狀態
   if (mainBtn) {
     if (('Notification' in window) && Notification.permission === 'granted') {
-      mainBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-      mainBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.4)';
-      if (mainIcon) mainIcon.innerText = '✅';
-      if (mainText) mainText.innerText = '推播服務已就緒 (已連線 OneSignal)';
+      if (subId || isOptedIn) {
+        mainBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        mainBtn.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.4)';
+        if (mainIcon) mainIcon.innerText = '✅';
+        const displayId = subId ? ` (ID: ${subId.slice(0, 8)}...)` : '';
+        if (mainText) mainText.innerText = `雲端推播已連線${displayId}`;
+      } else {
+        mainBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+        mainBtn.style.boxShadow = '0 4px 16px rgba(245, 158, 11, 0.4)';
+        if (mainIcon) mainIcon.innerText = '🔄';
+        if (mainText) mainText.innerText = '點擊立即同步綁定 OneSignal 雲端推播';
+        // 背景自動嘗試同步
+        _syncOneSignalOptIn();
+      }
     } else if (('Notification' in window) && Notification.permission === 'denied') {
       mainBtn.style.background = 'rgba(239, 68, 68, 0.2)';
       mainBtn.style.border = '1px solid rgba(239, 68, 68, 0.5)';
@@ -19158,12 +19173,10 @@ window.togglePushNotification = async function() {
   }
 
   // 3. ★★★ 關鍵核心：在點擊的第一時間立即觸發原生 Notification.requestPermission() ★★★
-  // 不等待任何異步 script 載入，確保 100% 綁定使用者點擊手勢 (User Activation Token)
   let perm = Notification.permission;
   if (perm !== 'granted') {
     _toast('🔔 請在彈出的確認視窗中點擊「允許」...');
     try {
-      // 支援標準 Promise 與舊版 callback 兼容寫法
       perm = await new Promise((resolve) => {
         const res = Notification.requestPermission(resolve);
         if (res && res.then) {
@@ -19175,18 +19188,17 @@ window.togglePushNotification = async function() {
     }
   }
 
-  // 若使用者點擊了允許
+  // 若使用者點擊了允許，或早已允許（點擊執行重新同步）
   if (perm === 'granted' || Notification.permission === 'granted') {
-    _toast('🎉 授權成功！系統推播已開啟！');
+    _toast('🔄 正在同步 OneSignal 雲端註冊...');
+    await _syncOneSignalOptIn();
+    _toast('🎉 雲端連線同步完成！');
     if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
 
-    // 立即發送一則本地測試推播，讓使用者手機頂部立刻彈出通知橫幅
+    // 發送一則本地測試推播確認
     setTimeout(() => {
       sendTestNotification('2330', '', 'TSE');
     }, 600);
-
-    // 4. 背景非同步向 OneSignal 雲端同步註冊裝置
-    _syncOneSignalOptIn();
   } else if (perm === 'denied' || Notification.permission === 'denied') {
     _toast('❌ 您點擊了拒絕。若需接收訊號，請至手機設定中重新開啟通知。');
     if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
@@ -19239,7 +19251,8 @@ async function _syncOneSignalOptIn() {
 
     if (os.User && os.User.PushSubscription && os.User.PushSubscription.optIn) {
       await os.User.PushSubscription.optIn();
-      console.log('[OneSignal] Cloud registration synced.');
+      console.log('[OneSignal] Cloud registration synced. Sub ID:', os.User.PushSubscription.id);
+      if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
     }
   } catch(e) {
     console.warn('[OneSignal] _syncOneSignalOptIn background error:', e);

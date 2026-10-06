@@ -50,9 +50,30 @@
           // ⚠️ 未開啟時 OneSignal 會忽略 serviceWorkerPath，改註冊後台預設的 OneSignalSDKWorker.js，與 sw.js 互相覆蓋
           serviceWorkerOverrideForTypical: true
         });
-        // ★ 儲存 reference，供 button handler 直接使用
         window._os = OneSignal;
-        console.log('[OneSignal] Init OK, _os ready, id:', OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.id);
+        console.log('[OneSignal] Init OK, _os ready');
+
+        // ★ 核心修復：若瀏覽器早已授權通知，必須自動呼叫 optIn() 向 OneSignal 雲端註冊此手機
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            if (OneSignal.User && OneSignal.User.PushSubscription) {
+              if (OneSignal.User.PushSubscription.optIn) {
+                console.log('[OneSignal] 偵測到已獲通知授權，自動觸發雲端 optIn()...');
+                await OneSignal.User.PushSubscription.optIn();
+              }
+              if (OneSignal.User.PushSubscription.addEventListener) {
+                OneSignal.User.PushSubscription.addEventListener('change', function(evt) {
+                  console.log('[OneSignal] 訂閱狀態變更:', evt);
+                  if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+                });
+              }
+              console.log('[OneSignal] 雲端 optIn 完成！Subscription ID:', OneSignal.User.PushSubscription.id);
+              if (typeof checkPushPermissionStatus === 'function') checkPushPermissionStatus();
+            }
+          } catch (optErr) {
+            console.warn('[OneSignal] auto optIn error:', optErr);
+          }
+        }
 
         // 🎯 監聽 OneSignal 推播通知點擊，精準切換至荳荳清單與指定篩選
         if (OneSignal.Notifications && OneSignal.Notifications.addEventListener) {
