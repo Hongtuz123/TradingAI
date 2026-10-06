@@ -5,6 +5,7 @@ import time
 import yfinance as yf
 import os
 import csv
+from backend.pattern_analyzer import resample_60m_to_4h, analyze_chart_patterns
 
 # =====================================================
 # 自選觀察名單（一定會被納入，不受成交量門檻限制）
@@ -1319,7 +1320,7 @@ def run_screener(force=False):
             if df_stock.empty or len(df_stock) < 20:
                 raise ValueError("歷史資料筆數不足 20 筆或全為 NaN")
 
-            # 2. 處理 4H K線重採樣 (將 1H 資料重採樣為 4H K線)
+            # 2. 處理 4H K線重採樣 (將 60分/1H 資料精準重採樣為 4H K線)
             df_4h_calc = pd.DataFrame()
             try:
                 if not df_1h_all.empty:
@@ -1329,14 +1330,11 @@ def run_screener(force=False):
                     else:
                         df_1h_stock = df_1h_all.dropna(subset=['Close'])
                     
-                    if not df_1h_stock.empty and len(df_1h_stock) >= 20:
-                        df_1h_rename = df_1h_stock.rename(columns={'Open':'open','High':'high','Low':'low','Close':'close','Volume':'volume'})
-                        df_4h_resampled = df_1h_rename.resample('4h').agg({
-                            'open': 'first', 'high': 'max', 'low': 'min', 'close': 'last', 'volume': 'sum'
-                        }).dropna()
-                        if len(df_4h_resampled) >= 20:
+                    if not df_1h_stock.empty and len(df_1h_stock) >= 15:
+                        df_4h_resampled = resample_60m_to_4h(df_1h_stock)
+                        if not df_4h_resampled.empty and len(df_4h_resampled) >= 10:
                             df_4h_calc = calc_indicators(df_4h_resampled)
-            except Exception:
+            except Exception as e:
                 df_4h_calc = pd.DataFrame()
                 
             candles = []
@@ -1496,7 +1494,17 @@ def run_screener(force=False):
                 supertrend_4h = int(latest_4h.get('supertrend', 1)) if 'supertrend' in latest_4h else supertrend_val
                 prev_supertrend_4h = int(df_4h_calc.iloc[-2].get('supertrend', 1)) if (len(df_4h_calc) >= 2 and 'supertrend' in df_4h_calc.iloc[-2]) else supertrend_4h
                 adx_4h = round(float(latest_4h.get('adx', 0)), 2) if 'adx' in latest_4h else adx_val
-                kline_4h_list = [{'open': row['open'], 'close': row['close'], 'high': row['high'], 'low': row['low']} for _, row in df_4h_calc.tail(20).iterrows()]
+                kline_4h_list = [
+                    {
+                        'date': str(row.get('date', '')),
+                        'open': round(float(row['open']), 2),
+                        'close': round(float(row['close']), 2),
+                        'high': round(float(row['high']), 2),
+                        'low': round(float(row['low']), 2),
+                        'volume': int(row.get('volume', 0))
+                    }
+                    for _, row in df_4h_calc.tail(60).iterrows()
+                ]
             else:
                 vol_ratio_4h = vol_ratio
                 supertrend_4h = supertrend_val
@@ -1538,6 +1546,20 @@ def run_screener(force=False):
                 f_chip_4h = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
                 sc_4h = min(100, max(0, f_adx_4h + f_ma_4h + f_vol_4h + f_pat_4h + f_chip_4h - penalty))
 
+            # ── 3. 荳荳 AI 8 大類 16 種 K 線幾何型態深度分析 (1D 與 4H 雙時框) ───
+            stock_meta_info = {
+                'id': symbol,
+                'name': name,
+                'dailyVol': vol // 1000,
+                'trustDays': trust_net_buy,
+                'foreignNetBuy': foreign_net_buy,
+                'dealerDays': dealer_net_buy,
+                'instSum5D': inst_sum_5d
+            }
+            pattern_1d_report = analyze_chart_patterns(df, timeframe="1D", live_price=close, stock_info=stock_meta_info)
+            df_for_4h_pat = df_4h_calc if (not df_4h_calc.empty and len(df_4h_calc) >= 15) else df
+            pattern_4h_report = analyze_chart_patterns(df_for_4h_pat, timeframe="4H", live_price=close, stock_info=stock_meta_info)
+
             # 判斷是否為 ETF（00 開頭且代碼長度 >= 5 之純數字標的）
             _is_etf = symbol.isdigit() and symbol.startswith('00') and len(symbol) >= 5
 
@@ -1571,6 +1593,8 @@ def run_screener(force=False):
                 "adx_4h": adx_4h,
                 "totalScore": sc_1d,
                 "totalScore_4h": sc_4h,
+                "pattern_1d": pattern_1d_report,
+                "pattern_4h": pattern_4h_report,
                 "kline_4h": kline_4h_list,
                 "turnover": turnover_val,
                 "marketCap": market_cap_val, "dailyVol": vol // 1000,
@@ -1590,6 +1614,7 @@ def run_screener(force=False):
                 "blacklist": [],
                 "kline": sorted(candles, key=lambda x: x['date'])[-250:]
             })
+
             
         except Exception as e:
             # 醒目紅色警示
@@ -1953,7 +1978,9 @@ def run_screener(force=False):
             "dist52W": s.get("dist52W"),
             "rsi14": s.get("rsi14"),
             "type": s.get("type", ""),
-            # === K 線 ===
+            # === K 線與型態報告 ===
+            "pattern_1d": s.get("pattern_1d"),
+            "pattern_4h": s.get("pattern_4h"),
             "kline": s["kline"],
             "kline_4h": s.get("kline_4h", [])
         })

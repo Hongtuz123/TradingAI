@@ -6037,3 +6037,562 @@ body {
     box-shadow: 0 0 6px #4ade80;
   }
 }
+
+/* ==========================================================================
+   🐾 荳荳 AI - 深度 K 線幾何型態量化報告 (1D & 4H 雙時框) 樣式系統
+   ========================================================================== */
+
+/* 荳荳清單表格「操作」欄位按鈕 */
+.pattern-report-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(234, 88, 12, 0.12) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  color: #fb923c;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.15);
+  white-space: nowrap;
+}
+
+.pattern-report-btn:hover {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.38) 0%, rgba(234, 88, 12, 0.25) 100%);
+  border-color: #f97316;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.pattern-report-btn:active {
+  transform: translateY(0);
+}
+
+/* Modal 對話框本體 */
+.pattern-report-dialog {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  width: 92%;
+  max-width: 820px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(249, 115, 22, 0.15);
+  animation: patternModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes patternModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header 區塊 */
+.pattern-modal-header {
+  padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0.85) 0%, rgba(17, 24, 39, 0.95) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pattern-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pattern-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #f97316;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pattern-badge-pill {
+  background: rgba(249, 115, 22, 0.18);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  color: #fdba74;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pattern-stock-headline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stock-id-badge {
+  background: #1f2937;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #93c5fd;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.stock-name-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.stock-industry-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.stock-live-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', monospace, sans-serif;
+}
+
+.stock-change-pill {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.stock-change-pill.up {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.stock-change-pill.down {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.pattern-meta-time {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* 時框切換列 */
+.pattern-tf-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(24, 32, 47, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tf-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.tf-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.tf-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tf-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+.tf-pill-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-color: #f97316;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+}
+
+/* 報告內容捲動主體 */
+.pattern-modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+/* 模組區塊標題 */
+.pattern-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pattern-section-title span.tag {
+  color: #f97316;
+  font-weight: 900;
+}
+
+/* 區塊 1: 基本資訊卡片 */
+.pattern-info-card {
+  background: rgba(31, 41, 55, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.info-item-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.info-item-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+/* 區塊 2: 判斷指標網格 */
+.pattern-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .pattern-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pattern-metric-card {
+  background: rgba(31, 41, 55, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.metric-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.metric-detail {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.4;
+}
+
+/* 區塊 3: 目前型態核心卡片 */
+.pattern-core-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1.5px solid rgba(249, 115, 22, 0.35);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 空方高危險警示卡片專屬視覺 (選項 2) */
+.pattern-core-card.is-bearish-warning {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: linear-gradient(180deg, rgba(69, 10, 10, 0.45) 0%, rgba(20, 8, 8, 0.85) 100%);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.15) inset;
+}
+
+.pattern-headline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pattern-headline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.pattern-type-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.pattern-type-tag.bullish {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.pattern-type-tag.bearish_warning {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  animation: pulseWarning 2s infinite ease-in-out;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pattern-type-tag.neutral {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* 型態敘述 */
+.pattern-desc-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 3px solid #f97316;
+}
+
+.is-bearish-warning .pattern-desc-text {
+  border-left-color: #ef4444;
+}
+
+/* 操作建議 Banner */
+.pattern-action-banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.45;
+}
+
+.pattern-action-banner.buy {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+.pattern-action-banner.watch {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde047;
+}
+
+.pattern-action-banner.warning {
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+/* 點位四宮格矩陣 */
+.pattern-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .pattern-levels-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.level-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+
+.level-card.entry {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.level-card.sl {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.level-card.tp {
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.level-card.rr {
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.level-card-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.level-card-val {
+  font-size: 16px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace, sans-serif;
+  color: #ffffff;
+}
+
+.level-card.entry .level-card-val { color: #4ade80; }
+.level-card.sl .level-card-val { color: #f87171; }
+.level-card.tp .level-card-val { color: #60a5fa; }
+.level-card.rr .level-card-val { color: #fb923c; }
+
+/* 關鍵幾何參考位 */
+.pattern-pivot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.pivot-tag strong {
+  color: #f1f5f9;
+}
+
+/* Modal 底部按鈕列 */
+.pattern-modal-footer {
+  padding: 14px 20px;
+  background: rgba(17, 24, 39, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-pattern-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pattern-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.btn-pattern-chart {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border: 1px solid #f97316;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-pattern-chart:hover {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.5);
+  transform: translateY(-1px);
+}

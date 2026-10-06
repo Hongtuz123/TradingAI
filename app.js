@@ -4307,8 +4307,11 @@ function renderScreenerTable(data) {
       <td>${s.volRatio}x</td>
       <td>
         ${statusActionTag}
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:4px;">
           <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:10px;padding:2px 6px;border-radius:4px;">評分: ${s.dynamicScore || s.totalScore || s.score || 70}分</span>
+          <button class="pattern-report-btn" onclick="event.stopPropagation(); openPatternReportModal('${s.id}')" title="查看 1D/4H 深度型態與點位分析報告">
+            <span>📄</span> 型態報告
+          </button>
         </div>
       </td>
     `;
@@ -19700,7 +19703,12 @@ window.renderDoudouScreenerList = function() {
         <td>${s.dealerDays || 0}張</td>
         <td>${s.volRatio ? parseFloat(s.volRatio).toFixed(2) + 'x' : '1.00x'}</td>
         <td>
-          <button class="btn-secondary" style="padding:2px 6px; font-size:11px;" onclick="switchView('chart'); loadTVChartFromScreener('${s.id}')">📈 K線</button>
+          <div style="display:inline-flex; align-items:center; gap:5px; flex-wrap:nowrap;">
+            <button class="pattern-report-btn" onclick="event.stopPropagation(); openPatternReportModal('${s.id}')" title="查看 1D/4H 深度型態與點位分析報告">
+              <span>📄</span> 型態報告
+            </button>
+            <button class="btn-secondary" style="padding:4px 7px; font-size:11px;" onclick="event.stopPropagation(); switchView('chart'); loadTVChartFromScreener('${s.id}')">📈 K線</button>
+          </div>
         </td>
       </tr>
     `;
@@ -19839,3 +19847,349 @@ if (typeof handleDeepLinkNavigation === 'function') {
   setTimeout(handleDeepLinkNavigation, 300);
   window.addEventListener('load', handleDeepLinkNavigation);
 }
+
+// ==========================================================================
+// 🐾 荳荳 AI - 深度 K 線幾何型態量化報告 (1D & 4H 雙時框) 交互與渲染系統
+// ==========================================================================
+let currentPatternReportStock = null;
+let currentPatternReportTf = '1D'; // '1D' or '4H'
+
+window.openPatternReportModal = function(stockId) {
+  if (!stockId) return;
+  const sId = String(stockId).trim();
+
+  // 從 mockStocks 或 currentResults 找到股票物件
+  let stock = null;
+  if (Array.isArray(window.mockStocks)) {
+    stock = window.mockStocks.find(s => String(s.id).trim() === sId || String(s.id).padStart(4, '0') === sId);
+  }
+  if (!stock && Array.isArray(window.currentResults)) {
+    stock = window.currentResults.find(s => String(s.id).trim() === sId || String(s.id).padStart(4, '0') === sId);
+  }
+
+  if (!stock) {
+    stock = {
+      id: sId,
+      name: sId,
+      price: 100,
+      change: 0,
+      industry: '一般族群',
+      kline: []
+    };
+  }
+
+  currentPatternReportStock = stock;
+  currentPatternReportTf = '1D'; // 預設打開 1D 日線
+
+  const modalEl = document.getElementById('patternReportModal');
+  if (!modalEl) return;
+
+  // 設定頂部資訊
+  const sNameEl = document.getElementById('pmStockName');
+  if (sNameEl) sNameEl.textContent = stock.name || stock.id;
+  const sIdEl = document.getElementById('pmStockId');
+  if (sIdEl) sIdEl.textContent = stock.id;
+  const sIndEl = document.getElementById('pmStockIndustry');
+  if (sIndEl) sIndEl.textContent = stock.industry || '上市/上櫃普通股';
+
+  const curPrice = stock.livePrice || stock.price || 0;
+  const chgVal = stock.liveChange !== undefined ? stock.liveChange : (stock.change || 0);
+  const sPriceEl = document.getElementById('pmStockPrice');
+  if (sPriceEl) sPriceEl.textContent = `$${parseFloat(curPrice).toFixed(2)}`;
+
+  const sChgEl = document.getElementById('pmStockChange');
+  if (sChgEl) {
+    sChgEl.textContent = `${chgVal > 0 ? '+' : ''}${parseFloat(chgVal).toFixed(2)}%`;
+    sChgEl.className = `stock-change-pill ${chgVal >= 0 ? 'up' : 'down'}`;
+  }
+
+  const nowTaipei = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false });
+  const sMetaTimeEl = document.getElementById('pmMetaTime');
+  if (sMetaTimeEl) sMetaTimeEl.textContent = `📅 運算時間：${nowTaipei} (60m 重採樣 4H 雙時框幾何引擎)`;
+
+  // 初始化時框切換按鈕狀態
+  updatePatternModalTfButtons('1D');
+
+  // 渲染報告內容
+  renderPatternModalContent();
+
+  // 顯示 Modal
+  modalEl.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+window.switchPatternModalTimeframe = function(tf) {
+  currentPatternReportTf = tf;
+  updatePatternModalTfButtons(tf);
+  renderPatternModalContent();
+};
+
+function updatePatternModalTfButtons(tf) {
+  const btn1d = document.getElementById('tfBtn_1D');
+  const btn4h = document.getElementById('tfBtn_4H');
+  if (btn1d && btn4h) {
+    if (tf === '4H') {
+      btn1d.classList.remove('active');
+      btn4h.classList.add('active');
+    } else {
+      btn1d.classList.add('active');
+      btn4h.classList.remove('active');
+    }
+  }
+}
+
+function renderPatternModalContent() {
+  const container = document.getElementById('patternModalBody');
+  if (!container || !currentPatternReportStock) return;
+
+  const s = currentPatternReportStock;
+  const tf = currentPatternReportTf;
+
+  let report = tf === '4H' ? s.pattern_4h : s.pattern_1d;
+  if (!report) {
+    report = generateClientSidePatternFallback(s, tf);
+  }
+
+  const pType = report.pattern_type || 'bullish';
+  const isBearish = (pType === 'bearish_warning');
+  const actionType = report.action_type || (isBearish ? 'warning' : 'buy');
+
+  const entryStr = report.entry_price ? `$${parseFloat(report.entry_price).toFixed(2)}` : (isBearish ? '❌ 嚴禁開多' : '待突破確認');
+  const slStr = report.stop_loss ? `$${parseFloat(report.stop_loss).toFixed(2)}` : '--';
+  const tpStr = report.take_profit ? `$${parseFloat(report.take_profit).toFixed(2)}` : (isBearish ? '下探測距' : '--');
+  const rrStr = report.risk_reward_ratio && report.risk_reward_ratio > 0 ? `1 : ${parseFloat(report.risk_reward_ratio).toFixed(1)}` : (isBearish ? '高風險' : '--');
+
+  let typeTagHtml = '';
+  if (isBearish) {
+    typeTagHtml = `<span class="pattern-type-tag bearish_warning">⚠️ 空方高危險警示區 (嚴禁做多/持股防守)</span>`;
+  } else if (pType === 'bullish') {
+    typeTagHtml = `<span class="pattern-type-tag bullish">🚀 多方攻擊/突破延續</span>`;
+  } else {
+    typeTagHtml = `<span class="pattern-type-tag neutral">⏸️ 區間平衡整理觀察</span>`;
+  }
+
+  const curPrice = s.livePrice || s.price || 0;
+  const dailyVolStr = s.dailyVol ? `${s.dailyVol} 張` : '--';
+  const volMultStr = report.metrics ? `${report.metrics.volume_mult || 1.0}x` : `${s.volRatio || 1.0}x`;
+
+  container.innerHTML = `
+    <!-- # 1. 基本資訊 -->
+    <div class="pattern-section-title">
+      <span class="tag">#01</span> 基本資訊與分析環境 (時框：${tf === '4H' ? '4小時 4H' : '日線 1D'})
+    </div>
+    <div class="pattern-info-card">
+      <div class="info-item">
+        <span class="info-item-label">股票標的</span>
+        <span class="info-item-val">${s.id} ${s.name} (${s.market || '台股'})</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">產業類別</span>
+        <span class="info-item-val">${s.industry || '一般族群'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">當前市價 / 漲跌</span>
+        <span class="info-item-val" style="color:${(s.change||0)>=0?'#f87171':'#4ade80'}">$${curPrice} (${(s.change||0)>0?'+':''}${s.change||0}%)</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">分析時框基準</span>
+        <span class="info-item-val" style="color:#f97316;">${tf === '4H' ? '⏱️ 4H K線 (60分重採樣)' : '📅 1D 日線 (250日歷史)'}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">荳荳量化總評分</span>
+        <span class="info-item-val" style="color:#f59e0b;">${tf === '4H' ? (s.totalScore_4h || s.totalScore || 70) : (s.totalScore || 70)} 分</span>
+      </div>
+      <div class="info-item">
+        <span class="info-item-label">當前量能規模</span>
+        <span class="info-item-val">${dailyVolStr} (量比 ${volMultStr})</span>
+      </div>
+    </div>
+
+    <!-- # 2. 判斷指標 -->
+    <div class="pattern-section-title" style="margin-top:6px;">
+      <span class="tag">#02</span> 多維度量化判斷指標 (成交量 / 籌碼 / 波動率 / 大趨勢)
+    </div>
+    <div class="pattern-metrics-grid">
+      <!-- 成交量指標 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">📊 成交量量能診斷</span>
+          <span class="metric-badge" style="background:rgba(249,115,22,0.18);color:#fdba74;">20MA 基準</span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.volume_desc : `量能比 ${s.volRatio || 1.0}x，日成交約 ${dailyVolStr}`}
+        </div>
+      </div>
+
+      <!-- 三大法人籌碼 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">🏆 三大法人買賣超動態</span>
+          <span class="metric-badge" style="background:rgba(59,130,246,0.18);color:#93c5fd;">主力追蹤</span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.inst_chip : `投信 ${s.trustDays||0}張、外資 ${s.foreignNetBuy||0}張、自營商 ${s.dealerDays||0}張`}
+        </div>
+      </div>
+
+      <!-- 波動率指標 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">⚡ 波動率與布林帶寬</span>
+          <span class="metric-badge" style="background:rgba(168,85,247,0.18);color:#d8b4fe;">ATR14 / BB</span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.volatility_desc : `ATR波動 $${report.metrics?.volatility_atr || '--'}，常態震盪`}
+        </div>
+      </div>
+
+      <!-- 大趨勢方向 -->
+      <div class="pattern-metric-card">
+        <div class="metric-header">
+          <span class="metric-name">🧭 大趨勢多空方向</span>
+          <span class="metric-badge" style="background:${report.metrics?.trend_status==='bear'?'rgba(239,68,68,0.2)':'rgba(34,197,94,0.2)'};color:${report.metrics?.trend_status==='bear'?'#f87171':'#4ade80'};">
+            ${report.metrics?.trend_status==='bear'?'空方下壓':'多頭主控'}
+          </span>
+        </div>
+        <div class="metric-detail">
+          ${report.metrics ? report.metrics.trend_direction : (s.supertrend === -1 ? '🔴 超級趨勢 SuperTrend 空方下壓' : '🟢 超級趨勢 SuperTrend 多頭確立')}
+        </div>
+      </div>
+    </div>
+
+    <!-- # 3. 目前型態量化解構與操作計畫 -->
+    <div class="pattern-section-title" style="margin-top:6px;">
+      <span class="tag">#03</span> 目前 K 線型態量化解構與操作計畫
+    </div>
+    <div class="pattern-core-card ${isBearish ? 'is-bearish-warning' : ''}">
+      <div class="pattern-headline-row">
+        <div class="pattern-headline-badge">
+          <span>${report.pattern_name}</span>
+        </div>
+        ${typeTagHtml}
+      </div>
+
+      <!-- 型態特徵概述 -->
+      <div class="pattern-desc-text">
+        ${report.pattern_desc}
+      </div>
+
+      <!-- 建議操作結論 -->
+      <div class="pattern-action-banner ${actionType === 'warning' ? 'warning' : (actionType === 'buy' ? 'buy' : 'watch')}">
+        <span>${report.action_advice}</span>
+      </div>
+
+      <!-- 關鍵點位四宮格矩陣 -->
+      <div class="pattern-levels-grid">
+        <div class="level-card entry">
+          <span class="level-card-label">🎯 建議進場點 (Entry)</span>
+          <span class="level-card-val">${entryStr}</span>
+        </div>
+        <div class="level-card sl">
+          <span class="level-card-label">🛑 建議止損點 (SL)</span>
+          <span class="level-card-val">${slStr}</span>
+        </div>
+        <div class="level-card tp">
+          <span class="level-card-label">🏁 建議止盈點 (TP)</span>
+          <span class="level-card-val">${tpStr}</span>
+        </div>
+        <div class="level-card rr">
+          <span class="level-card-label">⚖️ 風險報酬比 (R:R)</span>
+          <span class="level-card-val">${rrStr}</span>
+        </div>
+      </div>
+
+      <!-- 關鍵幾何參考位 -->
+      <div class="pattern-pivot-row">
+        <span class="pivot-tag">🔑 關鍵頸線/軸心：<strong>$${report.neckline ? parseFloat(report.neckline).toFixed(2) : '--'}</strong></span>
+        <span class="pivot-tag">🛡️ 型態下檔支撐：<strong>$${report.support ? parseFloat(report.support).toFixed(2) : '--'}</strong></span>
+        <span class="pivot-tag">🚧 上檔目標壓力：<strong>$${report.resistance ? parseFloat(report.resistance).toFixed(2) : '--'}</strong></span>
+      </div>
+    </div>
+  `;
+}
+
+function generateClientSidePatternFallback(s, tf) {
+  const p = parseFloat(s.livePrice || s.price || 100);
+  const atr = parseFloat(s.atr14 || (p * 0.025)).toFixed(2);
+  const st = s.supertrend === -1 ? -1 : 1;
+  const isBear = (st === -1);
+
+  if (isBear) {
+    return {
+      timeframe: tf,
+      pattern_code: 'bearish_warning_fallback',
+      pattern_name: '⚠️ 空方趨勢下壓警戒區',
+      pattern_type: 'bearish_warning',
+      pattern_desc: `此標的目前在 ${tf} 時框下受到空頭 SuperTrend 壓制，均線呈現空方發散排列，反彈動能衰弱。`,
+      action_advice: '⚠️ 空方高危警戒：嚴禁開新多單！手中若有持股請嚴守防守位，避免深度套牢風險！',
+      action_type: 'warning',
+      entry_price: null,
+      stop_loss: parseFloat((p * 0.98).toFixed(2)),
+      take_profit: parseFloat((p * 0.92).toFixed(2)),
+      risk_reward_ratio: 0.0,
+      neckline: parseFloat(p.toFixed(2)),
+      support: parseFloat((p * 0.95).toFixed(2)),
+      resistance: parseFloat((p * 1.05).toFixed(2)),
+      metrics: {
+        volume_mult: parseFloat(s.volRatio || 1.0),
+        volume_desc: `量能比 ${s.volRatio || 1.0}x`,
+        inst_chip: `投信 ${s.trustDays||0}張、外資 ${s.foreignNetBuy||0}張`,
+        volatility_atr: parseFloat(atr),
+        volatility_desc: `ATR波動 $${atr}`,
+        trend_direction: '🔴 空方下壓控盤，反彈無力',
+        trend_status: 'bear'
+      }
+    };
+  }
+
+  return {
+    timeframe: tf,
+    pattern_code: 'bullish_trend_fallback',
+    pattern_name: '📈 多頭趨勢發散推進型態',
+    pattern_type: 'bullish',
+    pattern_desc: `此標的在 ${tf} 時框下 SuperTrend 維持多方，量價結構穩健，支撐墊高向上。`,
+    action_advice: '🎯 建議順勢操作：回踩短期均線支撐附近分批佈局做多，嚴守停損點。',
+    action_type: 'buy',
+    entry_price: parseFloat(p.toFixed(2)),
+    stop_loss: parseFloat((p - atr * 1.5).toFixed(2)),
+    take_profit: parseFloat((p + atr * 2.5).toFixed(2)),
+    risk_reward_ratio: 1.7,
+    neckline: parseFloat((p * 1.03).toFixed(2)),
+    support: parseFloat((p * 0.97).toFixed(2)),
+    resistance: parseFloat((p * 1.06).toFixed(2)),
+    metrics: {
+      volume_mult: parseFloat(s.volRatio || 1.0),
+      volume_desc: `量能比 ${s.volRatio || 1.0}x`,
+      inst_chip: `投信 ${s.trustDays||0}張、外資 ${s.foreignNetBuy||0}張`,
+      volatility_atr: parseFloat(atr),
+      volatility_desc: `ATR波動 $${atr}`,
+      trend_direction: '🟢 多頭常態推進，技術面強健',
+      trend_status: 'bull'
+    }
+  };
+}
+
+window.closePatternReportModal = function() {
+  const modalEl = document.getElementById('patternReportModal');
+  if (modalEl) modalEl.style.display = 'none';
+  document.body.style.overflow = '';
+};
+
+window.handlePatternModalBackdropClick = function(e) {
+  if (e.target && e.target.id === 'patternReportModal') {
+    closePatternReportModal();
+  }
+};
+
+window.goToStockChartFromPattern = function() {
+  if (!currentPatternReportStock) return;
+  const sId = currentPatternReportStock.id;
+  closePatternReportModal();
+  if (typeof switchView === 'function') switchView('chart');
+  if (typeof loadTVChartFromScreener === 'function') {
+    loadTVChartFromScreener(sId);
+  } else if (typeof loadStockChart === 'function') {
+    loadStockChart(sId);
+  }
+};
+
