@@ -2027,6 +2027,10 @@ def run_screener(force=False):
             continue
         s = stock_map.get(sym_id)
         if not s:
+            # 🚀 自動清理已被移除名單的歷史幽靈標的 (標記平倉並於3天後徹底移除)
+            pos_state[sym_id]['status'] = 'CLOSED'
+            pos_state[sym_id]['sell_reason'] = '標的已自追蹤名單移除汰換'
+            pos_state[sym_id]['exit_time'] = now_str
             continue
         
         price   = s.get('price', 0)
@@ -2038,12 +2042,22 @@ def run_screener(force=False):
         vol_r   = abs(float(s.get('volRatio', 1.0) or 1.0))  # BUG 3 修復：取 abs() 防負數異常
         last_add_time = pos_info.get('last_add_buy_time', '')
 
-        # 🔴 賣出判定 (最優先保護機制)：任一時框 SuperTrend 翻紅空頭，或是 跌破 -20% 停損價
-        is_st_bear  = (st_1d == -1 or st_4h == -1)
+        # 🔴 賣出判定 (最優先保護機制)：
+        # A. 跌破 -20% 停損價
+        # B. 任一時框 SuperTrend 翻紅空頭
+        # C. 雙時框評分均跌破 50 分 (多因子動能竭盡汰弱留強)
+        is_st_bear   = (st_1d == -1 or st_4h == -1)
         is_stop_loss = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
+        is_score_decay = (sc_1d < 50 and sc_4h < 50) and (price > 0)
 
-        if is_stop_loss or is_st_bear:
-            sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})" if is_stop_loss else "SuperTrend 趨勢轉為空頭"
+        if is_stop_loss or is_st_bear or is_score_decay:
+            if is_stop_loss:
+                sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})"
+            elif is_st_bear:
+                sell_reason = "SuperTrend 趨勢轉為空頭"
+            else:
+                sell_reason = f"綜合評分轉弱 ({max(sc_1d, sc_4h)}分 < 50分) 動能竭盡出場"
+
             s['sell_reason'] = sell_reason
             s['exit_price'] = price
             s['exit_time'] = now_str

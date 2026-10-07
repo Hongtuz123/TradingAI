@@ -4364,7 +4364,7 @@ function renderScreenerTable(data) {
     } else if (window.activeSignalFilter !== 'all') {
       emptyMsg = '目前無符合此交易訊號分類的標的';
     }
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 25px; color: var(--text-muted); font-size:13px;">${emptyMsg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 25px; color: var(--text-muted); font-size:13px;">${emptyMsg}</td></tr>`;
     return;
   }
 
@@ -4408,7 +4408,6 @@ function renderScreenerTable(data) {
       <td><strong style="color:var(--warning)">${s.dynamicScore || s.totalScore || s.score || 70}分</strong></td>
       <td>${s.eps != null ? `$${parseFloat(s.eps).toFixed(2)}` : '--'}<br><span style="font-size:10px;color:var(--text-muted)">YoY: ${s.epsYoY != null ? (s.epsYoY>0?'+':'') + s.epsYoY + '%' : '--'}</span></td>
       <td>${s.revYoY != null ? s.revYoY + '%' : '--'}</td>
-      <td>${s.roe != null ? s.roe + '%' : '--'}</td>
       <td class="inst-main-cell">
         <div class="inst-main-summary-row">
           <span class="inst-net-pill ${mainNetClass}">${mainNetText}</span>
@@ -19789,7 +19788,6 @@ window.renderDoudouScreenerList = function() {
         <td style="color:#f59e0b; font-weight:bold; font-size:14px;">${scoreVal}分</td>
         <td>${epsVal}${epsYoYHtml}</td>
         <td>${s.revYoY !== null && s.revYoY !== undefined ? s.revYoY + '%' : '--'}</td>
-        <td>${roeVal}</td>
         <td class="inst-main-cell">
           <div class="inst-main-summary-row">
             <span class="inst-net-pill ${mainNetClass}">${mainNetText}</span>
@@ -19826,7 +19824,12 @@ window.toggleStockInstDetail = function(stockId) {
   } else {
     window.expandedInstRows.add(stockId);
   }
-  renderDoudouScreenerList();
+  
+  if (typeof applyTechFiltersAndRender === 'function') {
+    applyTechFiltersAndRender();
+  } else if (typeof renderDoudouScreenerList === 'function') {
+    renderDoudouScreenerList();
+  }
 };
 
 window.toggleAllInstDetails = function() {
@@ -19843,7 +19846,11 @@ window.toggleAllInstDetails = function() {
   if (btn) {
     btn.textContent = window.allInstDetailsExpanded ? '收合 ▴' : '明細 ▾';
   }
-  renderDoudouScreenerList();
+  if (typeof applyTechFiltersAndRender === 'function') {
+    applyTechFiltersAndRender();
+  } else if (typeof renderDoudouScreenerList === 'function') {
+    renderDoudouScreenerList();
+  }
 };
 
 window.runScreener = function() {
