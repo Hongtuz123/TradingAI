@@ -52,34 +52,6 @@ def format_stock_code(code_str):
             return f"00{val}"
     return code_str
 
-def read_stock_list_from_csv(csv_path):
-    """從 CSV 讀取 400 隻股票清單，回傳格式化的代碼與名稱列表"""
-    stocks = []
-    if not os.path.exists(csv_path):
-        print(f"❌ 找不到 CSV 檔案：{csv_path}")
-        return stocks
-        
-    try:
-        # 使用 utf-8-sig 以處理 Excel 可能產生的 BOM 頭
-        with open(csv_path, 'r', encoding='utf-8-sig') as f:
-            reader = csv.reader(f)
-            header = next(reader, None) # 跳過標題列
-            for row in reader:
-                if len(row) >= 3:
-                    # 股票代碼在第 2 欄 (index 1)，股票名稱在第 3 欄 (index 2)
-                    raw_code = row[1].strip()
-                    raw_name = row[2].strip()
-                    if raw_code:
-                        formatted_code = format_stock_code(raw_code)
-                        stocks.append({
-                            'Code': formatted_code,
-                            'Name': raw_name
-                        })
-    except Exception as e:
-        print(f"讀取 CSV 失敗: {e}")
-        
-    return stocks
-
 def load_all_market_info():
     """從 TWSE/TPEX OpenAPI 抓取今日所有上市櫃股票的基本資訊"""
     all_listed = {}
@@ -700,34 +672,6 @@ def calc_market_health():
         'otc':  twoii_data.get('above_60ma', True),
         'vol':  bool(vol_above_20ma) if vol_above_20ma is not None else True,
     }
-
-
-def get_historical_candles(symbol, market='TSE', days=250):
-    """
-    使用 yfinance 取得歷史 OHLCV（日線）
-    台股代號自動附加 .TW（上市）或 .TWO（上櫃）
-    """
-    suffix = '.TWO' if market == 'OTC' else '.TW'
-    yf_symbol = f"{symbol}{suffix}"
-    try:
-        ticker = yf.Ticker(yf_symbol)
-        hist = ticker.history(period=f"{days}d", interval='1d')
-        if hist.empty:
-            return []
-        candles = []
-        for dt, row in hist.iterrows():
-            candles.append({
-                'date': dt.strftime('%Y-%m-%d'),
-                'open':   round(float(row['Open']),  2),
-                'high':   round(float(row['High']),  2),
-                'low':    round(float(row['Low']),   2),
-                'close':  round(float(row['Close']), 2),
-                'volume': int(row['Volume']),
-            })
-        return candles
-    except Exception as e:
-        print(f'  [yfinance] {yf_symbol} 抓取失敗: {e}')
-        return []
 
 
 def calc_indicators(df):
