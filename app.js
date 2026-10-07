@@ -4001,233 +4001,91 @@ function runScreener(isAutoRefresh = false) {
 
 
 window.evaluateManualStock = function() {
-
-
-
-  const inputEl = document.getElementById('screenerManualInput');
-
-
-
+  const searchInput = document.getElementById('screenerSearchInput');
+  const manualInput = document.getElementById('screenerManualInput');
   const resultEl = document.getElementById('manualEvalResult');
 
-
-
-  if (!inputEl || !resultEl) return;
-
-
-
-
-
-
-
-  const rawCode = inputEl.value.trim();
-
-
-
-  if (!rawCode) {
-
-
-
-    resultEl.style.display = 'none';
-
-
-
+  const rawQuery = (searchInput?.value || manualInput?.value || '').trim();
+  if (!rawQuery) {
+    if (resultEl) resultEl.style.display = 'none';
     return;
-
-
-
   }
 
+  // 1. 全方位候選池檢索 (包含 mockStocks、RAW_DATA、currentResults 等)
+  const candidatePools = [];
+  if (typeof mockStocks !== 'undefined' && Array.isArray(mockStocks)) candidatePools.push(mockStocks);
+  if (typeof window !== 'undefined' && Array.isArray(window.mockStocks)) candidatePools.push(window.mockStocks);
+  if (typeof RAW_DATA !== 'undefined' && RAW_DATA && Array.isArray(RAW_DATA.mockStocks)) candidatePools.push(RAW_DATA.mockStocks);
+  if (typeof window !== 'undefined' && window._rawMarketData && Array.isArray(window._rawMarketData.mockStocks)) candidatePools.push(window._rawMarketData.mockStocks);
+  if (typeof currentResults !== 'undefined' && Array.isArray(currentResults)) candidatePools.push(currentResults);
+  if (typeof window !== 'undefined' && Array.isArray(window.currentResults)) candidatePools.push(window.currentResults);
 
+  const cleanQuery = rawQuery.replace(/[^0-9a-zA-Z\u4e00-\u9fa5]/g, '');
+  const isDigits = /^\d+$/.test(rawQuery);
+  const numVal = isDigits ? parseInt(rawQuery, 10) : null;
+  const paddedId = isDigits ? String(rawQuery).padStart(4, '0') : '';
 
+  let targetStock = null;
 
+  // 搜尋優先級：
+  // 1. 代碼完全吻合 (含補零)
+  // 2. 名稱完全吻合 (如 "台達電")
+  // 3. 名稱開頭吻合 (如 "台達")
+  // 4. 名稱包含吻合
+  // 5. 代碼包含吻合
+  for (const pool of candidatePools) {
+    if (!pool || !pool.length) continue;
 
+    // 優先級 1: 代碼精準匹配
+    targetStock = pool.find(item => {
+      if (!item) return false;
+      const itemId = String(item.id || '').trim();
+      const itemNum = parseInt(itemId, 10);
+      return itemId === rawQuery || itemId === paddedId || (numVal !== null && itemNum === numVal);
+    });
+    if (targetStock) break;
 
+    // 優先級 2: 名稱精準完全匹配
+    targetStock = pool.find(item => item && item.name && item.name.trim() === rawQuery);
+    if (targetStock) break;
 
-  // 補零邏輯補正
+    // 優先級 3: 名稱開頭匹配
+    targetStock = pool.find(item => item && item.name && item.name.trim().startsWith(rawQuery));
+    if (targetStock) break;
 
+    // 優先級 4: 名稱包含匹配
+    targetStock = pool.find(item => item && item.name && (item.name.includes(rawQuery) || (cleanQuery && item.name.includes(cleanQuery))));
+    if (targetStock) break;
 
-
-  let code = rawCode;
-
-
-
-  if (code.isdigit ? code.isdigit() : /^\d+$/.test(code)) {
-
-
-
-    const val = parseInt(code, 10);
-
-
-
-    if (val < 100) code = String(val).padStart(4, '0');
-
-
-
-    else if (val < 1000) code = '00' + val;
-
-
-
+    // 優先級 5: 代碼包含匹配
+    targetStock = pool.find(item => item && item.id && String(item.id).includes(rawQuery));
+    if (targetStock) break;
   }
 
-
-
-
-
-
-
-  const s = mockStocks.find(item => item.id === code);
-
-
-
-  if (!s) {
-
-
-
-    resultEl.style.display = 'block';
-
-
-
-    resultEl.innerHTML = `<div style="font-size: 12px; color: var(--danger); font-weight: bold; margin-top: 4px;">❌ 找不到代碼 ${code} 的個股資料</div>`;
-
-
-
+  if (!targetStock) {
+    if (resultEl) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `
+        <div style="font-size: 12px; color: #f87171; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 8px 12px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span>❌ 找不到符合「<strong>${rawQuery}</strong>」的個股資料，請確認股票代碼（如 2308）或名稱（如 台達電）</span>
+          <button type="button" onclick="document.getElementById('manualEvalResult').style.display='none'" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;">✕</button>
+        </div>
+      `;
+    }
     return;
-
-
-
   }
 
-
-
-
-
-
-
-  // 計算並取得即時評分與指標
-
-
-
-  // 為了精準，如果已經有 dynamicScore 則直接用，否則做基本回防
-
-
-
-  const score = s.dynamicScore !== undefined ? s.dynamicScore : 60;
-
-
-
-  const passed = s.passedIndicators && s.passedIndicators.length > 0 ? s.passedIndicators : ['無明顯技術加分項目'];
-
-
-
-  const failed = s.failedConditions && s.failedConditions.length > 0 ? s.failedConditions : [];
-
-
-
-
-
-
-
-  let advice = '';
-
-
-
-  if (score >= 80) advice = '<span style="color: var(--success);">🟢 多頭強勢</span>';
-
-
-
-  else if (score >= 60) advice = '<span style="color: var(--warning);">🟡 中性觀察</span>';
-
-
-
-  else advice = '<span style="color: var(--danger);">🔴 偏弱不建議</span>';
-
-
-
-
-
-
-
-  resultEl.style.display = 'block';
-
-
-
-  resultEl.innerHTML = `
-
-
-
-    <div style="font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.15); margin-top: 8px; padding-top: 8px;">
-
-
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-
-
-
-        <strong style="color: white;">${s.id} ${s.name}</strong>
-
-
-
-        <strong>評分: <span style="color: var(--warning);">${score} 分</span></strong>
-
-
-
-      </div>
-
-
-
-      <div style="margin-bottom: 6px; font-size: 11px;">狀態評級: ${advice}</div>
-
-
-
-      <div style="color: var(--success); font-size: 11px; font-weight: bold; margin-bottom: 4px;">✓ 通過項目：</div>
-
-
-
-      <ul style="margin: 0; padding-left: 12px; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
-
-
-
-        ${passed.map(p => `<li>${p}</li>`).join('')}
-
-
-
-      </ul>
-
-
-
-      ${failed.length > 0 ? `
-
-
-
-        <div style="color: var(--danger); font-size: 11px; font-weight: bold; margin-top: 6px; margin-bottom: 4px;">✗ 未達門檻：</div>
-
-
-
-        <ul style="margin: 0; padding-left: 12px; color: var(--text-muted); font-size: 11px; line-height: 1.4;">
-
-
-
-          ${failed.map(f => `<li>${f}</li>`).join('')}
-
-
-
-        </ul>
-
-
-
-      ` : ''}
-
-
-
-    </div>
-
-
-
-  `;
-
-
-
+  // 命中個股！隱藏錯誤提示，並立即開啟型態報告與健檢 Modal
+  if (resultEl) resultEl.style.display = 'none';
+
+  // 同步將搜尋框輸入字串填入正規的「代碼 名稱」，讓使用者看見確認
+  if (searchInput) searchInput.value = `${targetStock.id} ${targetStock.name}`;
+  if (manualInput) manualInput.value = targetStock.id;
+
+  // 核心：直接走型態報告 Modal（包含 K 線圖、量化指標、關鍵點位與多面向健檢評分卡片）
+  if (typeof openPatternReportModal === 'function') {
+    openPatternReportModal(targetStock.id);
+  }
 };
 
 
@@ -20015,6 +19873,191 @@ if (typeof handleDeepLinkNavigation === 'function') {
 let currentPatternReportStock = null;
 let currentPatternReportTf = '1D'; // '1D' or '4H'
 
+// 🩺 荳荳 AI 智能量化健檢 · 多面向因子評分引擎 (五大維度深度量化)
+function getStockFactorScores(s, tf = '1D') {
+  if (!s) return null;
+
+  const is4H = (tf === '4H');
+  const close = parseFloat(s.livePrice || s.price || 0);
+
+  // 1. 趨勢動能因子 (ADX & Supertrend，滿分 20分)
+  const st = is4H ? (s.supertrend_4h !== undefined ? s.supertrend_4h : s.supertrend) : s.supertrend;
+  const adx = parseFloat(is4H ? (s.adx_4h !== undefined ? s.adx_4h : s.adx || 0) : (s.adx || 0));
+  let scoreTrend = 0;
+  let descTrend = '';
+  if (st === -1) {
+    scoreTrend = 0;
+    descTrend = 'Supertrend 空頭結構 · 嚴格防守';
+  } else if (adx > 30) {
+    scoreTrend = 20;
+    descTrend = `ADX ${adx.toFixed(1)} > 30 · 強勁多頭趨勢攻擊`;
+  } else if (adx > 20) {
+    scoreTrend = 10;
+    descTrend = `ADX ${adx.toFixed(1)} > 20 · 具備中等動能趨勢`;
+  } else {
+    scoreTrend = 0;
+    descTrend = `ADX ${adx.toFixed(1)} · 無明顯動能盤整`;
+  }
+
+  // 2. 均線排列因子 (MA5 / MA20 / MA60，滿分 20分)
+  const ma5 = parseFloat(s.ma5 || 0);
+  const ma20 = parseFloat(s.ma20 || 0);
+  let scoreMA = 0;
+  let descMA = '';
+  if (ma5 > 0 && ma20 > 0 && close > ma5 && ma5 > ma20) {
+    scoreMA = 20;
+    descMA = '股價 > 5MA > 20MA · 均線多頭排列發散';
+  } else if (ma20 > 0 && close > ma20) {
+    scoreMA = 10;
+    descMA = '股價站穩 20MA (月線) 關鍵支撐';
+  } else if (ma5 > 0 && close > ma5) {
+    scoreMA = 5;
+    descMA = '短線站上 5MA 反彈 · 尚未站穩月線';
+  } else {
+    scoreMA = 0;
+    descMA = '均線空頭排列 · 股價承壓於月線下';
+  }
+
+  // 3. 成交量能因子 (Volume Ratio，滿分 25分)
+  const vr = parseFloat(is4H ? (s.volRatio_4h !== undefined ? s.volRatio_4h : s.volRatio || 1.0) : (s.volRatio || 1.0));
+  let scoreVol = 0;
+  let descVol = '';
+  if (vr > 1.2) {
+    scoreVol = 25;
+    descVol = `量能比 ${vr.toFixed(2)}x · 帶量攻擊突破`;
+  } else if (vr > 1.0) {
+    scoreVol = 15;
+    descVol = `量能比 ${vr.toFixed(2)}x · 溫和常態放量`;
+  } else {
+    scoreVol = 0;
+    descVol = `量能比 ${vr.toFixed(2)}x · 量縮整理觀望`;
+  }
+
+  // 4. 型態結構因子 (4H 50根幾何型態 f_pat，滿分 20分)
+  const patReport = is4H ? (s.pattern_4h || s.pattern_1d) : (s.pattern_1d || s.pattern_4h);
+  const patType = patReport?.pattern_type || (s.pattern_4h?.pattern_type) || '';
+  const patName = patReport?.pattern_name || (patType === 'bullish' ? '多方幾何型態' : (patType === 'bearish_warning' ? '頭部破位警示' : '區間平衡整理'));
+  let scorePat = 0;
+  let descPat = '';
+  if (patType === 'bullish') {
+    if (ma20 > 0 && close >= ma20) {
+      scorePat = 20;
+      descPat = `幾何利多 (${patName}) · 守穩20MA`;
+    } else {
+      scorePat = 10;
+      descPat = `幾何利多 (${patName}) · 多方延續`;
+    }
+  } else if (patType === 'bearish_warning') {
+    scorePat = 0;
+    descPat = `幾何破位警示 (${patName}) · 嚴禁追價`;
+  } else {
+    scorePat = 0;
+    descPat = `區間平衡整理 · 無明確幾何型態`;
+  }
+
+  // 5. 法人籌碼因子 (f_chip 三階梯，滿分 25分)
+  const fBuy = parseInt(s.foreignNetBuy || 0, 10);
+  const tBuy = parseInt(s.trustDays || 0, 10);
+  const dBuy = parseInt(s.dealerDays || 0, 10);
+  const totalInst = fBuy + tBuy + dBuy;
+  const dailyVol = parseInt(s.dailyVol || 0, 10);
+  let scoreChip = 0;
+  let descChip = '';
+  if (totalInst < 0) {
+    scoreChip = 0;
+    descChip = `三大法人合計賣超 ${Math.abs(totalInst)} 張 · 主力退場`;
+  } else if ((fBuy > 0 && tBuy > 0) || (tBuy >= 3)) {
+    scoreChip = 25;
+    descChip = `土洋合買聯手作多 (外資+${fBuy}、投信+${tBuy})`;
+  } else if ((dailyVol > 0 && (totalInst / dailyVol) >= 0.05) || totalInst > 0) {
+    scoreChip = 15;
+    descChip = `主力偏多佈局 (合計淨買超 +${totalInst} 張)`;
+  } else {
+    scoreChip = 0;
+    descChip = '法人籌碼中性 · 主力無顯著表態';
+  }
+
+  // 風控扣分 (正乖離 penalty)
+  let penalty = 0;
+  let descPenalty = '';
+  if (ma20 > 0 && close > 0) {
+    const bias = (close - ma20) / ma20;
+    if (bias > 0.20) {
+      penalty = 15;
+      descPenalty = `正乖離過大 (+${(bias * 100).toFixed(1)}%) 風控扣 15 分`;
+    } else if (bias > 0.15) {
+      penalty = 10;
+      descPenalty = `正乖離偏高 (+${(bias * 100).toFixed(1)}%) 風控扣 10 分`;
+    }
+  }
+
+  // 總分計算
+  let totalScore = scoreTrend + scoreMA + scoreVol + scorePat + scoreChip - penalty;
+  totalScore = Math.max(0, Math.min(100, totalScore));
+
+  // 整合原生 score (對齊官方評分模型)
+  const rawScore = is4H ? (s.totalScore_4h !== undefined ? s.totalScore_4h : s.totalScore) : (s.totalScore !== undefined ? s.totalScore : s.score);
+  if (rawScore !== undefined && rawScore !== null && !isNaN(rawScore)) {
+    totalScore = parseInt(rawScore, 10);
+  }
+
+  // 總體評級判斷
+  let gradeText = '';
+  let gradeColor = '#94a3b8';
+  let gradeBg = 'rgba(148, 163, 184, 0.15)';
+  let gradeBorder = 'rgba(148, 163, 184, 0.3)';
+  let gradeIcon = '⏸️';
+  let advice = '';
+
+  if (st === -1 || totalScore < 50) {
+    gradeText = '空方警戒 / 偏弱';
+    gradeColor = '#ef4444';
+    gradeBg = 'rgba(239, 68, 68, 0.15)';
+    gradeBorder = 'rgba(239, 68, 68, 0.35)';
+    gradeIcon = '🔴';
+    advice = '趨勢翻紅或動能偏弱，嚴禁開多，在手部位請嚴格執行停損退場';
+  } else if (totalScore >= 80) {
+    gradeText = '多頭強勢 / 積極操作';
+    gradeColor = '#22c55e';
+    gradeBg = 'rgba(34, 197, 94, 0.15)';
+    gradeBorder = 'rgba(34, 197, 94, 0.35)';
+    gradeIcon = '🟢';
+    advice = '多面向因子共振走強，量價籌碼俱佳，具備強勁攻擊續航力';
+  } else if (totalScore >= 60) {
+    gradeText = '轉強觀察 / 逢低佈局';
+    gradeColor = '#facc15';
+    gradeBg = 'rgba(250, 204, 21, 0.15)';
+    gradeBorder = 'rgba(250, 204, 21, 0.35)';
+    gradeIcon = '🟡';
+    advice = '部分量化面向轉強，建議回踩關鍵均線或突破頸線時分批切入';
+  } else {
+    gradeText = '區民整理 / 暫時觀望';
+    gradeColor = '#38bdf8';
+    gradeBg = 'rgba(56, 189, 248, 0.15)';
+    gradeBorder = 'rgba(56, 189, 248, 0.35)';
+    gradeIcon = '⏸️';
+    advice = '量能或法人籌碼尚未匯聚，建議保持耐心等待主力突破表態';
+  }
+
+  return {
+    totalScore,
+    gradeText,
+    gradeColor,
+    gradeBg,
+    gradeBorder,
+    gradeIcon,
+    advice,
+    descPenalty,
+    factors: [
+      { name: '趨勢動能', score: scoreTrend, max: 20, desc: descTrend, color: scoreTrend >= 15 ? '#22c55e' : (scoreTrend > 0 ? '#facc15' : '#94a3b8') },
+      { name: '均線排列', score: scoreMA, max: 20, desc: descMA, color: scoreMA >= 20 ? '#22c55e' : (scoreMA > 0 ? '#facc15' : '#94a3b8') },
+      { name: '成交量能', score: scoreVol, max: 25, desc: descVol, color: scoreVol >= 20 ? '#22c55e' : (scoreVol > 0 ? '#facc15' : '#94a3b8') },
+      { name: '型態結構', score: scorePat, max: 20, desc: descPat, color: scorePat >= 20 ? '#22c55e' : (scorePat > 0 ? '#facc15' : '#94a3b8') },
+      { name: '法人籌碼', score: scoreChip, max: 25, desc: descChip, color: scoreChip >= 20 ? '#22c55e' : (scoreChip > 0 ? '#facc15' : '#94a3b8') }
+    ]
+  };
+}
+
 window.openPatternReportModal = function(stockId) {
   if (!stockId) return;
   const sId = String(stockId).trim();
@@ -20217,7 +20260,61 @@ function renderPatternModalContent() {
   let cleanActionAdvice = report.action_advice || '';
   cleanActionAdvice = cleanActionAdvice.replace('後續具備複製旗桿漲幅的二次發動機會', '待二次發動機會');
 
+  // 計算並取得荳荳智能健檢多面向量化數據
+  const healthData = getStockFactorScores(s, tf);
+
   container.innerHTML = `
+    <!-- 🩺 荳荳 AI 智能量化健檢 · 多面向因子評分卡片 (全時框量化診斷置頂) -->
+    <div class="health-check-card">
+      <div class="health-check-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:22px;">🩺</span>
+          <div>
+            <div style="font-size:15px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+              荳荳 AI 智能量化健檢
+              <span style="font-size:11px; font-weight:normal; color:var(--text-muted); background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:4px;">
+                ${tf} 時框全維度診斷
+              </span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+              ${s.id} ${s.name} · 評級建議：${healthData.advice}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="health-score-badge">
+            <span class="health-score-num" style="color:${healthData.gradeColor};">${healthData.totalScore}</span>
+            <span class="health-score-max">/ 100分</span>
+          </div>
+          <div class="health-grade-pill" style="background:${healthData.gradeBg}; color:${healthData.gradeColor}; border:1px solid ${healthData.gradeBorder};">
+            ${healthData.gradeIcon} ${healthData.gradeText}
+          </div>
+        </div>
+      </div>
+
+      <!-- 五大面向因子詳細得分網格 -->
+      <div class="health-factors-grid">
+        ${healthData.factors.map(f => `
+          <div class="health-factor-item">
+            <div class="factor-name-row">
+              <span>${f.name}</span>
+              <span class="factor-score-val" style="color:${f.color};">${f.score} / ${f.max}</span>
+            </div>
+            <div class="factor-bar-bg">
+              <div class="factor-bar-fill" style="width:${Math.round((f.score / f.max) * 100)}%; background:${f.color};"></div>
+            </div>
+            <div class="factor-desc-text" title="${f.desc}">${f.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      ${healthData.descPenalty ? `
+        <div style="margin-top:8px; font-size:11px; color:#f87171; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:4px 8px; display:flex; align-items:center; gap:6px;">
+          <span>⚠️</span> <span>風控提示：${healthData.descPenalty}</span>
+        </div>
+      ` : ''}
+    </div>
+
     <!-- # 01. 目前 K 線型態量化解構與操作計畫 (最核心置頂第一屏) -->
     <div class="pattern-section-title">
       <span class="tag">#01</span> 目前 K 線型態量化解構與操作計畫 (核心焦點)
