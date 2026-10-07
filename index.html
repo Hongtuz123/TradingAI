@@ -59,7 +59,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=92" />
+  <link rel="stylesheet" href="style.css?v=93" />
 
 
 
@@ -336,15 +336,13 @@
 
           <div id="manualEvalResult" style="margin-top: 10px; display: none;"></div>
 
-          <!-- 🏷️ Hashtags 快速過濾列 (手機端橫向平滑滾動膠囊) -->
+          <!-- 🏷️ Hashtags 快速過濾列 (手機端橫向平滑滾動膠囊，支援多選取交集) -->
           <div class="hashtag-filter-row modern-hashtag-scroll">
             <span class="hashtag-label">戰術分類：</span>
-            <button class="hashtag-chip active" data-tag="all" onclick="filterByHashtag('all', this)">#全部標的</button>
-            <button class="hashtag-chip" data-tag="strong" onclick="filterByHashtag('strong', this)">#🔥強勢族群</button>
-            <button class="hashtag-chip" data-tag="weak" onclick="filterByHashtag('weak', this)">#❄️弱勢族群</button>
-            <button class="hashtag-chip" data-tag="hot" onclick="filterByHashtag('hot', this)">#💥熱門爆量</button>
-            <button class="hashtag-chip" data-tag="inst" onclick="filterByHashtag('inst', this)">#🏆法人買超</button>
-            <button class="hashtag-chip" data-tag="dip" onclick="filterByHashtag('dip', this)">#🎯抄底名單</button>
+            <button class="hashtag-chip active" data-tag="all" onclick="filterByHashtag('all', this)" title="檢視全部標的">#全部標的</button>
+            <button class="hashtag-chip" data-tag="vol_top10" onclick="filterByHashtag('vol_top10', this)" title="篩選成交量前10大標的">#成交量前10</button>
+            <button class="hashtag-chip" data-tag="inst_top10" onclick="filterByHashtag('inst_top10', this)" title="篩選法人買超前10大標的">#法人買超</button>
+            <span class="hashtag-hint" style="font-size: 11px; color: var(--text-muted); margin-left: 6px; align-self: center;">(可複選取交集)</span>
           </div>
 
           <!-- 隱藏 legacy filter inputs 容器以防原有初始化邏輯報錯 -->
@@ -1298,9 +1296,9 @@
 
 
   <!-- 腳本 -->
-  <script src="data.js?v=92"></script>
-  <script src="app.js?v=92"></script>
-  <script src="stock-dashboard.js?v=92"></script>
+  <script src="data.js?v=93"></script>
+  <script src="app.js?v=93"></script>
+  <script src="stock-dashboard.js?v=93"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

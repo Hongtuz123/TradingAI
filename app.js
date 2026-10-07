@@ -41,13 +41,41 @@ window.handleUnifiedSearch = function(val) {
   }
 };
 
+window.activeHashtags = new Set();
 window.activeHashtag = 'all';
 window.screenerSearchQuery = '';
 
 window.filterByHashtag = function(tag, btn) {
-  window.activeHashtag = tag;
-  document.querySelectorAll('.hashtag-chip').forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  if (!window.activeHashtags) {
+    window.activeHashtags = new Set();
+  }
+
+  if (tag === 'all') {
+    // 點擊「#全部標的」：清除所有標籤，只保留全部標的
+    window.activeHashtags.clear();
+  } else {
+    // 點擊「#成交量前10」或「#法人買超」：Toggle 模式 (若已選則取消，若未選則加入)
+    if (window.activeHashtags.has(tag)) {
+      window.activeHashtags.delete(tag);
+    } else {
+      window.activeHashtags.add(tag);
+    }
+  }
+
+  // 同步更新所有膠囊晶片的 active 樣式
+  const chips = document.querySelectorAll('.hashtag-chip');
+  chips.forEach(c => {
+    const cTag = c.getAttribute('data-tag');
+    if (cTag === 'all') {
+      c.classList.toggle('active', window.activeHashtags.size === 0);
+    } else {
+      c.classList.toggle('active', window.activeHashtags.has(cTag));
+    }
+  });
+
+  window.activeHashtag = window.activeHashtags.size === 0 ? 'all' 
+                       : (window.activeHashtags.size === 1 ? [...window.activeHashtags][0] : 'intersect');
+
   if (typeof applyTechFiltersAndRender === 'function') {
     applyTechFiltersAndRender();
   }
@@ -3204,27 +3232,42 @@ window.applyTechFiltersAndRender = function() {
     filtered = mockStocks.filter(s => (s.dynamicScore || s.totalScore) >= 60);
   }
   
-  // 1. Hashtag 分類過濾
-  if (window.activeHashtag && window.activeHashtag !== 'all') {
-    const tag = window.activeHashtag;
-    if (tag === 'strong' || tag === 'strong_sector') {
-      const strongList = window.rankingsData?.strong || [];
-      filtered = filtered.filter(s => strongList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change >= 2.0)));
-    } else if (tag === 'weak' || tag === 'weak_sector') {
-      const weakList = window.rankingsData?.weak || [];
-      filtered = filtered.filter(s => weakList.some(g => (s.industry && s.industry.includes(g.name)) || (s.change < 0)));
-    } else if (tag === 'hot' || tag === 'hot_vol') {
-      const hotList = window.rankingsData?.hot || [];
-      const hotIds = new Set(hotList.map(item => item.id));
-      filtered = filtered.filter(s => hotIds.has(s.id) || (s.volRatio >= 1.5) || (s.dailyVol >= 3000));
-    } else if (tag === 'inst' || tag === 'inst_buy') {
-      const instList = window.rankingsData?.inst || [];
-      const instIds = new Set(instList.map(item => item.id));
-      filtered = filtered.filter(s => instIds.has(s.id) || (s.instSum5D > 0) || (s.foreignNetBuy > 0) || (s.trustDays > 0));
-    } else if (tag === 'dip' || tag === 'bottom_dip') {
-      const dipList = window.rankingsData?.dip || [];
-      const dipIds = new Set(dipList.map(item => item.id));
-      filtered = filtered.filter(s => dipIds.has(s.id) || (s.rsi14 <= 50) || (s.dist52W <= 10) || (s.change > 0 && s.change <= 2.5));
+  // 1. Hashtag 戰術分類過濾 (支援「#成交量前10」、「#法人買超」與兩者交集)
+  const activeTags = window.activeHashtags || new Set();
+  const hasVolTop10 = activeTags.has('vol_top10');
+  const hasInstTop10 = activeTags.has('inst_top10');
+
+  if (hasVolTop10 || hasInstTop10) {
+    const basePool = [...filtered];
+
+    // 計算基準池中「成交量前 10 檔」
+    let topVolIds = new Set();
+    if (hasVolTop10) {
+      const sortedVol = [...basePool].sort((a, b) => {
+        const volA = Number(a.dailyVol || a.volume || 0);
+        const volB = Number(b.dailyVol || b.volume || 0);
+        return volB - volA;
+      });
+      sortedVol.slice(0, 10).forEach(s => topVolIds.add(s.id));
+    }
+
+    // 計算基準池中「法人買超前 10 檔」 (三大法人主力 = 外資 + 投信 + 自營商)
+    let topInstIds = new Set();
+    if (hasInstTop10) {
+      const getInstNet = (s) => (Number(s.foreignNetBuy) || 0) + (Number(s.trustDays) || 0) + (Number(s.dealerDays) || 0);
+      const sortedInst = [...basePool].sort((a, b) => getInstNet(b) - getInstNet(a));
+      sortedInst.slice(0, 10).forEach(s => topInstIds.add(s.id));
+    }
+
+    if (hasVolTop10 && hasInstTop10) {
+      // 兩個標籤都選：取交集！
+      filtered = basePool.filter(s => topVolIds.has(s.id) && topInstIds.has(s.id));
+    } else if (hasVolTop10) {
+      // 僅選成交量前10
+      filtered = basePool.filter(s => topVolIds.has(s.id));
+    } else if (hasInstTop10) {
+      // 僅選法人買超前10
+      filtered = basePool.filter(s => topInstIds.has(s.id));
     }
   }
 
@@ -4229,8 +4272,35 @@ window.filterBySignalType = function(sigType) {
 function renderScreenerTable(data) {
   let filteredData = [...data];
 
-  // 🚀 關鍵 UI 排序優化：點選「買進訊號」或「加碼買進」頁籤時，優先將該類別標的【全數置頂排最上方】，內部依據【分數升冪 (70分最優先)】排序！
+  // 🚀 關鍵 UI 排序優化：
+  // 若選中戰術標籤且處於全部訊號視圖時，依戰術標籤特性優先排序：
+  const activeTags = window.activeHashtags || new Set();
+  const hasVolTop10 = activeTags.has('vol_top10');
+  const hasInstTop10 = activeTags.has('inst_top10');
+
   filteredData.sort((a, b) => {
+    if (window.activeSignalFilter === 'all' || !window.activeSignalFilter) {
+      if (hasVolTop10 && !hasInstTop10) {
+        // 僅選成交量前10：依成交量降冪排
+        const volA = Number(a.dailyVol || a.volume || 0);
+        const volB = Number(b.dailyVol || b.volume || 0);
+        return volB - volA;
+      }
+      if (hasInstTop10 && !hasVolTop10) {
+        // 僅選法人買超前10：依三大法人主力買賣超降冪排
+        const instA = (Number(a.foreignNetBuy) || 0) + (Number(a.trustDays) || 0) + (Number(a.dealerDays) || 0);
+        const instB = (Number(b.foreignNetBuy) || 0) + (Number(b.trustDays) || 0) + (Number(b.dealerDays) || 0);
+        return instB - instA;
+      }
+      if (hasVolTop10 && hasInstTop10) {
+        // 兩者交集：依法人買超降冪排，若相同再依成交量
+        const instA = (Number(a.foreignNetBuy) || 0) + (Number(a.trustDays) || 0) + (Number(a.dealerDays) || 0);
+        const instB = (Number(b.foreignNetBuy) || 0) + (Number(b.trustDays) || 0) + (Number(b.dealerDays) || 0);
+        if (instB !== instA) return instB - instA;
+        return Number(b.dailyVol || b.volume || 0) - Number(a.dailyVol || a.volume || 0);
+      }
+    }
+
     const scoreA = a.dynamicScore || a.totalScore || 0;
     const scoreB = b.dynamicScore || b.totalScore || 0;
 
@@ -4284,7 +4354,17 @@ function renderScreenerTable(data) {
   tbody.innerHTML = '';
 
   if (filteredData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--text-muted);">目前無符合此交易訊號分類的標的</td></tr>';
+    let emptyMsg = '目前無符合篩選條件的標的';
+    if (hasVolTop10 && hasInstTop10) {
+      emptyMsg = '目前無同時符合「成交量前10」與「法人買超前10」交集的標的';
+    } else if (hasVolTop10) {
+      emptyMsg = '目前無符合「成交量前10」的標的';
+    } else if (hasInstTop10) {
+      emptyMsg = '目前無符合「法人買超前10」的標的';
+    } else if (window.activeSignalFilter !== 'all') {
+      emptyMsg = '目前無符合此交易訊號分類的標的';
+    }
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 25px; color: var(--text-muted); font-size:13px;">${emptyMsg}</td></tr>`;
     return;
   }
 
