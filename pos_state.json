@@ -3,15 +3,21 @@
     "entry_price": 24.7,
     "entry_time": "2026-08-13 09:26:20",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 25.45,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "1102": {
     "entry_price": 34.7,
     "entry_time": "2026-08-20 10:07:12",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 35.65,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "1104": {
     "entry_price": 26.8,
@@ -76,7 +82,7 @@
     "entry_time": "2026-09-18 11:05:43",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-07"
   },
   "1326": {
     "entry_price": 67.6,
@@ -118,7 +124,8 @@
     "entry_price": 303.5,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "1477": {
     "entry_price": 203.5,
@@ -171,8 +178,11 @@
     "entry_price": 727,
     "entry_time": "2026-08-12 18:07:07",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-09-29"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-09-29",
+    "exit_price": 1025.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "1582": {
     "entry_price": 71,
@@ -255,8 +265,11 @@
     "entry_price": 16.45,
     "entry_time": "2026-09-17 12:06:00",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 17.85,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "1711": {
     "entry_price": 43,
@@ -305,8 +318,11 @@
     "entry_price": 116.5,
     "entry_time": "2026-09-24 08:05:39",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 107.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "1736": {
     "entry_price": 137,
@@ -366,7 +382,11 @@
     "entry_price": 82.5,
     "entry_time": "2026-08-05 12:40:10",
     "tf": "1D/4H",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-03",
+    "status": "CLOSED",
+    "exit_price": 86.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2009": {
     "entry_price": 38.45,
@@ -382,7 +402,8 @@
     "entry_price": 22.55,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "2014": {
     "entry_price": 17.15,
@@ -398,33 +419,51 @@
     "entry_price": 13.9,
     "entry_time": "2026-08-12 10:06:51",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 13.9,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (56天) 未發動且未獲利 (時間停損換股)"
   },
   "2030": {
     "entry_price": 20.45,
     "entry_time": "2026-08-10 09:23:00",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-08-14"
+    "last_add_buy_time": "2026-08-14",
+    "status": "CLOSED",
+    "exit_price": 36.4,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "2031": {
     "entry_price": 40.95,
     "entry_time": "2026-08-07 10:05:58",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-03",
+    "status": "CLOSED",
+    "exit_price": 45.8,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 25分 < 60分)"
   },
   "2034": {
     "entry_price": 20.45,
     "entry_time": "2026-08-12 08:06:47",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 23.95,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2049": {
     "entry_price": 332,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 343.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "2059": {
     "entry_price": 13125,
@@ -459,7 +498,11 @@
     "entry_price": 252,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 300.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2303": {
     "entry_price": 141,
@@ -514,8 +557,11 @@
     "entry_price": 45.05,
     "entry_time": "2026-08-19 11:06:10",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 48.05,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2329": {
     "entry_price": 45.2,
@@ -563,8 +609,11 @@
     "entry_price": 46.1,
     "entry_time": "2026-09-15 15:05:56",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 47.6,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "2340": {
     "entry_price": 31.9,
@@ -580,20 +629,30 @@
     "entry_price": 157,
     "entry_time": "2026-08-05 10:31:11",
     "tf": "4H",
-    "last_add_buy_time": "2026-09-09"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 179.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2345": {
     "entry_price": 2080,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 2040.0,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "2347": {
     "entry_price": 87.9,
     "entry_time": "2026-09-04 18:06:04",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 96.2,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "2348": {
     "entry_price": 73.7,
@@ -639,8 +698,11 @@
     "entry_price": 42.9,
     "entry_time": "2026-08-12 10:06:51",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 44.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2357": {
     "entry_price": 806,
@@ -669,8 +731,11 @@
     "entry_price": 59,
     "entry_time": "2026-09-21 10:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-03",
+    "exit_price": 59.4,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "2367": {
     "entry_price": 45,
@@ -690,7 +755,10 @@
     "entry_price": 31.95,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 31.9,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "2371": {
     "entry_price": 27.4,
@@ -713,8 +781,11 @@
     "entry_price": 379,
     "entry_time": "2026-10-06 13:06:32",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 367.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "綜合評分轉弱 (45分 < 50分) 動能竭盡出場"
   },
   "2377": {
     "entry_price": 160,
@@ -730,14 +801,18 @@
     "entry_price": 332,
     "entry_time": "2026-08-18 09:06:04",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-09-21"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-09-21",
+    "exit_price": 334.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 50分 < 60分)"
   },
   "2383": {
     "entry_price": 6195,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "2388": {
     "entry_price": 80.3,
@@ -764,7 +839,7 @@
     "entry_time": "2026-08-14 08:07:38",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "2395": {
     "entry_price": 633,
@@ -776,8 +851,11 @@
     "entry_price": 26.5,
     "entry_time": "2026-09-30 12:05:45",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 26.55,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 50分 < 60分)"
   },
   "2402": {
     "entry_price": 58.9,
@@ -790,8 +868,11 @@
     "entry_price": 1275,
     "entry_time": "2026-09-26 08:05:38",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 1315.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2408": {
     "entry_price": 484,
@@ -805,7 +886,7 @@
     "entry_time": "2026-09-11 08:05:57",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "2412": {
     "entry_price": 137,
@@ -839,19 +920,24 @@
     "entry_time": "2026-08-11 12:06:18",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "2439": {
     "entry_price": 77.8,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "2441": {
     "entry_price": 128.5,
     "entry_time": "2026-08-10 11:06:37",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 126.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (58天) 未發動且未獲利 (時間停損換股)"
   },
   "2449": {
     "entry_price": 278.5,
@@ -867,7 +953,10 @@
     "entry_price": 286,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 284.5,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "2454": {
     "entry_price": 3865,
@@ -883,7 +972,7 @@
     "entry_price": 353,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "1D",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "2458": {
     "entry_price": 137.5,
@@ -963,7 +1052,11 @@
     "entry_price": 43.75,
     "entry_time": "2026-08-10 11:06:37",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 43.45,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (58天) 未發動且未獲利 (時間停損換股)"
   },
   "2486": {
     "entry_price": 242.5,
@@ -1002,8 +1095,11 @@
     "entry_price": 42.95,
     "entry_time": "2026-09-29 18:05:42",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-02"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-02",
+    "exit_price": 42.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "2520": {
     "entry_price": 34.8,
@@ -1066,8 +1162,11 @@
     "entry_price": 38.75,
     "entry_time": "2026-08-31 15:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 38.75,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (37天) 未發動且未獲利 (時間停損換股)"
   },
   "2545": {
     "entry_price": 34.95,
@@ -1137,15 +1236,21 @@
     "entry_price": 64.9,
     "entry_time": "2026-08-14 10:07:55",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 63.8,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (54天) 未發動且未獲利 (時間停損換股)"
   },
   "2637": {
     "entry_price": 88.4,
     "entry_time": "2026-08-18 13:06:09",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 96.9,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 50分 < 60分)"
   },
   "2723": {
     "entry_price": 64.7,
@@ -1161,7 +1266,11 @@
     "entry_price": 236,
     "entry_time": "2026-08-07 12:06:01",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 234.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (61天) 未發動且未獲利 (時間停損換股)"
   },
   "2801": {
     "entry_price": 23.85,
@@ -1208,7 +1317,7 @@
     "entry_time": "2026-08-14 11:06:04",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-07"
   },
   "2851": {
     "entry_price": 39.15,
@@ -1264,8 +1373,11 @@
     "entry_price": 37.3,
     "entry_time": "2026-08-14 12:06:03",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-02"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-02",
+    "exit_price": 45.7,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "2885": {
     "entry_price": 63.8,
@@ -1409,8 +1521,11 @@
     "entry_price": 107,
     "entry_time": "2026-08-17 15:06:10",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-01",
+    "exit_price": 194.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3017": {
     "entry_price": 2600,
@@ -1432,7 +1547,10 @@
     "entry_price": 322.5,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 326.0,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "3026": {
     "entry_price": 646,
@@ -1445,8 +1563,11 @@
     "entry_price": 63.2,
     "entry_time": "2026-10-02 18:05:38",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 63.1,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "綜合評分轉弱 (35分 < 50分) 動能竭盡出場"
   },
   "3029": {
     "entry_price": 107,
@@ -1475,28 +1596,35 @@
     "entry_price": 203.5,
     "entry_time": "2026-09-22 10:05:59",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 210.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3036": {
     "entry_price": 213,
     "entry_time": "2026-10-01 18:06:49",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "3037": {
     "entry_price": 1320,
     "entry_time": "2026-10-06 09:05:49",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "3042": {
     "entry_price": 180.5,
     "entry_time": "2026-08-10 18:06:12",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 208.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "3044": {
     "entry_price": 491.5,
@@ -1519,8 +1647,11 @@
     "entry_price": 129,
     "entry_time": "2026-09-01 18:06:09",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-01",
+    "exit_price": 223.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3090": {
     "entry_price": 174.5,
@@ -1543,33 +1674,46 @@
     "entry_price": 74,
     "entry_time": "2026-09-30 10:05:47",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-01",
+    "exit_price": 75.6,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3167": {
     "entry_price": 743,
     "entry_time": "2026-08-21 10:06:08",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 1045.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3189": {
     "entry_price": 767,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "3209": {
     "entry_price": 46.6,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 46.45,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "3231": {
     "entry_price": 195,
     "entry_time": "2026-08-05 10:31:11",
     "tf": "4H",
-    "last_add_buy_time": "2026-09-11"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 186.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (63天) 未發動且未獲利 (時間停損換股)"
   },
   "3380": {
     "entry_price": 30.3,
@@ -1592,7 +1736,11 @@
     "entry_price": 178,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "1D",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 168.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (63天) 未發動且未獲利 (時間停損換股)"
   },
   "3443": {
     "entry_price": 4390,
@@ -1624,28 +1772,37 @@
     "entry_time": "2026-08-17 11:06:04",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-07"
   },
   "3533": {
     "entry_price": 1665,
     "entry_time": "2026-09-23 10:05:48",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 1845.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "3563": {
     "entry_price": 711,
     "entry_time": "2026-08-12 13:06:56",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 752.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "3576": {
     "entry_price": 18.25,
     "entry_time": "2026-09-25 08:05:44",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 18.25,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "3583": {
     "entry_price": 766,
@@ -1660,15 +1817,21 @@
     "entry_price": 239,
     "entry_time": "2026-10-01 12:05:41",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 237.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "綜合評分轉弱 (35分 < 50分) 動能竭盡出場"
   },
   "3605": {
     "entry_price": 115,
     "entry_time": "2026-08-25 13:06:01",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 165.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "3617": {
     "entry_price": 253,
@@ -1684,7 +1847,7 @@
     "entry_price": 4145,
     "entry_time": "2026-08-05 10:31:11",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-07"
   },
   "3661": {
     "entry_price": 4125,
@@ -1707,8 +1870,11 @@
     "entry_price": 66.1,
     "entry_time": "2026-08-25 18:06:00",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 76.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "3701": {
     "entry_price": 59.3,
@@ -1752,8 +1918,11 @@
     "entry_price": 58.9,
     "entry_time": "2026-08-11 08:06:16",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 67.2,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "3715": {
     "entry_price": 126.5,
@@ -1786,7 +1955,7 @@
     "entry_time": "2026-09-29 13:05:53",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "4576": {
     "entry_price": 227,
@@ -1819,7 +1988,8 @@
     "entry_price": 87.8,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "4755": {
     "entry_price": 133,
@@ -1839,8 +2009,11 @@
     "entry_price": 225,
     "entry_time": "2026-09-04 13:06:03",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-01",
+    "exit_price": 268.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "4771": {
     "entry_price": 201.5,
@@ -1891,13 +2064,14 @@
     "entry_time": "2026-09-23 10:05:48",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "last_add_buy_time": "2026-10-07"
   },
   "4927": {
     "entry_price": 52.2,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "4938": {
     "entry_price": 91.2,
@@ -1960,8 +2134,11 @@
     "entry_price": 1470,
     "entry_time": "2026-09-16 15:06:05",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 1465.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "5288": {
     "entry_price": 193.5,
@@ -1984,7 +2161,10 @@
     "entry_price": 74.5,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 74.0,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "5434": {
     "entry_price": 621,
@@ -2025,7 +2205,7 @@
     "entry_time": "2026-09-03 13:06:20",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-07"
   },
   "5880": {
     "entry_price": 25.45,
@@ -2051,15 +2231,18 @@
     "entry_price": 15.45,
     "entry_time": "2026-09-22 15:05:45",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 15.4,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "6139": {
     "entry_price": 795,
     "entry_time": "2026-10-06 12:06:05",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "6153": {
     "entry_price": 17.15,
@@ -2072,8 +2255,11 @@
     "entry_price": 125.5,
     "entry_time": "2026-09-21 18:05:45",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-01"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-01",
+    "exit_price": 128.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "6176": {
     "entry_price": 95.4,
@@ -2133,7 +2319,7 @@
     "entry_time": "2026-10-03 08:05:34",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-07"
   },
   "6206": {
     "entry_price": 153,
@@ -2162,8 +2348,11 @@
     "entry_price": 175.5,
     "entry_time": "2026-08-17 18:05:56",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 189.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 50分 < 60分)"
   },
   "6239": {
     "entry_price": 294,
@@ -2196,8 +2385,11 @@
     "entry_price": 47.15,
     "entry_time": "2026-08-12 18:07:07",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 44.15,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (56天) 未發動且未獲利 (時間停損換股)"
   },
   "6285": {
     "entry_price": 252.5,
@@ -2233,14 +2425,18 @@
     "entry_price": 1815,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
   },
   "6443": {
     "entry_price": 28.05,
     "entry_time": "2026-09-22 08:05:41",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-03",
+    "exit_price": 27.6,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 20分 < 60分)"
   },
   "6449": {
     "entry_price": 238,
@@ -2298,34 +2494,50 @@
     "entry_price": 667,
     "entry_time": "2026-09-01 12:05:58",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 778.0,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "6531": {
     "entry_price": 945,
     "entry_time": "2026-08-10 11:06:37",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 1010.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "6533": {
     "entry_price": 303.5,
     "entry_time": "2026-09-29 10:05:42",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 344.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "6579": {
     "entry_price": 156,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 153.5,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "6589": {
     "entry_price": 50.9,
     "entry_time": "2026-09-17 13:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-02"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 51.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "6605": {
     "entry_price": 139,
@@ -2351,8 +2563,11 @@
     "entry_price": 270,
     "entry_time": "2026-08-14 18:05:56",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 505.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "6691": {
     "entry_price": 648,
@@ -2402,14 +2617,21 @@
     "entry_price": 65.6,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 64.8,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "6770": {
     "entry_price": 67.2,
     "entry_time": "2026-08-10 18:06:12",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-03"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 73.7,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "6782": {
     "entry_price": 199,
@@ -2432,7 +2654,11 @@
     "entry_price": 1590,
     "entry_time": "2026-08-05 12:40:10",
     "tf": "1D",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "CLOSED",
+    "exit_price": 2470.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "6830": {
     "entry_price": 420,
@@ -2455,22 +2681,31 @@
     "entry_price": 17.25,
     "entry_time": "2026-09-30 08:05:39",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 17.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "6933": {
     "entry_price": 364.5,
     "entry_time": "2026-09-24 10:06:18",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 383.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 40分 < 60分)"
   },
   "6937": {
     "entry_price": 306,
     "entry_time": "2026-09-10 11:06:00",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 294.5,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "綜合評分轉弱 (40分 < 50分) 動能竭盡出場"
   },
   "6944": {
     "entry_price": 749,
@@ -2511,27 +2746,36 @@
     "entry_time": "2026-10-02 18:05:38",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "7722": {
     "entry_price": 268,
     "entry_time": "2026-10-07 10:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD"
+    "status": "CLOSED",
+    "exit_price": 272.5,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "7749": {
     "entry_price": 349,
     "entry_time": "2026-08-14 15:06:15",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-02"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-02",
+    "exit_price": 390.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "7768": {
     "entry_price": 303,
     "entry_time": "2026-09-21 10:05:57",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 304.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 30分 < 60分)"
   },
   "7788": {
     "entry_price": 256,
@@ -2556,15 +2800,21 @@
     "entry_price": 393.5,
     "entry_time": "2026-09-07 13:06:19",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-02"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-02",
+    "exit_price": 521.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 35分 < 60分)"
   },
   "7822": {
     "entry_price": 953,
     "entry_time": "2026-09-29 10:05:42",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 967.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "7827": {
     "entry_price": 160,
@@ -2598,7 +2848,7 @@
     "entry_time": "2026-09-30 15:05:57",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "last_add_buy_time": "2026-10-07"
   },
   "8081": {
     "entry_price": 262,
@@ -2613,8 +2863,11 @@
     "entry_price": 47.4,
     "entry_time": "2026-09-18 18:05:43",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-06"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-06",
+    "exit_price": 49.1,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "8131": {
     "entry_price": 63.5,
@@ -2672,35 +2925,51 @@
     "entry_price": 1035,
     "entry_time": "2026-08-06 11:05:50",
     "tf": "1D/4H",
-    "last_add_buy_time": "2026-10-03"
+    "last_add_buy_time": "2026-10-03",
+    "status": "CLOSED",
+    "exit_price": 1640.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 55分 < 60分)"
   },
   "9904": {
     "entry_price": 25.05,
     "entry_time": "2026-08-14 12:06:03",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-09-21"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 24.85,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (54天) 未發動且未獲利 (時間停損換股)"
   },
   "9908": {
     "entry_price": 28.95,
     "entry_time": "2026-08-19 18:06:04",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 29.1,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "歷史死抱持倉重置清洗 (評分 45分 < 60分)"
   },
   "9917": {
     "entry_price": 106,
     "entry_time": "2026-09-02 10:06:08",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 106.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "持倉滿 20 交易日 (35天) 未發動且未獲利 (時間停損換股)"
   },
   "9933": {
     "entry_price": 42.05,
     "entry_time": "2026-08-13 09:26:20",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-07"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-07",
+    "exit_price": 44.0,
+    "exit_time": "2026-10-07 11:06:53",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
   },
   "9937": {
     "entry_price": 55,
@@ -2751,5 +3020,159 @@
     "tf": "SILENT_INIT",
     "status": "HOLD",
     "last_add_buy_time": "2026-10-07"
+  },
+  "2495": {
+    "entry_price": 37.75,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "HOLD",
+    "last_add_buy_time": "2026-10-07"
+  },
+  "2027": {
+    "entry_price": 47.55,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 47.75,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
+  },
+  "8039": {
+    "entry_price": 290.5,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 289.5,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
+  },
+  "3413": {
+    "entry_price": 290.0,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 290.0,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
+  },
+  "2105": {
+    "entry_price": 30.2,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 30.3,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
+  },
+  "1103": {
+    "entry_price": 13.15,
+    "entry_time": "2026-10-07 11:06:53",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 13.1,
+    "exit_time": "2026-10-07 12:06:23",
+    "sell_reason": "SuperTrend 趨勢轉為空頭"
+  },
+  "2379": {
+    "entry_price": 743.0,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 743.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "1402": {
+    "entry_price": 28.6,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 28.6,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "2103": {
+    "entry_price": 28.55,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "2478": {
+    "entry_price": 132.5,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 132.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "3059": {
+    "entry_price": 38.65,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 38.65,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "1319": {
+    "entry_price": 79.9,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 79.9,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "2072": {
+    "entry_price": 130.5,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 130.5,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "1216": {
+    "entry_price": 74.9,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 74.9,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "2546": {
+    "entry_price": 107.0,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 107.0,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "3545": {
+    "entry_price": 49.55,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "HOLD"
+  },
+  "3048": {
+    "entry_price": 53.3,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 53.3,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "1D SuperTrend 日線轉為空頭翻紅"
+  },
+  "6854": {
+    "entry_price": 91.6,
+    "entry_time": "2026-10-07 12:06:23",
+    "tf": "SILENT_INIT",
+    "status": "CLOSED",
+    "exit_price": 91.6,
+    "exit_time": "2026-10-07 12:51:28",
+    "sell_reason": "綜合評分轉弱 (45分 < 50分) 動能竭盡出場"
   }
 }

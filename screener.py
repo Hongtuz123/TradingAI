@@ -1521,7 +1521,55 @@ def run_screener(force=False):
                 adx_4h = adx_val
                 kline_4h_list = []
 
-            # ── Version 6 雙時框多因子評分 (現場精算，1D 與 4H 獨立維度) ───
+            # ── 1. 荳荳 AI 8 大類 16 種 K 線幾何型態深度分析 (1D 與 4H 雙時框，提前計算以支援型態支撐因子) ───
+            stock_meta_info = {
+                'id': symbol,
+                'name': name,
+                'dailyVol': vol // 1000,
+                'trustDays': trust_net_buy,
+                'foreignNetBuy': foreign_net_buy,
+                'dealerDays': dealer_net_buy,
+                'instSum5D': inst_sum_5d
+            }
+            pattern_1d_report = analyze_chart_patterns(df, timeframe="1D", live_price=close, stock_info=stock_meta_info)
+            df_for_4h_pat = df_4h_calc if (not df_4h_calc.empty and len(df_4h_calc) >= 15) else df
+            pattern_4h_report = analyze_chart_patterns(df_for_4h_pat, timeframe="4H", live_price=close, stock_info=stock_meta_info)
+
+            # ── 2. 型態支撐因子 (f_pat)：改為嚴格判斷 4H 級別近 50 根 K 線型態 ───
+            # 利多且 4H 收盤價回踩守住 4H 20MA：20分；一般利多型態：10分；利空或無利多：0分
+            if not df_4h_calc.empty and len(df_4h_calc) >= 20:
+                ma20_4h = float(df_4h_calc['close'].rolling(20).mean().iloc[-1])
+            elif not df_4h_calc.empty:
+                ma20_4h = float(df_4h_calc['close'].mean())
+            else:
+                ma20_4h = ma20_val
+
+            pat_4h_type = pattern_4h_report.get('pattern_type', '')
+            is_4h_bullish = (pat_4h_type == 'bullish')
+            if is_4h_bullish and close >= ma20_4h:
+                f_pat = 20
+            elif is_4h_bullish:
+                f_pat = 10
+            else:
+                f_pat = 0
+
+            # ── 3. 法人籌碼因子 (f_chip)：嚴格三階梯，徹底取消 10 分保底送分 ───
+            # 滿分 25 分：土洋合買 (外資買超 > 0 且 投信買超 > 0)，或投信連買 >= 3 天
+            # 15 分：主力淨買超佔當日成交量 >= 5% (或主力買超 > 0)
+            # 0 分：主力站在賣方 (賣超 > 0 / 淨買超 < 0) 或無優勢
+            total_inst_sheets = foreign_net_buy + trust_net_buy + dealer_net_buy
+            daily_vol_sheets = vol // 1000
+
+            if total_inst_sheets < 0:
+                f_chip = 0  # 主力賣超，絕不送分
+            elif (foreign_net_buy > 0 and trust_net_buy > 0) or (trust_net_buy >= 3):
+                f_chip = 25 # 土洋合買或投信連買3天
+            elif (daily_vol_sheets > 0 and (total_inst_sheets / daily_vol_sheets) >= 0.05) or (total_inst_sheets > 0):
+                f_chip = 15 # 主力買超佔成交量 >= 5% 或法人合計淨買超
+            else:
+                f_chip = 0
+
+            # ── 4. Version 6 雙時框多因子評分 (現場精算，1D 與 4H 獨立維度) ───
             # 1. 1D 日線得分
             if supertrend_val == -1:
                 sc_1d = 30
@@ -1535,11 +1583,6 @@ def run_screener(force=False):
                 upper_shadow = (high_p - max(open_p, close)) / rng
                 is_stagnant = (vol_ratio > 2.2 and (close < open_p or upper_shadow > 0.4))
                 f_vol = 10 if is_stagnant else (25 if vol_ratio > 1.2 else (15 if vol_ratio > 1.0 else 0))
-                is_bull_k = close > open_p
-                recent_low = min(c['low'] for c in candles[-20:]) if candles else close
-                near_support = (low_p <= recent_low * 1.03) and is_bull_k
-                f_pat = 20 if (is_bull_k and near_support) else (10 if is_bull_k else 0)
-                f_chip = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
                 bias = (close - ma20_val) / ma20_val if ma20_val > 0 else 0
                 penalty = 15 if bias > 0.20 else (10 if bias > 0.15 else 0)
                 sc_1d = min(100, max(0, f_adx + f_ma + f_vol + f_pat + f_chip - penalty))
@@ -1551,23 +1594,9 @@ def run_screener(force=False):
                 f_adx_4h = 20 if adx_4h > 30 else (10 if adx_4h > 20 else 0)
                 f_ma_4h  = 20 if (close > ma5_val > ma20_val) else (10 if close > ma20_val else (5 if close > ma5_val else 0))
                 f_vol_4h = 25 if vol_ratio_4h > 1.2 else (15 if vol_ratio_4h > 1.0 else 0)
-                f_pat_4h = 10
-                f_chip_4h = 25 if (trust_net_buy >= 5 or inst_sum_5d > 0) else (15 if (trust_net_buy >= 3 or foreign_net_buy > 0) else 10)
+                f_pat_4h = f_pat
+                f_chip_4h = f_chip
                 sc_4h = min(100, max(0, f_adx_4h + f_ma_4h + f_vol_4h + f_pat_4h + f_chip_4h - penalty))
-
-            # ── 3. 荳荳 AI 8 大類 16 種 K 線幾何型態深度分析 (1D 與 4H 雙時框) ───
-            stock_meta_info = {
-                'id': symbol,
-                'name': name,
-                'dailyVol': vol // 1000,
-                'trustDays': trust_net_buy,
-                'foreignNetBuy': foreign_net_buy,
-                'dealerDays': dealer_net_buy,
-                'instSum5D': inst_sum_5d
-            }
-            pattern_1d_report = analyze_chart_patterns(df, timeframe="1D", live_price=close, stock_info=stock_meta_info)
-            df_for_4h_pat = df_4h_calc if (not df_4h_calc.empty and len(df_4h_calc) >= 15) else df
-            pattern_4h_report = analyze_chart_patterns(df_for_4h_pat, timeframe="4H", live_price=close, stock_info=stock_meta_info)
 
             # 判斷是否為 ETF（00 開頭且代碼長度 >= 5 之純數字標的）
             _is_etf = symbol.isdigit() and symbol.startswith('00') and len(symbol) >= 5
@@ -2044,17 +2073,35 @@ def run_screener(force=False):
 
         # 🔴 賣出判定 (最優先保護機制)：
         # A. 跌破 -20% 停損價
-        # B. 任一時框 SuperTrend 翻紅空頭
-        # C. 雙時框評分均跌破 50 分 (多因子動能竭盡汰弱留強)
-        is_st_bear   = (st_1d == -1 or st_4h == -1)
-        is_stop_loss = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
+        # B. 1D SuperTrend (只看日線) 翻紅為空頭，直接跳賣出
+        # C. 時間停損：持倉滿 20 個交易日 (約 28 天日曆日) 且未獲利 (price <= entry_p) 且未觸發加碼
+        # D. 雙時框評分均跌破 50 分 (多因子動能竭盡汰弱留強)
+        is_st_1d_bear = (st_1d == -1)
+        is_stop_loss  = (price <= entry_p * 0.80) and (price > 0) and (entry_p > 0)
+        
+        # 計算持倉天數進行時間停損判斷 (持倉 >= 28天且未獲利)
+        entry_time_str = str(pos_info.get('entry_time', ''))[:10]
+        is_time_stop_loss = False
+        held_days = 0
+        if entry_time_str:
+            try:
+                e_dt = pd.to_datetime(entry_time_str)
+                n_dt = pd.to_datetime(now_str[:10])
+                held_days = (n_dt - e_dt).days
+                if held_days >= 28 and price <= entry_p:
+                    is_time_stop_loss = True
+            except Exception:
+                pass
+
         is_score_decay = (sc_1d < 50 and sc_4h < 50) and (price > 0)
 
-        if is_stop_loss or is_st_bear or is_score_decay:
+        if is_stop_loss or is_st_1d_bear or is_time_stop_loss or is_score_decay:
             if is_stop_loss:
                 sell_reason = f"跌破 -20% 停損保護價 (${entry_p * 0.80:.2f})"
-            elif is_st_bear:
-                sell_reason = "SuperTrend 趨勢轉為空頭"
+            elif is_st_1d_bear:
+                sell_reason = "1D SuperTrend 日線轉為空頭翻紅"
+            elif is_time_stop_loss:
+                sell_reason = f"持倉滿 20 交易日 ({held_days}天) 未發動且未獲利 (時間停損換股)"
             else:
                 sell_reason = f"綜合評分轉弱 ({max(sc_1d, sc_4h)}分 < 50分) 動能竭盡出場"
 
@@ -2153,14 +2200,7 @@ def run_screener(force=False):
                             'tf': tf_tag,
                             'status': 'BUY'
                         }
-                else:
-                    # 🚀 已漲過頭/非剛發動的歷史強勢個股：靜默補入 pos_state 進行持倉追蹤，絕不誤發過期買進！
-                    pos_state[sym_id] = {
-                        'entry_price': price,
-                        'entry_time': now_str,
-                        'tf': "SILENT_INIT",
-                        'status': 'HOLD'
-                    }
+                # 🚀 說明：若已漲過頭或非剛發動，僅列入選股觀察清單，不再自動灌入 pos_state 避免持倉虛增
 
     def _get_sort_score(s):
         sc = s.get('display_score')
