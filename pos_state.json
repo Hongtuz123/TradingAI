@@ -217,7 +217,8 @@
     "entry_price": 37.3,
     "entry_time": "2026-08-10 10:06:27",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "1608": {
     "entry_price": 33.4,
@@ -537,7 +538,8 @@
     "entry_price": 218,
     "entry_time": "2026-08-06 15:06:23",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "2316": {
     "entry_price": 176,
@@ -1015,7 +1017,8 @@
     "entry_price": 353,
     "entry_time": "2026-08-05 10:05:37",
     "tf": "1D",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "2458": {
     "entry_price": 137.5,
@@ -1414,7 +1417,8 @@
     "entry_price": 128.5,
     "entry_time": "2026-08-05 11:05:32",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "2882": {
     "entry_price": 103.5,
@@ -1833,7 +1837,8 @@
     "entry_price": 4390,
     "entry_time": "2026-08-06 15:06:23",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "3481": {
     "entry_price": 54.4,
@@ -2474,7 +2479,8 @@
     "entry_price": 341,
     "entry_time": "2026-08-06 11:05:50",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "6214": {
     "entry_price": 175.5,
@@ -2514,7 +2520,8 @@
     "entry_price": 168,
     "entry_time": "2026-08-06 18:05:48",
     "tf": "SILENT_INIT",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "6282": {
     "entry_price": 47.15,
@@ -2530,7 +2537,8 @@
     "entry_price": 252.5,
     "entry_time": "2026-08-05 15:05:33",
     "tf": "4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "6414": {
     "entry_price": 407.5,
@@ -2982,7 +2990,8 @@
     "entry_price": 396,
     "entry_time": "2026-08-06 11:05:50",
     "tf": "1D/4H",
-    "last_add_buy_time": "2026-10-07"
+    "last_add_buy_time": "2026-10-07",
+    "status": "HOLD"
   },
   "8028": {
     "entry_price": 255.5,

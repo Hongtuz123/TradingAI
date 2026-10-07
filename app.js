@@ -13473,18 +13473,40 @@ function renderSectorFlowMap() {
 
   container.innerHTML = '';
 
-  // 1. 資料來源：進入「荳荳清單」的標的，若無則即時取用庫存優選標的
-  let stocks = (typeof currentResults !== 'undefined' && currentResults.length > 0) ? [...currentResults] : [];
-  if (stocks.length === 0 && typeof mockStocks !== 'undefined' && mockStocks.length > 0) {
-    stocks = mockStocks.filter(s => {
+  // 1. 資料來源：🎯 嚴格鎖定「買進 + 加碼 + 持倉中」在線部位，100% 排除已賣出 (CLOSED)
+  const posState = (window.posState) || (window.marketData && window.marketData.pos_state) || {};
+  const allStocks = (typeof mockStocks !== 'undefined' && mockStocks.length > 0) 
+    ? mockStocks 
+    : ((window._rawMarketData && window._rawMarketData.mockStocks) || []);
+
+  let stocks = allStocks.filter(s => {
+    const sId = String(s.id).trim();
+    const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
+    const rawStatus = posInfo.status || s.signal_status;
+    
+    // 嚴格排除賣出 (CLOSED)
+    if (rawStatus === 'CLOSED' || posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED') {
+      return false;
+    }
+    
+    // 排除 ETF
+    const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
+    if (isETF) return false;
+
+    // 必須為在手部位 (持倉中、加碼、買進)
+    const isHeldOrActive = (posInfo.status === 'HOLD' || rawStatus === 'HOLD' || posInfo.entry_price != null ||
+                            s.signal_status === 'BUY' || s.signal_status === 'ADD' || posInfo.status === 'BUY' || posInfo.status === 'ADD');
+    return isHeldOrActive;
+  });
+
+  // 雙重保底防禦：若在手標的為空，取全市場評分 >= 70 分之強勢非賣出個股
+  if (stocks.length === 0) {
+    stocks = allStocks.filter(s => {
       const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
-      return !isETF && (s.dynamicScore || s.totalScore || s.score || 70) >= 60;
-    });
-    if (stocks.length === 0) stocks = mockStocks.filter(s => !(s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id)))).slice(0, 45);
-  }
-  // 🛡️ 雙重保底：若仍然為空，從全域 window._rawMarketData 取得（同樣排除 ETF）
-  if (stocks.length === 0 && typeof window._rawMarketData !== 'undefined' && window._rawMarketData && window._rawMarketData.mockStocks) {
-    stocks = window._rawMarketData.mockStocks.filter(s => !(s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id)))).slice(0, 45);
+      const sId = String(s.id).trim();
+      const posInfo = posState[sId] || {};
+      return !isETF && posInfo.status !== 'CLOSED' && (s.dynamicScore || s.totalScore || 0) >= 70;
+    }).slice(0, 45);
   }
 
   // 顏色與象限定義
@@ -19735,10 +19757,11 @@ window.renderDoudouScreenerList = function() {
   const statsChipsEl = document.getElementById('resultsStatsChips');
   if (statsChipsEl) {
     statsChipsEl.innerHTML = `
-      <span class="chip-item chip-buy">買進 <strong>${buyCnt}</strong></span>
-      <span class="chip-item chip-add">加碼 <strong>${addCnt}</strong></span>
-      <span class="chip-item chip-closed">賣出(3日內) <strong>${closedCnt}</strong></span>
-      <span class="chip-item chip-hold">持倉中 <strong>${holdCnt}</strong></span>
+      <span class="chip-item chip-buy" title="今日剛發動進場">買進 <strong>${buyCnt}</strong></span>
+      <span class="chip-item chip-add" title="持倉且今日強勢爆量加碼">加碼 <strong>${addCnt}</strong></span>
+      <span class="chip-item chip-hold" title="在手持倉且未觸發加碼之續抱部位">持倉中 <strong>${holdCnt}</strong></span>
+      <span class="chip-item" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); color:#93c5fd;" title="目前全部在手持股總數 (買進 + 加碼 + 持倉中)">在手總持倉 <strong>${totalHolding}</strong></span>
+      <span class="chip-item chip-closed" title="近3日內已平倉出場">賣出(3日內) <strong>${closedCnt}</strong></span>
     `;
   }
 
