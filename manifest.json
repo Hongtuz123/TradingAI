@@ -1,0 +1,23 @@
+{
+  "name": "荳荳 AI 智能選股系統",
+  "short_name": "荳荳 AI",
+  "description": "整合市場健康度、基本面、籌碼、技術面五層智能選股系統",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

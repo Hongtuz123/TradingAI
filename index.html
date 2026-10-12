@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+
+
+
+<html lang="zh-TW">
+
+
+
+<head>
+
+
+
+  <meta charset="UTF-8" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+
+
+
+  <title>荳荳AI智能選股 | 五層智能選股系統</title>
+
+
+
+  <meta name="description" content="荳荳AI智能選股 - 整合市場健康度、基本面、籌碼、技術面五層智能選股系統，精準找出強勢標的" />
+
+
+
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="荳荳 AI" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="./icon.png" />
+
+
+
+  <!-- 🐾 荳荳 AI 原生標準 Web Push 核心配置 -->
+  <script>
+    // VAPID 公鑰 (標準 Web Push 原生金鑰)
+    window.VAPID_PUBLIC_KEY = 'BAOKqlbJ_hVpu1_sfewfv9risdJKvQxSu4JsZdKRuBd59LSuG87qMsl-NvYnqlSV1SxGTh9sEt_3GeOOEscbOt8';
+
+    // 監聽 Service Worker 傳送的通知點擊訊息
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'DOUDOU_NOTIFICATION_CLICK') {
+          console.log('[NativePush] 收到通知點擊訊息:', event.data);
+          if (typeof executeSignalNavigation === 'function') {
+            executeSignalNavigation(event.data.view || 'screener', event.data.filter || 'buy');
+          }
+        }
+      });
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css?v=94" />
+
+
+
+  <script src="https://unpkg.com/lightweight-charts@5/dist/lightweight-charts.standalone.production.js"></script>
+
+
+
+</head>
+
+
+
+<body>
+
+
+
+  <!-- 頂部導航 -->
+
+
+
+  <header class="topbar" id="topbar">
+
+
+
+    <div class="topbar-brand" style="gap: 8px;">
+
+
+
+      <div class="brand-logo" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 1.5px solid #f97316; background: rgba(255,255,255,0.15);">
+
+
+
+        <img src="photo/doudou_happy.png" style="width: 100%; height: 100%; object-fit: cover;" alt="荳荳" />
+
+
+
+      </div>
+
+
+
+      <div class="brand-text">
+
+
+
+        <span class="brand-name" style="color: #f97316; font-weight: 800; font-size: 16px;">🐾 荳荳 AI</span>
+
+
+
+        <span class="brand-sub">智能選股</span>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+    <nav class="topbar-nav">
+      <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+        <span class="nav-icon">🎯</span> 指標雷達
+      </button>
+
+      <button class="nav-btn" data-view="screener" onclick="switchView('screener')">
+        <span class="nav-icon">🐕</span> 荳荳清單
+      </button>
+
+      <button class="nav-btn" data-view="chart" onclick="switchView('chart')">
+        <span class="nav-icon">🐕</span> 荳荳指標
+      </button>
+
+      <!-- 📱 快捷推播啟用按鈕 (電腦版) -->
+      <button id="pwaPushBtn" class="nav-btn pwa-quick-btn" onclick="openPushSettingsModal()" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #4ade80;" title="點擊開啟手機推播設定">
+        <span class="nav-icon">🔔</span> 啟用推播
+      </button>
+    </nav>
+
+    <!-- 📱 手機版專屬頂部推播捷徑 (<=768px 顯示) -->
+    <button class="mobile-push-badge-btn" id="mTopbarPushBtn" onclick="openPushSettingsModal()" title="手機推播設定">
+      <span class="m-push-dot" id="mPushDot"></span>
+      <span class="m-push-text" id="mPushText">🔔 訊號推播</span>
+    </button>
+
+    <div class="topbar-status">
+
+
+
+      <div class="market-status-badge" id="marketStatusBadge">
+
+
+
+        <span class="status-dot"></span>
+
+
+
+        <span id="marketStatusText">市場評估中...</span>
+
+
+
+      </div>
+
+
+
+      <div class="current-time">現在時間：<span id="currentTime">----/--/-- --:--:--</span></div>
+
+
+
+      <div class="last-update" style="display: flex; align-items: center; gap: 8px;">
+        <span>資料更新：<span id="lastUpdateTime"></span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="main-container">
+
+    <!-- ======================== 戰術儀表板視圖 ======================== -->
+    <section class="view active" id="view-dashboard">
+      <!-- 頂部控制列：荳荳雷達標題 + 市場健康度收合按鈕 (RWD 兩端對齊) -->
+      <div class="dashboard-radar-header-modern">
+        <div class="radar-title-group">
+          <h2 class="radar-title-text">
+            <span style="font-size:18px;">🎯</span> 荳荳雷達
+            <span class="badge radar-title-badge">荳荳精選標的</span>
+          </h2>
+        </div>
+
+        <div class="radar-top-actions">
+          <!-- 📊 市場健康度戰術診斷按鈕 -->
+          <div class="health-widget-wrap" style="position: relative;">
+            <button class="health-icon-btn modern-health-btn" id="healthToggleBtn" onclick="toggleHealthPopover(event)" title="點擊展開/收合大盤市場健康度戰術診斷">
+              <span class="health-beacon-dot" id="headerHealthBeacon"></span>
+              <span class="health-btn-title">市場健康度</span>
+              <span class="health-badge-status" id="healthQuickBadge">偏多</span>
+              <span class="health-btn-arrow">▾</span>
+            </button>
+
+                        <!-- 展開的高科技戰術診斷卡 (Popover) -->
+            <div class="health-popover" id="healthPopover">
+              <div class="health-popover-header">
+                <div class="hp-title-group">
+                  <span class="hp-radar-icon">🩺</span>
+                  <div>
+                    <div class="hp-title">大盤健康度戰術指標</div>
+                    <div class="hp-subtitle" id="hpUpdateTime">即時多空量化</div>
+                  </div>
+                </div>
+                <button class="hp-close-btn" onclick="toggleHealthPopover(event)" title="關閉">✕</button>
+              </div>
+
+              <div class="health-popover-body">
+                <!-- 1. 🇹🇼 台股前一日加權指數 -->
+                <div class="hp-card" id="hpTwCard">
+                  <div class="hp-card-top">
+                    <span class="hp-card-name">🇹🇼 台灣加權指數 (前一日)</span>
+                    <span class="hp-status-tag" id="hpTwStatus">--</span>
+                  </div>
+                  <div class="hp-chg-banner" id="hpTwBanner" style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                    <span style="font-size:16px; font-weight:800;" id="hpTwClose">--</span>
+                    <span style="font-size:14px; font-weight:800; padding:2px 8px; border-radius:6px;" id="hpTwChg">--%</span>
+                  </div>
+                  <div class="hp-rule-hint" id="hpTwRuleHint" style="font-size:10px; color:#64748b; margin-top:4px;">
+                    規則：漲&gt;1% 綠色 · 跌&gt;1% 紅色 · ±1%內 黃色
+                  </div>
+                </div>
+
+                <!-- 2. 🇺🇸 美股主要指數 (DJI, S&P 500, Nasdaq, SOX) -->
+                <div class="hp-card" id="hpUsCard">
+                  <div class="hp-card-top" style="margin-bottom:6px;">
+                    <span class="hp-card-name">🇺🇸 美股核心指數 (4大板塊)</span>
+                    <span style="font-size:10px; color:#94a3b8;">漲&gt;1%綠 · 跌&gt;1%紅 · ±1%黃</span>
+                  </div>
+                  <div class="hp-us-grid" id="hpUsGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <!-- 由 JS 動態渲染 4 大美股指數 -->
+                  </div>
+                </div>
+
+                <!-- 3. ⚡ 台股恐慌指數 (VIX) -->
+                <div class="hp-card" id="hpVixCard">
+                  <div class="hp-card-top">
+                    <span class="hp-card-name">⚡ 恐慌指數 (VIX)</span>
+                    <span class="hp-status-tag" id="hpVixTag" style="font-size:12px; font-weight:800;">--</span>
+                  </div>
+                  <div style="font-size:15px; font-weight:800; margin:6px 0;" id="hpVixFullText">
+                    台股恐慌指數(VIX): <span id="hpVixVal">--</span> <span id="hpVixLevel" style="margin-left:6px;">--</span>
+                  </div>
+                  <div class="hp-rule-hint" style="font-size:10px; color:#64748b;">
+                    門檻：&lt;20 良好 (綠) · 20~30 普通 (黃) · &gt;30 恐慌 (紅)
+                  </div>
+                </div>
+              </div>
+
+              <!-- 保留隱藏的 legacy DOM 元素以防舊 JS 引用報錯 -->
+              <div style="display:none;" id="scoreThresholdDisplay"></div>
+<div style="display:none;" id="twIndicators"></div>
+              <div style="display:none;" id="usIndicators"></div>
+              <div style="display:none;" id="volIndicator"></div>
+              <div style="display:none;" id="twMarketScoreBadge"></div>
+              <div style="display:none;" id="usMarketScoreBadge"></div>
+              <div style="display:none;" id="warningList"></div>
+              <div style="display:none;" id="warningTooltipBox"></div>
+              <div style="display:none;" id="warningTooltipWrap"></div>
+              <div style="display:none;" id="twHealthGrade"></div>
+              <div style="display:none;" id="usHealthGrade"></div>
+              <div style="display:none;" id="healthGrade"></div>
+              <div style="display:none;" id="healthWarning"></div>
+              <div style="display:none;" id="healthSummaryPopover"></div>
+              <div style="display:none;" id="healthPopoverContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🎯 指標雷達掃描儀 (Tactical Radar Display) -->
+      <div class="flow-bubble-full flow-map-panel tactical-radar-panel">
+        <div class="panel-header radar-quad-panel-header">
+          <!-- 四象限過濾標籤 (2x2 或 單行整齊 Grid) -->
+          <div class="radar-quadrant-grid">
+            <button id="btn-filter-major" class="bubble-filter-btn active" onclick="toggleBubbleFilter('major')">
+              <span class="dot major" style="background:#ef4444;"></span>🔥 主力爆買
+            </button>
+            <button id="btn-filter-bottom" class="bubble-filter-btn active" onclick="toggleBubbleFilter('bottom')">
+              <span class="dot bottom" style="background:#3b82f6;"></span>💎 資金進駐
+            </button>
+            <button id="btn-filter-retreat" class="bubble-filter-btn active" onclick="toggleBubbleFilter('retreat')">
+              <span class="dot retreat" style="background:#10b981;"></span>🟢 量縮整理
+            </button>
+            <button id="btn-filter-rotate" class="bubble-filter-btn active" onclick="toggleBubbleFilter('rotate')">
+              <span class="dot rotate" style="background:#eab308;"></span>🟡 買力降溫
+            </button>
+          </div>
+          <div id="bubble-legend-text" class="radar-legend-text">
+            X軸: 5日籌碼動量 ｜ Y軸: 當日漲跌幅 ｜ 氣泡: 荳荳精選標的
+          </div>
+        </div>
+
+        <!-- 科技雷達動畫視窗 (自適應高，消除上方大空洞) -->
+        <div class="radar-viewport">
+          <div class="flow-map-container" id="sectorTreeMap">
+            <!-- 由 JS 動態繪製荳荳清單標的氣泡 -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ======================== 篩選器視圖 ======================== -->
+
+
+
+    <section class="view" id="view-screener">
+      <div class="screener-full-layout" style="width: 100%;">
+        <!-- 頂部戰術搜尋與 Hashtag 快速過濾 Bar (單行整合與橫向滑動分類) -->
+        <div class="screener-search-bar-wrap modern-search-wrap">
+          <div class="unified-search-container">
+            <span class="unified-search-icon">🔍</span>
+            <input type="text" id="screenerSearchInput" class="unified-search-input" placeholder="搜尋股票代碼或名稱 (如 2330、奇鋐)..." oninput="handleUnifiedSearch(this.value)" onkeydown="if(event.key==='Enter') evaluateManualStock()">
+            <!-- 保留隱藏的 screenerManualInput 確保舊 JS 安全 -->
+            <input type="hidden" id="screenerManualInput">
+            <button class="unified-health-btn" onclick="evaluateManualStock()" title="個股即時智能量化健檢">
+              <span>🩺</span> 健檢
+            </button>
+          </div>
+
+          <div id="manualEvalResult" style="margin-top: 10px; display: none;"></div>
+
+          <!-- 🏷️ Hashtags 快速過濾列 (手機端橫向平滑滾動膠囊，支援多選取交集) -->
+          <div class="hashtag-filter-row modern-hashtag-scroll">
+            <span class="hashtag-label">戰術分類：</span>
+            <button class="hashtag-chip active" data-tag="all" onclick="filterByHashtag('all', this)" title="檢視全部標的">#全部標的</button>
+            <button class="hashtag-chip" data-tag="radar_q1" onclick="filterByHashtag('radar_q1', this)" title="篩選第一象限標的 (主力爆買/動能爆發前10)">#動能爆發</button>
+            <button class="hashtag-chip" data-tag="radar_q4" onclick="filterByHashtag('radar_q4', this)" title="篩選第四象限標的 (主力大買/壓回潛伏前10)">#動能潛伏</button>
+            <button class="hashtag-chip" data-tag="vol_top10" onclick="filterByHashtag('vol_top10', this)" title="篩選成交量前10大標的">#成交量前10</button>
+            <button class="hashtag-chip" data-tag="inst_top10" onclick="filterByHashtag('inst_top10', this)" title="篩選法人買超前10大標的">#法人買超</button>
+            <span class="hashtag-hint" style="font-size: 11px; color: var(--text-muted); margin-left: 6px; align-self: center;">(可複選取交集)</span>
+          </div>
+
+          <!-- 隱藏 legacy filter inputs 容器以防原有初始化邏輯報錯 -->
+          <div style="display: none;" id="legacyFilterInputs">
+            <input type="number" id="f_trust_days" value="0">
+            <input type="number" id="f_foreign_net_buy_threshold" value="0">
+            <input type="number" id="f_dealer_net_buy_threshold" value="0">
+            <input type="number" id="f_turnover" value="0.5">
+            <input type="number" id="f_min_score" value="70">
+            <select id="rankLimitSelect"><option value="10" selected>10</option></select>
+            <div id="rankListContent"></div>
+          </div>
+        </div>
+
+        <div class="screener-results">
+
+
+
+          <div class="results-header-modern">
+            <!-- Row 1: 標題與排序下拉 -->
+            <div class="results-row-top">
+              <div class="results-title-group">
+                <h3 style="margin:0; font-size:16px; font-weight:800; color:white;">篩選結果</h3>
+                <span class="results-total-badge" id="resultTotalBadge">共 <strong id="resultCount">0</strong> 檔</span>
+              </div>
+              <div class="results-sort-group">
+                <select id="resultSort" onchange="sortResults(this.value)" class="modern-sort-select">
+                  <option value="score">按評分排序 ↕</option>
+                  <option value="techType">按技術類型 ↕</option>
+                  <option value="price">按收盤價 ↕</option>
+                  <option value="trustDays">按投信買超 ↕</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Row 2: 狀態切換按鈕列 (水平膠囊，手機均分或橫滑) -->
+            <div class="signal-filter-tabs-modern">
+              <button type="button" class="sig-tab-btn active" id="sigTab_all" onclick="filterBySignalType('all')">全部</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_buy" onclick="filterBySignalType('buy')"><span class="sig-dot" style="background:#22c55e;"></span>買進</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_add" onclick="filterBySignalType('add')"><span class="sig-dot" style="background:#3b82f6;"></span>加碼</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_closed" onclick="filterBySignalType('closed')"><span class="sig-dot" style="background:#ef4444;"></span>賣出(3日)</button>
+              <button type="button" class="sig-tab-btn" id="sigTab_hold" onclick="filterBySignalType('hold')"><span class="sig-dot" style="background:#f59e0b;"></span>持倉中</button>
+            </div>
+
+            <!-- Row 3: 狀態統計 Chips 微型徽章列 -->
+            <div class="results-stats-chips" id="resultsStatsChips">
+              <!-- 由 JS 動態注入各狀態統計小晶片 -->
+            </div>
+          </div>
+
+
+
+          <div class="results-table-wrap">
+
+
+
+            <table class="results-table" id="resultsTable">
+
+
+
+              <thead>
+
+
+
+                <tr>
+
+
+
+                  <th onclick="toggleSort('id')" style="cursor:pointer; user-select:none;" title="點擊按代號排序">代號/名稱 <span class="sort-icon" id="sort-id">↕</span></th>
+
+
+
+                  <th onclick="toggleSort('price')" style="cursor:pointer; user-select:none;" title="點擊按價格排序">收盤價 <span class="sort-icon" id="sort-price">↕</span></th>
+
+
+
+                  <th onclick="toggleSort('score')" style="cursor:pointer; user-select:none;" title="點擊按評分排序">荳荳評分 <span class="sort-icon" id="sort-score">↕</span></th>
+
+
+
+                  <th onclick="toggleSort('epsGrowth')" style="cursor:pointer; user-select:none;" title="點擊按EPS成長排序">EPS / 成長 <span class="sort-icon" id="sort-epsGrowth">↕</span></th>
+
+
+
+                  <th onclick="toggleSort('revGrowth')" style="cursor:pointer; user-select:none;" title="點擊按營收成長排序">營收↑ <span class="sort-icon" id="sort-revGrowth">↕</span></th>
+
+
+
+
+
+                  <th onclick="toggleSort('mainNet')" style="cursor:pointer; user-select:none; min-width: 140px;" title="點擊按三大法人主力合計買賣超排序">
+                    <div style="display:inline-flex; align-items:center; gap:5px;">
+                      <span>三大法人主力</span>
+                      <span class="sort-icon" id="sort-mainNet">↕</span>
+                      <button type="button" id="btnToggleInstDetails" class="inst-th-toggle-btn" onclick="event.stopPropagation(); toggleAllInstDetails();" title="一鍵展開/收合所有標的之外資、投信、自營商個別明細">明細 ▾</button>
+                    </div>
+                  </th>
+
+
+
+                  <th onclick="toggleSort('volRatio')" style="cursor:pointer; user-select:none;" title="點擊按量能比排序">量比 <span class="sort-icon" id="sort-volRatio">↕</span></th>
+
+
+
+                  <th>操作</th>
+
+
+
+                </tr>
+
+
+
+              </thead>
+
+
+
+              <tbody id="resultsBody">
+
+
+
+                <tr class="empty-row">
+
+
+
+                  <td colspan="11">請點擊「執行篩選」開始篩選</td>
+
+
+
+                </tr>
+
+
+
+              </tbody>
+
+
+
+            </table>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- ======================== 荳荳指標 · 量化體系與策略資料流視圖 ======================== -->
+    <section class="view" id="view-chart">
+      <div class="quant-pipeline-wrapper">
+        
+        <!-- 頂部金融科技 Header -->
+        <div class="pipeline-header-card">
+          <div class="pipeline-header-left">
+            <div class="pipeline-title-row">
+              <span class="pipeline-badge-terminal">QUANT ENGINE v4.3</span>
+              <h2 class="pipeline-main-title">🐾 荳荳 AI 多因子量化選股資料流 (Data Pipeline)</h2>
+            </div>
+            <p class="pipeline-subtitle">
+              深度整合交易所即時行情、三大法人籌碼、基本面財報與多時框趨勢演算法。<strong>本次升級全面排除 ETF、落實殭屍股雙硬指標強制阻斷，並將入選門檻由 60 分提升至 70 分</strong>，透過三層防禦體系全自動萃取高勝率標的。
+            </p>
+          </div>
+          <div class="pipeline-header-metrics">
+            <div class="p-metric-item">
+              <span class="p-metric-label">數據延遲 (Latency)</span>
+              <span class="p-metric-val green">&lt; 120ms</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">全市場硬濾率</span>
+              <span class="p-metric-val orange">93.2%</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">入選核心門檻</span>
+              <span class="p-metric-val green">&ge; 70 分</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">平均盈虧比 (R:R)</span>
+              <span class="p-metric-val purple">3.2 : 1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🆕 2026.10 量化引擎重大升級公告 (Quant Engine v4.3) -->
+        <div class="pipeline-upgrade-banner">
+          <div class="upgrade-banner-header">
+            <span class="upgrade-badge">🔥 2026 最新核心升級</span>
+            <span class="upgrade-title">荳荳量化選股防禦與精選體系全面進化</span>
+            <span class="upgrade-date">Release v4.3</span>
+          </div>
+          <div class="upgrade-grid">
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">🚫</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">全面排除 ETF (個股專注閥)</div>
+                <div class="upgrade-card-desc">全域封鎖剔除 <code>00</code> 開頭之指數及債券型 ETF，將寶貴的選股算力與資金集中在具備強大爆發動能與機構籌碼的純個股標的。</div>
+              </div>
+            </div>
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">💧</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">殭屍股雙硬指標強制阻斷</div>
+                <div class="upgrade-card-desc">嚴格設下<b>5 日均量 ≥ 300 張</b>與<b>市值 ≥ 20 億元</b>雙重硬性閥門，未達標者直接強制剔除（不予放行），杜絕滑價與流動性陷阱。</div>
+              </div>
+            </div>
+            <div class="upgrade-card">
+              <div class="upgrade-card-icon">🎯</div>
+              <div class="upgrade-card-body">
+                <div class="upgrade-card-title">精選門檻調升至 ≥ 70 分</div>
+                <div class="upgrade-card-desc">預設入選標準由 60 分拉高至 <b>70 分</b>，嚴格鎖定「起漲甜蜜點」與「強勢主升段」，淘汰 60~69 分整理期雜訊，去蕪存菁。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🚀 4 階架構資料流導覽圖 (Flow Diagram) -->
+        <div class="pipeline-flowchart">
+
+          <!-- STAGE 01: 多源數據攝取 -->
+          <div class="flow-stage-card stage-1">
+            <div class="stage-tag">STAGE 01</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">📡</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">多源數據攝取</h3>
+                <span class="stage-sub">Data Ingestion Layer</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <ul class="stage-source-list">
+                <li>
+                  <span class="src-badge">TWSE/TPEX</span>
+                  <div class="src-info">
+                    <strong>台股即時逐筆與K線</strong>
+                    <span class="src-detail">Tick/1m/4h/1D 全行情串流</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">INSTITUTION</span>
+                  <div class="src-info">
+                    <strong>三大法人籌碼匯流</strong>
+                    <span class="src-detail">外資、投信、自營商連買天數與庫存</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">MOPS</span>
+                  <div class="src-info">
+                    <strong>財務基本面快照</strong>
+                    <span class="src-detail">月營收 YoY、季 EPS、營業利益率</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="src-badge">TDCC</span>
+                  <div class="src-info">
+                    <strong>集保大戶持股結構</strong>
+                    <span class="src-detail">400張/1000張大戶集中度週頻更新</span>
+                  </div>
+                </li>
+              </ul>
+              <div class="stage-action-box">
+                ⚡ 執行清洗：除權息還原平滑 ｜ 異質數據戳記對齊 ｜ 全面識別排除 ETF (00開頭) ｜ 剔除無效冷門報價
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">結構化清洗流</span>
+          </div>
+
+          <!-- STAGE 02: 一級硬濾網門檻 -->
+          <div class="flow-stage-card stage-2">
+            <div class="stage-tag">STAGE 02</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🛡️</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">一級硬門檻過濾</h3>
+                <span class="stage-sub">Hard Gate Filtering (三層防禦)</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="gate-grid">
+                <div class="gate-item">
+                  <div class="gate-item-title">🚫 全面排除 ETF (個股專注)</div>
+                  <p class="gate-desc">代碼 <code>00</code> 開頭之 ETF 直接剔除，避免被動指數與債券型商品稀釋個股爆發力機會。</p>
+                </div>
+                <div class="gate-item">
+                  <div class="gate-item-title">💧 殭屍股雙硬指標安全閥</div>
+                  <p class="gate-desc">嚴格檢核 <b>5 日均量 &ge; 300 張</b> 且 <b>市值 &ge; 20 億元</b>，未達標者強制封殺剔除，防範無量出貨與滑價陷阱。</p>
+                </div>
+                <div class="gate-item">
+                  <div class="gate-item-title">⚖️ 財務底線與大盤濾網</div>
+                  <p class="gate-desc">近季 EPS &gt; 0，堅決排除全額交割；動態連動台股加權 20MA、美股四指及 VIX 恐慌值，空頭期自動收縮防守。</p>
+                </div>
+              </div>
+              <div class="stage-stat-footer">
+                <span>全市場 1,800+ 檔標的</span>
+                <span class="filter-arrow">➔ 嚴格硬濾 ➔</span>
+                <strong class="highlight-blue">前 6.8% 高動能個股池</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">合格股票矩陣</span>
+          </div>
+
+          <!-- STAGE 03: 五維多因子量化評分 -->
+          <div class="flow-stage-card stage-3">
+            <div class="stage-tag">STAGE 03</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🧮</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">多因子量化評分引擎</h3>
+                <span class="stage-sub">Multi-Factor Engine (0~100分)</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="factor-formula-banner">
+                Score = (L1 × 25%) + (L2 × 30%) + (L3 × 20%) + (L4 × 15%) + (L5 × 10%)
+              </div>
+              
+              <div class="factor-weight-stack">
+                <!-- L2: 30% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l2">L2 價格量能 (30%)</span>
+                    <span class="factor-logic">爆量突破倍數 &ge; 1.25x ｜ 帶量站上 20MA 與頸線攻擊角</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 30%; background: #3b82f6;"></div></div>
+                </div>
+                <!-- L1: 25% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l1">L1 籌碼集中 (25%)</span>
+                    <span class="factor-logic">外資+投信連續買超天數 ｜ 董監大戶持股連續 3 週淨增</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 25%; background: #10b981;"></div></div>
+                </div>
+                <!-- L3: 20% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l3">L3 趨勢共振 (20%)</span>
+                    <span class="factor-logic">1D 日線波段 + 4H 盤中 Supertrend 雙時框同步金叉偏多</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 20%; background: #f59e0b;"></div></div>
+                </div>
+                <!-- L4: 15% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l4">L4 基本動能 (15%)</span>
+                    <span class="factor-logic">近月營收 YoY 實質增長 &gt; 15% ｜ 本益比與 PEG 位階處安全區</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 15%; background: #ec4899;"></div></div>
+                </div>
+                <!-- L5: 10% -->
+                <div class="factor-row">
+                  <div class="factor-left">
+                    <span class="factor-badge f-l5">L5 族群共振 (10%)</span>
+                    <span class="factor-logic">細產業次族群資金淨流入領先 ｜ 同板塊領頭羊率先漲停</span>
+                  </div>
+                  <div class="factor-bar-bg"><div class="factor-bar-fill" style="width: 10%; background: #8b5cf6;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 連接箭頭 -->
+          <div class="flow-connector">
+            <div class="connector-line"></div>
+            <div class="connector-arrow">▶</div>
+            <span class="connector-label">綜合加權結論</span>
+          </div>
+
+          <!-- STAGE 04: 終端訊號決策與風控 -->
+          <div class="flow-stage-card stage-4">
+            <div class="stage-tag">STAGE 04</div>
+            <div class="stage-icon-header">
+              <div class="stage-icon">🎯</div>
+              <div class="stage-name-box">
+                <h3 class="stage-name">戰術分級與鐵血風控</h3>
+                <span class="stage-sub">Execution & Risk Discipline</span>
+              </div>
+            </div>
+            <div class="stage-content">
+              <div class="signal-tier-list">
+                <!-- 70-84 -->
+                <div class="signal-tier-card tier-sweet">
+                  <div class="tier-top">
+                    <span class="tier-score">70 ~ 84 分</span>
+                    <span class="tier-tag green">★ 起漲甜蜜點 (黃金進場區)</span>
+                  </div>
+                  <p class="tier-desc">底部築底完成「首次帶量突破」，下檔貼緊 20MA（停損僅 3%~5%），向上盈虧比超過 3:1，為系統核心推播與勝率最高之佈局點。</p>
+                </div>
+                <!-- 85+ -->
+                <div class="signal-tier-card tier-strong">
+                  <div class="tier-top">
+                    <span class="tier-score">85 ~ 100 分</span>
+                    <span class="tier-tag blue">🚀 強勢噴出 (主升段續抱/移動停利)</span>
+                  </div>
+                  <p class="tier-desc">多頭趨勢最強，外資投信重倉共振。若已脫離成本區不建議重倉追價，適合已有底單者沿 5MA 移動停利或小部位順勢操作。</p>
+                </div>
+                <!-- < 70 -->
+                <div class="signal-tier-card tier-watch">
+                  <div class="tier-top">
+                    <span class="tier-score">&lt; 70 分 (原 60-69 分區間)</span>
+                    <span class="tier-tag red">⛔ 系統強制淘汰 (未達發動門檻)</span>
+                  </div>
+                  <p class="tier-desc">【最新升級】低於 70 分判定動能不足或屬無量整理，<strong>系統預設直接剔除不予納入選股清單</strong>，杜絕資金卡死在盤整股中。</p>
+                </div>
+                <!-- 停損 -->
+                <div class="signal-tier-card tier-stoploss">
+                  <div class="tier-top">
+                    <span class="tier-score">跌破 20MA / Supertrend 翻空</span>
+                    <span class="tier-tag red">🛡️ 鐵血風控立即離場</span>
+                  </div>
+                  <p class="tier-desc">一旦收盤價跌破防守線，系統後台即刻標註 EXIT 狀態。嚴格截斷虧損、讓利潤奔跑，確保資本長期複利。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 🧪 互動式量化情境即時試算模擬器 (Quant Simulator) -->
+        <div class="quant-sim-card">
+          <div class="sim-header">
+            <div>
+              <h4 class="sim-title">⚡ 互動式量化因子情境模擬 (Factor Simulator)</h4>
+              <p class="sim-sub">點擊下方經典實戰情境，即時觀測五維因子權重計算與系統最後給予的評分判定：</p>
+            </div>
+            <div class="sim-preset-btns">
+              <button class="sim-btn active" onclick="applyQuantScenario('breakout')">🚀 2330 台積電型態起爆 (甜蜜點)</button>
+              <button class="sim-btn" onclick="applyQuantScenario('inst_buy')">🔥 投信法人連三買重倉 (強攻)</button>
+              <button class="sim-btn" onclick="applyQuantScenario('fake_rally')">⚠️ 殭屍股 / 未達70分 (最新硬門檻淘汰)</button>
+            </div>
+          </div>
+          
+          <div class="sim-body" id="simDemoContainer">
+            <div class="sim-factors-col">
+              <div class="sim-item">
+                <span class="sim-item-name">L1 籌碼因子 (25%)</span>
+                <span class="sim-item-val" id="sim-v-l1">23.5 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L2 量能動能 (30%)</span>
+                <span class="sim-item-val" id="sim-v-l2">26.0 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L3 趨勢共振 (20%)</span>
+                <span class="sim-item-val" id="sim-v-l3">17.0 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L4 基本營收 (15%)</span>
+                <span class="sim-item-val" id="sim-v-l4">12.0 分</span>
+              </div>
+              <div class="sim-item">
+                <span class="sim-item-name">L5 族群效應 (10%)</span>
+                <span class="sim-item-val" id="sim-v-l5">7.5 分</span>
+              </div>
+            </div>
+
+            <div class="sim-result-col">
+              <div class="sim-total-box">
+                <span class="sim-total-label">總合量化評分</span>
+                <div class="sim-score-num" id="simTotalScore" style="color: #4ade80;">86.0 <span style="font-size:16px;">分</span></div>
+                <div class="sim-status-pill green" id="simStatusPill">起漲甜蜜點 ｜ 建議依訊號佈局</div>
+              </div>
+              <p class="sim-summary-text" id="simSummaryText">
+                突破 20MA 長紅放量 1.6 倍，外資投信同步站在買方且雙時框 Supertrend 翻多。停損點緊依 20MA (-3.5%)，具備機構級高盈虧比！
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 隱藏 legacy chart DOM 容器防止舊腳本報錯 -->
+        <div style="display: none;" id="legacyChartDom">
+          <div id="chart-stock-info"><span class="chart-name">--</span></div>
+          <input type="text" id="chartSearchInput">
+          <div id="chart-resolutions"></div>
+          <button id="btn-chart-add-portfolio"></button>
+          <div id="api-status-badge"></div>
+          <div id="backtest-summary"></div>
+          <button id="pill-ma5"></button>
+          <div id="tvChartContainer"></div>
+          <div id="chartStockList"></div>
+          <div id="portfolioGrid"></div>
+        </div>
+      </div>
+    </section>
+
+
+
+  </main>
+
+
+
+
+
+
+
+  <!-- 🐾 荳荳每日盤後風向提醒彈窗 (狗狗口吻) 🐾 -->
+  <div class="modal-overlay" id="dogReminderModal" onclick="closeDogReminder(event)">
+    <div class="postmarket-summary-card modal-content-glass" id="dogReminderBox" onclick="event.stopPropagation()">
+      <button class="shiba-chat-close" onclick="closeDogReminder()" title="關閉視窗 (ESC)">✕</button>
+      <div id="dogReminderContent"></div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+  <!-- 股票詳情 Modal -->
+
+
+
+  <div class="modal-overlay" id="stockModal" onclick="closeModal(event)">
+
+
+
+    <div class="modal-box" id="modalBox">
+
+
+
+      <button class="modal-close" onclick="closeModal()">✕</button>
+
+
+
+      <div id="modalContent"></div>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <!-- 🐾 荳荳柴犬吉祥物對話框 🐾 -->
+
+
+
+  <div class="shiba-mascot-container" id="shibaMascotContainer">
+
+
+
+    <!-- 荳荳 AI 戰術室智能對話面板 -->
+
+
+
+    <div class="shiba-chat-panel" id="shibaChatPanel" style="display: none;">
+
+
+
+      <div class="shiba-chat-header">
+
+
+
+        <div style="display:flex; align-items:center; gap:8px;">
+
+
+
+          <img src="photo/doudou_happy.png" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--primary);" alt="荳荳">
+
+
+
+          <div>
+
+
+
+            <strong style="color:white; font-size:13px;">荳荳 AI 數據戰術室 🐾</strong>
+
+
+
+            <div style="font-size:10px; color:var(--primary);">大盤前 500 大實時統計中汪！🐶</div>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+        <button class="shiba-chat-close" onclick="toggleShibaChatPanel(false)">✕</button>
+
+
+
+      </div>
+
+
+
+      <div class="shiba-chat-body" id="shibaChatBody">
+
+
+
+        <div class="shiba-msg shiba-msg-bot">
+
+
+
+          <div class="shiba-msg-text">
+
+
+
+            嗨！我是荳荳🐾！今天也來陪拔麻一起找出強勢大飆股汪！<br>
+
+
+
+            我可以幫您分析大盤最新數據，您可以直接問我或點選下方快捷提問喔！🐶
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <div class="shiba-chat-quick-tags">
+
+
+
+        <button class="quick-tag-btn" onclick="askShiba('today_strong')">🔥 今日強勢類股與清單</button>
+
+
+
+        <button class="quick-tag-btn" onclick="askShiba('today_weak')">❄️ 今日弱勢類股與清單</button>
+
+
+
+        <button class="quick-tag-btn" onclick="askShiba('trust_favorite')">💼 法人狂買追蹤</button>
+
+
+
+        <button class="quick-tag-btn" onclick="askShiba('volume_burst')">⚡ 今日爆量突破飆股</button>
+
+
+
+        <button class="quick-tag-btn" onclick="askShiba('doudou_backtest')" style="border: 1px solid #ff007f; color: #ff007f; background: rgba(255,0,127,0.08);">🐾 荳荳突破回測選股</button>
+
+
+
+      </div>
+
+
+
+      <div class="shiba-chat-input-wrap">
+
+
+
+        <input type="text" id="shibaChatInput" placeholder="問荳荳：今日漲幅都是哪一類股？" onkeydown="if(event.key==='Enter') sendShibaMessage()">
+
+
+
+        <button class="shiba-chat-send" onclick="sendShibaMessage()">發送</button>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <div class="shiba-bubble" id="shibaMascotBubble">汪！我是荳荳🐾 今天也來陪拔麻一起找出強勢大飆股！</div>
+
+
+
+    <div class="shiba-avatar-wrap" onclick="toggleShibaChatPanel()">
+
+
+
+      <img src="photo/doudou_happy.png" class="shiba-avatar" id="shibaMascotAvatar" alt="荳荳柴犬" />
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <!-- 🐾 系統底頁統計 🐾 -->
+
+
+
+  <footer class="doudou-footer">
+
+
+
+    <div class="footer-left">🐾 荳荳選股戰術室 © 2026</div>
+
+
+
+    <div class="footer-right">
+
+
+
+      <span>🐶 荳荳被摸頭：<strong id="doudouPetCount">0</strong> 次</span>
+
+
+
+      <span>🥫 獲得罐頭：<strong id="doudouCannedCount">0</strong> 個</span>
+
+
+
+    </div>
+
+
+
+  </footer>
+
+  <!-- 📱 行動端專屬底部原生導航欄 (Mobile Bottom Tab Bar) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="m-nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">
+      <span class="m-nav-icon">🎯</span>
+      <span class="m-nav-label">指標雷達</span>
+    </button>
+    <button class="m-nav-btn" data-view="screener" onclick="switchView('screener')">
+      <span class="m-nav-icon">🐕</span>
+      <span class="m-nav-label">荳荳選股</span>
+    </button>
+    <button class="m-nav-btn" data-view="chart" onclick="switchView('chart')">
+      <span class="m-nav-icon">🐕</span>
+      <span class="m-nav-label">荳荳指標</span>
+    </button>
+    <button class="m-nav-btn" id="mNavPushBtn" onclick="openPushSettingsModal()">
+      <span class="m-nav-icon">🔔</span>
+      <span class="m-nav-label" id="mNavPushLabel">推播設定</span>
+    </button>
+  </nav>
+
+  <!-- 📲 荳荳 AI 手機推播與 PWA 專屬設定視窗 (Modal) -->
+  <div class="pwa-modal-backdrop" id="pwaPushModal" onclick="if(event.target===this) closePushSettingsModal()">
+    <div class="pwa-modal-card">
+      <div class="pwa-modal-header">
+        <div class="pwa-modal-title-group">
+          <span class="pwa-modal-icon">🔔</span>
+          <div>
+            <div class="pwa-modal-title">手機交易訊號推播</div>
+            <div class="pwa-modal-sub">PWA 原生鎖屏推播 ｜ 系統買進清單秒級導流</div>
+          </div>
+        </div>
+        <button class="pwa-close-btn" onclick="closePushSettingsModal()" title="關閉">✕</button>
+      </div>
+
+      <!-- 即時裝置狀態儀表 -->
+      <div class="pwa-status-dashboard">
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">作業系統</span>
+          <span class="pwa-dash-val" id="pwaOsVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">運作環境</span>
+          <span class="pwa-dash-val" id="pwaModeVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">推播權限</span>
+          <span class="pwa-dash-val" id="pwaPermVal">檢測中...</span>
+        </div>
+        <div class="pwa-dash-item">
+          <span class="pwa-dash-label">雲端連線</span>
+          <span class="pwa-dash-val" id="pwaCloudVal">檢測中...</span>
+        </div>
+      </div>
+
+      <!-- iOS 特別引導區 (僅在 iOS 且非 standalone 模式時顯示) -->
+      <div class="pwa-ios-guide-box" id="pwaIosGuideBox" style="display: none;">
+        <div style="font-size: 13px; font-weight: 800; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+          <span>🍎</span> iPhone / iPad 用戶必讀安裝指引
+        </div>
+        <p style="font-size: 11.5px; color: #94a3b8; margin: 0; line-height: 1.45;">
+          Apple 規定網頁推播必須先將系統「加入主畫面」，才能開啟原生鎖屏通知：
+        </p>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 1</span>
+          <span>點擊 Safari 螢幕正下方的 <b>「分享」圖示 ⎋</b></span>
+        </div>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 2</span>
+          <span>在選單中往下滑動，點擊 <b>「加入主畫面」 ⊞</b> 並確認「新增」</span>
+        </div>
+        <div class="ios-step-item">
+          <span class="ios-step-badge">STEP 3</span>
+          <span>返回手機桌面，點擊 <b>「🐾 荳荳 AI」</b> 圖示開啟，即可在此一鍵開啟通知！</span>
+        </div>
+        <button class="pwa-copy-btn" onclick="copyCurrentSiteUrl()">
+          <span>📋 複製本站網址 (若在 LINE/FB 內建瀏覽器請貼至 Safari 打開)</span>
+        </button>
+      </div>
+
+      <!-- 主要功能操作區 -->
+      <div class="pwa-btn-stack">
+        <button class="pwa-primary-action-btn" id="pwaModalMainActionBtn" onclick="togglePushNotification()">
+          <span id="pwaMainActionIcon">🔔</span>
+          <span id="pwaMainActionText">啟用手機原生推播通知</span>
+        </button>
+
+        <!-- 📋 複製專屬門牌金鑰按鈕 -->
+        <button type="button" class="pwa-copy-sub-btn" onclick="copyPushSubscriptionJson()" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+          <span>📋</span>
+          <span>複製我的手機推播門牌代碼 (供後端直接登記)</span>
+        </button>
+
+        <!-- 🔑 強制向 Apple 換發全新門牌 (重設專用) -->
+        <button type="button" class="pwa-renew-sub-btn" onclick="forceRenewPushSubscription()" style="background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+          <span>🔑</span>
+          <span>強制重設並換發全新金鑰 (解決舊門牌失效問題)</span>
+        </button>
+
+        <!-- ⚡ 買進/賣出/加碼三合一測試推播操作區 -->
+        <div style="font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin: 6px 0 2px; text-align: left;">
+          ⚡ 發送訊號推播測試 (驗證手機點擊自動切換)：
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%;">
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('buy')" style="background: rgba(34,197,94,0.18); border: 1px solid rgba(34,197,94,0.5); color: #4ade80; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🟢 買進訊號
+          </button>
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('closed')" style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.5); color: #f87171; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🔴 賣出訊號
+          </button>
+          <button type="button" class="pwa-test-sub-btn" onclick="sendTestSignalPush('add')" style="background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.5); color: #60a5fa; padding: 10px 4px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;">
+            🔵 加碼訊號
+          </button>
+        </div>
+
+        <!-- 🔄 強制清除舊快取按鈕 -->
+        <button class="pwa-refresh-cache-btn" onclick="forceClearPwaCache()" style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; width: 100%;">
+          <span>🔄</span>
+          <span>清除舊快取並獲取最新版本 (解決舊畫面問題 · v82 原生版)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== 荳荳 AI 深度型態分析報告 Modal ==================== -->
+  <div id="patternReportModal" class="modal-overlay" style="display:none;" onclick="handlePatternModalBackdropClick(event)">
+    <div class="pattern-report-dialog" onclick="event.stopPropagation()">
+      <!-- 手機端頂部下拉手柄 (點擊直接關閉) -->
+      <div class="pattern-modal-handle-bar" onclick="closePatternReportModal()" title="點擊關閉視窗">
+        <div class="pattern-modal-handle"></div>
+      </div>
+
+      <!-- 頂部 Header -->
+      <div class="pattern-modal-header">
+        <div class="pattern-modal-title-group">
+          <div class="pattern-brand-badge">
+            <span>🐾 荳荳分析圖卡</span>
+          </div>
+          <div class="pattern-stock-headline">
+            <span class="stock-id-badge" id="pmStockId">2330</span>
+            <h2 class="stock-name-title" id="pmStockName">台積電</h2>
+            <span class="stock-industry-pill" id="pmStockIndustry">半導體</span>
+            <span class="stock-live-price" id="pmStockPrice">$1,025.0</span>
+            <span class="stock-change-pill" id="pmStockChange">+2.5%</span>
+          </div>
+          <div class="pattern-meta-time" id="pmMetaTime">📅 分析時間：2026-10-06 (雙時框幾何量化運算)</div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closePatternReportModal()" title="關閉視窗" aria-label="關閉視窗">✕</button>
+      </div>
+
+      <!-- 時框切換列 (1D 日線 / 4H 4小時) -->
+      <div class="pattern-tf-switcher">
+        <span class="tf-label">⏱️ 分析時框切換：</span>
+        <div class="tf-btn-group">
+          <button type="button" class="tf-pill-btn active" id="tfBtn_1D" onclick="switchPatternModalTimeframe('1D')">
+            <span class="tf-icon">📅</span> 1D 日線時框
+          </button>
+          <button type="button" class="tf-pill-btn" id="tfBtn_4H" onclick="switchPatternModalTimeframe('4H')">
+            <span class="tf-icon">⏱️</span> 4H 4小時時框 (60分重採樣)
+          </button>
+        </div>
+      </div>
+
+      <!-- 報告核心內容主體 (由 JS 動態填充三大模組) -->
+      <div class="pattern-modal-body" id="patternModalBody">
+        <!-- JS 動態渲染 -->
+      </div>
+
+      <!-- Modal 底部工具列 (醒目全寬關閉按鈕) -->
+      <div class="pattern-modal-footer">
+        <button type="button" class="btn-pattern-close" onclick="closePatternReportModal()">
+          <span style="font-size: 15px; font-weight: 800;">✕</span>
+          <span>關閉分析報告</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 📱 手機端常駐浮動快速關閉按鈕 (滾動時隨時一鍵關閉) -->
+    <button type="button" class="pattern-floating-close-pill" onclick="closePatternReportModal()" title="快速關閉報告">
+      <span>✕</span> 關閉報告
+    </button>
+  </div>
+
+
+  <!-- 腳本 -->
+  <script src="data.js?v=95"></script>
+  <script src="app.js?v=95"></script>
+  <script src="stock-dashboard.js?v=95"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .then((reg) => {
+            reg.update();
+            console.log('[PWA] Service Worker 註冊與更新檢查完成');
+          })
+          .catch((err) => console.warn('[PWA] SW 註冊異常:', err));
+      });
+    }
+  </script>
+</body>
+
+
+
+</html>
+
+
+

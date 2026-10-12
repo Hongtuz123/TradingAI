@@ -1,0 +1,47 @@
+name: 每日股票篩選與更新
+
+on:
+  schedule:
+    # 台北時間 (UTC+8) 週一至週五：
+    # 1. 早上 08:05 (美股收盤後) ➜ UTC 00:05
+    # 2. 下午 14:05 (台股收盤安全時間) ➜ UTC 06:05
+    # 3. 下午 18:05 (公司營收陸續公布) ➜ UTC 10:05
+    - cron: '5 0,6,10 * * 1-5'
+  workflow_dispatch: # 支援手動觸發
+
+jobs:
+  update-screener:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 賦予寫入權限以便 push 檔案
+
+    steps:
+      - name: 檢出程式碼
+        uses: actions/checkout@v3
+
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 安存必要套件
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas yfinance requests
+
+      - name: 執行股票篩選器
+        run: python screener.py
+
+      - name: 提交更新資料
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add data.js
+          # 檢查是否有任何變更，有的話才 commit 防止 workflow 報錯
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto: 每日定時更新股票分析資料"
+            git push
+          else
+            echo "資料無變更，跳過提交。"
+          fi
