@@ -4205,6 +4205,7 @@ function renderScreenerTable(data) {
   const hasRadarQ4 = activeTags.has('radar_q4');
   const hasVolTop10 = activeTags.has('vol_top10');
   const hasInstTop10 = activeTags.has('inst_top10');
+  const hasRadarTop10 = hasRadarQ1;
 
   filteredData.sort((a, b) => {
     if (window.activeSignalFilter === 'all' || !window.activeSignalFilter) {
@@ -4335,8 +4336,10 @@ function renderScreenerTable(data) {
 
     let heldBadge = '';
     let radarBadge = '';
-    if (hasRadarTop10) {
-      radarBadge = `<span class="badge" style="background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.4);font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🎯 雷達主力</span>`;
+    if (hasRadarQ1) {
+      radarBadge = `<span class="badge" style="background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.4);font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🔥 動能爆發</span>`;
+    } else if (hasRadarQ4) {
+      radarBadge = `<span class="badge" style="background:rgba(234,179,8,0.18);color:#eab308;border:1px solid rgba(234,179,8,0.4);font-weight:bold;margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;">🛡️ 動能潛伏</span>`;
     }
     let statusActionTag = '';
     const slPriceStr = (s.price && s.price > 0) ? `(止損 $${(s.price * 0.80).toFixed(1)})` : '';
