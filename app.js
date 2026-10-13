@@ -13555,8 +13555,26 @@ function getRadarPotentialTopStocks(allStocks) {
 
     return { stock: s, score, potentialTags: tags };
   })
-  .filter(x => x !== null && x.score >= 50)
+  .filter(x => x !== null && x.score >= 45)
   .sort((a, b) => b.score - a.score || (b.stock.totalScore || 0) - (a.stock.totalScore || 0));
+
+  // 🛡️ 保底填充：若嚴格過濾後少於 20 檔，依量化綜合分數補齊，確保雷達視角隨時飽滿不開天窗
+  if (scored.length < 20) {
+    const existingIds = new Set(scored.map(x => String(x.stock.id)));
+    const fallbackList = allStocks.filter(s => {
+      if (!s || s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id))) return false;
+      return !existingIds.has(String(s.id)) && (s.dailyVol || 0) >= 200;
+    }).sort((a, b) => (b.totalScore || b.dynamicScore || 0) - (a.totalScore || a.dynamicScore || 0));
+
+    for (const fb of fallbackList) {
+      if (scored.length >= 30) break;
+      scored.push({
+        stock: fb,
+        score: fb.totalScore || fb.dynamicScore || 65,
+        potentialTags: [fb.industry || '量化精選']
+      });
+    }
+  }
 
   return scored.slice(0, 30).map(x => {
     x.stock._potentialScore = x.score;
@@ -13622,7 +13640,7 @@ function renderSectorFlowMap() {
   // 幾何尺寸 (RWD 自適應與防黑洞比例)
   const isMobile = window.innerWidth <= 768;
   const W = container.clientWidth || (isMobile ? 360 : 920);
-  const H = isMobile ? 420 : Math.max(540, Math.min(680, window.innerHeight - 250));
+  const H = isMobile ? 440 : Math.max(540, Math.min(600, window.innerHeight - 260));
   const ML = isMobile ? 24 : 55;
   const MR = isMobile ? 20 : 45;
   const MT = isMobile ? 26 : 40;
@@ -13632,7 +13650,7 @@ function renderSectorFlowMap() {
   const centerX = ML + PW / 2;
   const centerY = MT + PH / 2;
 
-  // 坐標映射函數
+  // 坐標映射函數 (戰術非線性增益，展開四象限視覺張力)
   function getXNorm(s) {
     const net = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 120);
     if (net === 0) return 0;
@@ -13644,7 +13662,12 @@ function renderSectorFlowMap() {
 
   function getYNorm(s) {
     const chg = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
-    return Math.max(-9.5, Math.min(9.5, chg));
+    if (chg === 0) return 0;
+    const sign = chg > 0 ? 1 : -1;
+    const abs = Math.abs(chg);
+    // 擴散增益：將集中在 -2% ~ +2% 的標的在視覺上半徑有效張開
+    const boosted = sign * Math.pow(Math.min(abs, 7.5) / 7.5, 0.68) * 5.0;
+    return Math.max(-5.0, Math.min(5.0, boosted));
   }
 
   function getStockCategory(s) {
@@ -13662,7 +13685,7 @@ function renderSectorFlowMap() {
   }
 
   function toSvgY(yNorm) {
-    const ratio = (yNorm + 9.5) / 19.0;
+    const ratio = (yNorm + 5.0) / 10.0;
     return MT + (1 - Math.min(Math.max(ratio, 0.05), 0.95)) * PH;
   }
 

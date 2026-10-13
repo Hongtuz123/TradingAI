@@ -5153,6 +5153,8 @@ body {
   gap: 8px;
   padding: 0 12px !important;
   border-radius: 8px !important;
+}
+
 /* ── 1.5. 雷達模式切換列 (潛力狙擊池 vs 手頭持倉) ── */
 .radar-mode-switcher-bar {
   display: flex;

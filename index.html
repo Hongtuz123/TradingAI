@@ -59,7 +59,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=94" />
+  <link rel="stylesheet" href="style.css?v=96" />
 
 
 
@@ -1147,7 +1147,7 @@
   </nav>
 
   <!-- 📲 荳荳 AI 手機推播與 PWA 專屬設定視窗 (Modal) -->
-  <div class="pwa-modal-backdrop" id="pwaPushModal" onclick="if(event.target===this) closePushSettingsModal()">
+  <div class="pwa-modal-backdrop" id="pwaPushModal" style="display: none;" onclick="if(event.target===this) closePushSettingsModal()">
     <div class="pwa-modal-card">
       <div class="pwa-modal-header">
         <div class="pwa-modal-title-group">
@@ -1311,9 +1311,9 @@
 
 
   <!-- 腳本 -->
-  <script src="data.js?v=95"></script>
-  <script src="app.js?v=95"></script>
-  <script src="stock-dashboard.js?v=95"></script>
+  <script src="data.js?v=96"></script>
+  <script src="app.js?v=96"></script>
+  <script src="stock-dashboard.js?v=96"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
