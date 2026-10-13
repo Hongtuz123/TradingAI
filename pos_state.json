@@ -368,8 +368,11 @@
     "entry_price": 330.5,
     "entry_time": "2026-10-01 15:05:48",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-13"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-13",
+    "exit_price": 356.0,
+    "exit_time": "2026-10-13 13:06:30",
+    "sell_reason": "綜合評分轉弱 (45分 < 50分) 動能竭盡出場"
   },
   "6209": {
     "entry_price": 81.9,

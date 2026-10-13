@@ -13496,7 +13496,7 @@ window.switchRadarTargetMode = function(mode) {
     } else {
       btnPot.classList.remove('active');
       btnHold.classList.add('active');
-      if (hintEl) hintEl.innerHTML = '💼 即時追蹤手頭持倉部位之動量變化與轉弱停利警示';
+      if (hintEl) hintEl.innerHTML = '🐕 即時映射荳荳清單精選標的之籌碼動量與四象限戰術狀態';
     }
   }
   if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
