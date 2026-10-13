@@ -420,23 +420,44 @@ def calc_market_health():
             'vol_ratio': 1.0
         }
         try:
-            hist = yf.Ticker(symbol).history(period='35d', interval='1d')
-            if hist.empty:
-                return item
-            item['close'] = round(float(hist['Close'].iloc[-1]), 2)
-            item['pct_chg'] = _safe_pct(hist)
-            
-            # 成交量防禦 0 值過濾
-            vols_series = hist['Volume']
-            valid_vols = vols_series[vols_series > 0]
-            latest_vol = int(valid_vols.iloc[-1]) if not valid_vols.empty else 0
-            
-            item['volume'] = latest_vol
-            item['vol_level'] = _calc_vol_level(latest_vol, hist)
+            # 優先透過 requests 嘗試取得即時報價 (避免 yfinance 日線尚未結算的延遲)
+            try:
+                import requests
+                v8_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d"
+                v8_res = requests.get(v8_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}, timeout=4)
+                if v8_res.status_code == 200:
+                    v8_meta = v8_res.json().get('chart', {}).get('result', [{}])[0].get('meta', {})
+                    if v8_meta.get('regularMarketPrice') is not None:
+                        item['close'] = round(float(v8_meta['regularMarketPrice']), 2)
+                        if v8_meta.get('regularMarketChangePercent') is not None:
+                            item['pct_chg'] = round(float(v8_meta['regularMarketChangePercent']), 2)
+                        elif v8_meta.get('chartPreviousClose'):
+                            prev_c = float(v8_meta['chartPreviousClose'])
+                            item['pct_chg'] = round((item['close'] - prev_c) / prev_c * 100, 2)
+                        if v8_meta.get('regularMarketVolume'):
+                            item['volume'] = int(v8_meta['regularMarketVolume'])
+            except Exception as v8_err:
+                pass
 
-            # 計算 20MA 均量比率
-            avg_vol = valid_vols.rolling(20).mean().iloc[-1] if len(valid_vols) >= 20 else 0
-            item['vol_ratio'] = round(latest_vol / avg_vol, 3) if avg_vol > 0 else 1.0
+            hist = yf.Ticker(symbol).history(period='35d', interval='1d')
+            if not hist.empty:
+                # 若上方未能取得即時價，則由歷史 K 線回補
+                if item['close'] is None:
+                    item['close'] = round(float(hist['Close'].iloc[-1]), 2)
+                if item['pct_chg'] is None:
+                    item['pct_chg'] = _safe_pct(hist)
+                
+                # 成交量防禦 0 值過濾
+                vols_series = hist['Volume']
+                valid_vols = vols_series[vols_series > 0]
+                latest_vol = item['volume'] if item['volume'] else (int(valid_vols.iloc[-1]) if not valid_vols.empty else 0)
+                
+                item['volume'] = latest_vol
+                item['vol_level'] = _calc_vol_level(latest_vol, hist)
+
+                # 計算 20MA 均量比率
+                avg_vol = valid_vols.rolling(20).mean().iloc[-1] if len(valid_vols) >= 20 else 0
+                item['vol_ratio'] = round(latest_vol / avg_vol, 3) if avg_vol > 0 else 1.0
         except Exception as e:
             print(f'  美股指數 {symbol} 計算失敗: {e}')
         return item

@@ -352,20 +352,14 @@ window.reloadDataJson = async function() {
 
     if (lastUpdateEl) lastUpdateEl.innerText = updateTime;
 
-
+    // 🇺🇸 自動觸發美股主要指數即時動態同步 (解決美股資料落後問題)
+    if (typeof window.syncLiveUsMarket === 'function') {
+      window.syncLiveUsMarket();
+    }
 
   } catch (err) {
-
-
-
     console.error('[App Reload Error] Failed to reload data.json:', err);
-
-
-
   }
-
-
-
 };
 
 
@@ -2402,6 +2396,63 @@ function initDashboard() {
 
 
 
+}
+
+// ── 🇺🇸 即時美股核心指數動態同步引擎 (解決美股更新延遲問題) ───────────────
+let _liveUsMarketTimer = null;
+window.syncLiveUsMarket = async function() {
+  try {
+    const res = await fetch('/api/us-market');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (!json || !json.success || !Array.isArray(json.data) || json.data.length === 0) return;
+
+    if (!window.marketData) window.marketData = {};
+    if (!marketData.us_indices) marketData.us_indices = [];
+
+    let updatedCount = 0;
+    json.data.forEach(liveItem => {
+      if (liveItem.close === null || liveItem.pct_chg === null) return;
+      const existing = marketData.us_indices.find(u =>
+        (u.label && liveItem.label && (u.label.includes(liveItem.label) || liveItem.label.includes(u.label))) ||
+        (u.symbol && u.symbol === liveItem.symbol)
+      );
+      if (existing) {
+        existing.close = liveItem.close;
+        existing.pct_chg = liveItem.pct_chg;
+        if (liveItem.volume) existing.volume = liveItem.volume;
+        existing._isLive = true;
+        updatedCount++;
+      } else {
+        marketData.us_indices.push({ ...liveItem, _isLive: true });
+        updatedCount++;
+      }
+    });
+
+    if (updatedCount > 0) {
+      console.log(`[Live US Market] 成功同步 ${updatedCount} 筆美股最新即時數據 (${json.timestamp})`);
+      const hpUsName = document.querySelector('.hp-card-name');
+      const timeStr = json.timestamp ? (json.timestamp.split(' ')[1] || json.timestamp) : '';
+      if (hpUsName && timeStr) {
+        hpUsName.innerHTML = `🇺🇸 美股核心指數 <span style="font-size:10px; color:#4ade80; font-weight:normal; margin-left:4px;">🟢 即時同步 ${timeStr}</span>`;
+      }
+      // 重新觸發 initDashboard 更新市場健康度美股指標與評分
+      if (typeof initDashboard === 'function') {
+        initDashboard();
+      }
+    }
+  } catch (err) {
+    console.debug('[Live US Market] 靜態離線模式，維持快照資料:', err.message);
+  }
+};
+
+// 每 60 秒背景自動同步一次美股最新行情
+if (!_liveUsMarketTimer && typeof window !== 'undefined') {
+  _liveUsMarketTimer = setInterval(() => {
+    if (!document.hidden && typeof window.syncLiveUsMarket === 'function') {
+      window.syncLiveUsMarket();
+    }
+  }, 60000);
 }
 
 
