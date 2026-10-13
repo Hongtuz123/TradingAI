@@ -13471,6 +13471,8 @@ window.changeBubbleAxisMode = function() {
 
 // 🎯 縮放與重設指標雷達視窗視角
 window.radarZoomScale = 1.0;
+window.currentRadarTargetMode = window.currentRadarTargetMode || 'potential';
+
 window.zoomSectorBubble = function(factor) {
   window.radarZoomScale = Math.max(0.5, Math.min(2.5, (window.radarZoomScale || 1.0) * factor));
   if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
@@ -13480,46 +13482,126 @@ window.resetSectorBubble = function() {
   if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
 };
 
+// 🎯 雷達標的池模式切換器 (潛力狙擊池 Top 30 ⇄ 手頭持倉追蹤)
+window.switchRadarTargetMode = function(mode) {
+  window.currentRadarTargetMode = mode;
+  const btnPot = document.getElementById('radarModePotential');
+  const btnHold = document.getElementById('radarModeHoldings');
+  const hintEl = document.getElementById('radarModeHint');
+  if (btnPot && btnHold) {
+    if (mode === 'potential') {
+      btnPot.classList.add('active');
+      btnHold.classList.remove('active');
+      if (hintEl) hintEl.innerHTML = '⚡ 鎖定 30 檔「窒息量縮、底型收斂、主力暗中吸籌」之蓄勢埋伏標的';
+    } else {
+      btnPot.classList.remove('active');
+      btnHold.classList.add('active');
+      if (hintEl) hintEl.innerHTML = '💼 即時追蹤手頭持倉部位之動量變化與轉弱停利警示';
+    }
+  }
+  if (typeof renderSectorFlowMap === 'function') renderSectorFlowMap();
+};
+
+// 🎯 專用量化模型：篩選 Top 30 蓄勢待發潛力標的 (專抓等跳買訊就太晚的埋伏明牌)
+function getRadarPotentialTopStocks(allStocks) {
+  const scored = allStocks.map(s => {
+    if (!s || s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id))) return null;
+    const vol = s.dailyVol || 0;
+    if (vol < 280) return null; // 排除無流動性冷門股
+
+    let score = 0;
+    let tags = [];
+
+    // 1. 窒息量極致壓縮 (35分)
+    const volRatio = s.volRatio || 1.0;
+    if (volRatio >= 0.35 && volRatio <= 0.85) {
+      score += 35;
+      tags.push(`窒息量${volRatio.toFixed(2)}x`);
+    } else if (volRatio > 0.85 && volRatio <= 1.05) {
+      score += 20;
+      tags.push(`量縮${volRatio.toFixed(2)}x`);
+    }
+
+    // 2. 底型構築蓄勢 (35分)
+    const pat1d = s.pattern_1d || {};
+    const patName = pat1d.pattern_name || '';
+    const patType = pat1d.pattern_type || '';
+    if (patType === 'bullish' || patName.includes('底') || patName.includes('收斂') || patName.includes('整理') || patName.includes('旗形') || patName.includes('均線')) {
+      if (patName.includes('已近滿足') || patName.includes('超額達成')) {
+        score += 15;
+      } else {
+        score += 35;
+        const cleanPat = patName.replace(/^[^\u4e00-\u9fa5]+/, '').split('·')[0].trim();
+        tags.push(cleanPat || '多方底型');
+      }
+    } else if (s.maBull || s.ma20Rising) {
+      score += 20;
+      tags.push('均線多頭');
+    }
+
+    // 3. 主力/法人暗中吃貨 (30分)
+    const inst5D = s.instSum5D || 0;
+    const trustDays = s.trustDays || 0;
+    const change = s.change || 0;
+    if ((inst5D > 100 || trustDays >= 2) && change >= -2.5 && change <= 3.5) {
+      score += 30;
+      tags.push(`法人暗中吸籌(5日+${inst5D}張)`);
+    } else if (inst5D > 0 && change >= -3.0 && change <= 2.0) {
+      score += 20;
+      tags.push(`籌碼偏多打底`);
+    }
+
+    if ((s.eps || 0) > 0) score += 5;
+
+    return { stock: s, score, potentialTags: tags };
+  })
+  .filter(x => x !== null && x.score >= 50)
+  .sort((a, b) => b.score - a.score || (b.stock.totalScore || 0) - (a.stock.totalScore || 0));
+
+  return scored.slice(0, 30).map(x => {
+    x.stock._potentialScore = x.score;
+    x.stock._potentialTags = x.potentialTags;
+    return x.stock;
+  });
+}
+
 function renderSectorFlowMap() {
   const container = document.getElementById('sectorTreeMap');
   if (!container) return;
 
   container.innerHTML = '';
 
-  // 1. 資料來源：🎯 嚴格鎖定「買進 + 加碼 + 持倉中」在線部位，100% 排除已賣出 (CLOSED)
-  const posState = (window.posState) || (window.marketData && window.marketData.pos_state) || {};
   const allStocks = (typeof mockStocks !== 'undefined' && mockStocks.length > 0) 
     ? mockStocks 
     : ((window._rawMarketData && window._rawMarketData.mockStocks) || []);
+  const posState = (window.posState) || (window.marketData && window.marketData.pos_state) || {};
 
-  let stocks = allStocks.filter(s => {
-    const sId = String(s.id).trim();
-    const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
-    const rawStatus = posInfo.status || s.signal_status;
-    
-    // 嚴格排除賣出 (CLOSED)
-    if (rawStatus === 'CLOSED' || posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED') {
-      return false;
-    }
-    
-    // 排除 ETF
-    const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
-    if (isETF) return false;
+  let stocks = [];
 
-    // 必須為在手部位 (持倉中、加碼、買進)
-    const isHeldOrActive = (posInfo.status === 'HOLD' || rawStatus === 'HOLD' || posInfo.entry_price != null ||
-                            s.signal_status === 'BUY' || s.signal_status === 'ADD' || posInfo.status === 'BUY' || posInfo.status === 'ADD');
-    return isHeldOrActive;
-  });
-
-  // 雙重保底防禦：若在手標的為空，取全市場評分 >= 70 分之強勢非賣出個股
-  if (stocks.length === 0) {
+  if (window.currentRadarTargetMode === 'holdings') {
+    // 💼 模式 A：手頭持倉追蹤 (持倉中、加碼、剛買進)
     stocks = allStocks.filter(s => {
-      const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
       const sId = String(s.id).trim();
-      const posInfo = posState[sId] || {};
-      return !isETF && posInfo.status !== 'CLOSED' && (s.dynamicScore || s.totalScore || 0) >= 70;
-    }).slice(0, 45);
+      const posInfo = posState[sId] || posState[String(sId).padStart(4, '0')] || {};
+      const rawStatus = posInfo.status || s.signal_status;
+      if (rawStatus === 'CLOSED' || posInfo.status === 'CLOSED' || s.signal_status === 'CLOSED') return false;
+      const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
+      if (isETF) return false;
+      return (posInfo.status === 'HOLD' || rawStatus === 'HOLD' || posInfo.entry_price != null ||
+              s.signal_status === 'BUY' || s.signal_status === 'ADD' || posInfo.status === 'BUY' || posInfo.status === 'ADD');
+    });
+
+    if (stocks.length === 0) {
+      stocks = allStocks.filter(s => {
+        const isETF = s.isETF || (s.id && s.id.startsWith('00') && s.id.length >= 5 && /^\d+$/.test(s.id));
+        const sId = String(s.id).trim();
+        const posInfo = posState[sId] || {};
+        return !isETF && posInfo.status !== 'CLOSED' && (s.dynamicScore || s.totalScore || 0) >= 70;
+      }).slice(0, 25);
+    }
+  } else {
+    // 🎯 模式 B (預設)：潛力狙擊池 Top 30 (蓄勢待發、底型收斂、主力壓盤吃貨)
+    stocks = getRadarPotentialTopStocks(allStocks);
   }
 
   // 顏色與象限定義
@@ -13537,10 +13619,9 @@ function renderSectorFlowMap() {
     rotate: '🟡 買力降溫'
   };
 
-  // 幾何尺寸 (RWD 自適應與防黑洞比例修復)
+  // 幾何尺寸 (RWD 自適應與防黑洞比例)
   const isMobile = window.innerWidth <= 768;
   const W = container.clientWidth || (isMobile ? 360 : 920);
-  // 手機端維持 420px~450px 正方形/黃金比例視野，緊湊貼合
   const H = isMobile ? 420 : Math.max(540, Math.min(680, window.innerHeight - 250));
   const ML = isMobile ? 24 : 55;
   const MR = isMobile ? 20 : 45;
@@ -13551,19 +13632,16 @@ function renderSectorFlowMap() {
   const centerX = ML + PW / 2;
   const centerY = MT + PH / 2;
 
-  // 核心坐標映射函數 (解決數值過大擠壓在中心的大坑)
-  // X 軸：使用對稱 Log 平滑法人買賣超 (張) 與 5日漲幅，限制在 [-4.5, +4.5]
+  // 坐標映射函數
   function getXNorm(s) {
     const net = s.instSum5D !== undefined ? s.instSum5D : ((s.change || 0) * 120);
     if (net === 0) return 0;
     const sign = net > 0 ? 1 : -1;
     const abs = Math.abs(net);
-    // log10(1 + abs/150)：150張約0.3，1500張約1.0，15000張約2.0，15萬張約3.0
     const val = sign * Math.log10(1 + abs / 150) * 1.35;
     return Math.max(-4.5, Math.min(4.5, val));
   }
 
-  // Y 軸：標準化當日漲跌幅 (%)，中心為 0%，限制在 [-9.5%, +9.5%]
   function getYNorm(s) {
     const chg = s.liveChange !== undefined ? s.liveChange : (s.change || 0);
     return Math.max(-9.5, Math.min(9.5, chg));
@@ -13579,23 +13657,26 @@ function renderSectorFlowMap() {
   }
 
   function toSvgX(xNorm) {
-    // xNorm 範圍 [-4.5, +4.5]
     const ratio = (xNorm + 4.5) / 9.0;
-    return ML + Math.min(Math.max(ratio, 0.04), 0.96) * PW;
+    return ML + Math.min(Math.max(ratio, 0.05), 0.95) * PW;
   }
 
   function toSvgY(yNorm) {
-    // yNorm 範圍 [-9.5, +9.5]，注意 SVG Y 軸往下為正
     const ratio = (yNorm + 9.5) / 19.0;
-    return MT + (1 - Math.min(Math.max(ratio, 0.04), 0.96)) * PH;
+    return MT + (1 - Math.min(Math.max(ratio, 0.05), 0.95)) * PH;
   }
 
-  // 建立雷達外層容器
+  // 建立雷達外層容器 (帶真實 CRT 科技軍規光環)
   const radarWrapper = document.createElement('div');
   radarWrapper.className = 'radar-display-wrapper';
-  radarWrapper.style.cssText = 'position:relative; width:100%; height:' + H + 'px; overflow:hidden; border-radius:12px; background:radial-gradient(circle at 50% 50%, #0a1128 0%, #020617 100%); border:1px solid rgba(56,189,248,0.3); box-shadow:0 12px 40px rgba(0,0,0,0.7);';
+  radarWrapper.style.cssText = 'position:relative; width:100%; height:' + H + 'px; overflow:hidden; border-radius:14px; background:radial-gradient(circle at 50% 50%, #061126 0%, #020617 100%); border:1px solid rgba(56,189,248,0.35); box-shadow:0 16px 48px rgba(0,0,0,0.8), inset 0 0 60px rgba(56,189,248,0.06); contain:paint;';
 
-  // 旋轉掃描錐形光束
+  // 📡 中央聲納擴散波 (Sonar Ping Pulse)
+  const sonarPing = document.createElement('div');
+  sonarPing.className = 'radar-sonar-ping';
+  radarWrapper.appendChild(sonarPing);
+
+  // 順時針高速流暢 360° 掃描光錐 (GPU Compositor 加速，零 Lag)
   const sweepBeam = document.createElement('div');
   sweepBeam.className = 'radar-sweep-beam';
   radarWrapper.appendChild(sweepBeam);
@@ -13662,21 +13743,65 @@ function renderSectorFlowMap() {
     document.body.appendChild(tooltip);
   }
 
-  // 7. 渲染每檔標的的目標發光點 (均勻散佈)
-  stocks.forEach((s, idx) => {
+  // 7. 🛡️ 物理微斥力防重疊演算法 (Anti-Collision Force Engine)
+  // 將標的轉換為力導向節點並執行鬆弛排斥迭代，徹底解決擠在一起糊成一團的痛點！
+  const blipNodes = stocks.map(s => {
     const cat = getStockCategory(s);
+    const xNorm = getXNorm(s);
+    const yNorm = getYNorm(s);
+    const rBase = isMobile ? 5 : 6;
+    const rMul = isMobile ? 1.8 : 2.4;
+    const rMax = isMobile ? 9 : 13;
+    const r = Math.min(rMax, Math.max(rBase + 1, rBase + Math.sqrt(s.volRatio || 1) * rMul));
+    return {
+      stock: s,
+      cat,
+      r,
+      x: toSvgX(xNorm),
+      y: toSvgY(yNorm)
+    };
+  });
+
+  // 執行 4 次鬆弛迭代排斥微偏移
+  const minSpacing = isMobile ? 22 : 28;
+  for (let iter = 0; iter < 4; iter++) {
+    for (let i = 0; i < blipNodes.length; i++) {
+      for (let j = i + 1; j < blipNodes.length; j++) {
+        const a = blipNodes[i];
+        const b = blipNodes[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.1;
+        const reqDist = a.r + b.r + (minSpacing - 12);
+        if (dist < reqDist) {
+          const overlap = (reqDist - dist) * 0.45;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+          b.x += nx * overlap;
+          b.y += ny * overlap;
+        }
+      }
+    }
+  }
+
+  // 畫布邊界限制保護
+  blipNodes.forEach(node => {
+    node.x = Math.max(ML + 16, Math.min(ML + PW - 16, node.x));
+    node.y = Math.max(MT + 16, Math.min(MT + PH - 16, node.y));
+  });
+
+  // 8. 渲染每檔標的雷達光點
+  blipNodes.forEach((node) => {
+    const s = node.stock;
+    const cat = node.cat;
     if (typeof activeBubbleFilters !== 'undefined' && !activeBubbleFilters[cat]) return;
 
     const color = COLOR_MAP[cat];
-    const xNorm = getXNorm(s);
-    const yNorm = getYNorm(s);
-
-    const x = toSvgX(xNorm);
-    const y = toSvgY(yNorm);
-    const rBase = isMobile ? 5 : 6;
-    const rMul = isMobile ? 2.0 : 2.8;
-    const rMax = isMobile ? 10 : 14;
-    const r = Math.min(rMax, Math.max(rBase + 1, rBase + Math.sqrt(s.volRatio || 1) * rMul));
+    const x = node.x;
+    const y = node.y;
+    const r = node.r;
 
     const blipG = el('g', { class: 'radar-blip-item', style: 'cursor:pointer;' });
 
@@ -13695,26 +13820,28 @@ function renderSectorFlowMap() {
     const coreDot = el('circle', {
       cx: x, cy: y, r: r,
       fill: color,
-      opacity: '0.88',
+      opacity: '0.9',
       stroke: '#ffffff',
       'stroke-width': '1.5'
     });
     blipG.appendChild(coreDot);
 
-    // 股票代號標籤
-    const labelFontSize = isMobile ? '8' : '10';
+    // 智慧文字標籤 (附帶深色描邊保護防疊)
+    const labelFontSize = isMobile ? '8.5' : '10.5';
+    const labelY = (y - r - 4 < MT + 18) ? (y + r + 11) : (y - r - 4);
     const label = el('text', {
-      x: x, y: y - r - 3,
+      x: x, y: labelY,
       'text-anchor': 'middle',
       fill: '#f8fafc',
       'font-size': labelFontSize,
-      'font-weight': '700',
-      'text-shadow': '0 2px 4px rgba(0,0,0,0.9)',
+      'font-weight': '800',
+      'letter-spacing': '0.3px',
+      class: 'radar-blip-label-chip',
       style: 'pointer-events:none; user-select:none;'
     }, `${s.id} ${s.name}`);
     blipG.appendChild(label);
 
-    // Hover 互動
+    // Hover 聚光燈互動
     blipG.addEventListener('mouseenter', (e) => {
       pulseRing.setAttribute('opacity', '1');
       pulseRing.setAttribute('r', (r + 8).toString());
@@ -13724,7 +13851,10 @@ function renderSectorFlowMap() {
       const changeVal = (s.liveChange !== undefined ? s.liveChange : s.change) || 0;
       const changeColor = changeVal >= 0 ? '#ef4444' : '#10b981';
       const instSumText = s.instSum5D !== undefined ? `${s.instSum5D >= 0 ? '+' : ''}${s.instSum5D}張` : '--';
-      const scoreVal = s.dynamicScore || s.totalScore || s.score || 70;
+      const scoreVal = s._potentialScore || s.dynamicScore || s.totalScore || 75;
+      const tagInfo = (s._potentialTags && s._potentialTags.length > 0) 
+        ? s._potentialTags.join(' · ') 
+        : (s.industry || '一般');
 
       tooltip.innerHTML = `
         <div style="font-weight:800;font-size:13px;color:${color};margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
@@ -13733,13 +13863,13 @@ function renderSectorFlowMap() {
         </div>
         <div style="display:grid;grid-template-columns:auto auto;gap:4px 12px;font-size:11px;margin-bottom:8px;">
           <span style="color:#94a3b8;">現價 / 漲跌幅</span><span style="color:${changeColor};font-weight:700;">$${s.livePrice || s.price} (${changeVal >= 0 ? '+' : ''}${changeVal}%)</span>
-          <span style="color:#94a3b8;">多因子量化評分</span><span style="color:#f59e0b;font-weight:700;">${scoreVal}分</span>
+          <span style="color:#94a3b8;">${window.currentRadarTargetMode === 'potential' ? '🎯 蓄勢潛力評分' : '多因子量化評分'}</span><span style="color:#f59e0b;font-weight:700;">${scoreVal}分</span>
           <span style="color:#94a3b8;">5日法人籌碼</span><span style="color:#fff;font-weight:600;">${instSumText}</span>
-          <span style="color:#94a3b8;">當日成交量比</span><span style="color:#fff;font-weight:600;">${s.volRatio || 1}x</span>
-          <span style="color:#94a3b8;">所屬產業</span><span style="color:#cbd5e1;">${s.industry || '一般'}</span>
+          <span style="color:#94a3b8;">當日量比 (20MA)</span><span style="color:#fff;font-weight:600;">${(s.volRatio || 1).toFixed(2)}x</span>
+          <span style="color:#94a3b8;">蓄勢特徵</span><span style="color:#38bdf8;font-weight:600;">${tagInfo}</span>
         </div>
         <div style="border-top:1px dashed rgba(255,255,255,0.12);padding-top:6px;font-size:10px;color:#38bdf8;text-align:center;">
-          💡 點擊切換至荳荳清單聚焦此標的
+          💡 點擊可直接打開 1D/4H 深度型態圖卡或前往清單
         </div>
       `;
       tooltip.style.display = 'block';
@@ -13758,15 +13888,19 @@ function renderSectorFlowMap() {
       tooltip.style.display = 'none';
     });
 
-    // 點擊事件：不跳轉 K 線，改為在荳荳清單聚焦
+    // 點擊事件：直接開啟荳荳深度型態分析圖卡
     blipG.addEventListener('click', () => {
       tooltip.style.display = 'none';
-      switchView('screener');
-      const searchInput = document.getElementById('screenerSearchInput');
-      if (searchInput) {
-        searchInput.value = s.id;
-        if (typeof handleScreenerSearch === 'function') {
-          handleScreenerSearch(s.id);
+      if (typeof openPatternReportModal === 'function') {
+        openPatternReportModal(s.id);
+      } else {
+        switchView('screener');
+        const searchInput = document.getElementById('screenerSearchInput');
+        if (searchInput) {
+          searchInput.value = s.id;
+          if (typeof handleScreenerSearch === 'function') {
+            handleScreenerSearch(s.id);
+          }
         }
       }
     });

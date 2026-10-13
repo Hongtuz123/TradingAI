@@ -276,6 +276,21 @@
 
       <!-- 🎯 指標雷達掃描儀 (Tactical Radar Display) -->
       <div class="flow-bubble-full flow-map-panel tactical-radar-panel">
+        <!-- 🎯 雷達標的池模式切換列 (潛力狙擊池 vs 手頭持倉追蹤) -->
+        <div class="radar-mode-switcher-bar">
+          <div class="radar-mode-pills">
+            <button type="button" id="radarModePotential" class="radar-mode-pill active" onclick="switchRadarTargetMode('potential')">
+              <span class="pill-icon">🎯</span> 潛力狙擊池 (Top 30 蓄勢待發)
+            </button>
+            <button type="button" id="radarModeHoldings" class="radar-mode-pill" onclick="switchRadarTargetMode('holdings')">
+              <span class="pill-icon">💼</span> 手頭持倉追蹤 (在手部位)
+            </button>
+          </div>
+          <div class="radar-mode-hint" id="radarModeHint">
+            ⚡ 鎖定 30 檔「窒息量縮、底型收斂、主力暗中吸籌」之蓄勢埋伏標的
+          </div>
+        </div>
+
         <div class="panel-header radar-quad-panel-header">
           <!-- 四象限過濾標籤 (2x2 或 單行整齊 Grid) -->
           <div class="radar-quadrant-grid">
