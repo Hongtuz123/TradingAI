@@ -1,4 +1,4 @@
-// 由 yfinance 產生之真實資料 — 2026-10-15 08:06:14
+// 由 yfinance 產生之真實資料 — 2026-10-15 09:06:25
 window._rawMarketData = {
   "marketData": {
     "tw_indices": [
@@ -8,9 +8,9 @@ window._rawMarketData = {
         "close": 48625.83,
         "above_20ma": true,
         "above_60ma": true,
-        "volume": 5165900,
+        "volume": 5206300,
         "vol_level": "普通",
-        "vol_ratio": 1.144
+        "vol_ratio": 1.137
       },
       {
         "label": "櫃買指數",
@@ -85,13 +85,13 @@ window._rawMarketData = {
     ],
     "vol_above_20ma": true,
     "vol_level": "普通",
-    "latest_vol_num": 5165900.0,
+    "latest_vol_num": 5206300.0,
     "tw_health_score": 55,
     "us_health_score": 40,
     "twii_above_60ma": true,
     "otc_above_60ma": false,
     "vol_above_20ma_bool": true,
-    "lastUpdate": "2026-10-15 08:06:14",
+    "lastUpdate": "2026-10-15 09:06:25",
     "price_failed_stocks": [
       {
         "Code": "6788",
@@ -7930,7 +7930,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 43.71,
-      "adx_4h": 52.72,
+      "adx_4h": 52.68,
       "eps": 5.17,
       "epsYoY": null,
       "revYoY": 55.26,
@@ -8007,14 +8007,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.31,
-          "high": 40.26,
-          "low": 39.16,
-          "close": 39.26,
-          "volume": 19596853
-        },
         {
           "date": "2025-10-02",
           "open": 39.81,
@@ -10508,7 +10500,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 26.09,
-      "adx_4h": 38.74,
+      "adx_4h": 38.73,
       "eps": 11.7,
       "epsYoY": 44196.7,
       "revYoY": 64.67,
@@ -10585,14 +10577,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 152.69,
-          "high": 159.17,
-          "low": 151.69,
-          "close": 154.68,
-          "volume": 18912432
-        },
         {
           "date": "2025-10-02",
           "open": 156.68,
@@ -13086,7 +13070,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.72,
-      "adx_4h": 27.12,
+      "adx_4h": 27.1,
       "eps": 11.24,
       "epsYoY": 46.3,
       "revYoY": 63.75,
@@ -13163,14 +13147,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 167.4,
-          "high": 167.4,
-          "low": 164.62,
-          "close": 164.62,
-          "volume": 5939148
-        },
         {
           "date": "2025-10-02",
           "open": 164.62,
@@ -15664,7 +15640,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.58,
-      "adx_4h": 11.93,
+      "adx_4h": 11.91,
       "eps": 16.59,
       "epsYoY": 69.2,
       "revYoY": 24.99,
@@ -15741,14 +15717,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 410.32,
-          "high": 410.8,
-          "low": 398.35,
-          "close": 398.35,
-          "volume": 5113517
-        },
         {
           "date": "2025-10-02",
           "open": 402.18,
@@ -18242,7 +18210,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 34.91,
-      "adx_4h": 38.4,
+      "adx_4h": 38.37,
       "eps": 13.02,
       "epsYoY": 59.4,
       "revYoY": 53.5,
@@ -18319,14 +18287,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 293.87,
-          "high": 297.77,
-          "low": 291.44,
-          "close": 293.39,
-          "volume": 3505215
-        },
         {
           "date": "2025-10-02",
           "open": 296.79,
@@ -20801,10 +20761,7 @@ window._rawMarketData = {
           "low": 598.0,
           "volume": 943204
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 100分) + 爆量 1.72x + 法人買超 1680張",
-      "display_score": 100,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "1802",
@@ -20823,7 +20780,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.42,
-      "adx_4h": 34.7,
+      "adx_4h": 34.68,
       "eps": 0.64,
       "epsYoY": null,
       "revYoY": 34.11,
@@ -20900,14 +20857,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 27.65,
-          "high": 29.2,
-          "low": 27.2,
-          "close": 27.95,
-          "volume": 132213367
-        },
         {
           "date": "2025-10-02",
           "open": 28.5,
@@ -23401,7 +23350,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.05,
-      "adx_4h": 36.45,
+      "adx_4h": 36.42,
       "eps": 6.73,
       "epsYoY": 179.1,
       "revYoY": 27.11,
@@ -23478,14 +23427,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 96.97,
-          "high": 99.36,
-          "low": 94.99,
-          "close": 95.88,
-          "volume": 3572481
-        },
         {
           "date": "2025-10-02",
           "open": 97.37,
@@ -26057,14 +25998,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 37.13,
-          "high": 37.23,
-          "low": 36.75,
-          "close": 36.75,
-          "volume": 7561948
-        },
-        {
           "date": "2025-10-02",
           "open": 36.99,
           "high": 36.99,
@@ -28557,7 +28490,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.85,
-      "adx_4h": 22.38,
+      "adx_4h": 22.3,
       "eps": 4.27,
       "epsYoY": 12.2,
       "revYoY": 16.34,
@@ -28580,7 +28513,7 @@ window._rawMarketData = {
       "maBull": true,
       "ma20Rising": true,
       "closeToHigh": false,
-      "dist52W": 18.7,
+      "dist52W": 16.3,
       "rsi14": 57.89,
       "type": "B,E",
       "pattern_1d": {
@@ -28634,14 +28567,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 147.66,
-          "high": 148.61,
-          "low": 144.82,
-          "close": 147.66,
-          "volume": 5159306
-        },
         {
           "date": "2025-10-02",
           "open": 148.61,
@@ -31135,7 +31060,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.8,
-      "adx_4h": 22.77,
+      "adx_4h": 22.79,
       "eps": 8.35,
       "epsYoY": 29.4,
       "revYoY": 26.31,
@@ -31212,14 +31137,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 262.16,
-          "high": 265.48,
-          "low": 261.69,
-          "close": 265.0,
-          "volume": 160505
-        },
         {
           "date": "2025-10-02",
           "open": 266.43,
@@ -33713,7 +33630,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.27,
-      "adx_4h": 37.06,
+      "adx_4h": 37.03,
       "eps": 8.04,
       "epsYoY": 180.1,
       "revYoY": 45.52,
@@ -33790,14 +33707,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 164.5,
-          "high": 164.99,
-          "low": 161.03,
-          "close": 161.52,
-          "volume": 14064869
-        },
         {
           "date": "2025-10-02",
           "open": 164.0,
@@ -36369,14 +36278,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 129.01,
-          "high": 129.49,
-          "low": 128.52,
-          "close": 129.49,
-          "volume": 3392484
-        },
-        {
           "date": "2025-10-02",
           "open": 129.01,
           "high": 129.01,
@@ -38947,14 +38848,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 39.7,
-          "high": 40.33,
-          "low": 39.6,
-          "close": 39.8,
-          "volume": 4302424
-        },
-        {
           "date": "2025-10-02",
           "open": 39.8,
           "high": 39.89,
@@ -41447,7 +41340,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.35,
-      "adx_4h": 39.25,
+      "adx_4h": 39.26,
       "eps": 5.53,
       "epsYoY": null,
       "revYoY": 57.82,
@@ -41524,14 +41417,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 225.53,
-          "high": 232.51,
-          "low": 223.03,
-          "close": 227.52,
-          "volume": 14367953
-        },
         {
           "date": "2025-10-02",
           "open": 231.51,
@@ -44025,7 +43910,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.46,
-      "adx_4h": 33.06,
+      "adx_4h": 33.04,
       "eps": 16.17,
       "epsYoY": 182.4,
       "revYoY": 55.46,
@@ -44102,14 +43987,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 435.42,
-          "high": 442.37,
-          "low": 428.96,
-          "close": 431.94,
-          "volume": 6228082
-        },
         {
           "date": "2025-10-02",
           "open": 431.45,
@@ -46603,7 +46480,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 23.1,
-      "adx_4h": 38.18,
+      "adx_4h": 38.15,
       "eps": 3.55,
       "epsYoY": 295.3,
       "revYoY": 36.13,
@@ -46680,14 +46557,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 164.38,
-          "high": 165.87,
-          "low": 160.4,
-          "close": 160.9,
-          "volume": 9450161
-        },
         {
           "date": "2025-10-02",
           "open": 161.4,
@@ -49181,7 +49050,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.25,
-      "adx_4h": 19.35,
+      "adx_4h": 19.33,
       "eps": 15.86,
       "epsYoY": -2.7,
       "revYoY": 23.35,
@@ -49258,14 +49127,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 529.21,
-          "high": 529.21,
-          "low": 504.1,
-          "close": 504.1,
-          "volume": 3498959
-        },
         {
           "date": "2025-10-02",
           "open": 504.1,
@@ -51759,7 +51620,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.74,
-      "adx_4h": 19.64,
+      "adx_4h": 19.63,
       "eps": 3.91,
       "epsYoY": 14.5,
       "revYoY": 24.46,
@@ -51836,14 +51697,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 155.6,
-          "high": 157.49,
-          "low": 153.7,
-          "close": 156.55,
-          "volume": 15677951
-        },
         {
           "date": "2025-10-02",
           "open": 158.92,
@@ -54337,7 +54190,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.75,
-      "adx_4h": 32.13,
+      "adx_4h": 32.12,
       "eps": 8.48,
       "epsYoY": 88.5,
       "revYoY": 46.12,
@@ -54414,14 +54267,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 171.27,
-          "high": 175.24,
-          "low": 167.8,
-          "close": 168.79,
-          "volume": 34976006
-        },
         {
           "date": "2025-10-02",
           "open": 171.77,
@@ -56915,7 +56760,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.74,
-      "adx_4h": 48.73,
+      "adx_4h": 48.69,
       "eps": 4.39,
       "epsYoY": 204.3,
       "revYoY": 110.74,
@@ -56992,14 +56837,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 110.08,
-          "high": 111.07,
-          "low": 102.64,
-          "close": 103.13,
-          "volume": 11956277
-        },
         {
           "date": "2025-10-02",
           "open": 104.13,
@@ -59493,7 +59330,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.28,
-      "adx_4h": 37.49,
+      "adx_4h": 37.46,
       "eps": 2.5,
       "epsYoY": 77.9,
       "revYoY": 15.02,
@@ -59570,14 +59407,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 72.87,
-          "high": 72.97,
-          "low": 71.29,
-          "close": 71.98,
-          "volume": 8478661
-        },
         {
           "date": "2025-10-02",
           "open": 72.48,
@@ -62071,7 +61900,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.53,
-      "adx_4h": 27.65,
+      "adx_4h": 27.64,
       "eps": 5.5,
       "epsYoY": 131.2,
       "revYoY": 26.96,
@@ -62148,14 +61977,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 144.65,
-          "high": 145.14,
-          "low": 142.2,
-          "close": 144.16,
-          "volume": 5915044
-        },
         {
           "date": "2025-10-02",
           "open": 149.55,
@@ -64649,7 +64470,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 35.46,
-      "adx_4h": 39.34,
+      "adx_4h": 39.32,
       "eps": 9.72,
       "epsYoY": 13.1,
       "revYoY": 26.65,
@@ -64726,14 +64547,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 509.77,
-          "high": 509.77,
-          "low": 498.98,
-          "close": 501.92,
-          "volume": 254151
-        },
         {
           "date": "2025-10-02",
           "open": 509.77,
@@ -67227,7 +67040,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 32.6,
-      "adx_4h": 26.23,
+      "adx_4h": 26.21,
       "eps": 4.1,
       "epsYoY": 309.3,
       "revYoY": 24.53,
@@ -67304,14 +67117,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 55.78,
-          "high": 56.06,
-          "low": 55.11,
-          "close": 55.78,
-          "volume": 2684801
-        },
         {
           "date": "2025-10-02",
           "open": 55.3,
@@ -69805,7 +69610,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.82,
-      "adx_4h": 33.15,
+      "adx_4h": 33.13,
       "eps": 2.98,
       "epsYoY": 88.6,
       "revYoY": 39.65,
@@ -69882,14 +69687,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 61.49,
-          "high": 61.78,
-          "low": 60.13,
-          "close": 60.52,
-          "volume": 1108086
-        },
         {
           "date": "2025-10-02",
           "open": 61.0,
@@ -72383,7 +72180,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.14,
-      "adx_4h": 22.8,
+      "adx_4h": 22.79,
       "eps": 3.51,
       "epsYoY": 204.4,
       "revYoY": 25.68,
@@ -72460,14 +72257,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 54.15,
-          "high": 54.15,
-          "low": 53.28,
-          "close": 53.95,
-          "volume": 2443877
-        },
         {
           "date": "2025-10-02",
           "open": 53.19,
@@ -75039,14 +74828,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 122.84,
-          "high": 125.26,
-          "low": 122.36,
-          "close": 123.32,
-          "volume": 1806016
-        },
-        {
           "date": "2025-10-02",
           "open": 125.26,
           "high": 125.26,
@@ -77539,7 +77320,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.68,
-      "adx_4h": 59.83,
+      "adx_4h": 59.82,
       "eps": 2.32,
       "epsYoY": -48.3,
       "revYoY": 36.13,
@@ -77616,14 +77397,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 117.04,
-          "high": 119.48,
-          "low": 116.07,
-          "close": 118.02,
-          "volume": 7322584
-        },
         {
           "date": "2025-10-02",
           "open": 118.02,
@@ -80117,7 +79890,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 45.71,
-      "adx_4h": 47.92,
+      "adx_4h": 47.89,
       "eps": 1.89,
       "epsYoY": 98.1,
       "revYoY": 22.66,
@@ -80194,14 +79967,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 70.68,
-          "high": 71.37,
-          "low": 70.49,
-          "close": 70.49,
-          "volume": 1832500
-        },
         {
           "date": "2025-10-02",
           "open": 70.98,
@@ -82695,7 +82460,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 20.73,
-      "adx_4h": 17.67,
+      "adx_4h": 17.63,
       "eps": 5.07,
       "epsYoY": 21.1,
       "revYoY": 56.95,
@@ -82772,14 +82537,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 163.0,
-          "high": 165.38,
-          "low": 160.62,
-          "close": 160.62,
-          "volume": 472179
-        },
         {
           "date": "2025-10-02",
           "open": 162.52,
@@ -85273,7 +85030,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 28.08,
-      "adx_4h": 35.93,
+      "adx_4h": 35.91,
       "eps": 3.02,
       "epsYoY": 1672.5,
       "revYoY": 32.29,
@@ -85350,14 +85107,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 51.36,
-          "high": 53.01,
-          "low": 50.87,
-          "close": 51.74,
-          "volume": 1411999
-        },
         {
           "date": "2025-10-02",
           "open": 52.42,
@@ -87851,7 +87600,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 27.44,
-      "adx_4h": 32.01,
+      "adx_4h": 31.99,
       "eps": 49.33,
       "epsYoY": 77.4,
       "revYoY": 54.65,
@@ -87928,14 +87677,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1308.95,
-          "high": 1333.65,
-          "low": 1308.95,
-          "close": 1308.95,
-          "volume": 33837323
-        },
         {
           "date": "2025-10-02",
           "open": 1343.52,
@@ -90429,7 +90170,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 44.11,
-      "adx_4h": 23.57,
+      "adx_4h": 23.54,
       "eps": 23.89,
       "epsYoY": 99.0,
       "revYoY": 97.78,
@@ -90506,14 +90247,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1348.85,
-          "high": 1368.76,
-          "low": 1333.92,
-          "close": 1333.92,
-          "volume": 2236057
-        },
         {
           "date": "2025-10-02",
           "open": 1348.85,
@@ -93007,7 +92740,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 33.21,
-      "adx_4h": 39.45,
+      "adx_4h": 39.42,
       "eps": 25.33,
       "epsYoY": 106.8,
       "revYoY": 79.97,
@@ -93084,14 +92817,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 2415.01,
-          "high": 2524.33,
-          "low": 2370.28,
-          "close": 2429.91,
-          "volume": 4225446
-        },
         {
           "date": "2025-10-02",
           "open": 2484.57,
@@ -95585,7 +95310,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.09,
-      "adx_4h": 20.89,
+      "adx_4h": 20.86,
       "eps": 38.83,
       "epsYoY": 94.3,
       "revYoY": 17.73,
@@ -95662,14 +95387,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 631.68,
-          "high": 645.78,
-          "low": 629.8,
-          "close": 635.44,
-          "volume": 2728574
-        },
         {
           "date": "2025-10-02",
           "open": 640.14,
@@ -98163,7 +97880,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.63,
-      "adx_4h": 37.58,
+      "adx_4h": 37.54,
       "eps": 3.74,
       "epsYoY": 287.5,
       "revYoY": 44.47,
@@ -98240,14 +97957,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 107.32,
-          "high": 109.81,
-          "low": 105.82,
-          "close": 105.82,
-          "volume": 4241519
-        },
         {
           "date": "2025-10-02",
           "open": 107.32,
@@ -100741,7 +100450,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 41.87,
-      "adx_4h": 38.62,
+      "adx_4h": 38.6,
       "eps": 6.96,
       "epsYoY": 1405.2,
       "revYoY": 113.17,
@@ -100818,14 +100527,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.45,
-          "high": 22.55,
-          "low": 22.31,
-          "close": 22.5,
-          "volume": 2502725
-        },
         {
           "date": "2025-10-02",
           "open": 22.74,
@@ -103300,10 +103001,7 @@ window._rawMarketData = {
           "low": 59.8,
           "volume": 1270383
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 100分) + 爆量 1.22x + 法人買超 3932張",
-      "display_score": 100,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2615",
@@ -103322,7 +103020,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.35,
-      "adx_4h": 21.23,
+      "adx_4h": 21.17,
       "eps": 6.84,
       "epsYoY": 971.1,
       "revYoY": 97.63,
@@ -103399,14 +103097,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 71.99,
-          "high": 71.99,
-          "low": 70.84,
-          "close": 71.42,
-          "volume": 3149323
-        },
         {
           "date": "2025-10-02",
           "open": 71.13,
@@ -105900,7 +105590,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.19,
-      "adx_4h": 35.27,
+      "adx_4h": 35.26,
       "eps": 37.57,
       "epsYoY": 23.8,
       "revYoY": 496.0,
@@ -105977,14 +105667,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 3472.86,
-          "high": 3482.78,
-          "low": 3363.71,
-          "close": 3368.67,
-          "volume": 1610145
-        },
         {
           "date": "2025-10-02",
           "open": 3408.36,
@@ -108478,7 +108160,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.77,
-      "adx_4h": 33.12,
+      "adx_4h": 33.13,
       "eps": 39.04,
       "epsYoY": 164.9,
       "revYoY": 16.13,
@@ -108555,14 +108237,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1527.91,
-          "high": 1542.64,
-          "low": 1498.43,
-          "close": 1498.43,
-          "volume": 437430
-        },
         {
           "date": "2025-10-02",
           "open": 1508.25,
@@ -111056,7 +110730,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 16.67,
-      "adx_4h": 28.48,
+      "adx_4h": 28.49,
       "eps": 21.57,
       "epsYoY": null,
       "revYoY": 26.16,
@@ -111133,14 +110807,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 568.77,
-          "high": 571.65,
-          "low": 560.14,
-          "close": 560.14,
-          "volume": 138140
-        },
         {
           "date": "2025-10-02",
           "open": 561.1,
@@ -113712,14 +113378,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 23.49,
-          "high": 23.69,
-          "low": 22.91,
-          "close": 23.01,
-          "volume": 42584111
-        },
-        {
           "date": "2025-10-02",
           "open": 23.2,
           "high": 23.25,
@@ -116212,7 +115870,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.12,
-      "adx_4h": 30.62,
+      "adx_4h": 30.61,
       "eps": 8.42,
       "epsYoY": null,
       "revYoY": 146.49,
@@ -116289,14 +115947,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.87,
-          "high": 64.06,
-          "low": 62.61,
-          "close": 63.0,
-          "volume": 5804168
-        },
         {
           "date": "2025-10-02",
           "open": 63.29,
@@ -118790,7 +118440,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 16.12,
-      "adx_4h": 23.35,
+      "adx_4h": 23.36,
       "eps": 1.15,
       "epsYoY": null,
       "revYoY": 6.72,
@@ -118867,14 +118517,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 26.51,
-          "high": 26.6,
-          "low": 26.22,
-          "close": 26.27,
-          "volume": 14910164
-        },
         {
           "date": "2025-10-02",
           "open": 26.41,
@@ -121368,7 +121010,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 42.93,
-      "adx_4h": 20.83,
+      "adx_4h": 20.81,
       "eps": 8.69,
       "epsYoY": null,
       "revYoY": 153.78,
@@ -121445,14 +121087,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 336.18,
-          "high": 361.54,
-          "low": 335.18,
-          "close": 357.56,
-          "volume": 10347670
-        },
         {
           "date": "2025-10-02",
           "open": 372.98,
@@ -123946,7 +123580,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 39.53,
-      "adx_4h": 56.51,
+      "adx_4h": 56.5,
       "eps": 4.65,
       "epsYoY": null,
       "revYoY": 26.27,
@@ -124023,14 +123657,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 90.17,
-          "high": 90.76,
-          "low": 88.4,
-          "close": 90.47,
-          "volume": 5606365
-        },
         {
           "date": "2025-10-02",
           "open": 91.75,
@@ -126524,7 +126150,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.9,
-      "adx_4h": 27.84,
+      "adx_4h": 27.87,
       "eps": 52.07,
       "epsYoY": null,
       "revYoY": -30.02,
@@ -126601,14 +126227,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1439.16,
-          "high": 1463.39,
-          "low": 1424.62,
-          "close": 1424.62,
-          "volume": 415131
-        },
         {
           "date": "2025-10-02",
           "open": 1434.31,
@@ -129102,7 +128720,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 35.82,
-      "adx_4h": 38.22,
+      "adx_4h": 38.21,
       "eps": 17.46,
       "epsYoY": null,
       "revYoY": 114.28,
@@ -129179,14 +128797,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 389.99,
-          "high": 395.27,
-          "low": 387.79,
-          "close": 388.67,
-          "volume": 341666
-        },
         {
           "date": "2025-10-02",
           "open": 391.75,
@@ -131758,14 +131368,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 40.78,
-          "high": 41.22,
-          "low": 40.28,
-          "close": 40.48,
-          "volume": 9801856
-        },
-        {
           "date": "2025-10-02",
           "open": 40.88,
           "high": 41.47,
@@ -134258,7 +133860,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 31.53,
-      "adx_4h": 30.96,
+      "adx_4h": 30.92,
       "eps": 9.26,
       "epsYoY": null,
       "revYoY": 172.33,
@@ -134335,14 +133937,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 177.64,
-          "high": 183.61,
-          "low": 176.64,
-          "close": 177.64,
-          "volume": 3266007
-        },
         {
           "date": "2025-10-02",
           "open": 181.12,
@@ -136836,7 +136430,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.51,
-      "adx_4h": 16.66,
+      "adx_4h": 16.61,
       "eps": 4.5,
       "epsYoY": null,
       "revYoY": 11.27,
@@ -136913,14 +136507,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 150.54,
-          "high": 151.02,
-          "low": 148.61,
-          "close": 150.06,
-          "volume": 2159684
-        },
         {
           "date": "2025-10-02",
           "open": 150.54,
@@ -139414,7 +139000,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.56,
-      "adx_4h": 37.43,
+      "adx_4h": 37.46,
       "eps": 2.0,
       "epsYoY": null,
       "revYoY": 33.76,
@@ -139491,14 +139077,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 29.33,
-          "high": 29.33,
-          "low": 28.83,
-          "close": 29.18,
-          "volume": 2115459
-        },
         {
           "date": "2025-10-02",
           "open": 29.57,
@@ -141992,7 +141570,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.09,
-      "adx_4h": 36.02,
+      "adx_4h": 36.05,
       "eps": 3.25,
       "epsYoY": null,
       "revYoY": 98.33,
@@ -142069,14 +141647,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 104.58,
-          "high": 110.55,
-          "low": 104.08,
-          "close": 110.55,
-          "volume": 32880322
-        },
         {
           "date": "2025-10-02",
           "open": 115.04,
@@ -144570,7 +144140,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.43,
-      "adx_4h": 34.07,
+      "adx_4h": 34.08,
       "eps": 2.37,
       "epsYoY": null,
       "revYoY": 10.4,
@@ -144647,14 +144217,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 27.44,
-          "high": 27.54,
-          "low": 27.21,
-          "close": 27.26,
-          "volume": 9748230
-        },
         {
           "date": "2025-10-02",
           "open": 27.49,
@@ -147148,7 +146710,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.0,
-      "adx_4h": 34.11,
+      "adx_4h": 34.18,
       "eps": 4.91,
       "epsYoY": null,
       "revYoY": 31.27,
@@ -147225,14 +146787,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 74.25,
-          "high": 75.93,
-          "low": 73.17,
-          "close": 73.27,
-          "volume": 1138141
-        },
         {
           "date": "2025-10-02",
           "open": 73.96,
@@ -149726,7 +149280,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 24.17,
-      "adx_4h": 36.64,
+      "adx_4h": 36.62,
       "eps": 13.82,
       "epsYoY": null,
       "revYoY": 16.53,
@@ -149803,14 +149357,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 374.94,
-          "high": 376.84,
-          "low": 370.65,
-          "close": 372.56,
-          "volume": 666233
-        },
         {
           "date": "2025-10-02",
           "open": 373.03,
@@ -152304,7 +151850,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 13.71,
-      "adx_4h": 30.08,
+      "adx_4h": 30.05,
       "eps": 12.28,
       "epsYoY": null,
       "revYoY": 19.39,
@@ -152381,14 +151927,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 209.34,
-          "high": 209.34,
-          "low": 201.18,
-          "close": 201.66,
-          "volume": 660350
-        },
         {
           "date": "2025-10-02",
           "open": 203.58,
@@ -154863,10 +154401,7 @@ window._rawMarketData = {
           "low": 297.5,
           "volume": 97431
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 1.50x + 法人買超 314張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2428",
@@ -154885,7 +154420,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.42,
-      "adx_4h": 38.59,
+      "adx_4h": 38.54,
       "eps": 7.55,
       "epsYoY": null,
       "revYoY": 41.61,
@@ -154962,14 +154497,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 167.97,
-          "high": 170.9,
-          "low": 164.07,
-          "close": 164.55,
-          "volume": 1880825
-        },
         {
           "date": "2025-10-02",
           "open": 166.02,
@@ -157444,10 +156971,7 @@ window._rawMarketData = {
           "low": 277.0,
           "volume": 356435
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 1.38x + 法人買超 287張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "1609",
@@ -157466,7 +156990,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 24.39,
-      "adx_4h": 24.1,
+      "adx_4h": 24.03,
       "eps": 2.24,
       "epsYoY": null,
       "revYoY": 30.32,
@@ -157543,14 +157067,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.62,
-          "high": 39.67,
-          "low": 38.98,
-          "close": 38.98,
-          "volume": 3445756
-        },
         {
           "date": "2025-10-02",
           "open": 39.28,
@@ -160044,7 +159560,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.0,
-      "adx_4h": 51.13,
+      "adx_4h": 51.11,
       "eps": 0.28,
       "epsYoY": null,
       "revYoY": 24.0,
@@ -160121,14 +159637,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.5,
-          "high": 20.15,
-          "low": 19.45,
-          "close": 19.7,
-          "volume": 5181301
-        },
         {
           "date": "2025-10-02",
           "open": 20.6,
@@ -162603,10 +162111,7 @@ window._rawMarketData = {
           "low": 46.55,
           "volume": 2233789
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 1.45x + 法人買超 4103張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "3617",
@@ -162625,7 +162130,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.71,
-      "adx_4h": 28.76,
+      "adx_4h": 28.75,
       "eps": 11.12,
       "epsYoY": null,
       "revYoY": 13.27,
@@ -162702,14 +162207,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 199.18,
-          "high": 201.56,
-          "low": 197.27,
-          "close": 198.23,
-          "volume": 133100
-        },
         {
           "date": "2025-10-02",
           "open": 200.13,
@@ -165203,7 +164700,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 38.32,
-      "adx_4h": 38.04,
+      "adx_4h": 38.01,
       "eps": 2.26,
       "epsYoY": null,
       "revYoY": 23.1,
@@ -165280,14 +164777,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.99,
-          "high": 16.09,
-          "low": 15.85,
-          "close": 15.85,
-          "volume": 938820
-        },
         {
           "date": "2025-10-02",
           "open": 15.94,
@@ -167781,7 +167270,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 16.27,
-      "adx_4h": 47.15,
+      "adx_4h": 47.1,
       "eps": 9.13,
       "epsYoY": null,
       "revYoY": 14.17,
@@ -167858,14 +167347,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 220.94,
-          "high": 221.88,
-          "low": 217.62,
-          "close": 219.04,
-          "volume": 190000
-        },
         {
           "date": "2025-10-02",
           "open": 219.04,
@@ -170359,7 +169840,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.92,
-      "adx_4h": 36.99,
+      "adx_4h": 36.97,
       "eps": 0.89,
       "epsYoY": null,
       "revYoY": 57.39,
@@ -170436,14 +169917,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 7.85,
-          "high": 7.87,
-          "low": 7.79,
-          "close": 7.82,
-          "volume": 760676
-        },
         {
           "date": "2025-10-02",
           "open": 7.83,
@@ -172918,10 +172391,7 @@ window._rawMarketData = {
           "low": 20.15,
           "volume": 12008261
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 1.45x + 法人買超 4110張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2480",
@@ -173017,14 +172487,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 169.13,
-          "high": 169.13,
-          "low": 166.75,
-          "close": 167.23,
-          "volume": 186500
-        },
         {
           "date": "2025-10-02",
           "open": 170.08,
@@ -175499,10 +174961,7 @@ window._rawMarketData = {
           "low": 188.5,
           "volume": 174270
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 85分) + 爆量 2.58x + 法人買超 79張",
-      "display_score": 85,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2478",
@@ -175521,7 +174980,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.58,
-      "adx_4h": 36.07,
+      "adx_4h": 36.03,
       "eps": 2.91,
       "epsYoY": null,
       "revYoY": 29.82,
@@ -175598,14 +175057,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 51.72,
-          "high": 53.5,
-          "low": 49.55,
-          "close": 50.04,
-          "volume": 2500300
-        },
         {
           "date": "2025-10-02",
           "open": 50.54,
@@ -178099,7 +177550,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.1,
-      "adx_4h": 39.76,
+      "adx_4h": 39.72,
       "eps": 1.5,
       "epsYoY": null,
       "revYoY": 125.77,
@@ -178176,14 +177627,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 119.09,
-          "high": 121.06,
-          "low": 117.12,
-          "close": 118.6,
-          "volume": 2947046
-        },
         {
           "date": "2025-10-02",
           "open": 120.56,
@@ -180677,7 +180120,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 38.75,
-      "adx_4h": 64.22,
+      "adx_4h": 64.19,
       "eps": 3.79,
       "epsYoY": null,
       "revYoY": 30.84,
@@ -180754,14 +180197,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 171.9,
-          "high": 173.35,
-          "low": 168.52,
-          "close": 170.93,
-          "volume": 1658515
-        },
         {
           "date": "2025-10-02",
           "open": 170.93,
@@ -183236,10 +182671,7 @@ window._rawMarketData = {
           "low": 182.0,
           "volume": 1195204
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 100分) + 爆量 5.58x + 法人買超 573張",
-      "display_score": 100,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2484",
@@ -183258,7 +182690,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.81,
-      "adx_4h": 47.48,
+      "adx_4h": 47.53,
       "eps": 0.86,
       "epsYoY": null,
       "revYoY": 23.12,
@@ -183335,14 +182767,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.1,
-          "high": 22.2,
-          "low": 21.65,
-          "close": 21.8,
-          "volume": 288270
-        },
         {
           "date": "2025-10-02",
           "open": 21.8,
@@ -185836,7 +185260,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 11.58,
-      "adx_4h": 30.79,
+      "adx_4h": 30.77,
       "eps": 1.3,
       "epsYoY": null,
       "revYoY": 62.32,
@@ -185913,14 +185337,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 79.68,
-          "high": 80.68,
-          "low": 79.09,
-          "close": 79.09,
-          "volume": 395649
-        },
         {
           "date": "2025-10-02",
           "open": 79.68,
@@ -188414,7 +187830,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.91,
-      "adx_4h": 25.73,
+      "adx_4h": 25.71,
       "eps": 2.77,
       "epsYoY": null,
       "revYoY": 24.53,
@@ -188437,7 +187853,7 @@ window._rawMarketData = {
       "maBull": true,
       "ma20Rising": true,
       "closeToHigh": false,
-      "dist52W": 9.2,
+      "dist52W": 9.1,
       "rsi14": 69.77,
       "type": "B,E",
       "pattern_1d": {
@@ -188491,14 +187907,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 81.3,
-          "high": 81.48,
-          "low": 81.01,
-          "close": 81.3,
-          "volume": 94573
-        },
         {
           "date": "2025-10-02",
           "open": 81.48,
@@ -190992,7 +190400,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.96,
-      "adx_4h": 21.16,
+      "adx_4h": 21.15,
       "eps": 2.04,
       "epsYoY": null,
       "revYoY": 719.48,
@@ -191069,14 +190477,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.79,
-          "high": 40.07,
-          "low": 39.6,
-          "close": 39.88,
-          "volume": 377688
-        },
         {
           "date": "2025-10-02",
           "open": 39.93,
@@ -193570,7 +192970,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 27.72,
-      "adx_4h": 25.54,
+      "adx_4h": 25.51,
       "eps": 0.99,
       "epsYoY": null,
       "revYoY": 34.46,
@@ -193647,14 +193047,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 9.02,
-          "high": 9.15,
-          "low": 9.02,
-          "close": 9.15,
-          "volume": 4292882
-        },
         {
           "date": "2025-10-02",
           "open": 9.21,
@@ -196148,7 +195540,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.44,
-      "adx_4h": 41.38,
+      "adx_4h": 41.49,
       "eps": 2.53,
       "epsYoY": null,
       "revYoY": 63.36,
@@ -196225,14 +195617,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 45.32,
-          "high": 45.32,
-          "low": 44.99,
-          "close": 45.23,
-          "volume": 68940
-        },
         {
           "date": "2025-10-02",
           "open": 45.23,
@@ -198804,14 +198188,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 2279.1,
-          "high": 2303.35,
-          "low": 2279.1,
-          "close": 2283.95,
-          "volume": 242287
-        },
-        {
           "date": "2025-10-02",
           "open": 2298.5,
           "high": 2327.59,
@@ -201304,7 +200680,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.23,
-      "adx_4h": 20.08,
+      "adx_4h": 20.07,
       "eps": 2.86,
       "epsYoY": null,
       "revYoY": 10.35,
@@ -201381,14 +200757,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 103.94,
-          "high": 104.42,
-          "low": 102.51,
-          "close": 103.94,
-          "volume": 11186184
-        },
         {
           "date": "2025-10-02",
           "open": 103.94,
@@ -203882,7 +203250,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.78,
-      "adx_4h": 20.74,
+      "adx_4h": 20.78,
       "eps": 2.14,
       "epsYoY": null,
       "revYoY": 8.71,
@@ -203959,14 +203327,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 85.13,
-          "high": 85.61,
-          "low": 84.84,
-          "close": 85.52,
-          "volume": 8004287
-        },
         {
           "date": "2025-10-02",
           "open": 85.52,
@@ -206460,7 +205820,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 12.46,
-      "adx_4h": 16.1,
+      "adx_4h": 16.08,
       "eps": 4.08,
       "epsYoY": null,
       "revYoY": 93.95,
@@ -206537,14 +205897,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 25.32,
-          "high": 27.81,
-          "low": 25.12,
-          "close": 27.81,
-          "volume": 403911055
-        },
         {
           "date": "2025-10-02",
           "open": 30.0,
@@ -209038,7 +208390,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 10.88,
-      "adx_4h": 22.71,
+      "adx_4h": 22.69,
       "eps": 4.82,
       "epsYoY": null,
       "revYoY": 188.24,
@@ -209115,14 +208467,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 25.0,
-          "high": 26.2,
-          "low": 24.8,
-          "close": 25.5,
-          "volume": 39849304
-        },
         {
           "date": "2025-10-02",
           "open": 26.45,
@@ -211616,7 +210960,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.52,
-      "adx_4h": 35.5,
+      "adx_4h": 35.54,
       "eps": 4.93,
       "epsYoY": null,
       "revYoY": 53.93,
@@ -211693,14 +211037,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 104.45,
-          "high": 107.43,
-          "low": 99.47,
-          "close": 100.47,
-          "volume": 22929176
-        },
         {
           "date": "2025-10-02",
           "open": 101.46,
@@ -214194,7 +213530,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 16.38,
-      "adx_4h": 26.84,
+      "adx_4h": 26.83,
       "eps": 2.95,
       "epsYoY": null,
       "revYoY": 18.03,
@@ -214271,14 +213607,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 281.92,
-          "high": 283.41,
-          "low": 275.95,
-          "close": 275.95,
-          "volume": 1295504
-        },
         {
           "date": "2025-10-02",
           "open": 279.43,
@@ -216772,7 +216100,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 10.83,
-      "adx_4h": 17.41,
+      "adx_4h": 17.38,
       "eps": 46.63,
       "epsYoY": null,
       "revYoY": 290.42,
@@ -216849,14 +216177,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 107.99,
-          "high": 110.39,
-          "low": 105.11,
-          "close": 108.47,
-          "volume": 2314938
-        },
         {
           "date": "2025-10-02",
           "open": 112.79,
@@ -219350,7 +218670,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.37,
-      "adx_4h": 25.83,
+      "adx_4h": 25.82,
       "eps": 13.99,
       "epsYoY": null,
       "revYoY": 0.54,
@@ -219427,14 +218747,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 417.33,
-          "high": 420.74,
-          "low": 414.41,
-          "close": 415.87,
-          "volume": 480335
-        },
         {
           "date": "2025-10-02",
           "open": 420.26,
@@ -221928,7 +221240,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 31.78,
-      "adx_4h": 27.97,
+      "adx_4h": 27.96,
       "eps": 4.56,
       "epsYoY": null,
       "revYoY": 35.13,
@@ -221951,7 +221263,7 @@ window._rawMarketData = {
       "maBull": true,
       "ma20Rising": true,
       "closeToHigh": true,
-      "dist52W": 37.0,
+      "dist52W": 36.7,
       "rsi14": 52.53,
       "type": "B,D,E",
       "pattern_1d": {
@@ -222005,14 +221317,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 673.01,
-          "high": 679.82,
-          "low": 673.01,
-          "close": 676.9,
-          "volume": 654683
-        },
         {
           "date": "2025-10-02",
           "open": 679.82,
@@ -224506,7 +223810,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.23,
-      "adx_4h": 28.32,
+      "adx_4h": 28.3,
       "eps": 6.15,
       "epsYoY": null,
       "revYoY": 55.69,
@@ -224583,14 +223887,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 115.85,
-          "high": 116.33,
-          "low": 114.41,
-          "close": 114.41,
-          "volume": 255102
-        },
         {
           "date": "2025-10-02",
           "open": 114.89,
@@ -227084,7 +226380,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 34.9,
-      "adx_4h": 35.43,
+      "adx_4h": 35.41,
       "eps": 4.38,
       "epsYoY": null,
       "revYoY": 35.23,
@@ -227161,14 +226457,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 131.96,
-          "high": 134.89,
-          "low": 131.96,
-          "close": 133.42,
-          "volume": 565320
-        },
         {
           "date": "2025-10-02",
           "open": 135.38,
@@ -229662,7 +228950,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.57,
-      "adx_4h": 37.24,
+      "adx_4h": 37.17,
       "eps": 4.37,
       "epsYoY": null,
       "revYoY": 22.1,
@@ -229739,14 +229027,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 115.54,
-          "high": 117.02,
-          "low": 113.07,
-          "close": 113.07,
-          "volume": 3190022
-        },
         {
           "date": "2025-10-02",
           "open": 114.55,
@@ -232240,7 +231520,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 56.31,
-      "adx_4h": 62.9,
+      "adx_4h": 62.88,
       "eps": 4.75,
       "epsYoY": null,
       "revYoY": 201.68,
@@ -232317,14 +231597,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 94.62,
-          "high": 96.38,
-          "low": 92.66,
-          "close": 92.66,
-          "volume": 1143151
-        },
         {
           "date": "2025-10-02",
           "open": 93.44,
@@ -234896,14 +234168,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 50.59,
-          "high": 50.86,
-          "low": 49.88,
-          "close": 49.88,
-          "volume": 1004156
-        },
-        {
           "date": "2025-10-02",
           "open": 49.97,
           "high": 50.15,
@@ -237396,7 +236660,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 20.41,
-      "adx_4h": 24.58,
+      "adx_4h": 24.63,
       "eps": 0.88,
       "epsYoY": null,
       "revYoY": 220.3,
@@ -237473,14 +236737,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 224.85,
-          "high": 226.84,
-          "low": 223.35,
-          "close": 225.34,
-          "volume": 27093
-        },
         {
           "date": "2025-10-02",
           "open": 226.84,
@@ -239974,7 +239230,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.98,
-      "adx_4h": 34.61,
+      "adx_4h": 34.6,
       "eps": 0.66,
       "epsYoY": null,
       "revYoY": 77.97,
@@ -240051,14 +239307,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 67.43,
-          "high": 68.03,
-          "low": 66.73,
-          "close": 66.83,
-          "volume": 1457250
-        },
         {
           "date": "2025-10-02",
           "open": 67.63,
@@ -242552,7 +241800,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 34.24,
-      "adx_4h": 54.46,
+      "adx_4h": 54.44,
       "eps": 2.05,
       "epsYoY": null,
       "revYoY": 36.25,
@@ -242629,14 +241877,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 88.25,
-          "high": 89.32,
-          "low": 86.51,
-          "close": 86.51,
-          "volume": 5885795
-        },
         {
           "date": "2025-10-02",
           "open": 88.25,
@@ -245130,7 +244370,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.37,
-      "adx_4h": 37.95,
+      "adx_4h": 37.92,
       "eps": 0.89,
       "epsYoY": null,
       "revYoY": 40.94,
@@ -245207,14 +244447,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 94.09,
-          "high": 94.89,
-          "low": 93.39,
-          "close": 93.69,
-          "volume": 44013
-        },
         {
           "date": "2025-10-02",
           "open": 93.69,
@@ -247708,7 +246940,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.7,
-      "adx_4h": 47.28,
+      "adx_4h": 47.23,
       "eps": 2.68,
       "epsYoY": null,
       "revYoY": 64.7,
@@ -247785,14 +247017,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 66.12,
-          "high": 66.12,
-          "low": 66.12,
-          "close": 66.12,
-          "volume": 0
-        },
         {
           "date": "2025-10-02",
           "open": 66.12,
@@ -250286,7 +249510,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.83,
-      "adx_4h": 25.66,
+      "adx_4h": 25.67,
       "eps": 2.52,
       "epsYoY": null,
       "revYoY": 63462.78,
@@ -250363,14 +249587,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 29.64,
-          "high": 30.26,
-          "low": 29.33,
-          "close": 30.2,
-          "volume": 1247683
-        },
         {
           "date": "2025-10-02",
           "open": 30.2,
@@ -252864,7 +252080,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.61,
-      "adx_4h": 35.48,
+      "adx_4h": 35.49,
       "eps": 2.14,
       "epsYoY": null,
       "revYoY": 18.62,
@@ -252941,14 +252157,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 59.32,
-          "high": 59.5,
-          "low": 58.67,
-          "close": 59.04,
-          "volume": 727079
-        },
         {
           "date": "2025-10-02",
           "open": 59.32,
@@ -255520,14 +254728,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 17.16,
-          "high": 17.31,
-          "low": 17.06,
-          "close": 17.16,
-          "volume": 926314
-        },
-        {
           "date": "2025-10-02",
           "open": 17.16,
           "high": 17.21,
@@ -258020,7 +257220,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.45,
-      "adx_4h": 22.64,
+      "adx_4h": 22.63,
       "eps": 2.98,
       "epsYoY": null,
       "revYoY": 53.76,
@@ -258097,14 +257297,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 103.54,
-          "high": 104.51,
-          "low": 101.58,
-          "close": 101.58,
-          "volume": 1778800
-        },
         {
           "date": "2025-10-02",
           "open": 103.05,
@@ -260598,7 +259790,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.78,
-      "adx_4h": 44.9,
+      "adx_4h": 44.88,
       "eps": 4.42,
       "epsYoY": null,
       "revYoY": 25.55,
@@ -260675,14 +259867,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 192.59,
-          "high": 194.57,
-          "low": 184.18,
-          "close": 188.14,
-          "volume": 3199234
-        },
         {
           "date": "2025-10-02",
           "open": 188.14,
@@ -263176,7 +262360,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 36.17,
-      "adx_4h": 18.41,
+      "adx_4h": 18.42,
       "eps": 1.87,
       "epsYoY": null,
       "revYoY": 17.08,
@@ -263253,14 +262437,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 34.42,
-          "high": 34.61,
-          "low": 34.23,
-          "close": 34.28,
-          "volume": 2580122
-        },
         {
           "date": "2025-10-02",
           "open": 34.37,
@@ -265754,7 +264930,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.61,
-      "adx_4h": 28.78,
+      "adx_4h": 28.66,
       "eps": 1.34,
       "epsYoY": null,
       "revYoY": 32.73,
@@ -265831,14 +265007,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 71.76,
-          "high": 71.95,
-          "low": 70.41,
-          "close": 70.5,
-          "volume": 1087361
-        },
         {
           "date": "2025-10-02",
           "open": 70.69,
@@ -268410,14 +267578,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 214.12,
-          "high": 214.12,
-          "low": 211.33,
-          "close": 212.73,
-          "volume": 210110
-        },
-        {
           "date": "2025-10-02",
           "open": 213.19,
           "high": 213.19,
@@ -270910,7 +270070,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.78,
-      "adx_4h": 18.95,
+      "adx_4h": 18.94,
       "eps": 2.18,
       "epsYoY": null,
       "revYoY": 35.53,
@@ -270987,14 +270147,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 50.09,
-          "high": 50.29,
-          "low": 48.75,
-          "close": 49.61,
-          "volume": 648364
-        },
         {
           "date": "2025-10-02",
           "open": 49.61,
@@ -273488,7 +272640,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.86,
-      "adx_4h": 31.72,
+      "adx_4h": 31.69,
       "eps": 4.77,
       "epsYoY": null,
       "revYoY": 18.06,
@@ -273565,14 +272717,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 130.98,
-          "high": 138.28,
-          "low": 130.49,
-          "close": 131.47,
-          "volume": 1126050
-        },
         {
           "date": "2025-10-02",
           "open": 132.93,
@@ -276066,7 +275210,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 47.66,
-      "adx_4h": 42.39,
+      "adx_4h": 42.37,
       "eps": 6.43,
       "epsYoY": null,
       "revYoY": 228.86,
@@ -276143,14 +275287,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 181.67,
-          "high": 183.64,
-          "low": 174.78,
-          "close": 175.27,
-          "volume": 182286
-        },
         {
           "date": "2025-10-02",
           "open": 181.67,
@@ -278644,7 +277780,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.25,
-      "adx_4h": 57.37,
+      "adx_4h": 57.36,
       "eps": 1.53,
       "epsYoY": null,
       "revYoY": 81.57,
@@ -278721,14 +277857,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 37.88,
-          "high": 39.91,
-          "low": 37.43,
-          "close": 39.07,
-          "volume": 5748986
-        },
         {
           "date": "2025-10-02",
           "open": 39.67,
@@ -281222,7 +280350,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 17.07,
-      "adx_4h": 19.11,
+      "adx_4h": 19.08,
       "eps": 3.29,
       "epsYoY": null,
       "revYoY": 75.87,
@@ -281299,14 +280427,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.99,
-          "high": 65.53,
-          "low": 63.9,
-          "close": 65.44,
-          "volume": 777572
-        },
         {
           "date": "2025-10-02",
           "open": 65.73,
@@ -283800,7 +282920,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 15.53,
-      "adx_4h": 25.92,
+      "adx_4h": 25.89,
       "eps": 0.61,
       "epsYoY": null,
       "revYoY": 1.31,
@@ -283877,14 +282997,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 41.19,
-          "high": 41.53,
-          "low": 40.27,
-          "close": 40.32,
-          "volume": 2674718
-        },
         {
           "date": "2025-10-02",
           "open": 40.61,
@@ -286378,7 +285490,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 19.69,
-      "adx_4h": 23.87,
+      "adx_4h": 23.85,
       "eps": 0.35,
       "epsYoY": null,
       "revYoY": 20.73,
@@ -286455,14 +285567,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 23.4,
-          "high": 23.45,
-          "low": 22.65,
-          "close": 22.7,
-          "volume": 2030210
-        },
         {
           "date": "2025-10-02",
           "open": 22.95,
@@ -288956,7 +288060,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.76,
-      "adx_4h": 35.02,
+      "adx_4h": 35.03,
       "eps": 3.62,
       "epsYoY": null,
       "revYoY": 959.21,
@@ -288995,7 +288099,7 @@ window._rawMarketData = {
         "take_profit": 19.73,
         "risk_reward_ratio": 1.86,
         "neckline": 18.45,
-        "support": 16.48,
+        "support": 16.49,
         "resistance": 18.45,
         "metrics": {
           "volume_mult": 0.9,
@@ -289033,14 +288137,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.5,
-          "high": 19.6,
-          "low": 19.2,
-          "close": 19.3,
-          "volume": 278360
-        },
         {
           "date": "2025-10-02",
           "open": 19.35,
@@ -291534,7 +290630,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 47.92,
-      "adx_4h": 53.01,
+      "adx_4h": 52.95,
       "eps": 1.6,
       "epsYoY": null,
       "revYoY": 132.4,
@@ -291611,14 +290707,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.94,
-          "high": 29.58,
-          "low": 28.64,
-          "close": 28.64,
-          "volume": 122000
-        },
         {
           "date": "2025-10-02",
           "open": 28.99,
@@ -294112,7 +293200,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 39.06,
-      "adx_4h": 46.48,
+      "adx_4h": 46.47,
       "eps": 3.99,
       "epsYoY": null,
       "revYoY": 89.28,
@@ -294189,14 +293277,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 24.54,
-          "high": 24.54,
-          "low": 24.06,
-          "close": 24.16,
-          "volume": 173000
-        },
         {
           "date": "2025-10-02",
           "open": 24.2,
@@ -296690,7 +295770,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 30.4,
-      "adx_4h": 50.35,
+      "adx_4h": 50.31,
       "eps": 1.98,
       "epsYoY": null,
       "revYoY": 21.19,
@@ -296767,14 +295847,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 29.52,
-          "high": 29.52,
-          "low": 29.23,
-          "close": 29.37,
-          "volume": 381448
-        },
         {
           "date": "2025-10-02",
           "open": 29.33,
@@ -299268,7 +298340,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.08,
-      "adx_4h": 27.51,
+      "adx_4h": 27.49,
       "eps": 0.94,
       "epsYoY": null,
       "revYoY": 40.16,
@@ -299345,14 +298417,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 41.4,
-          "high": 41.45,
-          "low": 40.12,
-          "close": 40.12,
-          "volume": 886188
-        },
         {
           "date": "2025-10-02",
           "open": 40.27,
@@ -301846,7 +300910,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 55.96,
-      "adx_4h": 33.27,
+      "adx_4h": 33.26,
       "eps": 0.51,
       "epsYoY": null,
       "revYoY": 212.8,
@@ -301923,14 +300987,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 11.5,
-          "high": 11.5,
-          "low": 11.3,
-          "close": 11.3,
-          "volume": 138856
-        },
         {
           "date": "2025-10-02",
           "open": 11.4,
@@ -304424,7 +303480,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.2,
-      "adx_4h": 30.48,
+      "adx_4h": 30.46,
       "eps": 2.33,
       "epsYoY": null,
       "revYoY": 16.22,
@@ -304501,14 +303557,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 120.22,
-          "high": 123.14,
-          "low": 120.22,
-          "close": 121.2,
-          "volume": 87002
-        },
         {
           "date": "2025-10-02",
           "open": 124.12,
@@ -307002,7 +306050,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.46,
-      "adx_4h": 19.83,
+      "adx_4h": 19.88,
       "eps": 8.03,
       "epsYoY": null,
       "revYoY": 60.16,
@@ -307079,14 +306127,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 108.2,
-          "high": 112.54,
-          "low": 108.2,
-          "close": 111.58,
-          "volume": 353201
-        },
         {
           "date": "2025-10-02",
           "open": 111.09,
@@ -309580,7 +308620,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.95,
-      "adx_4h": 44.21,
+      "adx_4h": 44.17,
       "eps": 5.45,
       "epsYoY": null,
       "revYoY": 70.31,
@@ -309657,14 +308697,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 57.48,
-          "high": 61.66,
-          "low": 57.48,
-          "close": 60.86,
-          "volume": 11015499
-        },
         {
           "date": "2025-10-02",
           "open": 60.56,
@@ -312236,14 +311268,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 61.19,
-          "high": 66.36,
-          "low": 61.19,
-          "close": 65.17,
-          "volume": 798152
-        },
-        {
           "date": "2025-10-02",
           "open": 67.06,
           "high": 69.34,
@@ -314736,7 +313760,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.54,
-      "adx_4h": 23.03,
+      "adx_4h": 23.02,
       "eps": 3.51,
       "epsYoY": null,
       "revYoY": 59.95,
@@ -314813,14 +313837,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 68.94,
-          "high": 69.33,
-          "low": 67.35,
-          "close": 67.75,
-          "volume": 1702700
-        },
         {
           "date": "2025-10-02",
           "open": 68.24,
@@ -317314,7 +316330,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.4,
-      "adx_4h": 24.63,
+      "adx_4h": 24.72,
       "eps": 2.64,
       "epsYoY": null,
       "revYoY": null,
@@ -317391,14 +316407,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 32.41,
-          "high": 32.55,
-          "low": 32.22,
-          "close": 32.36,
-          "volume": 16622970
-        },
         {
           "date": "2025-10-02",
           "open": 32.22,
@@ -319970,14 +318978,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 1249.3,
-          "high": 1259.25,
-          "low": 1219.43,
-          "close": 1224.41,
-          "volume": 2321108
-        },
-        {
           "date": "2025-10-02",
           "open": 1244.32,
           "high": 1314.0,
@@ -322470,7 +321470,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 38.61,
-      "adx_4h": 43.88,
+      "adx_4h": 43.81,
       "eps": 0.46,
       "epsYoY": null,
       "revYoY": 32.11,
@@ -322547,14 +321547,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 6.51,
-          "high": 6.6,
-          "low": 6.5,
-          "close": 6.51,
-          "volume": 1774578
-        },
         {
           "date": "2025-10-02",
           "open": 6.54,
@@ -325048,7 +324040,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.49,
-      "adx_4h": 23.0,
+      "adx_4h": 23.01,
       "eps": 34.7,
       "epsYoY": null,
       "revYoY": 66.13,
@@ -325125,14 +324117,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1051.68,
-          "high": 1056.64,
-          "low": 1021.91,
-          "close": 1031.83,
-          "volume": 4004162
-        },
         {
           "date": "2025-10-02",
           "open": 1066.56,
@@ -327626,7 +326610,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.18,
-      "adx_4h": 21.59,
+      "adx_4h": 21.57,
       "eps": 21.27,
       "epsYoY": null,
       "revYoY": 206.47,
@@ -327703,14 +326687,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 575.14,
-          "high": 618.77,
-          "low": 575.14,
-          "close": 600.92,
-          "volume": 3657331
-        },
         {
           "date": "2025-10-02",
           "open": 621.74,
@@ -330204,7 +329180,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 31.38,
-      "adx_4h": 28.46,
+      "adx_4h": 28.37,
       "eps": 9.05,
       "epsYoY": null,
       "revYoY": 73.14,
@@ -330281,14 +329257,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 308.37,
-          "high": 315.22,
-          "low": 308.37,
-          "close": 311.3,
-          "volume": 1284113
-        },
         {
           "date": "2025-10-02",
           "open": 314.24,
@@ -332782,7 +331750,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.59,
-      "adx_4h": 26.75,
+      "adx_4h": 26.74,
       "eps": 7.78,
       "epsYoY": null,
       "revYoY": 87.19,
@@ -332859,14 +331827,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 140.84,
-          "high": 148.07,
-          "low": 138.91,
-          "close": 140.84,
-          "volume": 282988689
-        },
         {
           "date": "2025-10-02",
           "open": 149.03,
@@ -335360,7 +334320,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 36.67,
-      "adx_4h": 53.4,
+      "adx_4h": 53.34,
       "eps": 2.19,
       "epsYoY": null,
       "revYoY": 7.14,
@@ -335437,14 +334397,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 38.24,
-          "high": 38.58,
-          "low": 37.89,
-          "close": 37.89,
-          "volume": 6331142
-        },
         {
           "date": "2025-10-02",
           "open": 38.19,
@@ -337919,10 +336871,7 @@ window._rawMarketData = {
           "low": 88.8,
           "volume": 10858538
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 95分) + 爆量 3.12x + 法人買超 56691張",
-      "display_score": 95,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "6446",
@@ -337941,7 +336890,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 14.01,
-      "adx_4h": 11.43,
+      "adx_4h": 11.44,
       "eps": 11.35,
       "epsYoY": null,
       "revYoY": 99.98,
@@ -338018,14 +336967,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 465.57,
-          "high": 504.29,
-          "low": 465.57,
-          "close": 503.39,
-          "volume": 8303084
-        },
         {
           "date": "2025-10-02",
           "open": 501.59,
@@ -340519,7 +339460,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.27,
-      "adx_4h": 35.51,
+      "adx_4h": 35.44,
       "eps": 2.11,
       "epsYoY": null,
       "revYoY": 44.78,
@@ -340596,14 +339537,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.97,
-          "high": 29.61,
-          "low": 28.82,
-          "close": 28.87,
-          "volume": 6932745
-        },
         {
           "date": "2025-10-02",
           "open": 29.07,
@@ -343078,10 +342011,7 @@ window._rawMarketData = {
           "low": 85.5,
           "volume": 2055065
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 85分) + 爆量 2.92x + 法人買超 27667張",
-      "display_score": 85,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "1216",
@@ -343100,7 +342030,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.81,
-      "adx_4h": 32.18,
+      "adx_4h": 32.17,
       "eps": 2.56,
       "epsYoY": null,
       "revYoY": 5.8,
@@ -343177,14 +342107,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 74.82,
-          "high": 75.68,
-          "low": 74.82,
-          "close": 75.3,
-          "volume": 5712157
-        },
         {
           "date": "2025-10-02",
           "open": 75.39,
@@ -345678,7 +344600,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.91,
-      "adx_4h": 35.82,
+      "adx_4h": 35.79,
       "eps": 2.26,
       "epsYoY": null,
       "revYoY": 86.88,
@@ -345755,14 +344677,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 67.75,
-          "high": 68.71,
-          "low": 67.37,
-          "close": 67.37,
-          "volume": 12703395
-        },
         {
           "date": "2025-10-02",
           "open": 68.13,
@@ -348256,7 +347170,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.88,
-      "adx_4h": 36.03,
+      "adx_4h": 36.04,
       "eps": 6.03,
       "epsYoY": null,
       "revYoY": 7.82,
@@ -348333,14 +347247,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 240.18,
-          "high": 241.15,
-          "low": 238.74,
-          "close": 238.74,
-          "volume": 860238
-        },
         {
           "date": "2025-10-02",
           "open": 238.74,
@@ -350834,7 +349740,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.16,
-      "adx_4h": 26.06,
+      "adx_4h": 26.02,
       "eps": 2.05,
       "epsYoY": null,
       "revYoY": 69.94,
@@ -350911,14 +349817,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 51.08,
-          "high": 51.27,
-          "low": 50.21,
-          "close": 50.21,
-          "volume": 16643881
-        },
         {
           "date": "2025-10-02",
           "open": 49.92,
@@ -353412,7 +352310,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.07,
-      "adx_4h": 43.52,
+      "adx_4h": 43.49,
       "eps": 2.85,
       "epsYoY": null,
       "revYoY": 10.27,
@@ -353489,14 +352387,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 25.63,
-          "high": 26.07,
-          "low": 25.08,
-          "close": 25.13,
-          "volume": 72993553
-        },
         {
           "date": "2025-10-02",
           "open": 25.53,
@@ -355990,7 +354880,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 44.81,
-      "adx_4h": 53.46,
+      "adx_4h": 53.45,
       "eps": 4.12,
       "epsYoY": null,
       "revYoY": 158.67,
@@ -356067,14 +354957,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 60.01,
-          "high": 60.58,
-          "low": 59.63,
-          "close": 59.91,
-          "volume": 3638501
-        },
         {
           "date": "2025-10-02",
           "open": 60.11,
@@ -358568,7 +357450,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 38.99,
-      "adx_4h": 32.17,
+      "adx_4h": 32.14,
       "eps": 13.26,
       "epsYoY": null,
       "revYoY": 88.49,
@@ -358645,14 +357527,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 242.57,
-          "high": 248.5,
-          "low": 238.13,
-          "close": 240.6,
-          "volume": 1188001
-        },
         {
           "date": "2025-10-02",
           "open": 245.04,
@@ -361146,7 +360020,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 47.2,
-      "adx_4h": 36.67,
+      "adx_4h": 36.64,
       "eps": 6.44,
       "epsYoY": null,
       "revYoY": 30.08,
@@ -361223,14 +360097,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 335.75,
-          "high": 347.67,
-          "low": 335.25,
-          "close": 341.21,
-          "volume": 5070154
-        },
         {
           "date": "2025-10-02",
           "open": 346.18,
@@ -363724,7 +362590,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.92,
-      "adx_4h": 20.84,
+      "adx_4h": 20.85,
       "eps": 2.58,
       "epsYoY": null,
       "revYoY": 88.65,
@@ -363801,14 +362667,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 78.07,
-          "high": 80.53,
-          "low": 77.98,
-          "close": 79.74,
-          "volume": 115854915
-        },
         {
           "date": "2025-10-02",
           "open": 81.14,
@@ -366380,14 +365238,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 30.11,
-          "high": 30.11,
-          "low": 29.24,
-          "close": 29.24,
-          "volume": 15414504
-        },
-        {
           "date": "2025-10-02",
           "open": 29.38,
           "high": 29.63,
@@ -368957,14 +367807,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.37,
-          "high": 28.52,
-          "low": 28.13,
-          "close": 28.13,
-          "volume": 4783087
-        },
         {
           "date": "2025-10-02",
           "open": 28.28,
@@ -371536,14 +370378,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 905.37,
-          "high": 919.81,
-          "low": 878.4,
-          "close": 879.36,
-          "volume": 728437
-        },
-        {
           "date": "2025-10-02",
           "open": 895.74,
           "high": 895.74,
@@ -374114,14 +372948,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 393.68,
-          "high": 400.45,
-          "low": 387.65,
-          "close": 388.41,
-          "volume": 408635
-        },
-        {
           "date": "2025-10-02",
           "open": 390.66,
           "high": 408.73,
@@ -376614,7 +375440,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 15.88,
-      "adx_4h": 26.29,
+      "adx_4h": 26.28,
       "eps": 7.37,
       "epsYoY": null,
       "revYoY": 25.51,
@@ -376691,14 +375517,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 224.22,
-          "high": 224.22,
-          "low": 217.92,
-          "close": 218.41,
-          "volume": 1033143
-        },
         {
           "date": "2025-10-02",
           "open": 219.86,
@@ -379192,7 +378010,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.08,
-      "adx_4h": 17.26,
+      "adx_4h": 17.22,
       "eps": 8.33,
       "epsYoY": null,
       "revYoY": 90.15,
@@ -379269,14 +378087,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 337.68,
-          "high": 344.64,
-          "low": 335.7,
-          "close": 338.18,
-          "volume": 2150357
-        },
         {
           "date": "2025-10-02",
           "open": 341.66,
@@ -381770,7 +380580,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.04,
-      "adx_4h": 43.98,
+      "adx_4h": 43.97,
       "eps": 7.36,
       "epsYoY": null,
       "revYoY": 54.02,
@@ -381847,14 +380657,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 175.61,
-          "high": 186.86,
-          "low": 175.61,
-          "close": 180.99,
-          "volume": 4006246
-        },
         {
           "date": "2025-10-02",
           "open": 167.29,
@@ -384348,7 +383150,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.86,
-      "adx_4h": 23.5,
+      "adx_4h": 23.47,
       "eps": 4.07,
       "epsYoY": null,
       "revYoY": 13.83,
@@ -384425,14 +383227,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 57.31,
-          "high": 57.31,
-          "low": 56.37,
-          "close": 56.65,
-          "volume": 1909825
-        },
         {
           "date": "2025-10-02",
           "open": 56.65,
@@ -387004,14 +385798,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 180.38,
-          "high": 184.35,
-          "low": 178.9,
-          "close": 181.87,
-          "volume": 15979544
-        },
-        {
           "date": "2025-10-02",
           "open": 184.84,
           "high": 188.81,
@@ -389504,7 +388290,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.73,
-      "adx_4h": 42.89,
+      "adx_4h": 42.95,
       "eps": 7.65,
       "epsYoY": null,
       "revYoY": 24.05,
@@ -389581,14 +388367,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 272.55,
-          "high": 272.55,
-          "low": 265.03,
-          "close": 265.5,
-          "volume": 908228
-        },
         {
           "date": "2025-10-02",
           "open": 267.38,
@@ -392063,10 +390841,7 @@ window._rawMarketData = {
           "low": 205.5,
           "volume": 530662
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 1.22x + 法人買超 953張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "2206",
@@ -392085,7 +390860,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 12.0,
-      "adx_4h": 13.79,
+      "adx_4h": 13.8,
       "eps": 3.14,
       "epsYoY": null,
       "revYoY": -3.11,
@@ -392162,14 +390937,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 59.32,
-          "high": 59.7,
-          "low": 59.03,
-          "close": 59.03,
-          "volume": 395803
-        },
         {
           "date": "2025-10-02",
           "open": 59.32,
@@ -394663,7 +393430,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 51.0,
-      "adx_4h": 45.37,
+      "adx_4h": 45.38,
       "eps": 1.0,
       "epsYoY": null,
       "revYoY": 52.71,
@@ -394740,14 +393507,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 57.07,
-          "high": 62.25,
-          "low": 55.78,
-          "close": 56.27,
-          "volume": 11538450
-        },
         {
           "date": "2025-10-02",
           "open": 56.27,
@@ -397241,7 +396000,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 23.4,
-      "adx_4h": 20.28,
+      "adx_4h": 20.2,
       "eps": 0.58,
       "epsYoY": null,
       "revYoY": 8.34,
@@ -397318,14 +396077,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 35.56,
-          "high": 35.56,
-          "low": 35.56,
-          "close": 35.56,
-          "volume": 0
-        },
         {
           "date": "2025-10-02",
           "open": 35.56,
@@ -399819,7 +398570,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 15.68,
-      "adx_4h": 26.33,
+      "adx_4h": 26.28,
       "eps": 6.03,
       "epsYoY": null,
       "revYoY": 50.7,
@@ -399896,14 +398647,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 252.78,
-          "high": 255.26,
-          "low": 246.34,
-          "close": 246.34,
-          "volume": 3241131
-        },
         {
           "date": "2025-10-02",
           "open": 244.36,
@@ -402397,7 +401140,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 29.99,
-      "adx_4h": 52.32,
+      "adx_4h": 52.31,
       "eps": 7.0,
       "epsYoY": null,
       "revYoY": 26.11,
@@ -402474,14 +401217,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 165.64,
-          "high": 169.56,
-          "low": 161.23,
-          "close": 161.23,
-          "volume": 6589356
-        },
         {
           "date": "2025-10-02",
           "open": 160.74,
@@ -407289,7 +406024,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.75,
-      "adx_4h": 28.09,
+      "adx_4h": 28.08,
       "eps": 3.98,
       "epsYoY": null,
       "revYoY": 39.51,
@@ -407366,14 +406101,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 85.7,
-          "high": 87.08,
-          "low": 84.91,
-          "close": 85.3,
-          "volume": 1186110
-        },
         {
           "date": "2025-10-02",
           "open": 85.9,
@@ -409867,7 +408594,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.88,
-      "adx_4h": 29.59,
+      "adx_4h": 29.57,
       "eps": 0.37,
       "epsYoY": null,
       "revYoY": 23.59,
@@ -409944,14 +408671,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 30.09,
-          "high": 31.17,
-          "low": 29.94,
-          "close": 30.68,
-          "volume": 8353546
-        },
         {
           "date": "2025-10-02",
           "open": 30.97,
@@ -412445,7 +411164,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 59.95,
-      "adx_4h": 73.08,
+      "adx_4h": 73.1,
       "eps": 0.05,
       "epsYoY": null,
       "revYoY": 308.16,
@@ -412522,14 +411241,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 67.7,
-          "high": 67.9,
-          "low": 66.2,
-          "close": 66.6,
-          "volume": 113070
-        },
         {
           "date": "2025-10-02",
           "open": 66.7,
@@ -415023,7 +413734,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.19,
-      "adx_4h": 48.22,
+      "adx_4h": 48.2,
       "eps": 5.93,
       "epsYoY": null,
       "revYoY": 41.27,
@@ -415100,14 +413811,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 91.65,
-          "high": 91.65,
-          "low": 89.54,
-          "close": 89.64,
-          "volume": 783613
-        },
         {
           "date": "2025-10-02",
           "open": 89.64,
@@ -417582,10 +416285,7 @@ window._rawMarketData = {
           "low": 137.0,
           "volume": 750003
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 100分) + 爆量 3.31x + 法人買超 792張",
-      "display_score": 100,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "3596",
@@ -417604,7 +416304,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 27.78,
-      "adx_4h": 26.72,
+      "adx_4h": 26.73,
       "eps": 6.5,
       "epsYoY": null,
       "revYoY": 8.5,
@@ -417627,7 +416327,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": true,
       "closeToHigh": true,
-      "dist52W": 22.1,
+      "dist52W": 21.6,
       "rsi14": 70.37,
       "type": "A,E",
       "pattern_1d": {
@@ -417681,14 +416381,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 208.37,
-          "high": 211.69,
-          "low": 206.95,
-          "close": 207.42,
-          "volume": 334141
-        },
         {
           "date": "2025-10-02",
           "open": 207.9,
@@ -420182,7 +418874,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 29.59,
-      "adx_4h": 16.25,
+      "adx_4h": 16.24,
       "eps": 13.13,
       "epsYoY": null,
       "revYoY": 20.64,
@@ -420259,14 +418951,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 310.58,
-          "high": 312.04,
-          "low": 307.66,
-          "close": 307.66,
-          "volume": 101009
-        },
         {
           "date": "2025-10-02",
           "open": 308.63,
@@ -422838,14 +421522,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 39.75,
-          "high": 39.94,
-          "low": 39.32,
-          "close": 39.36,
-          "volume": 215453
-        },
-        {
           "date": "2025-10-02",
           "open": 39.51,
           "high": 39.7,
@@ -425338,7 +424014,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.88,
-      "adx_4h": 42.86,
+      "adx_4h": 42.84,
       "eps": 7.1,
       "epsYoY": null,
       "revYoY": 27.27,
@@ -425415,14 +424091,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 267.79,
-          "high": 273.51,
-          "low": 263.5,
-          "close": 264.93,
-          "volume": 1198010
-        },
         {
           "date": "2025-10-02",
           "open": 266.84,
@@ -427916,7 +426584,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.85,
-      "adx_4h": 33.16,
+      "adx_4h": 33.15,
       "eps": 2.67,
       "epsYoY": null,
       "revYoY": 41.13,
@@ -427993,14 +426661,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 107.39,
-          "high": 108.37,
-          "low": 105.41,
-          "close": 105.91,
-          "volume": 1353639
-        },
         {
           "date": "2025-10-02",
           "open": 105.41,
@@ -430494,7 +429154,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 66.14,
-      "adx_4h": 60.66,
+      "adx_4h": 60.63,
       "eps": 3.26,
       "epsYoY": null,
       "revYoY": 43.98,
@@ -430571,14 +429231,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 167.95,
-          "high": 171.31,
-          "low": 165.55,
-          "close": 167.95,
-          "volume": 50210
-        },
         {
           "date": "2025-10-02",
           "open": 167.95,
@@ -433072,7 +431724,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.1,
-      "adx_4h": 34.57,
+      "adx_4h": 34.53,
       "eps": -0.24,
       "epsYoY": null,
       "revYoY": 34.3,
@@ -433149,14 +431801,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 53.3,
-          "high": 54.48,
-          "low": 52.81,
-          "close": 52.81,
-          "volume": 7420111
-        },
         {
           "date": "2025-10-02",
           "open": 53.2,
@@ -435650,7 +434294,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 22.27,
-      "adx_4h": 14.5,
+      "adx_4h": 14.51,
       "eps": 5.52,
       "epsYoY": null,
       "revYoY": 73.3,
@@ -435727,14 +434371,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 152.17,
-          "high": 152.17,
-          "low": 147.21,
-          "close": 148.7,
-          "volume": 62110
-        },
         {
           "date": "2025-10-02",
           "open": 149.19,
@@ -438228,7 +436864,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 41.61,
-      "adx_4h": 43.09,
+      "adx_4h": 43.06,
       "eps": 5.88,
       "epsYoY": null,
       "revYoY": 0.5,
@@ -438305,14 +436941,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 126.11,
-          "high": 127.05,
-          "low": 124.22,
-          "close": 124.22,
-          "volume": 681568
-        },
         {
           "date": "2025-10-02",
           "open": 124.69,
@@ -440806,7 +439434,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.77,
-      "adx_4h": 31.94,
+      "adx_4h": 31.9,
       "eps": 7.04,
       "epsYoY": null,
       "revYoY": 18.61,
@@ -440883,14 +439511,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 29.99,
-          "high": 30.41,
-          "low": 29.38,
-          "close": 29.61,
-          "volume": 9155688
-        },
         {
           "date": "2025-10-02",
           "open": 29.71,
@@ -443384,7 +442004,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 21.51,
-      "adx_4h": 26.24,
+      "adx_4h": 26.21,
       "eps": 2.59,
       "epsYoY": null,
       "revYoY": 47.44,
@@ -443461,14 +442081,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 98.39,
-          "high": 98.39,
-          "low": 96.74,
-          "close": 96.94,
-          "volume": 798402
-        },
         {
           "date": "2025-10-02",
           "open": 97.91,
@@ -445962,7 +444574,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 42.49,
-      "adx_4h": 25.32,
+      "adx_4h": 25.3,
       "eps": 5.63,
       "epsYoY": null,
       "revYoY": 69.02,
@@ -446039,14 +444651,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 289.74,
-          "high": 296.06,
-          "low": 286.82,
-          "close": 287.8,
-          "volume": 306010
-        },
         {
           "date": "2025-10-02",
           "open": 292.66,
@@ -448540,7 +447144,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.9,
-      "adx_4h": 30.12,
+      "adx_4h": 30.07,
       "eps": 3.67,
       "epsYoY": null,
       "revYoY": 60.11,
@@ -448617,14 +447221,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.28,
-          "high": 22.28,
-          "low": 21.89,
-          "close": 22.04,
-          "volume": 2188438
-        },
         {
           "date": "2025-10-02",
           "open": 21.75,
@@ -451118,7 +449714,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 47.69,
-      "adx_4h": 47.4,
+      "adx_4h": 47.36,
       "eps": -1.68,
       "epsYoY": null,
       "revYoY": 96.81,
@@ -451195,14 +449791,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 9.51,
-          "high": 9.59,
-          "low": 9.48,
-          "close": 9.49,
-          "volume": 1208177
-        },
         {
           "date": "2025-10-02",
           "open": 9.51,
@@ -453696,7 +452284,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.32,
-      "adx_4h": 53.09,
+      "adx_4h": 53.07,
       "eps": 2.78,
       "epsYoY": null,
       "revYoY": 7.57,
@@ -453773,14 +452361,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 113.96,
-          "high": 114.44,
-          "low": 111.57,
-          "close": 111.57,
-          "volume": 1339829
-        },
         {
           "date": "2025-10-02",
           "open": 113.01,
@@ -456274,7 +454854,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 27.53,
-      "adx_4h": 42.63,
+      "adx_4h": 42.62,
       "eps": 1.07,
       "epsYoY": null,
       "revYoY": 44.28,
@@ -456351,14 +454931,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 34.08,
-          "high": 34.32,
-          "low": 33.74,
-          "close": 33.79,
-          "volume": 1072299
-        },
         {
           "date": "2025-10-02",
           "open": 33.98,
@@ -458852,7 +457424,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.37,
-      "adx_4h": 35.64,
+      "adx_4h": 35.67,
       "eps": 2.07,
       "epsYoY": null,
       "revYoY": 61.87,
@@ -458929,14 +457501,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 79.97,
-          "high": 80.16,
-          "low": 79.87,
-          "close": 80.16,
-          "volume": 122001
-        },
         {
           "date": "2025-10-02",
           "open": 80.16,
@@ -461430,7 +459994,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.98,
-      "adx_4h": 37.51,
+      "adx_4h": 37.52,
       "eps": 0.46,
       "epsYoY": null,
       "revYoY": 15.06,
@@ -461507,14 +460071,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 50.01,
-          "high": 51.75,
-          "low": 49.92,
-          "close": 50.59,
-          "volume": 4148032
-        },
         {
           "date": "2025-10-02",
           "open": 51.65,
@@ -463989,10 +462545,7 @@ window._rawMarketData = {
           "low": 65.5,
           "volume": 1472202
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 90分) + 爆量 6.55x + 法人買超 3881張",
-      "display_score": 90,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "1419",
@@ -464088,14 +462641,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 54.27,
-          "high": 54.27,
-          "low": 52.52,
-          "close": 52.71,
-          "volume": 489499
-        },
         {
           "date": "2025-10-02",
           "open": 53.0,
@@ -466589,7 +465134,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 24.46,
-      "adx_4h": 38.67,
+      "adx_4h": 38.68,
       "eps": 0.93,
       "epsYoY": null,
       "revYoY": 39.69,
@@ -466666,14 +465211,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 60.63,
-          "high": 60.88,
-          "low": 60.32,
-          "close": 60.5,
-          "volume": 195348
-        },
         {
           "date": "2025-10-02",
           "open": 60.5,
@@ -469167,7 +467704,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 44.99,
-      "adx_4h": 43.26,
+      "adx_4h": 43.15,
       "eps": -0.12,
       "epsYoY": null,
       "revYoY": 73.97,
@@ -469244,14 +467781,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 12.3,
-          "high": 12.35,
-          "low": 12.15,
-          "close": 12.15,
-          "volume": 482324
-        },
         {
           "date": "2025-10-02",
           "open": 12.15,
@@ -471745,7 +470274,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.55,
-      "adx_4h": 44.48,
+      "adx_4h": 44.44,
       "eps": 3.0,
       "epsYoY": null,
       "revYoY": 46.89,
@@ -471822,14 +470351,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 76.08,
-          "high": 76.96,
-          "low": 73.16,
-          "close": 74.33,
-          "volume": 4629351
-        },
         {
           "date": "2025-10-02",
           "open": 74.82,
@@ -474323,7 +472844,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 43.77,
-      "adx_4h": 47.48,
+      "adx_4h": 47.46,
       "eps": 1.63,
       "epsYoY": null,
       "revYoY": 8.74,
@@ -474400,14 +472921,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 55.52,
-          "high": 55.52,
-          "low": 54.57,
-          "close": 54.66,
-          "volume": 506500
-        },
         {
           "date": "2025-10-02",
           "open": 54.19,
@@ -476882,10 +475395,7 @@ window._rawMarketData = {
           "low": 60.4,
           "volume": 64725
         }
-      ],
-      "add_reason": "持倉強勢續抱 (高達 100分) + 爆量 1.49x + 法人買超 212張",
-      "display_score": 100,
-      "signal_status": "ADD"
+      ]
     },
     {
       "id": "6533",
@@ -476904,7 +475414,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 33.67,
-      "adx_4h": 38.65,
+      "adx_4h": 38.66,
       "eps": -4.62,
       "epsYoY": null,
       "revYoY": -10.11,
@@ -476981,14 +475491,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 309.75,
-          "high": 309.75,
-          "low": 298.84,
-          "close": 299.34,
-          "volume": 334137
-        },
         {
           "date": "2025-10-02",
           "open": 300.83,
@@ -479482,7 +477984,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 51.6,
-      "adx_4h": 51.98,
+      "adx_4h": 51.95,
       "eps": -5.46,
       "epsYoY": null,
       "revYoY": 72.83,
@@ -479559,14 +478061,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 26.85,
-          "high": 27.1,
-          "low": 26.4,
-          "close": 26.95,
-          "volume": 6039743
-        },
         {
           "date": "2025-10-02",
           "open": 27.15,
@@ -482060,7 +480554,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 32.48,
-      "adx_4h": 29.06,
+      "adx_4h": 29.03,
       "eps": 5.23,
       "epsYoY": null,
       "revYoY": 37.1,
@@ -482137,14 +480631,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.58,
-          "high": 39.58,
-          "low": 39.06,
-          "close": 39.44,
-          "volume": 471035
-        },
         {
           "date": "2025-10-02",
           "open": 39.72,
@@ -484638,7 +483124,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.19,
-      "adx_4h": 33.58,
+      "adx_4h": 33.56,
       "eps": 1.85,
       "epsYoY": null,
       "revYoY": 35.85,
@@ -484715,14 +483201,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 79.22,
-          "high": 83.28,
-          "low": 77.54,
-          "close": 78.33,
-          "volume": 16382880
-        },
         {
           "date": "2025-10-02",
           "open": 78.83,
@@ -487216,7 +485694,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.11,
-      "adx_4h": 18.55,
+      "adx_4h": 18.54,
       "eps": 5.24,
       "epsYoY": null,
       "revYoY": 46.85,
@@ -487293,14 +485771,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 30.16,
-          "high": 30.3,
-          "low": 30.11,
-          "close": 30.16,
-          "volume": 218048
-        },
         {
           "date": "2025-10-02",
           "open": 30.26,
@@ -489794,7 +488264,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.57,
-      "adx_4h": 33.93,
+      "adx_4h": 33.92,
       "eps": 1.28,
       "epsYoY": null,
       "revYoY": 29.75,
@@ -489871,14 +488341,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.62,
-          "high": 22.62,
-          "low": 22.48,
-          "close": 22.57,
-          "volume": 167635
-        },
         {
           "date": "2025-10-02",
           "open": 22.57,
@@ -492372,7 +490834,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.83,
-      "adx_4h": 34.66,
+      "adx_4h": 34.61,
       "eps": 0.49,
       "epsYoY": null,
       "revYoY": 36.02,
@@ -492449,14 +490911,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 41.35,
-          "high": 41.39,
-          "low": 39.07,
-          "close": 39.12,
-          "volume": 13074021
-        },
         {
           "date": "2025-10-02",
           "open": 38.87,
@@ -494950,7 +493404,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.46,
-      "adx_4h": 33.09,
+      "adx_4h": 33.05,
       "eps": 16.6,
       "epsYoY": null,
       "revYoY": 7.08,
@@ -495027,14 +493481,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 106.32,
-          "high": 106.32,
-          "low": 104.57,
-          "close": 105.01,
-          "volume": 97011
-        },
         {
           "date": "2025-10-02",
           "open": 104.57,
@@ -497606,14 +496052,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 26.03,
-          "high": 26.08,
-          "low": 25.74,
-          "close": 25.84,
-          "volume": 280304
-        },
-        {
           "date": "2025-10-02",
           "open": 25.75,
           "high": 25.75,
@@ -500106,7 +498544,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.91,
-      "adx_4h": 68.05,
+      "adx_4h": 68.01,
       "eps": 0.93,
       "epsYoY": null,
       "revYoY": 50.59,
@@ -500183,14 +498621,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 33.78,
-          "high": 33.88,
-          "low": 33.2,
-          "close": 33.35,
-          "volume": 420050
-        },
         {
           "date": "2025-10-02",
           "open": 33.4,
@@ -502684,7 +501114,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.84,
-      "adx_4h": 33.57,
+      "adx_4h": 33.63,
       "eps": 5.3,
       "epsYoY": null,
       "revYoY": 30.29,
@@ -502761,14 +501191,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 98.3,
-          "high": 98.3,
-          "low": 97.34,
-          "close": 97.82,
-          "volume": 184121
-        },
         {
           "date": "2025-10-02",
           "open": 97.82,
@@ -505262,7 +503684,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 22.41,
-      "adx_4h": 26.86,
+      "adx_4h": 26.83,
       "eps": null,
       "epsYoY": null,
       "revYoY": null,
@@ -505339,14 +503761,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 56.75,
-          "high": 57.58,
-          "low": 56.75,
-          "close": 56.94,
-          "volume": 74531798
-        },
         {
           "date": "2025-10-02",
           "open": 57.83,
@@ -507832,7 +506246,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 30.57,
-      "adx_4h": 21.28,
+      "adx_4h": 21.26,
       "eps": 6.67,
       "epsYoY": null,
       "revYoY": null,
@@ -507909,14 +506323,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 85.11,
-          "high": 85.98,
-          "low": 84.53,
-          "close": 84.53,
-          "volume": 14402041
-        },
         {
           "date": "2025-10-02",
           "open": 85.21,
@@ -510410,7 +508816,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 12.97,
-      "adx_4h": 18.15,
+      "adx_4h": 18.13,
       "eps": 44.54,
       "epsYoY": null,
       "revYoY": 44.92,
@@ -510487,14 +508893,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 982.17,
-          "high": 1023.93,
-          "low": 980.19,
-          "close": 1018.96,
-          "volume": 9168707
-        },
         {
           "date": "2025-10-02",
           "open": 1068.66,
@@ -512988,7 +511386,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 14.42,
-      "adx_4h": 19.0,
+      "adx_4h": 19.01,
       "eps": 56.14,
       "epsYoY": null,
       "revYoY": 100.22,
@@ -513065,14 +511463,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1747.77,
-          "high": 1876.14,
-          "low": 1742.83,
-          "close": 1841.58,
-          "volume": 1825258
-        },
         {
           "date": "2025-10-02",
           "open": 1851.45,
@@ -515566,7 +513956,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.16,
-      "adx_4h": 28.94,
+      "adx_4h": 28.92,
       "eps": 1.24,
       "epsYoY": null,
       "revYoY": null,
@@ -515643,14 +514033,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.74,
-          "high": 28.79,
-          "low": 28.6,
-          "close": 28.79,
-          "volume": 13466796
-        },
         {
           "date": "2025-10-02",
           "open": 28.69,
@@ -518144,7 +516526,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 26.51,
-      "adx_4h": 24.99,
+      "adx_4h": 24.96,
       "eps": 4.8,
       "epsYoY": null,
       "revYoY": 22.15,
@@ -518221,14 +516603,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 168.39,
-          "high": 169.37,
-          "low": 164.5,
-          "close": 164.99,
-          "volume": 24345639
-        },
         {
           "date": "2025-10-02",
           "open": 167.42,
@@ -520722,7 +519096,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.52,
-      "adx_4h": 18.73,
+      "adx_4h": 18.7,
       "eps": 0.77,
       "epsYoY": null,
       "revYoY": 0.67,
@@ -520799,14 +519173,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 14.12,
-          "high": 14.86,
-          "low": 14.07,
-          "close": 14.47,
-          "volume": 119822019
-        },
         {
           "date": "2025-10-02",
           "open": 14.76,
@@ -523378,14 +521744,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 137.09,
-          "high": 139.03,
-          "low": 135.63,
-          "close": 139.03,
-          "volume": 6307644
-        },
-        {
           "date": "2025-10-02",
           "open": 139.03,
           "high": 140.49,
@@ -525878,7 +524236,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 41.65,
-      "adx_4h": 33.16,
+      "adx_4h": 33.13,
       "eps": 0.03,
       "epsYoY": null,
       "revYoY": -4.26,
@@ -525955,14 +524313,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 13.52,
-          "high": 13.91,
-          "low": 13.47,
-          "close": 13.52,
-          "volume": 61210736
-        },
         {
           "date": "2025-10-02",
           "open": 13.86,
@@ -528456,7 +526806,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 13.65,
-      "adx_4h": 23.28,
+      "adx_4h": 23.24,
       "eps": 2.24,
       "epsYoY": null,
       "revYoY": 32.86,
@@ -528533,14 +526883,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 36.49,
-          "high": 36.49,
-          "low": 36.02,
-          "close": 36.02,
-          "volume": 18581386
-        },
         {
           "date": "2025-10-02",
           "open": 36.06,
@@ -531034,7 +529376,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 18.38,
-      "adx_4h": 18.88,
+      "adx_4h": 18.85,
       "eps": 3.24,
       "epsYoY": null,
       "revYoY": 41.48,
@@ -531111,14 +529453,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 21.63,
-          "high": 21.63,
-          "low": 21.24,
-          "close": 21.37,
-          "volume": 6387872
-        },
         {
           "date": "2025-10-02",
           "open": 21.5,
@@ -533612,7 +531946,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.89,
-      "adx_4h": 20.18,
+      "adx_4h": 20.17,
       "eps": 1.63,
       "epsYoY": null,
       "revYoY": 13.68,
@@ -533689,14 +532023,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 92.45,
-          "high": 101.59,
-          "low": 91.87,
-          "close": 101.59,
-          "volume": 75348414
-        },
         {
           "date": "2025-10-02",
           "open": 105.48,
@@ -536190,7 +534516,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 12.91,
-      "adx_4h": 13.06,
+      "adx_4h": 13.05,
       "eps": 1.18,
       "epsYoY": null,
       "revYoY": 35.45,
@@ -536267,14 +534593,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 31.12,
-          "high": 31.27,
-          "low": 29.92,
-          "close": 30.64,
-          "volume": 81988872
-        },
         {
           "date": "2025-10-02",
           "open": 30.83,
@@ -538768,7 +537086,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 32.13,
-      "adx_4h": 21.57,
+      "adx_4h": 21.56,
       "eps": 25.77,
       "epsYoY": null,
       "revYoY": 32.17,
@@ -538845,14 +537163,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 998.02,
-          "high": 1017.88,
-          "low": 983.13,
-          "close": 1007.95,
-          "volume": 2133998
-        },
         {
           "date": "2025-10-02",
           "open": 1032.78,
@@ -541346,7 +539656,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 23.7,
-      "adx_4h": 30.68,
+      "adx_4h": 30.65,
       "eps": 7.59,
       "epsYoY": null,
       "revYoY": 1.83,
@@ -541423,14 +539733,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 113.16,
-          "high": 114.62,
-          "low": 110.25,
-          "close": 110.25,
-          "volume": 5264372
-        },
         {
           "date": "2025-10-02",
           "open": 110.73,
@@ -543924,7 +542226,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 20.47,
-      "adx_4h": 27.12,
+      "adx_4h": 27.1,
       "eps": 19.07,
       "epsYoY": null,
       "revYoY": 97.26,
@@ -544001,14 +542303,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 790.18,
-          "high": 801.08,
-          "low": 784.23,
-          "close": 793.15,
-          "volume": 2267433
-        },
         {
           "date": "2025-10-02",
           "open": 800.09,
@@ -546580,14 +544874,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 20.06,
-          "high": 20.1,
-          "low": 19.91,
-          "close": 19.91,
-          "volume": 12506411
-        },
-        {
           "date": "2025-10-02",
           "open": 19.91,
           "high": 20.06,
@@ -549080,7 +547366,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 22.01,
-      "adx_4h": 27.83,
+      "adx_4h": 27.82,
       "eps": 5.75,
       "epsYoY": null,
       "revYoY": 64.05,
@@ -549157,14 +547443,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 115.06,
-          "high": 115.06,
-          "low": 113.59,
-          "close": 114.08,
-          "volume": 1052868
-        },
         {
           "date": "2025-10-02",
           "open": 114.08,
@@ -551658,7 +549936,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 32.11,
-      "adx_4h": 37.92,
+      "adx_4h": 37.94,
       "eps": 14.79,
       "epsYoY": null,
       "revYoY": 26.42,
@@ -551735,14 +550013,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 306.42,
-          "high": 306.42,
-          "low": 293.74,
-          "close": 294.22,
-          "volume": 1507161
-        },
         {
           "date": "2025-10-02",
           "open": 297.15,
@@ -554236,7 +552506,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 30.59,
-      "adx_4h": 19.3,
+      "adx_4h": 19.28,
       "eps": 2.2,
       "epsYoY": null,
       "revYoY": 29.49,
@@ -554313,14 +552583,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 161.4,
-          "high": 161.9,
-          "low": 158.92,
-          "close": 159.91,
-          "volume": 1712713
-        },
         {
           "date": "2025-10-02",
           "open": 162.89,
@@ -556814,7 +555076,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.36,
-      "adx_4h": 43.06,
+      "adx_4h": 43.14,
       "eps": 12.35,
       "epsYoY": null,
       "revYoY": 8.28,
@@ -556891,14 +555153,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 424.61,
-          "high": 425.09,
-          "low": 416.0,
-          "close": 422.22,
-          "volume": 638051
-        },
         {
           "date": "2025-10-02",
           "open": 422.22,
@@ -559392,7 +557646,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 43.08,
-      "adx_4h": 49.56,
+      "adx_4h": 49.54,
       "eps": 4.93,
       "epsYoY": null,
       "revYoY": 15.94,
@@ -559469,14 +557723,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 101.59,
-          "high": 102.56,
-          "low": 101.11,
-          "close": 101.11,
-          "volume": 608882
-        },
         {
           "date": "2025-10-02",
           "open": 101.59,
@@ -561970,7 +560216,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 19.2,
-      "adx_4h": 18.37,
+      "adx_4h": 18.36,
       "eps": 1.56,
       "epsYoY": null,
       "revYoY": -19.01,
@@ -562047,14 +560293,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 60.21,
-          "high": 62.48,
-          "low": 60.21,
-          "close": 60.51,
-          "volume": 4225659
-        },
         {
           "date": "2025-10-02",
           "open": 61.3,
@@ -564548,7 +562786,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.32,
-      "adx_4h": 25.55,
+      "adx_4h": 25.53,
       "eps": 27.58,
       "epsYoY": null,
       "revYoY": 470.23,
@@ -564625,14 +562863,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 72.46,
-          "high": 73.06,
-          "low": 71.26,
-          "close": 71.86,
-          "volume": 5706534
-        },
         {
           "date": "2025-10-02",
           "open": 75.64,
@@ -567126,7 +565356,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 24.75,
-      "adx_4h": 33.74,
+      "adx_4h": 33.72,
       "eps": 2.96,
       "epsYoY": null,
       "revYoY": 14.6,
@@ -567203,14 +565433,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 89.3,
-          "high": 89.79,
-          "low": 88.13,
-          "close": 88.52,
-          "volume": 855439
-        },
         {
           "date": "2025-10-02",
           "open": 89.21,
@@ -569704,7 +567926,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 34.24,
-      "adx_4h": 40.26,
+      "adx_4h": 40.27,
       "eps": -0.57,
       "epsYoY": null,
       "revYoY": 4.66,
@@ -569781,14 +568003,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.0,
-          "high": 63.3,
-          "low": 61.7,
-          "close": 61.7,
-          "volume": 1013355
-        },
         {
           "date": "2025-10-02",
           "open": 62.0,
@@ -572282,7 +570496,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 12.63,
-      "adx_4h": 14.36,
+      "adx_4h": 14.38,
       "eps": 8.96,
       "epsYoY": null,
       "revYoY": -64.02,
@@ -572359,14 +570573,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 50.51,
-          "high": 50.61,
-          "low": 50.03,
-          "close": 50.03,
-          "volume": 883615
-        },
         {
           "date": "2025-10-02",
           "open": 50.23,
@@ -574860,7 +573066,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 33.81,
-      "adx_4h": 28.16,
+      "adx_4h": 28.14,
       "eps": 0.91,
       "epsYoY": null,
       "revYoY": -13.29,
@@ -574937,14 +573143,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 38.95,
-          "high": 39.4,
-          "low": 38.5,
-          "close": 38.5,
-          "volume": 6290081
-        },
         {
           "date": "2025-10-02",
           "open": 38.8,
@@ -577438,7 +575636,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 29.77,
-      "adx_4h": 34.93,
+      "adx_4h": 34.89,
       "eps": 2.03,
       "epsYoY": null,
       "revYoY": 38.17,
@@ -577515,14 +575713,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 70.11,
-          "high": 70.7,
-          "low": 68.74,
-          "close": 69.33,
-          "volume": 3952254
-        },
         {
           "date": "2025-10-02",
           "open": 70.11,
@@ -580016,7 +578206,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 16.82,
-      "adx_4h": 35.11,
+      "adx_4h": 35.15,
       "eps": 12.31,
       "epsYoY": null,
       "revYoY": 45.34,
@@ -580093,14 +578283,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 282.9,
-          "high": 289.64,
-          "low": 282.9,
-          "close": 286.75,
-          "volume": 839035
-        },
         {
           "date": "2025-10-02",
           "open": 291.09,
@@ -582594,7 +580776,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 26.22,
-      "adx_4h": 36.61,
+      "adx_4h": 36.57,
       "eps": 1.16,
       "epsYoY": null,
       "revYoY": 4.41,
@@ -582671,14 +580853,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 157.58,
-          "high": 159.07,
-          "low": 153.62,
-          "close": 153.62,
-          "volume": 3405767
-        },
         {
           "date": "2025-10-02",
           "open": 155.6,
@@ -585172,7 +583346,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 36.65,
-      "adx_4h": 53.88,
+      "adx_4h": 54.0,
       "eps": 3.35,
       "epsYoY": null,
       "revYoY": 2.19,
@@ -585249,14 +583423,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 100.97,
-          "high": 100.97,
-          "low": 100.52,
-          "close": 100.52,
-          "volume": 259449
-        },
         {
           "date": "2025-10-02",
           "open": 100.52,
@@ -587750,7 +585916,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 13.13,
-      "adx_4h": 16.4,
+      "adx_4h": 16.41,
       "eps": 4.65,
       "epsYoY": null,
       "revYoY": 127.97,
@@ -587827,14 +585993,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 258.08,
-          "high": 259.05,
-          "low": 246.39,
-          "close": 248.82,
-          "volume": 12276675
-        },
         {
           "date": "2025-10-02",
           "open": 251.26,
@@ -590328,7 +588486,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 24.02,
-      "adx_4h": 20.56,
+      "adx_4h": 20.59,
       "eps": 5.53,
       "epsYoY": null,
       "revYoY": -46.9,
@@ -590405,14 +588563,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 122.87,
-          "high": 122.87,
-          "low": 119.58,
-          "close": 120.05,
-          "volume": 1430457
-        },
         {
           "date": "2025-10-02",
           "open": 120.52,
@@ -592906,7 +591056,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 32.74,
-      "adx_4h": 35.57,
+      "adx_4h": 35.55,
       "eps": -1.55,
       "epsYoY": null,
       "revYoY": 84.7,
@@ -592983,14 +591133,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 89.73,
-          "high": 97.68,
-          "low": 89.73,
-          "close": 95.1,
-          "volume": 69901501
-        },
         {
           "date": "2025-10-02",
           "open": 96.09,
@@ -595484,7 +593626,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 25.67,
-      "adx_4h": 20.82,
+      "adx_4h": 20.91,
       "eps": 6.81,
       "epsYoY": null,
       "revYoY": 26.55,
@@ -595561,14 +593703,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 669.0,
-          "high": 670.97,
-          "low": 659.15,
-          "close": 659.15,
-          "volume": 122201
-        },
         {
           "date": "2025-10-02",
           "open": 663.09,
@@ -598062,7 +596196,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.3,
-      "adx_4h": 45.21,
+      "adx_4h": 45.18,
       "eps": 6.54,
       "epsYoY": null,
       "revYoY": 26.49,
@@ -598139,14 +596273,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 95.77,
-          "high": 102.01,
-          "low": 95.77,
-          "close": 95.87,
-          "volume": 7763098
-        },
         {
           "date": "2025-10-02",
           "open": 98.35,
@@ -600640,7 +598766,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.44,
-      "adx_4h": 35.61,
+      "adx_4h": 35.6,
       "eps": -3.76,
       "epsYoY": null,
       "revYoY": 30.83,
@@ -600717,14 +598843,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.0,
-          "high": 63.3,
-          "low": 61.6,
-          "close": 61.7,
-          "volume": 688015
-        },
         {
           "date": "2025-10-02",
           "open": 62.4,
@@ -603218,7 +601336,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 49.8,
-      "adx_4h": 22.24,
+      "adx_4h": 22.23,
       "eps": 1.3,
       "epsYoY": null,
       "revYoY": 6.61,
@@ -603295,14 +601413,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.87,
-          "high": 15.87,
-          "low": 15.82,
-          "close": 15.82,
-          "volume": 99545
-        },
         {
           "date": "2025-10-02",
           "open": 15.87,
@@ -605796,7 +603906,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.8,
-      "adx_4h": 18.16,
+      "adx_4h": 18.19,
       "eps": 2.55,
       "epsYoY": null,
       "revYoY": 15.0,
@@ -605873,14 +603983,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 74.09,
-          "high": 74.18,
-          "low": 73.34,
-          "close": 73.34,
-          "volume": 977000
-        },
         {
           "date": "2025-10-02",
           "open": 73.81,
@@ -608374,7 +606476,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.71,
-      "adx_4h": 45.74,
+      "adx_4h": 45.72,
       "eps": 1.93,
       "epsYoY": null,
       "revYoY": 35.49,
@@ -608451,14 +606553,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 31.57,
-          "high": 31.57,
-          "low": 30.93,
-          "close": 31.13,
-          "volume": 1089136
-        },
         {
           "date": "2025-10-02",
           "open": 31.42,
@@ -610952,7 +609046,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 16.06,
-      "adx_4h": 29.12,
+      "adx_4h": 29.09,
       "eps": 1.65,
       "epsYoY": null,
       "revYoY": 10.4,
@@ -611029,14 +609123,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 98.41,
-          "high": 98.89,
-          "low": 96.49,
-          "close": 96.49,
-          "volume": 1266463
-        },
         {
           "date": "2025-10-02",
           "open": 97.45,
@@ -613608,14 +611694,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 165.75,
-          "high": 168.25,
-          "low": 165.25,
-          "close": 165.75,
-          "volume": 206003
-        },
-        {
           "date": "2025-10-02",
           "open": 167.75,
           "high": 169.74,
@@ -616108,7 +614186,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.9,
-      "adx_4h": 26.6,
+      "adx_4h": 26.65,
       "eps": 6.15,
       "epsYoY": null,
       "revYoY": 19.66,
@@ -616185,14 +614263,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 117.27,
-          "high": 117.27,
-          "low": 115.32,
-          "close": 115.81,
-          "volume": 59004
-        },
         {
           "date": "2025-10-02",
           "open": 116.78,
@@ -618686,7 +616756,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 26.7,
-      "adx_4h": 33.91,
+      "adx_4h": 33.88,
       "eps": 2.59,
       "epsYoY": null,
       "revYoY": 19.11,
@@ -618763,14 +616833,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 17.04,
-          "high": 17.48,
-          "low": 16.89,
-          "close": 17.09,
-          "volume": 18009619
-        },
         {
           "date": "2025-10-02",
           "open": 18.35,
@@ -621342,14 +619404,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 14.04,
-          "high": 14.04,
-          "low": 14.04,
-          "close": 14.04,
-          "volume": 0
-        },
-        {
           "date": "2025-10-02",
           "open": 14.04,
           "high": 14.04,
@@ -623842,7 +621896,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 43.43,
-      "adx_4h": 47.27,
+      "adx_4h": 47.26,
       "eps": -0.93,
       "epsYoY": null,
       "revYoY": 34.27,
@@ -623919,14 +621973,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 27.8,
-          "high": 28.3,
-          "low": 26.8,
-          "close": 26.9,
-          "volume": 5147840
-        },
         {
           "date": "2025-10-02",
           "open": 26.75,
@@ -626420,7 +624466,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.99,
-      "adx_4h": 15.5,
+      "adx_4h": 15.53,
       "eps": 4.08,
       "epsYoY": null,
       "revYoY": 83.33,
@@ -626497,14 +624543,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 168.74,
-          "high": 169.22,
-          "low": 163.45,
-          "close": 163.45,
-          "volume": 1714285
-        },
         {
           "date": "2025-10-02",
           "open": 164.41,
@@ -628998,7 +627036,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.32,
-      "adx_4h": 39.86,
+      "adx_4h": 39.96,
       "eps": 1.54,
       "epsYoY": null,
       "revYoY": 4.06,
@@ -629075,14 +627113,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 96.45,
-          "high": 97.4,
-          "low": 95.5,
-          "close": 95.5,
-          "volume": 946422
-        },
         {
           "date": "2025-10-02",
           "open": 95.5,
@@ -631576,7 +629606,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.68,
-      "adx_4h": 22.11,
+      "adx_4h": 22.1,
       "eps": 3.63,
       "epsYoY": null,
       "revYoY": 38.64,
@@ -631653,14 +629683,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 118.22,
-          "high": 121.08,
-          "low": 117.74,
-          "close": 118.7,
-          "volume": 1375797
-        },
         {
           "date": "2025-10-02",
           "open": 120.13,
@@ -634154,7 +632176,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 20.26,
-      "adx_4h": 23.37,
+      "adx_4h": 23.42,
       "eps": 7.09,
       "epsYoY": null,
       "revYoY": 44.6,
@@ -634231,14 +632253,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 217.82,
-          "high": 217.82,
-          "low": 214.04,
-          "close": 214.52,
-          "volume": 151000
-        },
         {
           "date": "2025-10-02",
           "open": 216.41,
@@ -636732,7 +634746,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 12.7,
-      "adx_4h": 28.59,
+      "adx_4h": 28.61,
       "eps": 3.84,
       "epsYoY": null,
       "revYoY": 30.03,
@@ -636809,14 +634823,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 78.76,
-          "high": 78.76,
-          "low": 76.75,
-          "close": 78.19,
-          "volume": 252204
-        },
         {
           "date": "2025-10-02",
           "open": 78.19,
@@ -639388,14 +637394,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 28.83,
-          "high": 28.88,
-          "low": 28.07,
-          "close": 28.31,
-          "volume": 776700
-        },
-        {
           "date": "2025-10-02",
           "open": 28.35,
           "high": 28.64,
@@ -641888,7 +639886,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 29.66,
-      "adx_4h": 20.01,
+      "adx_4h": 19.99,
       "eps": 0.11,
       "epsYoY": null,
       "revYoY": 6.57,
@@ -641965,14 +639963,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.85,
-          "high": 29.1,
-          "low": 28.07,
-          "close": 28.41,
-          "volume": 2646134
-        },
         {
           "date": "2025-10-02",
           "open": 28.46,
@@ -644466,7 +642456,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 12.94,
-      "adx_4h": 19.49,
+      "adx_4h": 19.5,
       "eps": 1.55,
       "epsYoY": null,
       "revYoY": 46.15,
@@ -644543,14 +642533,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 33.76,
-          "high": 33.91,
-          "low": 33.17,
-          "close": 33.31,
-          "volume": 2045340
-        },
         {
           "date": "2025-10-02",
           "open": 33.51,
@@ -647044,7 +645026,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.92,
-      "adx_4h": 39.11,
+      "adx_4h": 39.1,
       "eps": -0.02,
       "epsYoY": null,
       "revYoY": 74.45,
@@ -647121,14 +645103,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 18.69,
-          "high": 19.43,
-          "low": 18.54,
-          "close": 19.43,
-          "volume": 1498931
-        },
         {
           "date": "2025-10-02",
           "open": 19.47,
@@ -649700,14 +647674,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 106.43,
-          "high": 110.84,
-          "low": 104.96,
-          "close": 105.45,
-          "volume": 12871821
-        },
-        {
           "date": "2025-10-02",
           "open": 106.43,
           "high": 112.31,
@@ -652200,7 +650166,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.3,
-      "adx_4h": 15.68,
+      "adx_4h": 15.67,
       "eps": 8.45,
       "epsYoY": null,
       "revYoY": 14.87,
@@ -652277,14 +650243,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 196.15,
-          "high": 196.62,
-          "low": 191.36,
-          "close": 192.32,
-          "volume": 133003
-        },
         {
           "date": "2025-10-02",
           "open": 192.8,
@@ -654778,7 +652736,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 46.74,
-      "adx_4h": 61.0,
+      "adx_4h": 60.98,
       "eps": -1.28,
       "epsYoY": null,
       "revYoY": 49.32,
@@ -654855,14 +652813,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 41.49,
-          "high": 41.49,
-          "low": 40.39,
-          "close": 40.44,
-          "volume": 362435
-        },
         {
           "date": "2025-10-02",
           "open": 40.59,
@@ -657434,14 +655384,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 95.0,
-          "high": 95.19,
-          "low": 94.32,
-          "close": 95.19,
-          "volume": 14042
-        },
-        {
           "date": "2025-10-02",
           "open": 95.28,
           "high": 95.28,
@@ -659934,7 +657876,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.47,
-      "adx_4h": 25.32,
+      "adx_4h": 25.28,
       "eps": 7.01,
       "epsYoY": null,
       "revYoY": 8.36,
@@ -660011,14 +657953,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 183.66,
-          "high": 184.11,
-          "low": 177.84,
-          "close": 178.74,
-          "volume": 1045210
-        },
         {
           "date": "2025-10-02",
           "open": 179.18,
@@ -662512,7 +660446,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 41.38,
-      "adx_4h": 57.89,
+      "adx_4h": 57.88,
       "eps": 0.14,
       "epsYoY": null,
       "revYoY": 47.39,
@@ -662589,14 +660523,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 18.75,
-          "high": 18.85,
-          "low": 18.66,
-          "close": 18.7,
-          "volume": 725218
-        },
         {
           "date": "2025-10-02",
           "open": 18.7,
@@ -665090,7 +663016,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.25,
-      "adx_4h": 19.6,
+      "adx_4h": 19.58,
       "eps": 2.74,
       "epsYoY": null,
       "revYoY": 28.18,
@@ -665167,14 +663093,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 51.46,
-          "high": 51.46,
-          "low": 49.92,
-          "close": 50.11,
-          "volume": 1180005
-        },
         {
           "date": "2025-10-02",
           "open": 49.54,
@@ -667668,7 +665586,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.81,
-      "adx_4h": 18.9,
+      "adx_4h": 18.89,
       "eps": 8.4,
       "epsYoY": null,
       "revYoY": 24.89,
@@ -667745,14 +665663,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 171.14,
-          "high": 173.55,
-          "low": 170.17,
-          "close": 172.1,
-          "volume": 54000
-        },
         {
           "date": "2025-10-02",
           "open": 172.58,
@@ -670246,7 +668156,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 50.53,
-      "adx_4h": 31.92,
+      "adx_4h": 31.91,
       "eps": -2.85,
       "epsYoY": null,
       "revYoY": 131.66,
@@ -670323,14 +668233,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 88.2,
-          "high": 96.9,
-          "low": 86.0,
-          "close": 86.3,
-          "volume": 20938185
-        },
         {
           "date": "2025-10-02",
           "open": 86.5,
@@ -672824,7 +670726,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 32.51,
-      "adx_4h": 25.85,
+      "adx_4h": 25.79,
       "eps": 4.6,
       "epsYoY": null,
       "revYoY": 1.08,
@@ -672901,14 +670803,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 137.54,
-          "high": 141.52,
-          "low": 137.54,
-          "close": 138.42,
-          "volume": 98450
-        },
         {
           "date": "2025-10-02",
           "open": 138.42,
@@ -675402,7 +673296,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 22.65,
-      "adx_4h": 25.62,
+      "adx_4h": 25.67,
       "eps": 0.33,
       "epsYoY": null,
       "revYoY": 62.29,
@@ -675479,14 +673373,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 20.9,
-          "high": 20.9,
-          "low": 20.25,
-          "close": 20.3,
-          "volume": 1924319
-        },
         {
           "date": "2025-10-02",
           "open": 20.55,
@@ -677980,7 +675866,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 26.6,
-      "adx_4h": 24.98,
+      "adx_4h": 24.92,
       "eps": 3.84,
       "epsYoY": null,
       "revYoY": 99.17,
@@ -678057,14 +675943,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 64.9,
-          "high": 64.99,
-          "low": 64.25,
-          "close": 64.53,
-          "volume": 206292
-        },
         {
           "date": "2025-10-02",
           "open": 64.34,
@@ -680558,7 +678436,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 9.14,
-      "adx_4h": 15.24,
+      "adx_4h": 15.25,
       "eps": 7.84,
       "epsYoY": null,
       "revYoY": 38.42,
@@ -680635,14 +678513,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 212.67,
-          "high": 215.58,
-          "low": 209.75,
-          "close": 212.67,
-          "volume": 57644055
-        },
         {
           "date": "2025-10-02",
           "open": 215.09,
@@ -683136,7 +681006,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.26,
-      "adx_4h": 18.06,
+      "adx_4h": 18.04,
       "eps": 4.95,
       "epsYoY": null,
       "revYoY": null,
@@ -683213,14 +681083,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 62.95,
-          "high": 64.01,
-          "low": 62.95,
-          "close": 63.05,
-          "volume": 15902872
-        },
         {
           "date": "2025-10-02",
           "open": 63.14,
@@ -685714,7 +683576,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 21.45,
-      "adx_4h": 21.37,
+      "adx_4h": 21.35,
       "eps": 4.68,
       "epsYoY": null,
       "revYoY": 27.22,
@@ -685791,14 +683653,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 45.03,
-          "high": 45.13,
-          "low": 43.26,
-          "close": 43.51,
-          "volume": 80189193
-        },
         {
           "date": "2025-10-02",
           "open": 43.7,
@@ -688292,7 +686146,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.81,
-      "adx_4h": 21.29,
+      "adx_4h": 21.27,
       "eps": 1.32,
       "epsYoY": null,
       "revYoY": null,
@@ -688369,14 +686223,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 31.99,
-          "high": 32.04,
-          "low": 31.71,
-          "close": 31.99,
-          "volume": 21777108
-        },
         {
           "date": "2025-10-02",
           "open": 31.9,
@@ -690870,7 +688716,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.29,
-      "adx_4h": 39.21,
+      "adx_4h": 39.17,
       "eps": 1.18,
       "epsYoY": null,
       "revYoY": 11.66,
@@ -690947,14 +688793,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 13.69,
-          "high": 14.02,
-          "low": 13.69,
-          "close": 13.78,
-          "volume": 5557797
-        },
         {
           "date": "2025-10-02",
           "open": 13.93,
@@ -693448,7 +691286,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 11.12,
-      "adx_4h": 21.08,
+      "adx_4h": 21.07,
       "eps": 7.65,
       "epsYoY": null,
       "revYoY": 256.67,
@@ -693525,14 +691363,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 33.23,
-          "high": 35.02,
-          "low": 33.03,
-          "close": 33.62,
-          "volume": 332941155
-        },
         {
           "date": "2025-10-02",
           "open": 35.81,
@@ -696026,7 +693856,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 39.27,
-      "adx_4h": 26.54,
+      "adx_4h": 26.53,
       "eps": 1.24,
       "epsYoY": null,
       "revYoY": null,
@@ -696103,14 +693933,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.29,
-          "high": 28.38,
-          "low": 28.19,
-          "close": 28.24,
-          "volume": 7288430
-        },
         {
           "date": "2025-10-02",
           "open": 28.24,
@@ -698604,7 +696426,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 22.84,
-      "adx_4h": 21.38,
+      "adx_4h": 21.35,
       "eps": 26.94,
       "epsYoY": null,
       "revYoY": 39.16,
@@ -698681,14 +696503,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1026.01,
-          "high": 1040.88,
-          "low": 1011.14,
-          "close": 1030.97,
-          "volume": 1633303
-        },
         {
           "date": "2025-10-02",
           "open": 1050.79,
@@ -701182,7 +698996,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 34.51,
-      "adx_4h": 29.27,
+      "adx_4h": 29.26,
       "eps": 0.8,
       "epsYoY": null,
       "revYoY": null,
@@ -701259,14 +699073,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 23.29,
-          "high": 23.43,
-          "low": 23.25,
-          "close": 23.39,
-          "volume": 11112765
-        },
         {
           "date": "2025-10-02",
           "open": 23.25,
@@ -703760,7 +701566,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.07,
-      "adx_4h": 42.39,
+      "adx_4h": 42.36,
       "eps": -0.03,
       "epsYoY": null,
       "revYoY": 27.13,
@@ -703837,14 +701643,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.35,
-          "high": 19.35,
-          "low": 19.15,
-          "close": 19.15,
-          "volume": 17186591
-        },
         {
           "date": "2025-10-02",
           "open": 19.25,
@@ -706338,7 +704136,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.94,
-      "adx_4h": 25.26,
+      "adx_4h": 25.27,
       "eps": 7.91,
       "epsYoY": null,
       "revYoY": null,
@@ -706415,14 +704213,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.77,
-          "high": 22.86,
-          "low": 22.67,
-          "close": 22.77,
-          "volume": 559778
-        },
         {
           "date": "2025-10-02",
           "open": 22.67,
@@ -708994,14 +706784,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 297.5,
-          "high": 297.98,
-          "low": 282.55,
-          "close": 282.55,
-          "volume": 14632294
-        },
-        {
           "date": "2025-10-02",
           "open": 286.89,
           "high": 293.16,
@@ -711572,14 +709354,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 878.77,
-          "high": 896.21,
-          "low": 872.95,
-          "close": 884.58,
-          "volume": 2201177
-        },
-        {
           "date": "2025-10-02",
           "open": 899.11,
           "high": 902.99,
@@ -714072,7 +711846,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 39.08,
-      "adx_4h": 39.87,
+      "adx_4h": 39.88,
       "eps": -0.05,
       "epsYoY": null,
       "revYoY": 28.97,
@@ -714149,14 +711923,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 101.28,
-          "high": 103.78,
-          "low": 99.79,
-          "close": 100.28,
-          "volume": 1527057
-        },
         {
           "date": "2025-10-02",
           "open": 106.27,
@@ -716650,7 +714416,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.87,
-      "adx_4h": 17.41,
+      "adx_4h": 17.43,
       "eps": 42.53,
       "epsYoY": null,
       "revYoY": 125.09,
@@ -716727,14 +714493,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 853.07,
-          "high": 873.81,
-          "low": 852.08,
-          "close": 872.82,
-          "volume": 227520
-        },
         {
           "date": "2025-10-02",
           "open": 874.79,
@@ -719228,7 +716986,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.59,
-      "adx_4h": 15.64,
+      "adx_4h": 15.63,
       "eps": 4.03,
       "epsYoY": null,
       "revYoY": 30.14,
@@ -719305,14 +717063,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 214.75,
-          "high": 218.72,
-          "low": 212.76,
-          "close": 213.25,
-          "volume": 2345733
-        },
         {
           "date": "2025-10-02",
           "open": 213.25,
@@ -721884,14 +719634,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 406.77,
-          "high": 412.99,
-          "low": 399.1,
-          "close": 401.5,
-          "volume": 598015
-        },
-        {
           "date": "2025-10-02",
           "open": 406.29,
           "high": 412.04,
@@ -724384,7 +722126,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 19.44,
-      "adx_4h": 16.22,
+      "adx_4h": 16.23,
       "eps": 21.83,
       "epsYoY": null,
       "revYoY": 13.75,
@@ -724461,14 +722203,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 587.72,
-          "high": 598.61,
-          "low": 579.81,
-          "close": 580.8,
-          "volume": 1114372
-        },
         {
           "date": "2025-10-02",
           "open": 592.67,
@@ -726962,7 +724696,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 13.27,
-      "adx_4h": 40.44,
+      "adx_4h": 40.46,
       "eps": 1.05,
       "epsYoY": null,
       "revYoY": 12.52,
@@ -727039,14 +724773,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 35.7,
-          "high": 35.7,
-          "low": 34.61,
-          "close": 34.61,
-          "volume": 14259554
-        },
         {
           "date": "2025-10-02",
           "open": 34.75,
@@ -729540,7 +727266,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 13.54,
-      "adx_4h": 32.91,
+      "adx_4h": 32.92,
       "eps": 7.16,
       "epsYoY": null,
       "revYoY": 90.65,
@@ -729617,14 +727343,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 188.71,
-          "high": 191.68,
-          "low": 186.23,
-          "close": 187.72,
-          "volume": 653260
-        },
         {
           "date": "2025-10-02",
           "open": 190.69,
@@ -732118,7 +729836,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 18.44,
-      "adx_4h": 29.07,
+      "adx_4h": 29.06,
       "eps": 2.45,
       "epsYoY": null,
       "revYoY": 103.73,
@@ -732195,14 +729913,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 36.48,
-          "high": 36.75,
-          "low": 36.48,
-          "close": 36.48,
-          "volume": 7882539
-        },
         {
           "date": "2025-10-02",
           "open": 36.53,
@@ -734696,7 +732406,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 11.32,
-      "adx_4h": 14.16,
+      "adx_4h": 14.15,
       "eps": 23.45,
       "epsYoY": null,
       "revYoY": 25.47,
@@ -734773,14 +732483,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1160.65,
-          "high": 1185.24,
-          "low": 1150.82,
-          "close": 1165.57,
-          "volume": 1661386
-        },
         {
           "date": "2025-10-02",
           "open": 1180.33,
@@ -737274,7 +734976,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 29.19,
-      "adx_4h": 21.91,
+      "adx_4h": 21.93,
       "eps": 0.77,
       "epsYoY": null,
       "revYoY": 23.86,
@@ -737351,14 +735053,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 14.69,
-          "high": 14.69,
-          "low": 14.4,
-          "close": 14.54,
-          "volume": 2331645
-        },
         {
           "date": "2025-10-02",
           "open": 14.54,
@@ -739852,7 +737546,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.98,
-      "adx_4h": 22.44,
+      "adx_4h": 22.41,
       "eps": 1.19,
       "epsYoY": null,
       "revYoY": 2.13,
@@ -739929,14 +737623,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 45.55,
-          "high": 45.69,
-          "low": 45.08,
-          "close": 45.17,
-          "volume": 923970
-        },
         {
           "date": "2025-10-02",
           "open": 45.36,
@@ -742430,7 +740116,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 10.55,
-      "adx_4h": 20.4,
+      "adx_4h": 20.37,
       "eps": 2.78,
       "epsYoY": null,
       "revYoY": 99.78,
@@ -742507,14 +740193,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 271.46,
-          "high": 276.94,
-          "low": 262.47,
-          "close": 276.45,
-          "volume": 24186850
-        },
         {
           "date": "2025-10-02",
           "open": 278.94,
@@ -745008,7 +742686,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 7.19,
-      "adx_4h": 15.31,
+      "adx_4h": 15.32,
       "eps": 4.59,
       "epsYoY": null,
       "revYoY": 8.74,
@@ -745085,14 +742763,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 158.63,
-          "high": 159.11,
-          "low": 155.69,
-          "close": 158.14,
-          "volume": 2041153
-        },
         {
           "date": "2025-10-02",
           "open": 159.11,
@@ -747586,7 +745256,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 21.8,
-      "adx_4h": 40.69,
+      "adx_4h": 40.68,
       "eps": 2.98,
       "epsYoY": null,
       "revYoY": 8.72,
@@ -747663,14 +745333,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 88.69,
-          "high": 89.17,
-          "low": 88.31,
-          "close": 88.5,
-          "volume": 1513720
-        },
         {
           "date": "2025-10-02",
           "open": 89.07,
@@ -750164,7 +747826,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 15.61,
-      "adx_4h": 25.05,
+      "adx_4h": 25.01,
       "eps": 9.8,
       "epsYoY": null,
       "revYoY": 63.2,
@@ -750241,14 +747903,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 515.6,
-          "high": 521.48,
-          "low": 509.72,
-          "close": 515.6,
-          "volume": 494408
-        },
         {
           "date": "2025-10-02",
           "open": 524.42,
@@ -752742,7 +750396,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 9.47,
-      "adx_4h": 8.82,
+      "adx_4h": 8.76,
       "eps": -0.11,
       "epsYoY": null,
       "revYoY": 131.26,
@@ -752819,14 +750473,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 21.64,
-          "high": 21.64,
-          "low": 20.9,
-          "close": 20.9,
-          "volume": 11297
-        },
         {
           "date": "2025-10-02",
           "open": 20.95,
@@ -755320,7 +752966,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.96,
-      "adx_4h": 26.63,
+      "adx_4h": 26.61,
       "eps": 10.12,
       "epsYoY": null,
       "revYoY": 38.57,
@@ -755397,14 +753043,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 545.34,
-          "high": 562.22,
-          "low": 543.35,
-          "close": 547.32,
-          "volume": 131892
-        },
         {
           "date": "2025-10-02",
           "open": 548.32,
@@ -757898,7 +755536,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 42.1,
-      "adx_4h": 46.93,
+      "adx_4h": 46.91,
       "eps": -0.52,
       "epsYoY": null,
       "revYoY": -45.03,
@@ -757975,14 +755613,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 7.34,
-          "high": 7.37,
-          "low": 7.27,
-          "close": 7.34,
-          "volume": 7026544
-        },
         {
           "date": "2025-10-02",
           "open": 7.34,
@@ -760476,7 +758106,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.9,
-      "adx_4h": 42.08,
+      "adx_4h": 42.0,
       "eps": 0.5,
       "epsYoY": null,
       "revYoY": -8.25,
@@ -760553,14 +758183,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 14.81,
-          "high": 14.91,
-          "low": 14.76,
-          "close": 14.81,
-          "volume": 1137863
-        },
         {
           "date": "2025-10-02",
           "open": 14.86,
@@ -763054,7 +760676,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 14.14,
-      "adx_4h": 16.47,
+      "adx_4h": 16.48,
       "eps": 0.5,
       "epsYoY": null,
       "revYoY": 2.42,
@@ -763131,14 +760753,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 34.23,
-          "high": 34.77,
-          "low": 34.13,
-          "close": 34.13,
-          "volume": 1167592
-        },
         {
           "date": "2025-10-02",
           "open": 34.33,
@@ -765632,7 +763246,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 28.37,
-      "adx_4h": 26.98,
+      "adx_4h": 26.99,
       "eps": 4.44,
       "epsYoY": null,
       "revYoY": 19.54,
@@ -765709,14 +763323,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 393.37,
-          "high": 398.28,
-          "low": 388.45,
-          "close": 392.38,
-          "volume": 755024
-        },
         {
           "date": "2025-10-02",
           "open": 398.28,
@@ -768210,7 +765816,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 27.54,
-      "adx_4h": 25.71,
+      "adx_4h": 25.69,
       "eps": 3.33,
       "epsYoY": null,
       "revYoY": 27.82,
@@ -768287,14 +765893,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 38.44,
-          "high": 38.69,
-          "low": 37.91,
-          "close": 38.2,
-          "volume": 550250
-        },
         {
           "date": "2025-10-02",
           "open": 38.25,
@@ -770788,7 +768386,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 33.33,
-      "adx_4h": 29.88,
+      "adx_4h": 29.85,
       "eps": 0.28,
       "epsYoY": null,
       "revYoY": 40.86,
@@ -770865,14 +768463,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 18.18,
-          "high": 18.23,
-          "low": 17.73,
-          "close": 17.78,
-          "volume": 278675
-        },
         {
           "date": "2025-10-02",
           "open": 17.93,
@@ -773366,7 +770956,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 32.17,
-      "adx_4h": 30.42,
+      "adx_4h": 30.38,
       "eps": 0.2,
       "epsYoY": null,
       "revYoY": 5.98,
@@ -773443,14 +771033,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 56.72,
-          "high": 57.31,
-          "low": 55.83,
-          "close": 55.83,
-          "volume": 4924441
-        },
         {
           "date": "2025-10-02",
           "open": 56.23,
@@ -776022,14 +773604,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 148.5,
-          "high": 153.5,
-          "low": 148.5,
-          "close": 150.0,
-          "volume": 1353850
-        },
-        {
           "date": "2025-10-02",
           "open": 150.0,
           "high": 150.0,
@@ -778522,7 +776096,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 11.88,
-      "adx_4h": 13.52,
+      "adx_4h": 13.49,
       "eps": 53.44,
       "epsYoY": null,
       "revYoY": 109.69,
@@ -778599,14 +776173,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 83.59,
-          "high": 84.99,
-          "low": 82.93,
-          "close": 83.3,
-          "volume": 5632488
-        },
         {
           "date": "2025-10-02",
           "open": 89.12,
@@ -781100,7 +778666,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 21.53,
-      "adx_4h": 13.15,
+      "adx_4h": 13.14,
       "eps": 9.3,
       "epsYoY": null,
       "revYoY": 64.81,
@@ -781177,14 +778743,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 266.14,
-          "high": 266.6,
-          "low": 260.59,
-          "close": 261.98,
-          "volume": 67287
-        },
         {
           "date": "2025-10-02",
           "open": 261.52,
@@ -783678,7 +781236,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 22.84,
-      "adx_4h": 32.98,
+      "adx_4h": 32.94,
       "eps": 3.12,
       "epsYoY": null,
       "revYoY": 50.5,
@@ -783755,14 +781313,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 60.66,
-          "high": 60.96,
-          "low": 59.77,
-          "close": 59.77,
-          "volume": 703000
-        },
         {
           "date": "2025-10-02",
           "open": 60.06,
@@ -786256,7 +783806,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.1,
-      "adx_4h": 18.81,
+      "adx_4h": 18.8,
       "eps": 35.51,
       "epsYoY": null,
       "revYoY": 157.71,
@@ -786333,14 +783883,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 70.84,
-          "high": 71.13,
-          "low": 68.99,
-          "close": 69.38,
-          "volume": 5138410
-        },
         {
           "date": "2025-10-02",
           "open": 72.01,
@@ -788834,7 +786376,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 11.69,
-      "adx_4h": 15.45,
+      "adx_4h": 15.57,
       "eps": 3.65,
       "epsYoY": null,
       "revYoY": 36.15,
@@ -788911,14 +786453,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 73.64,
-          "high": 73.64,
-          "low": 72.4,
-          "close": 72.49,
-          "volume": 1481605
-        },
         {
           "date": "2025-10-02",
           "open": 72.69,
@@ -791490,14 +789024,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 13.15,
-          "high": 13.25,
-          "low": 13.05,
-          "close": 13.1,
-          "volume": 626560
-        },
-        {
           "date": "2025-10-02",
           "open": 13.1,
           "high": 13.15,
@@ -793990,7 +791516,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 14.95,
-      "adx_4h": 29.11,
+      "adx_4h": 29.14,
       "eps": 3.38,
       "epsYoY": null,
       "revYoY": 79.87,
@@ -794067,14 +791593,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 26.97,
-          "high": 27.07,
-          "low": 26.68,
-          "close": 26.73,
-          "volume": 1242674
-        },
         {
           "date": "2025-10-02",
           "open": 26.73,
@@ -796568,7 +794086,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.1,
-      "adx_4h": 37.33,
+      "adx_4h": 37.32,
       "eps": 1.29,
       "epsYoY": null,
       "revYoY": 31.16,
@@ -796645,14 +794163,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 185.28,
-          "high": 195.24,
-          "low": 184.29,
-          "close": 192.25,
-          "volume": 17613709
-        },
         {
           "date": "2025-10-02",
           "open": 194.25,
@@ -799146,7 +796656,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 22.71,
-      "adx_4h": 23.12,
+      "adx_4h": 23.15,
       "eps": 4.07,
       "epsYoY": null,
       "revYoY": 270.34,
@@ -799223,14 +796733,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 36.71,
-          "high": 37.29,
-          "low": 36.71,
-          "close": 36.81,
-          "volume": 1266072
-        },
         {
           "date": "2025-10-02",
           "open": 37.24,
@@ -801724,7 +799226,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 10.45,
-      "adx_4h": 13.39,
+      "adx_4h": 13.41,
       "eps": 4.92,
       "epsYoY": null,
       "revYoY": -2.2,
@@ -801747,7 +799249,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": true,
       "closeToHigh": false,
-      "dist52W": 51.4,
+      "dist52W": 51.3,
       "rsi14": 43.24,
       "type": "none",
       "pattern_1d": {
@@ -801801,14 +799303,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 240.5,
-          "high": 241.93,
-          "low": 238.11,
-          "close": 239.54,
-          "volume": 81068
-        },
         {
           "date": "2025-10-02",
           "open": 240.5,
@@ -804380,14 +801874,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 192.69,
-          "high": 192.69,
-          "low": 187.75,
-          "close": 188.25,
-          "volume": 21823
-        },
-        {
           "date": "2025-10-02",
           "open": 189.24,
           "high": 192.2,
@@ -806880,7 +804366,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 29.38,
-      "adx_4h": 38.41,
+      "adx_4h": 38.4,
       "eps": -0.42,
       "epsYoY": null,
       "revYoY": 23.78,
@@ -806957,14 +804443,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 25.13,
-          "high": 25.47,
-          "low": 24.83,
-          "close": 24.83,
-          "volume": 2488395
-        },
         {
           "date": "2025-10-02",
           "open": 24.93,
@@ -809458,7 +806936,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.93,
-      "adx_4h": 46.39,
+      "adx_4h": 46.36,
       "eps": 0.31,
       "epsYoY": null,
       "revYoY": 0.74,
@@ -809535,14 +807013,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 10.41,
-          "high": 10.41,
-          "low": 10.16,
-          "close": 10.21,
-          "volume": 1254795
-        },
         {
           "date": "2025-10-02",
           "open": 10.36,
@@ -812036,7 +809506,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.07,
-      "adx_4h": 29.54,
+      "adx_4h": 29.55,
       "eps": 1.56,
       "epsYoY": null,
       "revYoY": 9.7,
@@ -812113,14 +809583,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 42.04,
-          "high": 42.04,
-          "low": 41.42,
-          "close": 41.42,
-          "volume": 483384
-        },
         {
           "date": "2025-10-02",
           "open": 41.42,
@@ -814614,7 +812076,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 39.34,
-      "adx_4h": 30.58,
+      "adx_4h": 30.57,
       "eps": 0.61,
       "epsYoY": null,
       "revYoY": 15.42,
@@ -814691,14 +812153,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 40.55,
-          "high": 41.0,
-          "low": 40.3,
-          "close": 40.45,
-          "volume": 1000099
-        },
         {
           "date": "2025-10-02",
           "open": 41.0,
@@ -817192,7 +814646,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.24,
-      "adx_4h": 23.04,
+      "adx_4h": 23.09,
       "eps": 0.57,
       "epsYoY": null,
       "revYoY": 89.32,
@@ -817269,14 +814723,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 21.64,
-          "high": 21.73,
-          "low": 21.49,
-          "close": 21.64,
-          "volume": 411020
-        },
         {
           "date": "2025-10-02",
           "open": 21.54,
@@ -819770,7 +817216,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.99,
-      "adx_4h": 44.9,
+      "adx_4h": 44.85,
       "eps": -0.58,
       "epsYoY": null,
       "revYoY": 3.89,
@@ -819847,14 +817293,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 10.09,
-          "high": 10.09,
-          "low": 9.89,
-          "close": 9.94,
-          "volume": 1214069
-        },
         {
           "date": "2025-10-02",
           "open": 9.99,
@@ -822426,14 +819864,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 19.56,
-          "high": 19.61,
-          "low": 19.46,
-          "close": 19.61,
-          "volume": 156527
-        },
-        {
           "date": "2025-10-02",
           "open": 19.66,
           "high": 19.71,
@@ -825004,14 +822434,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 39.63,
-          "high": 40.66,
-          "low": 38.89,
-          "close": 39.92,
-          "volume": 4510566
-        },
-        {
           "date": "2025-10-02",
           "open": 40.32,
           "high": 40.51,
@@ -827504,7 +824926,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 19.67,
-      "adx_4h": 14.4,
+      "adx_4h": 14.37,
       "eps": -1.12,
       "epsYoY": null,
       "revYoY": 43.16,
@@ -827581,14 +825003,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 70.6,
-          "high": 76.0,
-          "low": 69.5,
-          "close": 72.8,
-          "volume": 3664304
-        },
         {
           "date": "2025-10-02",
           "open": 73.0,
@@ -830082,7 +827496,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 23.42,
-      "adx_4h": 47.39,
+      "adx_4h": 47.37,
       "eps": 4.28,
       "epsYoY": null,
       "revYoY": 95.91,
@@ -830159,14 +827573,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 165.3,
-          "high": 165.76,
-          "low": 162.53,
-          "close": 164.83,
-          "volume": 363607
-        },
         {
           "date": "2025-10-02",
           "open": 165.76,
@@ -832660,7 +830066,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 12.68,
-      "adx_4h": 13.51,
+      "adx_4h": 13.52,
       "eps": 0.66,
       "epsYoY": null,
       "revYoY": 21.79,
@@ -832683,7 +830089,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 14.1,
+      "dist52W": 13.9,
       "rsi14": 32.14,
       "type": "none",
       "pattern_1d": {
@@ -832737,14 +830143,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 23.3,
-          "high": 23.35,
-          "low": 23.21,
-          "close": 23.35,
-          "volume": 186185
-        },
         {
           "date": "2025-10-02",
           "open": 23.4,
@@ -835238,7 +832636,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 12.51,
-      "adx_4h": 14.44,
+      "adx_4h": 14.43,
       "eps": 8.54,
       "epsYoY": null,
       "revYoY": 15.59,
@@ -835315,14 +832713,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 281.86,
-          "high": 297.63,
-          "low": 280.38,
-          "close": 293.19,
-          "volume": 4250099
-        },
         {
           "date": "2025-10-02",
           "open": 300.59,
@@ -837894,14 +835284,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 73.5,
-          "high": 73.8,
-          "low": 72.9,
-          "close": 73.3,
-          "volume": 391348
-        },
-        {
           "date": "2025-10-02",
           "open": 73.6,
           "high": 73.6,
@@ -840472,14 +837854,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 14.25,
-          "high": 14.7,
-          "low": 14.2,
-          "close": 14.65,
-          "volume": 1140789
-        },
-        {
           "date": "2025-10-02",
           "open": 14.55,
           "high": 14.6,
@@ -842972,7 +840346,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 29.79,
-      "adx_4h": 54.97,
+      "adx_4h": 54.99,
       "eps": 0.96,
       "epsYoY": null,
       "revYoY": 23.64,
@@ -843049,14 +840423,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 32.52,
-          "high": 32.52,
-          "low": 32.43,
-          "close": 32.47,
-          "volume": 50100
-        },
         {
           "date": "2025-10-02",
           "open": 32.47,
@@ -845550,7 +842916,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.13,
-      "adx_4h": 29.04,
+      "adx_4h": 29.08,
       "eps": 0.16,
       "epsYoY": null,
       "revYoY": 45.89,
@@ -845627,14 +842993,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 8.82,
-          "high": 8.83,
-          "low": 8.77,
-          "close": 8.8,
-          "volume": 545428
-        },
         {
           "date": "2025-10-02",
           "open": 8.82,
@@ -848128,7 +845486,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 30.31,
-      "adx_4h": 30.1,
+      "adx_4h": 30.07,
       "eps": 0.66,
       "epsYoY": null,
       "revYoY": 40.38,
@@ -848205,14 +845563,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 35.44,
-          "high": 38.98,
-          "low": 35.24,
-          "close": 37.34,
-          "volume": 7657715
-        },
         {
           "date": "2025-10-02",
           "open": 37.49,
@@ -850706,7 +848056,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 32.02,
-      "adx_4h": 18.28,
+      "adx_4h": 18.26,
       "eps": 2.96,
       "epsYoY": null,
       "revYoY": 52.96,
@@ -850783,14 +848133,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 72.57,
-          "high": 76.36,
-          "low": 72.57,
-          "close": 73.36,
-          "volume": 408000
-        },
         {
           "date": "2025-10-02",
           "open": 73.96,
@@ -853284,7 +850626,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 11.67,
-      "adx_4h": 21.95,
+      "adx_4h": 21.93,
       "eps": 1.46,
       "epsYoY": null,
       "revYoY": 0.17,
@@ -853361,14 +850703,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.3,
-          "high": 28.63,
-          "low": 28.3,
-          "close": 28.53,
-          "volume": 363498
-        },
         {
           "date": "2025-10-02",
           "open": 28.67,
@@ -855862,7 +853196,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 17.34,
-      "adx_4h": 14.33,
+      "adx_4h": 14.44,
       "eps": -0.15,
       "epsYoY": null,
       "revYoY": -3.89,
@@ -855939,14 +853273,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 52.7,
-          "high": 53.0,
-          "low": 52.5,
-          "close": 52.5,
-          "volume": 117501
-        },
         {
           "date": "2025-10-02",
           "open": 52.7,
@@ -858440,7 +855766,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 37.02,
-      "adx_4h": 45.93,
+      "adx_4h": 45.94,
       "eps": 5.68,
       "epsYoY": null,
       "revYoY": 16.17,
@@ -858517,14 +855843,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 156.21,
-          "high": 160.01,
-          "low": 154.79,
-          "close": 157.64,
-          "volume": 214261
-        },
         {
           "date": "2025-10-02",
           "open": 157.64,
@@ -861018,7 +858336,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 16.39,
-      "adx_4h": 29.15,
+      "adx_4h": 29.1,
       "eps": -0.86,
       "epsYoY": null,
       "revYoY": 0.79,
@@ -861095,14 +858413,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.15,
-          "high": 15.45,
-          "low": 15.05,
-          "close": 15.15,
-          "volume": 2611076
-        },
         {
           "date": "2025-10-02",
           "open": 15.3,
@@ -863596,7 +860906,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 39.74,
-      "adx_4h": 37.82,
+      "adx_4h": 37.8,
       "eps": -1.32,
       "epsYoY": null,
       "revYoY": 6.79,
@@ -863673,14 +860983,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 10.8,
-          "high": 10.95,
-          "low": 10.75,
-          "close": 10.9,
-          "volume": 821443
-        },
         {
           "date": "2025-10-02",
           "open": 10.95,
@@ -866174,7 +863476,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 15.76,
-      "adx_4h": 24.4,
+      "adx_4h": 24.39,
       "eps": 0.64,
       "epsYoY": null,
       "revYoY": 0.33,
@@ -866251,14 +863553,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 50.85,
-          "high": 51.53,
-          "low": 49.68,
-          "close": 49.77,
-          "volume": 5674498
-        },
         {
           "date": "2025-10-02",
           "open": 50.26,
@@ -868752,7 +866046,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.56,
-      "adx_4h": 18.81,
+      "adx_4h": 18.78,
       "eps": 4.37,
       "epsYoY": null,
       "revYoY": 26.12,
@@ -868829,14 +866123,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 104.77,
-          "high": 105.25,
-          "low": 104.77,
-          "close": 105.25,
-          "volume": 2000
-        },
         {
           "date": "2025-10-02",
           "open": 107.15,
@@ -871330,7 +868616,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 17.98,
-      "adx_4h": 30.75,
+      "adx_4h": 30.78,
       "eps": 3.28,
       "epsYoY": null,
       "revYoY": 90.48,
@@ -871407,14 +868693,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.88,
-          "high": 29.15,
-          "low": 28.56,
-          "close": 28.6,
-          "volume": 191636
-        },
         {
           "date": "2025-10-02",
           "open": 28.6,
@@ -873908,7 +871186,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.31,
-      "adx_4h": 31.55,
+      "adx_4h": 31.56,
       "eps": 2.49,
       "epsYoY": null,
       "revYoY": 11.16,
@@ -873985,14 +871263,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 49.76,
-          "high": 49.85,
-          "low": 49.58,
-          "close": 49.76,
-          "volume": 92510
-        },
         {
           "date": "2025-10-02",
           "open": 49.58,
@@ -876486,7 +873756,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 23.36,
-      "adx_4h": 25.5,
+      "adx_4h": 25.49,
       "eps": 3.94,
       "epsYoY": null,
       "revYoY": 24.57,
@@ -876563,14 +873833,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 82.92,
-          "high": 83.02,
-          "low": 82.35,
-          "close": 82.63,
-          "volume": 58101
-        },
         {
           "date": "2025-10-02",
           "open": 82.63,
@@ -879064,7 +876326,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 13.95,
-      "adx_4h": 19.18,
+      "adx_4h": 19.14,
       "eps": 0.64,
       "epsYoY": null,
       "revYoY": -14.17,
@@ -879087,7 +876349,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": true,
       "closeToHigh": true,
-      "dist52W": 21.5,
+      "dist52W": 21.1,
       "rsi14": 38.64,
       "type": "none",
       "pattern_1d": {
@@ -879141,14 +876403,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 65.81,
-          "high": 66.4,
-          "low": 63.94,
-          "close": 64.04,
-          "volume": 1481726
-        },
         {
           "date": "2025-10-02",
           "open": 64.04,
@@ -881642,7 +878896,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 17.78,
-      "adx_4h": 14.61,
+      "adx_4h": 14.6,
       "eps": 6.08,
       "epsYoY": null,
       "revYoY": -1.14,
@@ -881719,14 +878973,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 22.28,
-          "high": 22.37,
-          "low": 22.09,
-          "close": 22.32,
-          "volume": 163679
-        },
         {
           "date": "2025-10-02",
           "open": 22.19,
@@ -884220,7 +881466,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 7.3,
-      "adx_4h": 16.39,
+      "adx_4h": 16.38,
       "eps": 2.49,
       "epsYoY": null,
       "revYoY": 33.57,
@@ -884297,14 +881543,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 54.93,
-          "high": 55.7,
-          "low": 54.83,
-          "close": 55.02,
-          "volume": 139125
-        },
         {
           "date": "2025-10-02",
           "open": 55.7,
@@ -886798,7 +884036,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.96,
-      "adx_4h": 21.79,
+      "adx_4h": 21.81,
       "eps": 4.1,
       "epsYoY": null,
       "revYoY": 28.05,
@@ -886875,14 +884113,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 80.71,
-          "high": 81.56,
-          "low": 80.53,
-          "close": 81.37,
-          "volume": 81137
-        },
         {
           "date": "2025-10-02",
           "open": 81.18,
@@ -889376,7 +886606,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 26.31,
-      "adx_4h": 23.37,
+      "adx_4h": 23.34,
       "eps": 30.44,
       "epsYoY": null,
       "revYoY": 1.97,
@@ -889453,14 +886683,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1272.58,
-          "high": 1272.58,
-          "low": 1253.08,
-          "close": 1253.08,
-          "volume": 6432244
-        },
         {
           "date": "2025-10-02",
           "open": 1257.95,
@@ -891954,7 +889176,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 21.03,
-      "adx_4h": 27.43,
+      "adx_4h": 27.4,
       "eps": null,
       "epsYoY": null,
       "revYoY": null,
@@ -892031,14 +889253,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 13.62,
-          "high": 13.88,
-          "low": 13.51,
-          "close": 13.55,
-          "volume": 81925030
-        },
         {
           "date": "2025-10-02",
           "open": 13.98,
@@ -894524,7 +891738,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 10.13,
-      "adx_4h": 15.3,
+      "adx_4h": 15.28,
       "eps": 23.38,
       "epsYoY": null,
       "revYoY": 576.62,
@@ -894601,14 +891815,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 72.97,
-          "high": 76.65,
-          "low": 72.97,
-          "close": 75.96,
-          "volume": 25787814
-        },
         {
           "date": "2025-10-02",
           "open": 80.94,
@@ -897102,7 +894308,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 11.92,
-      "adx_4h": 19.72,
+      "adx_4h": 19.7,
       "eps": 12.93,
       "epsYoY": null,
       "revYoY": 76.69,
@@ -897179,14 +894385,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 281.0,
-          "high": 285.32,
-          "low": 273.81,
-          "close": 274.77,
-          "volume": 35534245
-        },
         {
           "date": "2025-10-02",
           "open": 280.04,
@@ -899680,7 +896878,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.12,
-      "adx_4h": 25.78,
+      "adx_4h": 25.75,
       "eps": 156.38,
       "epsYoY": null,
       "revYoY": 99.99,
@@ -899757,14 +896955,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 1080.09,
-          "high": 1101.27,
-          "low": 1062.17,
-          "close": 1075.21,
-          "volume": 6664929
-        },
         {
           "date": "2025-10-02",
           "open": 1111.05,
@@ -902258,7 +899448,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 20.07,
-      "adx_4h": 28.12,
+      "adx_4h": 28.13,
       "eps": 110.96,
       "epsYoY": null,
       "revYoY": 196.22,
@@ -902335,14 +899525,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 3328.26,
-          "high": 3343.21,
-          "low": 3233.59,
-          "close": 3298.37,
-          "volume": 395846
-        },
         {
           "date": "2025-10-02",
           "open": 3338.23,
@@ -904836,7 +902018,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 44.85,
-      "adx_4h": 25.55,
+      "adx_4h": 25.52,
       "eps": 0.94,
       "epsYoY": null,
       "revYoY": 12.75,
@@ -904913,14 +902095,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 18.55,
-          "high": 18.69,
-          "low": 18.55,
-          "close": 18.69,
-          "volume": 19190126
-        },
         {
           "date": "2025-10-02",
           "open": 18.74,
@@ -907492,14 +904666,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 39.93,
-          "high": 39.98,
-          "low": 39.5,
-          "close": 39.55,
-          "volume": 3203299
-        },
-        {
           "date": "2025-10-02",
           "open": 39.64,
           "high": 39.98,
@@ -909992,7 +907158,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 18.06,
-      "adx_4h": 25.35,
+      "adx_4h": 25.32,
       "eps": 6.52,
       "epsYoY": null,
       "revYoY": 7.19,
@@ -910069,14 +907235,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 519.22,
-          "high": 522.79,
-          "low": 511.18,
-          "close": 514.75,
-          "volume": 1273292
-        },
         {
           "date": "2025-10-02",
           "open": 518.32,
@@ -912570,7 +909728,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 34.66,
-      "adx_4h": 33.72,
+      "adx_4h": 33.69,
       "eps": 29.91,
       "epsYoY": null,
       "revYoY": 26.6,
@@ -912647,14 +909805,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 741.11,
-          "high": 745.03,
-          "low": 725.45,
-          "close": 725.45,
-          "volume": 514476
-        },
         {
           "date": "2025-10-02",
           "open": 732.3,
@@ -915148,7 +912298,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 20.52,
-      "adx_4h": 28.08,
+      "adx_4h": 28.1,
       "eps": 5.84,
       "epsYoY": null,
       "revYoY": 2.53,
@@ -915225,14 +912375,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 102.99,
-          "high": 104.86,
-          "low": 102.06,
-          "close": 102.06,
-          "volume": 9499228
-        },
         {
           "date": "2025-10-02",
           "open": 102.06,
@@ -917804,14 +914946,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 2278.15,
-          "high": 2278.15,
-          "low": 2183.85,
-          "close": 2253.34,
-          "volume": 1190317
-        },
-        {
           "date": "2025-10-02",
           "open": 2283.12,
           "high": 2327.79,
@@ -920381,14 +917515,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 35.68,
-          "high": 35.72,
-          "low": 34.79,
-          "close": 34.88,
-          "volume": 5636424
-        },
         {
           "date": "2025-10-02",
           "open": 34.88,
@@ -922960,14 +920086,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 177.7,
-          "high": 178.67,
-          "low": 175.74,
-          "close": 176.23,
-          "volume": 558149
-        },
-        {
           "date": "2025-10-02",
           "open": 176.23,
           "high": 177.7,
@@ -925460,7 +922578,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 12.23,
-      "adx_4h": 17.26,
+      "adx_4h": 17.28,
       "eps": 25.37,
       "epsYoY": null,
       "revYoY": 722.77,
@@ -925537,14 +922655,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 84.56,
-          "high": 85.81,
-          "low": 83.31,
-          "close": 84.56,
-          "volume": 184413
-        },
         {
           "date": "2025-10-02",
           "open": 85.81,
@@ -928038,7 +925148,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.08,
-      "adx_4h": 20.42,
+      "adx_4h": 20.43,
       "eps": -0.11,
       "epsYoY": null,
       "revYoY": 68.89,
@@ -928115,14 +925225,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 24.75,
-          "high": 24.8,
-          "low": 24.6,
-          "close": 24.7,
-          "volume": 3864112
-        },
         {
           "date": "2025-10-02",
           "open": 24.7,
@@ -930694,14 +927796,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 80.85,
-          "high": 82.25,
-          "low": 80.55,
-          "close": 80.55,
-          "volume": 1789250
-        },
-        {
           "date": "2025-10-02",
           "open": 81.65,
           "high": 82.35,
@@ -933194,7 +930288,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 14.29,
-      "adx_4h": 32.6,
+      "adx_4h": 32.57,
       "eps": 3.27,
       "epsYoY": null,
       "revYoY": 1114.07,
@@ -933271,14 +930365,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 46.44,
-          "high": 46.44,
-          "low": 45.9,
-          "close": 46.44,
-          "volume": 664218
-        },
         {
           "date": "2025-10-02",
           "open": 46.44,
@@ -935772,7 +932858,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 11.8,
-      "adx_4h": 15.41,
+      "adx_4h": 15.46,
       "eps": 1.99,
       "epsYoY": null,
       "revYoY": 262.47,
@@ -935849,14 +932935,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 57.23,
-          "high": 57.6,
-          "low": 56.77,
-          "close": 57.14,
-          "volume": 366001
-        },
         {
           "date": "2025-10-02",
           "open": 57.23,
@@ -938350,7 +935428,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 25.63,
-      "adx_4h": 28.51,
+      "adx_4h": 28.5,
       "eps": 1.49,
       "epsYoY": null,
       "revYoY": 18.8,
@@ -938427,14 +935505,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.18,
-          "high": 39.28,
-          "low": 38.63,
-          "close": 38.68,
-          "volume": 1408696
-        },
         {
           "date": "2025-10-02",
           "open": 39.13,
@@ -941006,14 +938076,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 42.44,
-          "high": 42.73,
-          "low": 41.58,
-          "close": 41.67,
-          "volume": 3918722
-        },
-        {
           "date": "2025-10-02",
           "open": 42.2,
           "high": 44.84,
@@ -943506,7 +940568,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 37.22,
-      "adx_4h": 29.06,
+      "adx_4h": 29.03,
       "eps": -0.02,
       "epsYoY": null,
       "revYoY": -24.22,
@@ -943583,14 +940645,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 8.2,
-          "high": 8.48,
-          "low": 8.16,
-          "close": 8.18,
-          "volume": 15422796
-        },
         {
           "date": "2025-10-02",
           "open": 8.32,
@@ -946084,7 +943138,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 32.5,
-      "adx_4h": 20.31,
+      "adx_4h": 20.22,
       "eps": 2.81,
       "epsYoY": null,
       "revYoY": -6.93,
@@ -946119,11 +943173,11 @@ window._rawMarketData = {
         "action_advice": "🎯 建議順勢操作：多頭常態推進，建議回踩 10MA~20MA 支撐附近分批佈局做多，跌破月線防守停損。",
         "action_type": "buy",
         "entry_price": 92.2,
-        "stop_loss": 90.23,
+        "stop_loss": 90.22,
         "take_profit": 96.09,
-        "risk_reward_ratio": 1.97,
+        "risk_reward_ratio": 1.96,
         "neckline": 96.2,
-        "support": 92.07,
+        "support": 92.06,
         "resistance": 96.2,
         "metrics": {
           "volume_mult": 0.85,
@@ -946161,14 +943215,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 181.41,
-          "high": 182.04,
-          "low": 177.63,
-          "close": 177.63,
-          "volume": 1027744
-        },
         {
           "date": "2025-10-02",
           "open": 179.52,
@@ -948662,7 +945708,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 50.0,
-      "adx_4h": 52.79,
+      "adx_4h": 52.77,
       "eps": 7.84,
       "epsYoY": null,
       "revYoY": null,
@@ -948739,14 +945785,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 25.8,
-          "high": 25.8,
-          "low": 25.52,
-          "close": 25.61,
-          "volume": 55055
-        },
         {
           "date": "2025-10-02",
           "open": 25.61,
@@ -951240,7 +948278,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.67,
-      "adx_4h": 15.81,
+      "adx_4h": 15.8,
       "eps": 2.82,
       "epsYoY": null,
       "revYoY": 57.36,
@@ -951317,14 +948355,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 80.37,
-          "high": 80.47,
-          "low": 78.08,
-          "close": 78.28,
-          "volume": 700022
-        },
         {
           "date": "2025-10-02",
           "open": 78.58,
@@ -953896,14 +950926,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 154.83,
-          "high": 156.28,
-          "low": 152.4,
-          "close": 152.4,
-          "volume": 3377842
-        },
-        {
           "date": "2025-10-02",
           "open": 154.34,
           "high": 154.34,
@@ -956396,7 +953418,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 16.43,
-      "adx_4h": 16.97,
+      "adx_4h": 16.98,
       "eps": 3.27,
       "epsYoY": null,
       "revYoY": 17.11,
@@ -956473,14 +953495,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 167.98,
-          "high": 170.39,
-          "low": 166.05,
-          "close": 170.39,
-          "volume": 1333325
-        },
         {
           "date": "2025-10-02",
           "open": 170.87,
@@ -959052,14 +956066,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 93.83,
-          "high": 94.52,
-          "low": 91.37,
-          "close": 91.37,
-          "volume": 2452822
-        },
-        {
           "date": "2025-10-02",
           "open": 91.87,
           "high": 93.73,
@@ -961552,7 +958558,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 25.82,
-      "adx_4h": 28.45,
+      "adx_4h": 28.47,
       "eps": 0.47,
       "epsYoY": null,
       "revYoY": 3.26,
@@ -961575,7 +958581,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 29.8,
+      "dist52W": 29.2,
       "rsi14": 52.63,
       "type": "C",
       "pattern_1d": {
@@ -961629,14 +958635,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 257.31,
-          "high": 263.67,
-          "low": 253.89,
-          "close": 256.34,
-          "volume": 13632028
-        },
         {
           "date": "2025-10-02",
           "open": 259.27,
@@ -964130,7 +961128,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 26.05,
-      "adx_4h": 33.87,
+      "adx_4h": 33.84,
       "eps": -0.62,
       "epsYoY": null,
       "revYoY": 12.1,
@@ -964207,14 +961205,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 59.16,
-          "high": 60.54,
-          "low": 58.66,
-          "close": 59.35,
-          "volume": 15432861
-        },
         {
           "date": "2025-10-02",
           "open": 60.54,
@@ -966708,7 +963698,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 27.62,
-      "adx_4h": 41.42,
+      "adx_4h": 41.4,
       "eps": -0.64,
       "epsYoY": null,
       "revYoY": 3.52,
@@ -966785,14 +963775,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 26.7,
-          "high": 27.0,
-          "low": 26.4,
-          "close": 26.4,
-          "volume": 2767727
-        },
         {
           "date": "2025-10-02",
           "open": 26.7,
@@ -969286,7 +966268,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 26.8,
-      "adx_4h": 13.17,
+      "adx_4h": 13.21,
       "eps": 1.66,
       "epsYoY": null,
       "revYoY": 25.12,
@@ -969363,14 +966345,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 176.69,
-          "high": 177.18,
-          "low": 169.74,
-          "close": 171.72,
-          "volume": 288900
-        },
         {
           "date": "2025-10-02",
           "open": 170.24,
@@ -971864,7 +968838,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 14.95,
-      "adx_4h": 24.23,
+      "adx_4h": 24.2,
       "eps": 8.89,
       "epsYoY": null,
       "revYoY": 14.55,
@@ -971941,14 +968915,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 290.96,
-          "high": 292.41,
-          "low": 287.09,
-          "close": 291.44,
-          "volume": 892148
-        },
         {
           "date": "2025-10-02",
           "open": 294.83,
@@ -974442,7 +971408,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 28.23,
-      "adx_4h": 24.94,
+      "adx_4h": 24.86,
       "eps": 0.93,
       "epsYoY": null,
       "revYoY": -8.34,
@@ -974519,14 +971485,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 6.82,
-          "high": 6.9,
-          "low": 6.72,
-          "close": 6.74,
-          "volume": 2183159
-        },
         {
           "date": "2025-10-02",
           "open": 6.76,
@@ -977020,7 +973978,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.33,
-      "adx_4h": 17.77,
+      "adx_4h": 17.78,
       "eps": 3.04,
       "epsYoY": null,
       "revYoY": -20.98,
@@ -977097,14 +974055,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 95.3,
-          "high": 97.02,
-          "low": 95.3,
-          "close": 96.54,
-          "volume": 411050
-        },
         {
           "date": "2025-10-02",
           "open": 97.02,
@@ -979598,7 +976548,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 12.61,
-      "adx_4h": 22.89,
+      "adx_4h": 22.87,
       "eps": 0.96,
       "epsYoY": null,
       "revYoY": -8.97,
@@ -979675,14 +976625,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 46.11,
-          "high": 46.55,
-          "low": 45.13,
-          "close": 45.18,
-          "volume": 8687834
-        },
         {
           "date": "2025-10-02",
           "open": 46.35,
@@ -982176,7 +979118,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.76,
-      "adx_4h": 12.76,
+      "adx_4h": 12.75,
       "eps": 1.92,
       "epsYoY": null,
       "revYoY": 74.7,
@@ -982253,14 +979195,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 116.58,
-          "high": 119.07,
-          "low": 115.58,
-          "close": 116.08,
-          "volume": 619085
-        },
         {
           "date": "2025-10-02",
           "open": 116.08,
@@ -984754,7 +981688,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 12.39,
-      "adx_4h": 26.03,
+      "adx_4h": 26.04,
       "eps": 4.71,
       "epsYoY": null,
       "revYoY": 32.88,
@@ -984831,14 +981765,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 140.44,
-          "high": 140.44,
-          "low": 139.97,
-          "close": 139.97,
-          "volume": 38068
-        },
         {
           "date": "2025-10-02",
           "open": 139.97,
@@ -987332,7 +984258,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 19.67,
-      "adx_4h": 20.73,
+      "adx_4h": 20.72,
       "eps": 8.51,
       "epsYoY": null,
       "revYoY": null,
@@ -987409,14 +984335,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 114.11,
-          "high": 115.06,
-          "low": 113.63,
-          "close": 114.58,
-          "volume": 178099
-        },
         {
           "date": "2025-10-02",
           "open": 115.06,
@@ -989988,14 +986906,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 78.0,
-          "high": 78.2,
-          "low": 76.5,
-          "close": 76.7,
-          "volume": 218628
-        },
-        {
           "date": "2025-10-02",
           "open": 77.3,
           "high": 78.2,
@@ -992488,7 +989398,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 9.34,
-      "adx_4h": 14.79,
+      "adx_4h": 14.78,
       "eps": 1.55,
       "epsYoY": null,
       "revYoY": 14.52,
@@ -992565,14 +989475,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 84.4,
-          "high": 87.61,
-          "low": 83.53,
-          "close": 84.79,
-          "volume": 23507460
-        },
         {
           "date": "2025-10-02",
           "open": 85.76,
@@ -995066,7 +991968,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 21.28,
-      "adx_4h": 9.27,
+      "adx_4h": 9.28,
       "eps": 5.03,
       "epsYoY": null,
       "revYoY": 249.5,
@@ -995143,14 +992045,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 46.24,
-          "high": 46.34,
-          "low": 45.02,
-          "close": 45.26,
-          "volume": 1526955
-        },
         {
           "date": "2025-10-02",
           "open": 45.26,
@@ -997644,7 +994538,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 7.89,
-      "adx_4h": 9.55,
+      "adx_4h": 9.54,
       "eps": 4.55,
       "epsYoY": null,
       "revYoY": 16.69,
@@ -997721,14 +994615,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 142.96,
-          "high": 143.96,
-          "low": 139.49,
-          "close": 139.99,
-          "volume": 1159203
-        },
         {
           "date": "2025-10-02",
           "open": 141.97,
@@ -1000222,7 +997108,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 14.66,
-      "adx_4h": 16.73,
+      "adx_4h": 16.72,
       "eps": 4.2,
       "epsYoY": null,
       "revYoY": -25.33,
@@ -1000299,14 +997185,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 208.51,
-          "high": 211.44,
-          "low": 201.17,
-          "close": 201.17,
-          "volume": 561434
-        },
         {
           "date": "2025-10-02",
           "open": 202.14,
@@ -1002800,7 +999678,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.51,
-      "adx_4h": 15.38,
+      "adx_4h": 15.37,
       "eps": 5.93,
       "epsYoY": null,
       "revYoY": 29.96,
@@ -1002877,14 +999755,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 100.21,
-          "high": 101.16,
-          "low": 99.25,
-          "close": 100.21,
-          "volume": 438500
-        },
         {
           "date": "2025-10-02",
           "open": 100.21,
@@ -1005378,7 +1002248,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.42,
-      "adx_4h": 24.32,
+      "adx_4h": 24.29,
       "eps": 2.54,
       "epsYoY": null,
       "revYoY": 29.06,
@@ -1005455,14 +1002325,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 254.64,
-          "high": 259.12,
-          "low": 250.17,
-          "close": 257.13,
-          "volume": 1090007
-        },
         {
           "date": "2025-10-02",
           "open": 264.09,
@@ -1007956,7 +1004818,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 47.85,
-      "adx_4h": 49.16,
+      "adx_4h": 49.13,
       "eps": -0.03,
       "epsYoY": null,
       "revYoY": -57.28,
@@ -1008033,14 +1004895,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 56.22,
-          "high": 58.31,
-          "low": 55.42,
-          "close": 56.32,
-          "volume": 546601
-        },
         {
           "date": "2025-10-02",
           "open": 57.42,
@@ -1010534,7 +1007388,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 35.7,
-      "adx_4h": 48.4,
+      "adx_4h": 48.39,
       "eps": -0.85,
       "epsYoY": null,
       "revYoY": -12.1,
@@ -1010573,7 +1007427,7 @@ window._rawMarketData = {
         "take_profit": 88.53,
         "risk_reward_ratio": 1.87,
         "neckline": 81.4,
-        "support": 69.8,
+        "support": 69.79,
         "resistance": 81.4,
         "metrics": {
           "volume_mult": 0.56,
@@ -1010611,14 +1007465,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 42.0,
-          "high": 44.9,
-          "low": 41.85,
-          "close": 43.4,
-          "volume": 12902373
-        },
         {
           "date": "2025-10-02",
           "open": 43.6,
@@ -1013112,7 +1009958,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 10.13,
-      "adx_4h": 22.63,
+      "adx_4h": 22.61,
       "eps": 1.67,
       "epsYoY": null,
       "revYoY": 35.86,
@@ -1013189,14 +1010035,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 42.72,
-          "high": 42.72,
-          "low": 42.33,
-          "close": 42.38,
-          "volume": 92048
-        },
         {
           "date": "2025-10-02",
           "open": 42.43,
@@ -1015690,7 +1012528,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 11.89,
-      "adx_4h": 18.18,
+      "adx_4h": 18.16,
       "eps": 20.87,
       "epsYoY": null,
       "revYoY": 132.53,
@@ -1015767,14 +1012605,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 33.97,
-          "high": 35.89,
-          "low": 33.79,
-          "close": 34.47,
-          "volume": 1669488
-        },
         {
           "date": "2025-10-02",
           "open": 35.34,
@@ -1018268,7 +1015098,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 40.23,
-      "adx_4h": 54.37,
+      "adx_4h": 54.32,
       "eps": 1.1,
       "epsYoY": null,
       "revYoY": 5.4,
@@ -1018345,14 +1015175,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.89,
-          "high": 28.89,
-          "low": 28.75,
-          "close": 28.89,
-          "volume": 53000
-        },
         {
           "date": "2025-10-02",
           "open": 28.89,
@@ -1020846,7 +1017668,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.11,
-      "adx_4h": 26.63,
+      "adx_4h": 26.61,
       "eps": 1.35,
       "epsYoY": null,
       "revYoY": -0.1,
@@ -1020923,14 +1017745,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.0,
-          "high": 19.0,
-          "low": 18.72,
-          "close": 18.77,
-          "volume": 875478
-        },
         {
           "date": "2025-10-02",
           "open": 18.77,
@@ -1023424,7 +1020238,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 25.44,
-      "adx_4h": 29.53,
+      "adx_4h": 29.52,
       "eps": -0.6,
       "epsYoY": null,
       "revYoY": -48.16,
@@ -1023501,14 +1020315,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.1,
-          "high": 15.1,
-          "low": 14.85,
-          "close": 14.9,
-          "volume": 1616991
-        },
         {
           "date": "2025-10-02",
           "open": 14.95,
@@ -1026002,7 +1022808,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 13.28,
-      "adx_4h": 19.8,
+      "adx_4h": 19.76,
       "eps": 0.19,
       "epsYoY": null,
       "revYoY": 25.29,
@@ -1026079,14 +1022885,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 10.0,
-          "high": 10.1,
-          "low": 9.96,
-          "close": 9.97,
-          "volume": 944611
-        },
         {
           "date": "2025-10-02",
           "open": 9.99,
@@ -1028580,7 +1025378,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 8.38,
-      "adx_4h": 17.77,
+      "adx_4h": 17.79,
       "eps": 7.27,
       "epsYoY": null,
       "revYoY": 11.4,
@@ -1028657,14 +1025455,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 147.17,
-          "high": 147.17,
-          "low": 144.85,
-          "close": 145.32,
-          "volume": 324257
-        },
         {
           "date": "2025-10-02",
           "open": 145.78,
@@ -1031158,7 +1027948,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 26.54,
-      "adx_4h": 14.56,
+      "adx_4h": 14.57,
       "eps": 1.06,
       "epsYoY": null,
       "revYoY": 96.3,
@@ -1031235,14 +1028025,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 76.48,
-          "high": 77.01,
-          "low": 75.15,
-          "close": 75.24,
-          "volume": 731921
-        },
         {
           "date": "2025-10-02",
           "open": 75.51,
@@ -1033814,14 +1030596,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 46.62,
-          "high": 46.9,
-          "low": 46.33,
-          "close": 46.38,
-          "volume": 499600
-        },
-        {
           "date": "2025-10-02",
           "open": 46.38,
           "high": 46.43,
@@ -1036314,7 +1033088,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 22.71,
-      "adx_4h": 25.34,
+      "adx_4h": 25.33,
       "eps": 0.55,
       "epsYoY": null,
       "revYoY": -50.39,
@@ -1036391,14 +1033165,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 13.2,
-          "high": 13.35,
-          "low": 13.1,
-          "close": 13.15,
-          "volume": 468005
-        },
         {
           "date": "2025-10-02",
           "open": 13.25,
@@ -1038892,7 +1035658,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 24.72,
-      "adx_4h": 29.84,
+      "adx_4h": 29.77,
       "eps": -0.07,
       "epsYoY": null,
       "revYoY": 2.58,
@@ -1038969,14 +1035735,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 17.45,
-          "high": 17.65,
-          "low": 17.3,
-          "close": 17.35,
-          "volume": 1800885
-        },
         {
           "date": "2025-10-02",
           "open": 17.5,
@@ -1041548,14 +1038306,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 23.08,
-          "high": 23.13,
-          "low": 22.9,
-          "close": 22.9,
-          "volume": 734000
-        },
-        {
           "date": "2025-10-02",
           "open": 22.99,
           "high": 23.08,
@@ -1044048,7 +1040798,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 18.53,
-      "adx_4h": 26.72,
+      "adx_4h": 26.7,
       "eps": 0.29,
       "epsYoY": null,
       "revYoY": 23.94,
@@ -1044125,14 +1040875,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.05,
-          "high": 19.55,
-          "low": 18.9,
-          "close": 19.15,
-          "volume": 4640430
-        },
         {
           "date": "2025-10-02",
           "open": 19.45,
@@ -1046626,7 +1043368,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.8,
-      "adx_4h": 22.37,
+      "adx_4h": 22.39,
       "eps": 9.08,
       "epsYoY": null,
       "revYoY": -20.66,
@@ -1046703,14 +1043445,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 241.93,
-          "high": 260.36,
-          "low": 241.93,
-          "close": 255.16,
-          "volume": 301014
-        },
         {
           "date": "2025-10-02",
           "open": 254.69,
@@ -1049204,7 +1045938,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 33.4,
-      "adx_4h": 16.59,
+      "adx_4h": 16.55,
       "eps": 0.27,
       "epsYoY": null,
       "revYoY": 6.03,
@@ -1049281,14 +1046015,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 13.12,
-          "high": 13.17,
-          "low": 12.93,
-          "close": 12.93,
-          "volume": 542948
-        },
         {
           "date": "2025-10-02",
           "open": 12.98,
@@ -1051782,7 +1048508,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 14.62,
-      "adx_4h": 21.89,
+      "adx_4h": 21.87,
       "eps": 17.59,
       "epsYoY": null,
       "revYoY": 14.61,
@@ -1051859,14 +1048585,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 865.47,
-          "high": 873.43,
-          "low": 855.53,
-          "close": 866.47,
-          "volume": 9681582
-        },
         {
           "date": "2025-10-02",
           "open": 888.35,
@@ -1054438,14 +1051156,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 41.17,
-          "high": 41.56,
-          "low": 41.08,
-          "close": 41.51,
-          "volume": 27365975
-        },
-        {
           "date": "2025-10-02",
           "open": 41.51,
           "high": 41.65,
@@ -1056938,7 +1053648,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 30.59,
-      "adx_4h": 18.7,
+      "adx_4h": 18.68,
       "eps": 1.66,
       "epsYoY": null,
       "revYoY": 29.84,
@@ -1057015,14 +1053725,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 23.93,
-          "high": 23.93,
-          "low": 23.69,
-          "close": 23.88,
-          "volume": 24430436
-        },
         {
           "date": "2025-10-02",
           "open": 23.93,
@@ -1059516,7 +1056218,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 32.56,
-      "adx_4h": 18.06,
+      "adx_4h": 18.05,
       "eps": 1.64,
       "epsYoY": null,
       "revYoY": null,
@@ -1059593,14 +1056295,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 14.49,
-          "high": 14.74,
-          "low": 14.4,
-          "close": 14.4,
-          "volume": 73687255
-        },
         {
           "date": "2025-10-02",
           "open": 14.54,
@@ -1062094,7 +1058788,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.61,
-      "adx_4h": 21.0,
+      "adx_4h": 20.99,
       "eps": 1.44,
       "epsYoY": null,
       "revYoY": null,
@@ -1062171,14 +1058865,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 40.92,
-          "high": 40.92,
-          "low": 40.59,
-          "close": 40.78,
-          "volume": 12887402
-        },
         {
           "date": "2025-10-02",
           "open": 40.78,
@@ -1064672,7 +1061358,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 32.71,
-      "adx_4h": 24.45,
+      "adx_4h": 24.46,
       "eps": 1.76,
       "epsYoY": null,
       "revYoY": 62.87,
@@ -1064749,14 +1061435,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 44.22,
-          "high": 45.72,
-          "low": 43.54,
-          "close": 43.64,
-          "volume": 27443043
-        },
         {
           "date": "2025-10-02",
           "open": 44.07,
@@ -1067250,7 +1063928,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 16.6,
-      "adx_4h": 27.68,
+      "adx_4h": 27.67,
       "eps": 25.91,
       "epsYoY": null,
       "revYoY": 5.97,
@@ -1067327,14 +1064005,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 349.25,
-          "high": 360.89,
-          "low": 346.34,
-          "close": 358.95,
-          "volume": 3842160
-        },
         {
           "date": "2025-10-02",
           "open": 363.8,
@@ -1069828,7 +1066498,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 15.51,
-      "adx_4h": 27.94,
+      "adx_4h": 27.95,
       "eps": 0.67,
       "epsYoY": null,
       "revYoY": 11.39,
@@ -1069905,14 +1066575,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 26.97,
-          "high": 27.02,
-          "low": 26.73,
-          "close": 26.88,
-          "volume": 1529300
-        },
         {
           "date": "2025-10-02",
           "open": 26.83,
@@ -1072406,7 +1069068,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 22.4,
-      "adx_4h": 45.57,
+      "adx_4h": 45.58,
       "eps": 5.14,
       "epsYoY": null,
       "revYoY": -34.19,
@@ -1072483,14 +1069145,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 174.35,
-          "high": 176.25,
-          "low": 172.45,
-          "close": 172.45,
-          "volume": 2040524
-        },
         {
           "date": "2025-10-02",
           "open": 172.93,
@@ -1075062,14 +1071716,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 68.67,
-          "high": 69.45,
-          "low": 68.09,
-          "close": 68.19,
-          "volume": 11865822
-        },
-        {
           "date": "2025-10-02",
           "open": 68.97,
           "high": 69.36,
@@ -1077562,7 +1074208,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 13.27,
-      "adx_4h": 24.33,
+      "adx_4h": 24.31,
       "eps": 5.06,
       "epsYoY": null,
       "revYoY": -24.99,
@@ -1077639,14 +1074285,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 130.95,
-          "high": 131.9,
-          "low": 128.11,
-          "close": 128.58,
-          "volume": 4242634
-        },
         {
           "date": "2025-10-02",
           "open": 129.53,
@@ -1080218,14 +1076856,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 124.2,
-          "high": 126.59,
-          "low": 120.38,
-          "close": 126.11,
-          "volume": 3709894
-        },
-        {
           "date": "2025-10-02",
           "open": 125.63,
           "high": 128.02,
@@ -1082718,7 +1079348,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 11.73,
-      "adx_4h": 15.01,
+      "adx_4h": 14.99,
       "eps": 4.81,
       "epsYoY": null,
       "revYoY": 8.24,
@@ -1082795,14 +1079425,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 236.13,
-          "high": 238.57,
-          "low": 236.13,
-          "close": 238.08,
-          "volume": 136531
-        },
         {
           "date": "2025-10-02",
           "open": 239.55,
@@ -1085374,14 +1081996,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 389.88,
-          "high": 396.32,
-          "low": 378.48,
-          "close": 381.95,
-          "volume": 2050106
-        },
-        {
           "date": "2025-10-02",
           "open": 385.42,
           "high": 387.4,
@@ -1087874,7 +1084488,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 21.95,
-      "adx_4h": 31.79,
+      "adx_4h": 31.83,
       "eps": 3.86,
       "epsYoY": null,
       "revYoY": 5.13,
@@ -1087897,7 +1084511,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": true,
-      "dist52W": 18.3,
+      "dist52W": 16.6,
       "rsi14": 34.25,
       "type": "none",
       "pattern_1d": {
@@ -1087951,14 +1084565,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 94.39,
-          "high": 95.79,
-          "low": 93.93,
-          "close": 95.32,
-          "volume": 641966
-        },
         {
           "date": "2025-10-02",
           "open": 94.86,
@@ -1090530,14 +1087136,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 39.0,
-          "high": 39.35,
-          "low": 39.0,
-          "close": 39.05,
-          "volume": 346000
-        },
-        {
           "date": "2025-10-02",
           "open": 39.0,
           "high": 40.4,
@@ -1093030,7 +1089628,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.16,
-      "adx_4h": 25.31,
+      "adx_4h": 25.3,
       "eps": 5.08,
       "epsYoY": null,
       "revYoY": -3.78,
@@ -1093107,14 +1089705,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 146.36,
-          "high": 146.83,
-          "low": 144.94,
-          "close": 145.88,
-          "volume": 217118
-        },
         {
           "date": "2025-10-02",
           "open": 145.41,
@@ -1095608,7 +1092198,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.59,
-      "adx_4h": 25.21,
+      "adx_4h": 25.15,
       "eps": 0.7,
       "epsYoY": null,
       "revYoY": 13.42,
@@ -1095685,14 +1092275,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.12,
-          "high": 19.37,
-          "low": 19.03,
-          "close": 19.12,
-          "volume": 6749330
-        },
         {
           "date": "2025-10-02",
           "open": 19.27,
@@ -1098186,7 +1094768,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.98,
-      "adx_4h": 13.58,
+      "adx_4h": 13.59,
       "eps": 2.36,
       "epsYoY": null,
       "revYoY": -91.16,
@@ -1098263,14 +1094845,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 39.09,
-          "high": 39.33,
-          "low": 38.81,
-          "close": 38.93,
-          "volume": 592493
-        },
         {
           "date": "2025-10-02",
           "open": 38.93,
@@ -1100764,7 +1097338,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 9.64,
-      "adx_4h": 20.97,
+      "adx_4h": 20.93,
       "eps": -0.72,
       "epsYoY": null,
       "revYoY": 39.93,
@@ -1100841,14 +1097415,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 155.42,
-          "high": 156.42,
-          "low": 151.92,
-          "close": 152.92,
-          "volume": 517206
-        },
         {
           "date": "2025-10-02",
           "open": 152.92,
@@ -1103342,7 +1099908,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 32.05,
-      "adx_4h": 32.25,
+      "adx_4h": 32.27,
       "eps": 2.22,
       "epsYoY": null,
       "revYoY": -3.77,
@@ -1103365,7 +1099931,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 9.9,
+      "dist52W": 8.7,
       "rsi14": 36.67,
       "type": "none",
       "pattern_1d": {
@@ -1103419,14 +1099985,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.29,
-          "high": 63.66,
-          "low": 62.46,
-          "close": 63.39,
-          "volume": 418037
-        },
         {
           "date": "2025-10-02",
           "open": 63.48,
@@ -1105998,14 +1102556,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 30.55,
-          "high": 30.89,
-          "low": 30.41,
-          "close": 30.75,
-          "volume": 2157453
-        },
-        {
           "date": "2025-10-02",
           "open": 30.94,
           "high": 30.94,
@@ -1108498,7 +1105048,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 11.58,
-      "adx_4h": 14.9,
+      "adx_4h": 14.89,
       "eps": 4.53,
       "epsYoY": null,
       "revYoY": 13.95,
@@ -1108575,14 +1105125,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 207.08,
-          "high": 208.51,
-          "low": 202.77,
-          "close": 203.25,
-          "volume": 255069
-        },
         {
           "date": "2025-10-02",
           "open": 205.16,
@@ -1111076,7 +1107618,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 13.51,
-      "adx_4h": 19.66,
+      "adx_4h": 19.71,
       "eps": 6.55,
       "epsYoY": null,
       "revYoY": 3.6,
@@ -1111153,14 +1107695,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 121.78,
-          "high": 121.78,
-          "low": 120.35,
-          "close": 120.82,
-          "volume": 478732
-        },
         {
           "date": "2025-10-02",
           "open": 121.3,
@@ -1113654,7 +1110188,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 8.76,
-      "adx_4h": 9.04,
+      "adx_4h": 9.05,
       "eps": 2.36,
       "epsYoY": null,
       "revYoY": -4.25,
@@ -1113731,14 +1110265,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 61.85,
-          "high": 62.33,
-          "low": 61.66,
-          "close": 61.76,
-          "volume": 81077
-        },
         {
           "date": "2025-10-02",
           "open": 61.66,
@@ -1116232,7 +1112758,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 17.76,
-      "adx_4h": 22.69,
+      "adx_4h": 22.71,
       "eps": 1.47,
       "epsYoY": null,
       "revYoY": -2.29,
@@ -1116309,14 +1112835,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 33.74,
-          "high": 34.11,
-          "low": 33.51,
-          "close": 33.79,
-          "volume": 1164381
-        },
         {
           "date": "2025-10-02",
           "open": 33.79,
@@ -1118810,7 +1115328,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 14.03,
-      "adx_4h": 17.37,
+      "adx_4h": 17.39,
       "eps": 3.24,
       "epsYoY": null,
       "revYoY": 6.25,
@@ -1118887,14 +1115405,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 134.55,
-          "high": 134.55,
-          "low": 129.79,
-          "close": 131.7,
-          "volume": 843610
-        },
         {
           "date": "2025-10-02",
           "open": 131.7,
@@ -1121388,7 +1117898,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 14.54,
-      "adx_4h": 24.9,
+      "adx_4h": 24.89,
       "eps": 0.55,
       "epsYoY": null,
       "revYoY": 4.04,
@@ -1121465,14 +1117975,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 21.23,
-          "high": 21.37,
-          "low": 21.09,
-          "close": 21.23,
-          "volume": 1325202
-        },
         {
           "date": "2025-10-02",
           "open": 21.09,
@@ -1123966,7 +1120468,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 37.49,
-      "adx_4h": 44.11,
+      "adx_4h": 44.07,
       "eps": -0.52,
       "epsYoY": null,
       "revYoY": 0.12,
@@ -1124043,14 +1120545,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.6,
-          "high": 15.7,
-          "low": 15.4,
-          "close": 15.5,
-          "volume": 1225656
-        },
         {
           "date": "2025-10-02",
           "open": 15.45,
@@ -1126544,7 +1123038,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 17.31,
-      "adx_4h": 20.44,
+      "adx_4h": 20.45,
       "eps": 0.8,
       "epsYoY": null,
       "revYoY": 8.67,
@@ -1126621,14 +1123115,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 28.75,
-          "high": 28.85,
-          "low": 28.71,
-          "close": 28.75,
-          "volume": 261810
-        },
         {
           "date": "2025-10-02",
           "open": 28.75,
@@ -1129122,7 +1125608,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 20.05,
-      "adx_4h": 30.14,
+      "adx_4h": 30.27,
       "eps": 2.31,
       "epsYoY": null,
       "revYoY": -7.68,
@@ -1129145,7 +1125631,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": true,
-      "dist52W": 32.0,
+      "dist52W": 30.6,
       "rsi14": 17.07,
       "type": "none",
       "pattern_1d": {
@@ -1129199,14 +1125685,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 114.68,
-          "high": 114.68,
-          "low": 113.34,
-          "close": 114.24,
-          "volume": 142345
-        },
         {
           "date": "2025-10-02",
           "open": 113.34,
@@ -1131700,7 +1128178,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.6,
-      "adx_4h": 22.55,
+      "adx_4h": 22.54,
       "eps": 0.07,
       "epsYoY": null,
       "revYoY": -5.33,
@@ -1131777,14 +1128255,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.8,
-          "high": 15.85,
-          "low": 15.6,
-          "close": 15.6,
-          "volume": 3467045
-        },
         {
           "date": "2025-10-02",
           "open": 15.65,
@@ -1134356,14 +1130826,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 56.07,
-          "high": 56.07,
-          "low": 55.23,
-          "close": 55.51,
-          "volume": 230066
-        },
-        {
           "date": "2025-10-02",
           "open": 55.51,
           "high": 55.7,
@@ -1136856,7 +1133318,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 10.95,
-      "adx_4h": 11.8,
+      "adx_4h": 11.79,
       "eps": 7.71,
       "epsYoY": null,
       "revYoY": 4.18,
@@ -1136933,14 +1133395,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 124.65,
-          "high": 125.12,
-          "low": 120.84,
-          "close": 120.84,
-          "volume": 719641
-        },
         {
           "date": "2025-10-02",
           "open": 120.36,
@@ -1139434,7 +1135888,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.69,
-      "adx_4h": 28.96,
+      "adx_4h": 29.03,
       "eps": 8.62,
       "epsYoY": null,
       "revYoY": 9.16,
@@ -1139457,7 +1135911,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 5.6,
+      "dist52W": 4.8,
       "rsi14": 47.37,
       "type": "D",
       "pattern_1d": {
@@ -1139511,14 +1135965,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 188.3,
-          "high": 188.3,
-          "low": 185.94,
-          "close": 186.89,
-          "volume": 82241
-        },
         {
           "date": "2025-10-02",
           "open": 187.36,
@@ -1142012,7 +1138458,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.38,
-      "adx_4h": 32.85,
+      "adx_4h": 32.9,
       "eps": 1.05,
       "epsYoY": null,
       "revYoY": -50.46,
@@ -1142089,14 +1138535,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 71.86,
-          "high": 72.04,
-          "low": 71.01,
-          "close": 71.39,
-          "volume": 475400
-        },
         {
           "date": "2025-10-02",
           "open": 71.39,
@@ -1144590,7 +1141028,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 11.86,
-      "adx_4h": 14.94,
+      "adx_4h": 14.93,
       "eps": -4.27,
       "epsYoY": null,
       "revYoY": -2.7,
@@ -1144667,14 +1141105,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 62.2,
-          "high": 63.4,
-          "low": 61.4,
-          "close": 62.0,
-          "volume": 892003
-        },
         {
           "date": "2025-10-02",
           "open": 62.4,
@@ -1147168,7 +1143598,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 23.57,
-      "adx_4h": 19.46,
+      "adx_4h": 19.42,
       "eps": 0.25,
       "epsYoY": null,
       "revYoY": 24.05,
@@ -1147245,14 +1143675,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 9.7,
-          "high": 9.79,
-          "low": 9.57,
-          "close": 9.57,
-          "volume": 3510283
-        },
         {
           "date": "2025-10-02",
           "open": 9.66,
@@ -1149746,7 +1146168,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.79,
-      "adx_4h": 30.14,
+      "adx_4h": 30.1,
       "eps": 3.07,
       "epsYoY": null,
       "revYoY": -1.75,
@@ -1149823,14 +1146245,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 94.03,
-          "high": 95.9,
-          "low": 93.64,
-          "close": 94.52,
-          "volume": 2244305
-        },
         {
           "date": "2025-10-02",
           "open": 94.92,
@@ -1152402,14 +1148816,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 28.78,
-          "high": 28.78,
-          "low": 28.27,
-          "close": 28.64,
-          "volume": 1175705
-        },
-        {
           "date": "2025-10-02",
           "open": 28.64,
           "high": 28.64,
@@ -1154902,7 +1151308,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 13.83,
-      "adx_4h": 20.84,
+      "adx_4h": 20.83,
       "eps": 4.35,
       "epsYoY": null,
       "revYoY": 6.84,
@@ -1154925,7 +1151331,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 54.1,
+      "dist52W": 53.9,
       "rsi14": 47.69,
       "type": "none",
       "pattern_1d": {
@@ -1154979,14 +1151385,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 569.81,
-          "high": 577.39,
-          "low": 566.96,
-          "close": 567.91,
-          "volume": 43113
-        },
         {
           "date": "2025-10-02",
           "open": 568.86,
@@ -1157480,7 +1153878,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 16.11,
-      "adx_4h": 16.85,
+      "adx_4h": 16.82,
       "eps": 1.82,
       "epsYoY": null,
       "revYoY": 10.74,
@@ -1157557,14 +1153955,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 49.7,
-          "high": 49.79,
-          "low": 49.13,
-          "close": 49.32,
-          "volume": 85000
-        },
         {
           "date": "2025-10-02",
           "open": 49.32,
@@ -1160058,7 +1156448,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 27.53,
-      "adx_4h": 13.42,
+      "adx_4h": 13.41,
       "eps": 8.89,
       "epsYoY": null,
       "revYoY": -11.6,
@@ -1160135,14 +1156525,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 74.14,
-          "high": 74.65,
-          "low": 73.21,
-          "close": 74.14,
-          "volume": 96333
-        },
         {
           "date": "2025-10-02",
           "open": 74.14,
@@ -1162636,7 +1159018,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 28.69,
-      "adx_4h": 11.8,
+      "adx_4h": 11.79,
       "eps": 1.93,
       "epsYoY": null,
       "revYoY": 4.33,
@@ -1162713,14 +1159095,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 38.92,
-          "high": 38.97,
-          "low": 38.73,
-          "close": 38.97,
-          "volume": 51032
-        },
         {
           "date": "2025-10-02",
           "open": 38.83,
@@ -1165214,7 +1161588,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 16.73,
-      "adx_4h": 23.9,
+      "adx_4h": 23.95,
       "eps": 1.78,
       "epsYoY": null,
       "revYoY": 72.0,
@@ -1165291,14 +1161665,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 93.42,
-          "high": 95.28,
-          "low": 92.95,
-          "close": 94.35,
-          "volume": 697120
-        },
         {
           "date": "2025-10-02",
           "open": 95.28,
@@ -1167792,7 +1164158,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 6.51,
-      "adx_4h": 16.88,
+      "adx_4h": 16.93,
       "eps": 6.35,
       "epsYoY": null,
       "revYoY": -62.13,
@@ -1167815,7 +1164181,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 34.0,
+      "dist52W": 33.7,
       "rsi14": 47.06,
       "type": "none",
       "pattern_1d": {
@@ -1167869,14 +1164235,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 214.39,
-          "high": 215.83,
-          "low": 210.08,
-          "close": 210.56,
-          "volume": 256232
-        },
         {
           "date": "2025-10-02",
           "open": 212.0,
@@ -1170370,7 +1166728,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 22.81,
-      "adx_4h": 28.17,
+      "adx_4h": 28.15,
       "eps": 2.67,
       "epsYoY": null,
       "revYoY": 10.87,
@@ -1170447,14 +1166805,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 96.83,
-          "high": 96.83,
-          "low": 95.42,
-          "close": 95.89,
-          "volume": 226000
-        },
         {
           "date": "2025-10-02",
           "open": 96.83,
@@ -1172948,7 +1169298,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.07,
-      "adx_4h": 10.71,
+      "adx_4h": 10.69,
       "eps": 1.63,
       "epsYoY": null,
       "revYoY": 2.18,
@@ -1173025,14 +1169375,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 54.35,
-          "high": 54.35,
-          "low": 52.48,
-          "close": 53.97,
-          "volume": 20034
-        },
         {
           "date": "2025-10-02",
           "open": 53.97,
@@ -1175526,7 +1171868,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 24.95,
-      "adx_4h": 32.76,
+      "adx_4h": 32.66,
       "eps": 0.39,
       "epsYoY": null,
       "revYoY": -12.24,
@@ -1175603,14 +1171945,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 118.91,
-          "high": 122.89,
-          "low": 117.42,
-          "close": 120.41,
-          "volume": 1922696
-        },
         {
           "date": "2025-10-02",
           "open": 120.41,
@@ -1178100,11 +1174434,11 @@ window._rawMarketData = {
       "turnover": 0.2085,
       "marketCap": 117.7,
       "totalScore": 50,
-      "totalScore_4h": 50,
+      "totalScore_4h": 60,
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 28.22,
-      "adx_4h": 30.0,
+      "adx_4h": 30.14,
       "eps": 1.36,
       "epsYoY": null,
       "revYoY": 5.95,
@@ -1178181,14 +1174515,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 50.84,
-          "high": 51.41,
-          "low": 50.66,
-          "close": 51.22,
-          "volume": 1036001
-        },
         {
           "date": "2025-10-02",
           "open": 51.31,
@@ -1180682,7 +1177008,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 18.94,
-      "adx_4h": 27.15,
+      "adx_4h": 27.13,
       "eps": 1.02,
       "epsYoY": null,
       "revYoY": 14.47,
@@ -1180759,14 +1177085,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 19.59,
-          "high": 19.59,
-          "low": 19.34,
-          "close": 19.59,
-          "volume": 286152
-        },
         {
           "date": "2025-10-02",
           "open": 19.59,
@@ -1183260,7 +1179578,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 19.32,
-      "adx_4h": 20.34,
+      "adx_4h": 20.32,
       "eps": 2.62,
       "epsYoY": null,
       "revYoY": -2.67,
@@ -1183337,14 +1179655,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 35.44,
-          "high": 35.91,
-          "low": 35.07,
-          "close": 35.25,
-          "volume": 1602643
-        },
         {
           "date": "2025-10-02",
           "open": 35.53,
@@ -1185838,7 +1182148,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 24.6,
-      "adx_4h": 19.06,
+      "adx_4h": 19.09,
       "eps": 1.69,
       "epsYoY": null,
       "revYoY": null,
@@ -1185915,14 +1182225,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 17.41,
-          "high": 17.5,
-          "low": 17.31,
-          "close": 17.5,
-          "volume": 68318949
-        },
         {
           "date": "2025-10-02",
           "open": 17.55,
@@ -1188416,7 +1184718,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.56,
-      "adx_4h": 13.43,
+      "adx_4h": 13.41,
       "eps": 13.1,
       "epsYoY": null,
       "revYoY": 9.15,
@@ -1188493,14 +1184795,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 250.23,
-          "high": 250.23,
-          "low": 242.67,
-          "close": 242.67,
-          "volume": 356005
-        },
         {
           "date": "2025-10-02",
           "open": 246.45,
@@ -1190994,7 +1187288,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 13.91,
-      "adx_4h": 20.65,
+      "adx_4h": 20.61,
       "eps": 0.34,
       "epsYoY": null,
       "revYoY": -6.71,
@@ -1191071,14 +1187365,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 55.77,
-          "high": 56.27,
-          "low": 55.07,
-          "close": 55.17,
-          "volume": 2253036
-        },
         {
           "date": "2025-10-02",
           "open": 55.07,
@@ -1193572,7 +1189858,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 31.43,
-      "adx_4h": 21.82,
+      "adx_4h": 21.88,
       "eps": 3.26,
       "epsYoY": null,
       "revYoY": -17.07,
@@ -1193649,14 +1189935,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 89.84,
-          "high": 90.03,
-          "low": 88.26,
-          "close": 88.26,
-          "volume": 2304582
-        },
         {
           "date": "2025-10-02",
           "open": 88.26,
@@ -1196150,7 +1192428,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 8.74,
-      "adx_4h": 16.66,
+      "adx_4h": 16.67,
       "eps": 2.81,
       "epsYoY": null,
       "revYoY": -21.53,
@@ -1196227,14 +1192505,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 85.81,
-          "high": 85.81,
-          "low": 84.83,
-          "close": 85.1,
-          "volume": 462840
-        },
         {
           "date": "2025-10-02",
           "open": 85.1,
@@ -1198806,14 +1195076,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 453.7,
-          "high": 456.69,
-          "low": 415.81,
-          "close": 425.28,
-          "volume": 2497940
-        },
-        {
           "date": "2025-10-02",
           "open": 423.78,
           "high": 440.74,
@@ -1201383,14 +1197645,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 8.6,
-          "high": 8.6,
-          "low": 8.56,
-          "close": 8.6,
-          "volume": 1828556
-        },
         {
           "date": "2025-10-02",
           "open": 8.6,
@@ -1203962,14 +1200216,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 22.39,
-          "high": 22.39,
-          "low": 21.87,
-          "close": 22.25,
-          "volume": 2226577
-        },
-        {
           "date": "2025-10-02",
           "open": 22.25,
           "high": 22.58,
@@ -1206462,7 +1202708,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 20.74,
-      "adx_4h": 17.19,
+      "adx_4h": 17.24,
       "eps": 0.35,
       "epsYoY": null,
       "revYoY": -4.6,
@@ -1206539,14 +1202785,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 16.68,
-          "high": 16.68,
-          "low": 16.4,
-          "close": 16.5,
-          "volume": 2001432
-        },
         {
           "date": "2025-10-02",
           "open": 16.59,
@@ -1209040,7 +1205278,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.98,
-      "adx_4h": 32.07,
+      "adx_4h": 32.04,
       "eps": 0.28,
       "epsYoY": null,
       "revYoY": 14.61,
@@ -1209117,14 +1205355,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 23.8,
-          "high": 23.8,
-          "low": 23.0,
-          "close": 23.1,
-          "volume": 14220180
-        },
         {
           "date": "2025-10-02",
           "open": 23.0,
@@ -1211618,7 +1207848,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 25.42,
-      "adx_4h": 32.63,
+      "adx_4h": 32.64,
       "eps": 2.15,
       "epsYoY": null,
       "revYoY": -25.54,
@@ -1211695,14 +1207925,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 98.83,
-          "high": 99.32,
-          "low": 96.23,
-          "close": 96.42,
-          "volume": 1202500
-        },
         {
           "date": "2025-10-02",
           "open": 96.42,
@@ -1214196,7 +1210418,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 17.11,
-      "adx_4h": 41.06,
+      "adx_4h": 41.07,
       "eps": 3.26,
       "epsYoY": null,
       "revYoY": -5.89,
@@ -1214273,14 +1210495,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 80.74,
-          "high": 80.74,
-          "low": 80.55,
-          "close": 80.64,
-          "volume": 133130
-        },
         {
           "date": "2025-10-02",
           "open": 80.55,
@@ -1216774,7 +1212988,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 16.27,
-      "adx_4h": 18.42,
+      "adx_4h": 18.48,
       "eps": 2.26,
       "epsYoY": null,
       "revYoY": -9.92,
@@ -1216851,14 +1213065,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 40.62,
-          "high": 40.62,
-          "low": 40.62,
-          "close": 40.62,
-          "volume": 12000
-        },
         {
           "date": "2025-10-02",
           "open": 40.62,
@@ -1219430,14 +1215636,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 501.49,
-          "high": 509.31,
-          "low": 496.6,
-          "close": 500.51,
-          "volume": 149004
-        },
-        {
           "date": "2025-10-02",
           "open": 504.42,
           "high": 505.4,
@@ -1221930,7 +1218128,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 14.76,
-      "adx_4h": 22.71,
+      "adx_4h": 22.8,
       "eps": 6.55,
       "epsYoY": null,
       "revYoY": -16.45,
@@ -1222007,14 +1218205,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 147.2,
-          "high": 148.68,
-          "low": 142.24,
-          "close": 142.74,
-          "volume": 3027846
-        },
         {
           "date": "2025-10-02",
           "open": 143.73,
@@ -1224508,7 +1220698,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 16.72,
-      "adx_4h": 19.26,
+      "adx_4h": 19.29,
       "eps": -0.52,
       "epsYoY": null,
       "revYoY": -0.97,
@@ -1224585,14 +1220775,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 12.05,
-          "high": 12.05,
-          "low": 11.9,
-          "close": 11.95,
-          "volume": 713753
-        },
         {
           "date": "2025-10-02",
           "open": 11.95,
@@ -1227164,14 +1223346,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 183.97,
-          "high": 184.45,
-          "low": 182.54,
-          "close": 182.54,
-          "volume": 155150
-        },
-        {
           "date": "2025-10-02",
           "open": 183.02,
           "high": 184.92,
@@ -1229664,7 +1225838,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 20.31,
-      "adx_4h": 36.56,
+      "adx_4h": 36.55,
       "eps": 0.6,
       "epsYoY": null,
       "revYoY": 6.32,
@@ -1229741,14 +1225915,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 36.44,
-          "high": 36.49,
-          "low": 36.25,
-          "close": 36.25,
-          "volume": 86100
-        },
         {
           "date": "2025-10-02",
           "open": 36.35,
@@ -1232242,7 +1228408,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 21.36,
-      "adx_4h": 33.94,
+      "adx_4h": 33.97,
       "eps": 2.75,
       "epsYoY": null,
       "revYoY": -7.92,
@@ -1232319,14 +1228485,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 123.51,
-          "high": 123.51,
-          "low": 122.09,
-          "close": 122.56,
-          "volume": 39226
-        },
         {
           "date": "2025-10-02",
           "open": 123.03,
@@ -1234820,7 +1230978,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.08,
-      "adx_4h": 11.19,
+      "adx_4h": 11.22,
       "eps": 6.02,
       "epsYoY": null,
       "revYoY": -3.34,
@@ -1234897,14 +1231055,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 224.64,
-          "high": 226.56,
-          "low": 224.16,
-          "close": 225.6,
-          "volume": 58937
-        },
         {
           "date": "2025-10-02",
           "open": 226.08,
@@ -1237398,7 +1233548,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 8.57,
-      "adx_4h": 15.64,
+      "adx_4h": 15.82,
       "eps": 3.66,
       "epsYoY": null,
       "revYoY": 9.23,
@@ -1237475,14 +1233625,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 71.92,
-          "high": 71.92,
-          "low": 71.73,
-          "close": 71.92,
-          "volume": 11000
-        },
         {
           "date": "2025-10-02",
           "open": 72.11,
@@ -1240054,14 +1236196,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 46.9,
-          "high": 47.8,
-          "low": 45.6,
-          "close": 45.85,
-          "volume": 220197
-        },
-        {
           "date": "2025-10-02",
           "open": 45.75,
           "high": 46.2,
@@ -1242554,7 +1238688,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 13.51,
-      "adx_4h": 17.97,
+      "adx_4h": 17.98,
       "eps": 3.33,
       "epsYoY": null,
       "revYoY": 0.49,
@@ -1242631,14 +1238765,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 45.98,
-          "high": 45.98,
-          "low": 44.44,
-          "close": 44.44,
-          "volume": 879701
-        },
         {
           "date": "2025-10-02",
           "open": 44.2,
@@ -1245132,7 +1241258,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 12.39,
-      "adx_4h": 35.1,
+      "adx_4h": 35.09,
       "eps": -4.13,
       "epsYoY": null,
       "revYoY": -46.09,
@@ -1245209,14 +1241335,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 154.0,
-          "high": 161.0,
-          "low": 154.0,
-          "close": 155.0,
-          "volume": 265051
-        },
         {
           "date": "2025-10-02",
           "open": 156.0,
@@ -1247710,7 +1243828,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 19.5,
-      "adx_4h": 29.82,
+      "adx_4h": 29.83,
       "eps": 0.87,
       "epsYoY": null,
       "revYoY": -0.03,
@@ -1247733,7 +1243851,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 10.6,
+      "dist52W": 10.0,
       "rsi14": 31.03,
       "type": "none",
       "pattern_1d": {
@@ -1247787,14 +1243905,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 20.99,
-          "high": 21.09,
-          "low": 20.81,
-          "close": 20.86,
-          "volume": 6135622
-        },
         {
           "date": "2025-10-02",
           "open": 20.81,
@@ -1250288,7 +1246398,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 38.24,
-      "adx_4h": 33.98,
+      "adx_4h": 33.97,
       "eps": -1.05,
       "epsYoY": null,
       "revYoY": -27.01,
@@ -1250365,14 +1246475,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 687.0,
-          "high": 688.0,
-          "low": 664.0,
-          "close": 667.0,
-          "volume": 218158
-        },
         {
           "date": "2025-10-02",
           "open": 667.0,
@@ -1252866,7 +1248968,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 20.45,
-      "adx_4h": 23.66,
+      "adx_4h": 23.68,
       "eps": 0.54,
       "epsYoY": null,
       "revYoY": 14.02,
@@ -1252943,14 +1249045,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 11.79,
-          "high": 11.83,
-          "low": 11.69,
-          "close": 11.79,
-          "volume": 6287897
-        },
         {
           "date": "2025-10-02",
           "open": 11.79,
@@ -1255444,7 +1251538,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 19.84,
-      "adx_4h": 16.63,
+      "adx_4h": 16.58,
       "eps": 1.3,
       "epsYoY": null,
       "revYoY": -6.66,
@@ -1255521,14 +1251615,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 55.65,
-          "high": 57.03,
-          "low": 55.25,
-          "close": 55.55,
-          "volume": 14047076
-        },
         {
           "date": "2025-10-02",
           "open": 55.85,
@@ -1258022,7 +1254108,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": 1,
       "adx": 15.91,
-      "adx_4h": 18.84,
+      "adx_4h": 18.86,
       "eps": 0.47,
       "epsYoY": null,
       "revYoY": 3.95,
@@ -1258099,14 +1254185,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 24.68,
-          "high": 24.73,
-          "low": 24.48,
-          "close": 24.53,
-          "volume": 485906
-        },
         {
           "date": "2025-10-02",
           "open": 24.58,
@@ -1260600,7 +1256678,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 19.34,
-      "adx_4h": 25.53,
+      "adx_4h": 25.54,
       "eps": 1.48,
       "epsYoY": null,
       "revYoY": 13.15,
@@ -1260677,14 +1256755,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 48.98,
-          "high": 49.17,
-          "low": 48.51,
-          "close": 48.51,
-          "volume": 1824390
-        },
         {
           "date": "2025-10-02",
           "open": 48.51,
@@ -1263178,7 +1259248,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 25.7,
-      "adx_4h": 30.55,
+      "adx_4h": 30.58,
       "eps": 0.43,
       "epsYoY": null,
       "revYoY": 6.97,
@@ -1263255,14 +1259325,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 47.17,
-          "high": 47.45,
-          "low": 46.88,
-          "close": 46.93,
-          "volume": 1052103
-        },
         {
           "date": "2025-10-02",
           "open": 47.02,
@@ -1265756,7 +1261818,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 13.49,
-      "adx_4h": 12.42,
+      "adx_4h": 12.43,
       "eps": 12.56,
       "epsYoY": null,
       "revYoY": -48.32,
@@ -1265833,14 +1261895,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 45.97,
-          "high": 46.46,
-          "low": 45.19,
-          "close": 45.19,
-          "volume": 1467468
-        },
         {
           "date": "2025-10-02",
           "open": 45.63,
@@ -1268334,7 +1264388,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": -1,
       "adx": 17.14,
-      "adx_4h": 19.23,
+      "adx_4h": 19.24,
       "eps": 6.55,
       "epsYoY": null,
       "revYoY": 0.06,
@@ -1268411,14 +1264465,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 284.77,
-          "high": 284.77,
-          "low": 279.11,
-          "close": 279.11,
-          "volume": 78535
-        },
         {
           "date": "2025-10-02",
           "open": 281.46,
@@ -1270912,7 +1266958,7 @@ window._rawMarketData = {
       "supertrend": 1,
       "supertrend_4h": 1,
       "adx": 20.04,
-      "adx_4h": 20.93,
+      "adx_4h": 20.88,
       "eps": 1.3,
       "epsYoY": null,
       "revYoY": 11.63,
@@ -1270989,14 +1267035,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 59.89,
-          "high": 59.89,
-          "low": 59.31,
-          "close": 59.41,
-          "volume": 11000
-        },
         {
           "date": "2025-10-02",
           "open": 59.41,
@@ -1273490,7 +1269528,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 33.19,
-      "adx_4h": 30.51,
+      "adx_4h": 30.48,
       "eps": -1.62,
       "epsYoY": null,
       "revYoY": -52.18,
@@ -1273567,14 +1269605,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 71.51,
-          "high": 72.67,
-          "low": 70.93,
-          "close": 71.03,
-          "volume": 188128
-        },
         {
           "date": "2025-10-02",
           "open": 71.03,
@@ -1276068,7 +1272098,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 36.23,
-      "adx_4h": 23.56,
+      "adx_4h": 23.51,
       "eps": -2.6,
       "epsYoY": null,
       "revYoY": 10.84,
@@ -1276145,14 +1272175,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 54.63,
-          "high": 54.73,
-          "low": 54.53,
-          "close": 54.53,
-          "volume": 17050
-        },
         {
           "date": "2025-10-02",
           "open": 54.43,
@@ -1278724,14 +1274746,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 11.94,
-          "high": 12.04,
-          "low": 11.84,
-          "close": 11.99,
-          "volume": 302043
-        },
-        {
           "date": "2025-10-02",
           "open": 11.99,
           "high": 12.09,
@@ -1281302,14 +1277316,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 14.46,
-          "high": 14.6,
-          "low": 14.41,
-          "close": 14.51,
-          "volume": 15556704
-        },
-        {
           "date": "2025-10-02",
           "open": 14.51,
           "high": 14.6,
@@ -1283802,7 +1279808,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 20.22,
-      "adx_4h": 27.75,
+      "adx_4h": 27.76,
       "eps": 1.07,
       "epsYoY": null,
       "revYoY": -5.2,
@@ -1283879,14 +1279885,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 15.57,
-          "high": 15.57,
-          "low": 15.38,
-          "close": 15.57,
-          "volume": 624103
-        },
         {
           "date": "2025-10-02",
           "open": 15.62,
@@ -1286403,7 +1282401,7 @@ window._rawMarketData = {
       "maBull": false,
       "ma20Rising": false,
       "closeToHigh": false,
-      "dist52W": 13.2,
+      "dist52W": 12.4,
       "rsi14": 37.84,
       "type": "none",
       "pattern_1d": {
@@ -1286457,14 +1282455,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 59.76,
-          "high": 60.32,
-          "low": 59.47,
-          "close": 59.66,
-          "volume": 1145762
-        },
         {
           "date": "2025-10-02",
           "open": 59.85,
@@ -1288958,7 +1284948,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 15.2,
-      "adx_4h": 19.26,
+      "adx_4h": 19.27,
       "eps": 0.67,
       "epsYoY": null,
       "revYoY": -19.92,
@@ -1289035,14 +1285025,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 16.53,
-          "high": 16.81,
-          "low": 16.53,
-          "close": 16.71,
-          "volume": 4462513
-        },
         {
           "date": "2025-10-02",
           "open": 16.57,
@@ -1291614,14 +1287596,6 @@ window._rawMarketData = {
       },
       "kline": [
         {
-          "date": "2025-10-01",
-          "open": 67.04,
-          "high": 67.23,
-          "low": 66.85,
-          "close": 67.23,
-          "volume": 56840
-        },
-        {
           "date": "2025-10-02",
           "open": 66.95,
           "high": 67.33,
@@ -1294114,7 +1290088,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 11.42,
-      "adx_4h": 22.39,
+      "adx_4h": 22.37,
       "eps": -1.11,
       "epsYoY": null,
       "revYoY": -13.8,
@@ -1294191,14 +1290165,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 63.3,
-          "high": 63.7,
-          "low": 62.1,
-          "close": 62.2,
-          "volume": 1473944
-        },
         {
           "date": "2025-10-02",
           "open": 62.5,
@@ -1296692,7 +1292658,7 @@ window._rawMarketData = {
       "supertrend": -1,
       "supertrend_4h": -1,
       "adx": 25.69,
-      "adx_4h": 50.04,
+      "adx_4h": 50.05,
       "eps": 4.09,
       "epsYoY": null,
       "revYoY": -16.72,
@@ -1296769,14 +1292735,6 @@ window._rawMarketData = {
         }
       },
       "kline": [
-        {
-          "date": "2025-10-01",
-          "open": 43.16,
-          "high": 43.16,
-          "low": 43.03,
-          "close": 43.07,
-          "volume": 99412
-        },
         {
           "date": "2025-10-02",
           "open": 43.07,
