@@ -1,11 +1,11 @@
 // 🐾 荳荳 AI 智能選股 — 原生標準 Web Push Service Worker
-const CACHE_NAME = 'doudou-ai-cache-v6.3-radar-top10';
+const CACHE_NAME = 'doudou-ai-cache-v7.2-radar-full-sync';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css?v=95',
-  './app.js?v=95',
-  './stock-dashboard.js?v=95',
+  './style.css?v=101',
+  './app.js?v=101',
+  './stock-dashboard.js?v=101',
   './manifest.json',
   './icon.png',
   './apple-touch-icon.png'

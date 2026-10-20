@@ -30,7 +30,7 @@ jobs:
       - name: 安存必要套件
         run: |
           python -m pip install --upgrade pip
-          pip install pandas yfinance requests
+          pip install pandas yfinance requests pywebpush
 
       - name: 執行股票篩選器
         run: python screener.py
@@ -39,7 +39,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add data.js
+          git add data.js data.json pos_state.json
           # 檢查是否有任何變更，有的話才 commit 防止 workflow 報錯
           if ! git diff --cached --quiet; then
             git commit -m "Auto: 每日定時更新股票分析資料"
