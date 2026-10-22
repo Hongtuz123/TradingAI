@@ -31,7 +31,7 @@
     "entry_time": "2026-10-06 13:06:32",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-21"
+    "last_add_buy_time": "2026-10-22"
   },
   "1714": {
     "entry_price": 18.5,
@@ -88,7 +88,7 @@
     "entry_time": "2026-08-13 12:07:32",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-15"
+    "last_add_buy_time": "2026-10-22"
   },
   "2607": {
     "entry_price": 50.7,
@@ -151,22 +151,25 @@
     "entry_price": 74.1,
     "entry_time": "2026-08-14 15:06:15",
     "tf": "SILENT_INIT",
-    "status": "HOLD",
-    "last_add_buy_time": "2026-10-21"
+    "status": "CLOSED",
+    "last_add_buy_time": "2026-10-21",
+    "exit_price": 81.1,
+    "exit_time": "2026-10-22 04:29:20",
+    "sell_reason": "綜合評分轉弱 (30分 < 50分) 動能竭盡出場"
   },
   "5876": {
     "entry_price": 45.85,
     "entry_time": "2026-09-03 13:06:20",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-21"
+    "last_add_buy_time": "2026-10-22"
   },
   "6209": {
     "entry_price": 81.9,
     "entry_time": "2026-09-01 18:06:09",
     "tf": "SILENT_INIT",
     "status": "HOLD",
-    "last_add_buy_time": "2026-10-21"
+    "last_add_buy_time": "2026-10-22"
   },
   "6278": {
     "entry_price": 168,
